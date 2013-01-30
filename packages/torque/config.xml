@@ -28,11 +28,11 @@
         <dist>suse</dist>
       </filters>  
       <pkg>torque-oscar</pkg>
+      <pkg>torque-oscar-libs</pkg>
       <pkg>torque-oscar-server</pkg>
       <pkg>torque-oscar-gui</pkg>
       <pkg>torque-oscar-mom</pkg>
       <pkg>torque-oscar-client</pkg>
-      <pkg>torque-oscar-modulefile</pkg>
       <pkg>torque-oscar-scheduler</pkg>
       <pkg>maui-oscar</pkg>
     </requires>
@@ -46,11 +46,29 @@
       <pkg>torque-oscar-mom</pkg>
       <pkg>torque-oscar-client</pkg>
       <pkg>torque-oscar-scheduler</pkg>
+      <pkg>maui-oscar</pkg>
     </requires>
   </serverDeps>
   <clientDeps>
     <requires>
+      <filters>
+        <dist>fc</dist>
+        <dist>ydl</dist>
+        <dist>rhel</dist>
+        <dist>sles</dist>
+        <dist>suse</dist>
+      </filters>  
       <pkg>torque-oscar</pkg>
+      <pkg>torque-oscar-mom</pkg>
+      <pkg>torque-oscar-client</pkg>
+      <pkg>torque-oscar-drmaa</pkg>
+    </requires>
+     <requires>
+      <filters>
+        <dist>debian</dist>
+      </filters>
+      <pkg>torque-oscar</pkg>
+      <pkg>torque-oscar-libs</pkg>
       <pkg>torque-oscar-mom</pkg>
       <pkg>torque-oscar-client</pkg>
       <pkg>torque-oscar-modulefile</pkg>
@@ -58,6 +76,16 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.1.16-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-01-30T18:47:38+01:00">
+        <item>Updated torque to v4.1.4.</item>
+      </changelogEntry>
+    </versionEntry>
+    <versionEntry version="2.1.15-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2012-11-21T13:40:11+01:00">
+        <item>Updated torque to v4.1.3.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.1.14-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2011-02-09T12:09:11-05:00">
         <item>Fix the path to the torque tests (patch from Ivan V. Sergeyev).</item>

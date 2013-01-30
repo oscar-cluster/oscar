@@ -11,7 +11,18 @@
 ### Queue name
 #PBS -q workq
 
+#########################################################################
+# Guess TORQUE home is it /usr or /opt/pbs ?
+#########################################################################
+
+if test -f '/usr/bin/pbsdsh'
+then
+    pbsdsh='/usr/bin/pbsdsh'
+else
+    pbsdsh='/opt/pbs/bin/pbsdsh'
+fi
+
 ### Script commands
-/opt/pbs/bin/pbsdsh -s hostname
-/opt/pbs/bin/pbsdsh -s date +"Hello, date is %D, time is %T"
+$pbsdsh -s hostname
+$pbsdsh -s date +"Hello, date is %D, time is %T"
 exit

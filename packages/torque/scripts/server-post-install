@@ -37,6 +37,10 @@ use OSCAR::Opkg;
 #######################################################
 sub startPBSserver
 {
+  system('/etc/init.d/trqauthd start');
+  if(!-f '/var/lib/torque/server_priv/serverdb' && !-f '/var/spool/pbs/server_priv/serverdb') {
+    system('/etc/init.d/pbs_server create'); # no config file: need to initialise config.
+  }
   system('/etc/init.d/pbs_server restart');
 }
 
@@ -68,10 +72,20 @@ chomp($arch);
 my $xpbsmonrc;
 
 # Attention: More sophistication needed here.
+# Check for 32/64 bit architecture AND
+# Check if using /opt located oscar torque package or distro torque package
 if ($arch eq "x86_64") {
-    $xpbsmonrc = "/opt/pbs/lib64/xpbsmon/xpbsmonrc";
+    if (-f "/usr/lib64/xpbsmon/xpbsmonrc") {
+        $xpbsmonrc = "/usr/lib64/xpbsmon/xpbsmonrc";
+    } else {
+        $xpbsmonrc = "/opt/pbs/lib64/xpbsmon/xpbsmonrc";
+    } 
 } else {
-    $xpbsmonrc = "/opt/pbs/lib/xpbsmon/xpbsmonrc";
+    if (-f "/usr/lib/xpbsmon/xpbsmonrc") {
+        $xpbsmonrc = "/usr/lib/xpbsmon/xpbsmonrc";
+    } else {
+        $xpbsmonrc = "/opt/pbs/lib/xpbsmon/xpbsmonrc";
+    }
 }
 
 # Eventually 'torque_gui' is not installed, so we cannot configure xpbsmonrc

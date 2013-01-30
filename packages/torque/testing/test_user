@@ -14,6 +14,18 @@
 #          Jeremy Enos
 #          Bernard Li
 
+#########################################################################
+# Guess TORQUE home is it /usr or /opt/pbs ?
+#########################################################################
+
+if test -f '/usr/bin/qmgr'
+then
+   qmgr='/usr/bin/qmgr'
+else
+   qmgr='/opt/pbs/bin/qmgr'
+fi
+
+
 cd ~
 clients=0
 for i in $@ 
@@ -24,7 +36,7 @@ done
 #                       DEFAULT TORQUE QUEUE
 #                       --------------------
 
-if [ `/opt/pbs/bin/qmgr -c "l s" | grep -c 'default_queue'` -eq 1 ]; then
+if [ `$qmgr -c "l s" | grep -c 'default_queue'` -eq 1 ]; then
         $OSCAR_TESTPRINT --label "TORQUE default queue definition" -p
 else
         $OSCAR_TESTPRINT --label "TORQUE default queue definition" -f

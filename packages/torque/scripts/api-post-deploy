@@ -33,6 +33,18 @@ use Getopt::Long;  # Used to get command line option
 my $default;       # Did we type --default on the command line?
 
 #########################################################################
+# Guess TORQUE home is it /usr or /opt/pbs ?
+#########################################################################
+
+my $torque_home;
+if (-f '/usr/bin/pbsnodes') {
+   $torque_home='/usr';
+} else {
+   $torque_home='/opt/pbs';
+}
+
+
+#########################################################################
 #  compactSpaces strips off the leading and trailing spaces from a      #
 #  string.  If you also pass in $compact=1, then it compresses multiple #
 #  spaces within the string down to 1 space.  Also, you can pass in     #
@@ -72,13 +84,40 @@ sub startPBSserver
   open(CMD,"/etc/init.d/pbs_server status |");
   my $result = <CMD>;
   close(CMD);
-  system('/etc/init.d/pbs_server restart')
+  system('/etc/init.d/pbs_server start')
       unless ($result =~ /is running/);
+  # need to wait until pbs_server is up.(we are here before it is up)
+  for(my $i=0; $i < 10; $i++) {
+      system($torque_home."/bin/qstat 2> /dev/null");
+      if($? != 0) {
+          print "Server not ready for communication: sleeping 1 second....\n";
+          sleep 1;
+      } else {
+          return 0;
+      }
+  }
+  # 10 qstat without success, there is a problem.
+  warn("Unable to communicatate with pbs_server\n");
 }
 
 sub restartPBSserver
 {
   system('/etc/init.d/pbs_server restart');
+}
+
+######################################################################
+#  Check to see if workq is defined                                  #
+######################################################################
+sub isWorkqDefined
+{
+  open(CMD,$torque_home."/bin/qmgr -c 'l q workq' |");
+  my $result = <CMD>;
+  close(CMD);
+  if($result =~ /^Queue workq/) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 ######################################################################
@@ -130,7 +169,7 @@ my $image = shift; # Optionally provide an image name.
 opkg_print("Updating pbs_server nodes\n");
 
 # Read in the current nodes as shown by 'pbsnodes -a'
-open (CMD,'/opt/pbs/bin/pbsnodes -a |');
+open (CMD,$torque_home.'/bin/pbsnodes -a |');
 my $inp = "";
 my $server = "";
 my $opt = "";
@@ -156,6 +195,7 @@ close (CMD);
 # Get listing of nodes from the SIS database
 my %nodes = get_machine_listing($image);
 
+# OL: TODO: Code duplication. Need to use nodes code
 if ($compute_on_head eq "YES") {
   # Get server proc count
   my $server_procs = 0;
@@ -174,6 +214,7 @@ if ($compute_on_head eq "YES") {
   $added_node{HOST}=$ENV{HOSTNAME};
   $added_node{IPADDR}="";
   $added_node{NUM_PROCS}=$server_procs;
+  $added_node{NUM_GPUS}=0; # Ignore GPUS on head (too much dangerous)
   $added_node{DOMAIN}="";
   $nodes{$ENV{HOSTNAME}}=\%added_node;
 }
@@ -189,10 +230,16 @@ foreach my $node (sortnodes( keys %nodes ))
     $hostname = $nodes{$node}{HOST};
     if ($pbsnodes{$hostname})
       {
-        system("/opt/pbs/bin/pbsnodes -o $hostname");
+        system($torque_home."/bin/pbsnodes -o $hostname");
         # Reset the number of processors for this node
-        system('/opt/pbs/bin/qmgr -a -e -c "set node ' . $hostname .
-               ' np = ' . $nodes{$node}{NUM_PROCS} . '"');
+        my $qmgr_cmd=$torque_home.'/bin/qmgr -a -e -c "set node ' . $hostname .
+                     ' np = ' . $nodes{$node}{NUM_PROCS};
+        # and number of GPUs if any
+        if ($nodes{$node}{NUM_GPUS}>0) {
+	    $qmgr_cmd.=', gpus = ' . $nodes{$node}{NUM_GPUS};
+        }
+        $qmgr_cmd.='"';
+	system($qmgr_cmd);
         # Search the properties for 'all' and add it if not found
         my(@props) = split(/,/,$pbsnodes{$hostname}{'properties '});
         my($alldefined) = "";
@@ -200,16 +247,21 @@ foreach my $node (sortnodes( keys %nodes ))
           {
             $alldefined = 1 if $prop eq 'all';
           }
-        system('/opt/pbs/bin/qmgr -a -e -c "set node ' . $hostname . 
+        system($torque_home.'/bin/qmgr -a -e -c "set node ' . $hostname . 
                ' properties += all"') unless $alldefined;
-        system("/opt/pbs/bin/pbsnodes -c $hostname");
+        system($torque_home."/bin/pbsnodes -c $hostname");
         # Remove from pbsnodes hash
         delete $pbsnodes{$nodes{$node}{HOST}};
       }
     else
       { # Didn't find a match -> ADD the node
-        system('/opt/pbs/bin/qmgr -a -e -c "create node ' . $hostname .
-               ' np = ' . $nodes{$node}{NUM_PROCS} . ' , properties = all"');
+        my $qmgr_cmd=$torque_home.'/bin/qmgr -a -e -c "create node ' . $hostname .
+                     ' np = ' . $nodes{$node}{NUM_PROCS};
+        if ($nodes{$node}{NUM_GPUS}>0) {
+            $qmgr_cmd.=' , gpus = ' . $nodes{$node}{NUM_GPUS};
+        }
+        $qmgr_cmd.=' , properties = all"';
+        system($qmgr_cmd);
       }
     
     # Count up the number of nodes and processors
@@ -221,102 +273,108 @@ foreach my $node (sortnodes( keys %nodes ))
 # Now go through the remaining pbsnodes hash and delete these nodes
 foreach my $node (sortnodes( keys %pbsnodes )) 
   {
-    system('/opt/pbs/bin/qmgr -a -e -c "delete node ' . $node . '"');
+    system($torque_home.'/bin/qmgr -a -e -c "delete node ' . $node . '"');
   }
-restartPBSserver();
+# OL: we don't need to restart the server.
+# restartPBSserver();
 
-# Next, use qmgr command to set up the values for workq
-opkg_print("Creating TORQUE workq queue...\n");
+if(isWorkqDefined()) {
+  opkg_print("workq already defined...Skipping queue creation...\n");
+} else {
+  # Next, use qmgr command to set up the values for workq
+  opkg_print("Creating TORQUE workq queue...\n");
  
-# These are default values set only when not present or when --default
-my @default_params = (
-  'create queue workq',
-  'set queue workq queue_type                 = Execution',
-  'set queue workq resources_max.cput         = 10000:00:00',
-  'set queue workq resources_max.walltime     = 10000:00:00',
-  'set queue workq resources_min.cput         = 00:00:01',
-  'set queue workq resources_min.ncpus        = 1',
-  'set queue workq resources_min.nodect       = 1',
-  'set queue workq resources_min.walltime     = 00:00:01',
-  'set queue workq resources_default.cput     = 10000:00:00',
-  'set queue workq resources_default.ncpus    = 1',
-  'set queue workq resources_default.nodect   = 1',
-  'set queue workq resources_default.walltime = 10000:00:00',
-  'set queue workq enabled                    = True',
-  'set queue workq started                    = True',
-  'set server scheduling                      = True',
-  'set server default_queue                   = workq',
-  'set server mail_from                       = adm',
-  'set server query_other_jobs                = True',
-);
+  # These are default values set only when not present or when --default
+  my @default_params = (
+    'create queue workq',
+    'set queue workq queue_type                 = Execution',
+    'set queue workq resources_max.cput         = 10000:00:00',
+    'set queue workq resources_max.walltime     = 10000:00:00',
+    'set queue workq resources_min.cput         = 00:00:01',
+    'set queue workq resources_min.ncpus        = 1',
+    'set queue workq resources_min.nodect       = 1',
+    'set queue workq resources_min.walltime     = 00:00:01',
+    'set queue workq resources_default.cput     = 10000:00:00',
+    'set queue workq resources_default.ncpus    = 1',
+    'set queue workq resources_default.nodect   = 1',
+    'set queue workq resources_default.walltime = 10000:00:00',
+    'set queue workq enabled                    = True',
+    'set queue workq started                    = True',
+    'set server scheduling                      = True',
+    'set server default_queue                   = workq',
+    'set server mail_from                       = adm',
+    'set server query_other_jobs                = True',
+  );
 
-# These are variable parameters that are set everytime
-my @variable_params = (
-  "set queue workq resources_max.ncpus        = $TOT_NP",
-  "set queue workq resources_max.nodect       = $TOT_NODES",
-  "set queue workq resources_available.nodect = $TOT_NODES",
-  "set server resources_available.ncpus       = $TOT_NP",
-  "set server resources_available.nodect      = $TOT_NODES",
-  "set server resources_available.nodes       = $TOT_NODES",
-  "set server resources_max.ncpus             = $TOT_NP",
-  "set server resources_max.nodes             = $TOT_NODES",
-  "set server scheduler_iteration             = 60",
-  "set server log_events                      = $loglevel",
-);
+  # These are variable parameters that are set everytime
+  my @variable_params = (
+    "set queue workq resources_max.ncpus        = $TOT_NP",
+    "set queue workq resources_max.nodect       = $TOT_NODES",
+    "set queue workq resources_available.nodect = $TOT_NODES",
+    "set server resources_available.ncpus       = $TOT_NP",
+    "set server resources_available.nodect      = $TOT_NODES",
+    "set server resources_available.nodes       = $TOT_NODES",
+    "set server resources_max.ncpus             = $TOT_NP",
+    "set server resources_max.nodes             = $TOT_NODES",
+    "set server scheduler_iteration             = 60",
+    "set server log_events                      = $loglevel",
+  );
 
-# First, read in the current values for the localhost
-undef $/;   # Suck in the entire files into one big string
-open (CMD,'/opt/pbs/bin/qmgr -a -e -c "print server @localhost" |');
-my $cmd_output = <CMD>;
-close (CMD);
+  # First, read in the current values for the localhost
+  undef $/;   # Suck in the entire files into one big string
+  open (CMD,$torque_home.'/bin/qmgr -a -e -c "print server @localhost" |');
+  my $cmd_output = <CMD>;
+  close (CMD);
 
-# Next, build up a command string to pass back to the qmgr command.
-my $line = "";
-my $key = "";
-my $value = "";
-my $cmd_input = "";
+  # Next, build up a command string to pass back to the qmgr command.
+  my $line = "";
+  my $key = "";
+  my $value = "";
+  my $cmd_input = "";
 
-# Search through the default_params for anything missing.
-foreach $line (@default_params)
-  {
-    ($key,$value) = split /=/, $line;
-    $key = compactSpaces($key);
-    $value = compactSpaces($value);
-    if ($value eq "")
-      { # Search for just the $key since there's no value for it.
-        $cmd_input .= "$key\n" if
-          ($cmd_output !~ /$key/m) || 
-          (defined($default) && $key !~ /create/);
-      }
-    else
-      { # Search for "$key =".  Output key and value if needed.
-        $cmd_input .= "$key = $value\n" if
-          ($cmd_output !~ /$key\s*=/m) || defined($default);
-      }
-  }
+  # Search through the default_params for anything missing.
+  foreach $line (@default_params)
+    {
+      ($key,$value) = split /=/, $line;
+      $key = compactSpaces($key);
+      $value = compactSpaces($value);
+      if ($value eq "")
+        { # Search for just the $key since there's no value for it.
+          $cmd_input .= "$key\n" if
+            ($cmd_output !~ /$key/m) || 
+            (defined($default) && $key !~ /create/);
+        }
+      else
+        { # Search for "$key =".  Output key and value if needed.
+          $cmd_input .= "$key = $value\n" if
+            ($cmd_output !~ /$key\s*=/m) || defined($default);
+        }
+    }
 
-# Then, force the setting of the of the variable_params.
-foreach $line (@variable_params)
-  {
-    ($key,$value) = split /=/, $line;
-    $key = compactSpaces($key);
-    $value = compactSpaces($value);
-    $cmd_input .= "$key";
-    $cmd_input .= " = $value"
-      if ($value ne "");
-    $cmd_input .= "\n";
-  }
+  # Then, force the setting of the of the variable_params.
+  foreach $line (@variable_params)
+    {
+      ($key,$value) = split /=/, $line;
+      $key = compactSpaces($key);
+      $value = compactSpaces($value);
+      $cmd_input .= "$key";
+      $cmd_input .= " = $value"
+        if ($value ne "");
+      $cmd_input .= "\n";
+    }
 
-# Run the qmgr command if necessary
-if ($cmd_input ne "")
-  {
-    my $pbs_spool = "/var/spool/pbs";
-    open (CMD,"|/opt/pbs/bin/qmgr -a -e ");
-    print CMD $cmd_input;
-    close (CMD) 
-        or croak("ERROR: Impossible to Configure TORQUE queues, ".
-                 "check the logs at $pbs_spool");
-  }
+  # Run the qmgr command if necessary
+  if ($cmd_input ne "")
+    {
+      my $pbs_server_logs = "/var/log/torque/server_logs";
+      open (CMD,"|".$torque_home."/bin/qmgr -a -e ");
+      print CMD $cmd_input;
+      close (CMD) 
+          or croak("ERROR: Impossible to Configure TORQUE queues, ".
+                   "check the logs at $pbs_server_logs");
+    }
+}
+
 restartMaui();
 
 # Get current state of server's mom

@@ -14,14 +14,26 @@
 #          Jeremy Enos
 #          Bernard Li
 
+#########################################################################
+# Guess TORQUE home is it /usr or /opt/pbs ?
+#########################################################################
+
+if test -f '/usr/bin/pbsnodes'
+then
+   pbsnodes='/usr/bin/pbsnodes';
+else
+   pbsnodes='/opt/pbs/bin/pbsnodes';
+fi
+
+
 # Stop TORQUE Server if any nodes exhibit "state-unknown" status.
 # This condition could be due to the 5 minute polling interval to the moms
 # by the server.  Restarting the server will induce a fresh poll.
-unknown_nodes=`/opt/pbs/bin/pbsnodes -a |grep -c state-unknown`
+unknown_nodes=`$pbsnodes -a |grep -c state-unknown`
 if [ $unknown_nodes != 0 ] ; then
   /etc/init.d/pbs_server stop
 fi
-unknown_nodes=`/opt/pbs/bin/pbsnodes -a |grep -c state-unknown`
+unknown_nodes=`$pbsnodes -a |grep -c state-unknown`
 if [ $unknown_nodes != 0 ] ; then
   $OSCAR_TESTPRINT --label "TORQUE node check" -f
 #  exit 1;

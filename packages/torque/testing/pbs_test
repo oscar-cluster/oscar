@@ -30,8 +30,23 @@
 # are failing due to timeouts (not because of failing package tests)
 default_timeout=60
 
-qsub='/opt/pbs/bin/qsub'
-qstat='/opt/pbs/bin/qstat'
+#########################################################################
+# Guess TORQUE home is it /usr or /opt/pbs ?
+#########################################################################
+
+if test -f '/usr/bin/pbsnodes'
+then
+    qsub='/usr/bin/qsub'
+    qdel='/usr/bin/qdel'
+    qstat='/usr/bin/qstat'
+    pbsnodes='/usr/bin/pbsnodes'
+else
+    qsub='/opt/pbs/bin/qsub'
+    qdel='/opt/pbs/bin/qdel'
+    qstat='/opt/pbs/bin/qstat'
+    pbsnodes='/opt/pbs/bin/pbsnodes'
+fi
+
 exit_status=0
 
 # Check usage (since this can be run seperately)
@@ -108,7 +123,7 @@ function calc_timeout {
 }              
 
 function check_free_nodes () {
-  free=`/opt/pbs/bin/pbsnodes -a | grep -c 'state = free'`
+  free=`$pbsnodes -a | grep -c 'state = free'`
   if [ $free -eq $clients ] || [ $free -gt $clients ]; then  
     # at least $clients free nodes
     echo -n ""
@@ -158,8 +173,8 @@ pbs_test_routine () {
         $OSCAR_TESTPRINT --label "$pbs_test_type" --fail
         job_state=fail
 	exit_status=1
-        if [ `/opt/pbs/bin/qstat | grep -c $job` -eq 1 ]; then
-          /opt/pbs/bin/qdel $job
+        if [ `$qstat | grep -c $job` -eq 1 ]; then
+          $qdel $job
           sleep 1 # Allows nodes to free up again
         fi
         if [ "$exit_on_fail" = yes ]; then waitexit ; fi
