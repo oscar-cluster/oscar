@@ -65,7 +65,7 @@ sub detect_dir {
         }
 
         # only support these two for now
-        if ($os_family !~ /^(Taroon|Nahant|Tikanga)$/) {
+        if ($os_family !~ /^(Taroon|Nahant|Tikanga|Santiago)$/) {
             return undef;
         }
 
