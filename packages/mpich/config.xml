@@ -19,7 +19,9 @@ libraries.</description>
       <email>efocht@hpce.nec.com</email>
     </author>
   </authors>
-  <provide>mpi</provide>
+  <provides>
+    <pkg>mpi</pkg>
+  </provides>
   <serverDeps>
     <requires>
       <pkg>mpich-ch_p4-gcc-oscar</pkg>

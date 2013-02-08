@@ -62,7 +62,9 @@ visualized either at runtime or post-mortem.</description>
       <email>valleegr@ornl.gov</email>
     </author>
   </authors>
-  <provide>mpi</provide>
+  <provides>
+    <pkg>mpi</pkg>
+  </provides>
   <serverDeps>
     <!-- Distributions that provide libaio -->
 
