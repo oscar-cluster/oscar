@@ -17,14 +17,12 @@
 # This script checks to see if the number of OSCAR clients (+ headnode)
 # equals the number of hosts Ganglia sees by using gstat
 
-# (C)opyright Bernard Li <bli@bcgsc.ca>
-#             Erich Focht <efocht@hpce.nec.com>
-
-#  Copyright (c) 2010   Oak Ridge National Laboratory
-#                       Geoffroy Vallee <valleegr@ornl.gov>
+#  Copyright (c) 2012   Commissariat à L'Énergie Atomique et aux Énergies Alternatives
+#                       Olivier Lahaye <olivier.lahaye@cea.fr>
 #                       All rights reserved.
 
 use strict;
+use Switch;
 use Carp;
 use Cwd qw(chdir cwd);
 use Getopt::Long;
@@ -34,112 +32,186 @@ use OSCAR::Network;
 use OSCAR::Utils;
 use warnings "all";
 
-# We are using a specific hostname for Ganglia. Right now we assume this is the first
-# hostname following of the private IP in the /etc/hosts file.
-sub get_ganglia_hostname () {
+# Force verbosity for debugging.
+# $ENV{OSCAR_VERBOSE} = 5;
+
+# This routine will return the private IP addr of the cluster.
+sub get_cluster_private_ip() {
+    # Get OSCAR configuration
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
         carp "ERROR: Impossible to get the OSCAR configuration\n";
         return undef;
     }
     my $config = $oscar_configurator->get_config();
+
+    # Get the head NIC.
     my $headnic = $config->{'nioscar'};
     if (!OSCAR::Utils::is_a_valid_string ($headnic)) {
         carp "ERROR: Impossible to get the headnode NIC";
         return undef;
     }
 
+    # Get the ip of this NIC.
     my ($head_ip, $broadcast, $net) = OSCAR::Network::interface2ip($headnic);
     if (!OSCAR::Utils::is_a_valid_string ($head_ip)) {
         carp "ERROR: Impossible to get the private IP";
         return undef;
     }
+    return $head_ip;
+}
 
-    my $cmd = "grep $head_ip /etc/hosts";
+sub get_cluster_head_private_aliases() {
+    my $private_ip = get_cluster_private_ip();
+    # Get the hostname and aliases associated with this NIC.
+    my $cmd = "grep $private_ip /etc/hosts";
     my $private_hostnames = `$cmd`;
     if (!OSCAR::Utils::is_a_valid_string ($private_hostnames)) {
         carp "ERROR: Impossible to get private hostnames ($cmd)";
         return undef;
     }
     my @hostnames = split (" ", $private_hostnames);
-    my $pattern = $hostnames[1];
-
-    return $pattern;
+    return @hostnames;
 }
 
-OSCAR::Logger::init_log_file ("/var/log/oscar/ganglia.log");
+# return true if hostname is one of the private ip aliases
+sub is_cluster_head($) {
+    my $head_hostname = shift;
+    my @aliases = get_cluster_head_private_aliases();
+    if ($head_hostname ~~ @aliases) {
+        return 1;
+    } else {
+        return undef;
+    }
+}
 
-OSCAR::Logger::oscar_log_section ("Ganglia setup test");
+# return a table will all hosts returned by gstat
+sub get_ganglia_nodes() {
+    my $cmd = "gstat --all -l -1  |cut -d' ' -f1|sort|tr '\n' ' '";
+    my $ganglia_nodes = `$cmd`;
+    my @nodes = split (" ", $ganglia_nodes);
+    return @nodes;
+}
+
+######################
+# MAIN program
+######################
+
 my $label = "Ganglia setup test";
-
-# Get number of args (nodes)
-my @clients = @_;
-my $nb_clients = scalar (@clients);
-
-# number of client nodes + headnode
-my $numhosts = $nb_clients + 1;
-
-my $pattern = get_ganglia_hostname();
-if (!OSCAR::Utils::is_a_valid_string ($pattern)) {
-    die "ERROR: Impossible to get the hostname used by Ganglia";
-}
-
-# simple test which counts the number of detected nodes (via gstat) with
-# the number of expected nodes (from argument)
-# the nodes detected have to match a certain pattern (belonging to the
-# cluster) and thus will pass even if you have other gmonds running on the
-# same network but not belonging to the same data source
-my $hosts = `gstat --all | egrep -c "^($pattern)\$"`;
-my $cmd;
 
 #TODO: Find a better way to find where the testprint script is
 if (!OSCAR::Utils::is_a_valid_string ($ENV{OSCAR_TESTPRINT})) {
     $ENV{OSCAR_TESTPRINT} = "/usr/share/oscar/testing/testprint";
 }
 
-if ($hosts == $numhosts) {
-    $cmd = "$ENV{OSCAR_TESTPRINT} --label '$label' -p";
-    if (system ($cmd)) {
-        die "ERROR: Impossible to execute $cmd";
-    }
-} else {
-    OSCAR::Logger::oscar_log_subsection ("Client nodes: $@");
-    OSCAR::Logger::oscar_log_subsection ("Match pattern: $pattern");
-    OSCAR::Logger::oscar_log_subsection ("Number of hosts matched: $hosts");
-    my $output = `gstat --all`;
-    if (!OSCAR::Utils::is_a_valid_string ($output)) {
-        die "ERROR: Impossible to get gstat output";
-    }
-    OSCAR::Logger::oscar_log_subsection ("Gstat output: $output");
-    OSCAR::Logger::oscar_log_subsection ("The number of nodes expected is different from the number of nodes detected.\nCheck to see if gmond is running on all your nodes and make sure that you\nare not having any network issues.");
-    $cmd = "$ENV{OSCAR_TESTPRINT} --label '$label' -f";
-    if (system ($cmd)) {
-        die "ERROR: Impossible to execute $cmd";
-    }
-    exit 1;
+# Init log file
+#OL: as non root it'll fail: need somme work here.
+OSCAR::Logger::init_log_file ("/var/log/oscar/ganglia.log");
+
+OSCAR::Logger::oscar_log_section ($label);
+
+# Get the nodes to be checked from the command line arguments.
+my @nodes_to_test = @ARGV;
+my @ganglia_nodes = get_ganglia_nodes();
+my @ganglia_head_aliases = get_cluster_head_private_aliases();
+
+# check that all nodes in the command line are in gstat result.
+#
+my $error_count=0;
+my $valid_nodes_found=0;
+
+my $print_cmd="$ENV{OSCAR_TESTPRINT} --label 'Ganglia: ";
+
+my $cmd="";
+
+$cmd=$print_cmd." Checking nodes...'";
+if (system ($cmd)) {
+    die "ERROR: Impossible to execute $cmd";
 }
 
-# more stringent test, will fail if number of detected nodes > expected nodes
-# this is a hard count and does not do any pattern matching - this is used to
-# notify users of renegade nodes in their OSCAR ganglia setup - failing this
-# test is not fatal
-$hosts = `gstat | grep 'Hosts' | head -n 1 | awk {'print \$2'}`;
-
-OSCAR::Logger::oscar_log_section ("Ganglia node count test");
-$label = "Ganglia node count test";
-
-if ($hosts == $numhosts) {
-    $cmd = "$ENV{OSCAR_TESTPRINT} --label '$label' -p";
-    if (system ($cmd)) {
-        die "ERROR: Impossible to execute $cmd";
+foreach my $node (@nodes_to_test) {
+    if ($node ~~ @ganglia_nodes) {
+        $valid_nodes_found+=1;
+        OSCAR::Logger::oscar_log_subsection ("[$label]: Found valid node: $node");
+        $cmd = "$print_cmd Checking nodes...' --status '$node konwn by ganglia.'";
+        if (system ($cmd)) {
+             die "ERROR: Impossible to execute $cmd";
+        }
+    } elsif ($node ~~ @ganglia_head_aliases) {
+        OSCAR::Logger::oscar_log_subsection ("[$label]: Head $node will be tested later");
+    } else {
+        OSCAR::Logger::oscar_log_subsection ("ERROR: [$label]: $node missing from gstat report!");
+        $cmd = "$print_cmd While checking nodes:' --status '$node UNKNOWN.' -f";
+        if (system ($cmd)) {
+             die "ERROR: Impossible to execute $cmd";
+        }
+        $error_count += 1;
     }
-} else {
-    OSCAR::Logger::oscar_log_subsection ("Ganglia expects to have $numhosts nodes but found $hosts nodes.  Please check to see\nif there are non-OSCAR cluster gmond(s) running on the same network/switch\nand correct the problem.  This test failure is not catastrophic, it\nis safe to ignore if \"Ganglia setup test\" succeeds.");
-    $cmd = "$ENV{OSCAR_TESTPRINT} --label '$label' -f";
-    if (system ($cmd)) {
-        die "ERROR: Impossible to execute $cmd";
-    }
-    exit 1;
 }
 
-exit 0;
+my $status="";
+if($error_count == 0) {
+    $status="pass";
+} else {
+    $status="fail";
+}
+$cmd="$print_cmd Check nodes test.' --".$status;
+if (system ($cmd)) {
+    die "ERROR: Impossible to execute $cmd";
+}
+
+# check that head node is in the gstat result as well.
+my $previous_error_count=$error_count;
+$cmd=$print_cmd." Checking head...'";
+if (system ($cmd)) {
+    die "ERROR: Impossible to execute $cmd";
+}
+
+my $head_found=0;
+foreach my $head (@ganglia_head_aliases) {
+    if ($head ~~ @ganglia_nodes) {
+        $head_found+=1;
+        OSCAR::Logger::oscar_log_subsection ("[$label]: Found valid head alias in gstat report: $head");
+    }
+}
+switch ($head_found) {
+    case 0 {
+        OSCAR::Logger::oscar_log_subsection ("ERROR: [$label]: headnode missing from gstat report!");
+        $error_count += 1; }
+    case 1 {
+        OSCAR::Logger::oscar_log_subsection ("SUCCESS: [$label]: Found one uniq head in gstat report.");
+        $valid_nodes_found += 1; }
+    else {
+        OSCAR::Logger::oscar_log_subsection ("ERROR: [$label]: multiple aliases of headnode in gstat report!");
+        $error_count += 1; }
+}
+if($error_count == $previous_error_count) {
+     $status="pass";
+} else {
+     $status="fail";
+}
+$cmd="$print_cmd Check head test.' --".$status;
+if (system ($cmd)) {
+    die "ERROR: Impossible to execute $cmd";
+}
+
+# From here, whitour errors, at least, all nodes from @ARGV and the head are in the gstat report.
+# We will exit safely if $error_count is 0.
+# Now will check if there are other nodes in gstat report that are not in the @ARGV.
+
+my $gstat_nodes_count = scalar(@ganglia_nodes);
+if ($gstat_nodes_count > $valid_nodes_found) {
+    OSCAR::Logger::oscar_log_subsection ("Ganglia should have $valid_nodes_found nodes but found $gstat_nodes_count nodes using gstat. Please check\nto see if there are non-OSCAR cluster gmond(s) running on the same\nnetwork/switch and correct the problem. This test failure is not catastrophic,\nitis safe to ignore if \"$label\" succeeds.");
+   $cmd="$print_cmd Found extra ganglia nodes' --skipped";
+   if (system ($cmd)) {
+       die "ERROR: Impossible to execute $cmd";
+   }
+}
+
+if ($error_count == 0) {
+    OSCAR::Logger::oscar_log_subsection ("SUCCESS: [$label]: Found one head and ".($valid_nodes_found-1)." nodes.");
+    exit 0;
+} else {
+    OSCAR::Logger::oscar_log_subsection ("ERROR: [$label]: Test Failed with $error_count errors.");
+    exit 1;
+}
