@@ -20,12 +20,21 @@
       <name>Geoffroy Vallee</name>
       <email>valleegr@ornl.gov</email>
     </author>
-  </authors>
+    <author cat="maintainer">
+      <name>Olivier Lahaye</name>
+      <email>olivier.lahaye@cea.fr</email>
+    </author>
+   </authors>
   <serverDeps/>
   <clientDeps/>
   <apiDeps/>
   <changelog>
-    <versionEntry version="1.32.3-1">
+    <versionEntry version="1.32.4-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2012-11-22T10:11:00+01:00">
+        <item>Remove useless oscar_table.sql</item>
+      </changelogEntry>
+    </versionEntry>
+     <versionEntry version="1.32.3-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2011-02-12T11:09:21-05:00">
         <item>Rename the api-pre-install script to api-post-install (the script is not available before the package is installed).</item>
       </changelogEntry>
