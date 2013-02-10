@@ -1,0 +1,14 @@
+# The two language packages are to avoid language/locales warnings
+# Also the reason why they are first
+language-pack-en
+language-pack-en-base
+apt
+cron
+discover
+libappconfig-perl
+grub
+linux-image-generic
+ssh
+systemconfigurator
+nfs-common
+xterm
