@@ -17,6 +17,11 @@
 # This script checks to see if the number of OSCAR clients (+ headnode)
 # equals the number of hosts Ganglia sees by using gstat
 
+# (C)opyright Bernard Li <bli@bcgsc.ca>
+#             Erich Focht <efocht@hpce.nec.com>
+
+#  Copyright (c) 2010   Oak Ridge National Laboratory
+#                       Geoffroy Vallee <valleegr@ornl.gov>
 #  Copyright (c) 2012   Commissariat à L'Énergie Atomique et aux Énergies Alternatives
 #                       Olivier Lahaye <olivier.lahaye@cea.fr>
 #                       All rights reserved.
