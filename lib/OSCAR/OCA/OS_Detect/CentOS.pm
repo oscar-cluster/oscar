@@ -50,11 +50,12 @@ sub detect_dir {
 		$os_update = 0;
 	}
 
+	# OL: Code below makes wrong assumption and fails on CentOS-5.9 wich is NOT a beta version.
         # Support CentOS Beta releases
-        if ($os_update =~ 9) {
-            $os_release++;
-            $os_update = 0;
-        }
+        #if ($os_update =~ 9) {
+        #    $os_release++;
+        #    $os_update = 0;
+        #}
 
 	$id->{distro} = $distro;
 	$id->{distro_version} = $os_release;
