@@ -7,7 +7,7 @@
 
 [oscar]
 name=OSCAR - ##OSCAR_VERSION##
-mirrorlist= ##URL##.mirrors.txt
+mirrorlist= http://svn.oscar.openclustergroup.org/oscar/trunk/rpm/oscar.mirrors.txt
 #baseurl=##URL##
 gpgcheck=0
 enable=1

@@ -1,0 +1,3 @@
+http://svn.oscar.openclustergroup.org/repos/unstable/rhel-$releasever-$basearch
+http://svn.oscar.openclustergroup.org/repos/unstable/rhel-$releasever-$basearch_dikim
+http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/rhel-$releasever-$basearch
