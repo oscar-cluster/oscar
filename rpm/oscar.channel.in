@@ -1,0 +1,6 @@
+### Name: OSCAR RPM Repository for RHEL 6 - x86_64 - oscar
+### URL: http://svn.oscar.openclustergroup.org/trac/oscar
+[oscar]
+name = Packages from OSCAR for RHEL 6 - x86_64 - oscar
+baseurl = ##URL##
+type = rpm-md

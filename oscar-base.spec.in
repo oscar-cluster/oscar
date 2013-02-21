@@ -160,7 +160,25 @@ Everything needed for OSCAR related developments.
 %{_sysconfdir}/rpm/macros.oscar
 %{_prefix}/lib/oscar/build/Config.mk
 
+%package -n oscar-release
+Summary: OSCAR release file and RPM repository configuration
+Group: Applications/System
+
+%description -n oscar-release
+OSCAR release file. This package contains apt, yum and smart
+configuration for the OSCAR RPM Repository, as well as the public
+GPG keys used to sign them.
+
+%files -n oscar-release
+%{_sysconfdir}/yum.repos.d/oscar.repo
+%{_sysconfdir}/apt/sources.list.d/oscar.list
+%{_sysconfdir}/smart/channels/oscar.channel
+%{_sysconfdir}/sysconfig/rhn/sources.oscar.txt
+#{_sysconfdir}/pki/rpm-gpg/*
+
 %changelog
+* Thu Feb 21 2013 Olivier Lahaye <olivier.lahaye@cea.fr>
+- Added oscar-release package (repository setup)
 * Mon Jan 28 2013 Olivier Lahaye <olivier.lahaye@cea.fr>
 - Fix doc directory (/usr/share/doc/oscar without %{version})
 * Sun Dec 09 2012 Geoffroy Vallee <valleegr@ornl.gov>

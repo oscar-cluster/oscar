@@ -1,0 +1,4 @@
+### Name: OSCAR RPM Repository for RHEL 6
+### URL: http://svn.oscar.openclustergroup.org/trac/oscar
+#rpm ##SERVER_URL## ##REPO_PATH## oscar
+repomd ##SERVER_URL## ##REPO_PATH##
