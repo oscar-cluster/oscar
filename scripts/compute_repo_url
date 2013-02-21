@@ -12,7 +12,9 @@
 
 URL_BASE="$1"
 
-if test -z $(echo $URL_BASE |grep -E '(ht|f)tp://[a-zA-Z0-9\-\./]+$')
+#if test -z $(echo $URL_BASE |grep -E '(ht|f)tp://[a-zA-Z0-9\-\./]+$')
+# OL : We don't want to enforce full URL as sometimes we only need the end of the URL
+if test -z "$URL_BASE"
 then
 	echo "Usage: $1 <URL BASE>"
 	exit 1
