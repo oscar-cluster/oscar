@@ -1,0 +1,61 @@
+#!/bin/bash
+# $Id$
+#
+# Copyright (c) 2013 CEA² Commissariat à l'Energie Atomique et aux Energies Alternatives
+#                    Olivier LAHAYE <olivier.lahaye@cea.fr>
+#                    All rights reserved
+#
+# This script compute the end of the oscar repository URL taking into account
+# The distro, the distro version, the oscar version.
+# Syntax: $0 <URL base>
+# example: compute_repo_url http://svn.oscar.openclustergroup.org/repos
+
+URL_BASE="$1"
+
+if test -z $(echo $URL_BASE |grep -E '(ht|f)tp://[a-zA-Z0-9\-\./]+$')
+then
+	echo "Usage: $1 <URL BASE>"
+	exit 1
+fi
+
+if [ -z "$OSCAR_HOME" ]
+then
+	OSCAR_HOME=/etc/oscar
+fi
+
+source ${OSCAR_HOME}/VERSION
+
+OSCAR_VERSION=""
+if test "$want_svn" -eq 1
+	then
+		OSCAR_VERSION="unstable"
+	else
+		OSCAR_VERSION="$major.$minor.$release"
+fi
+
+ARCH=$(arch)
+if test -n ""$(echo "#i486#i586#i686#"|grep "#${ARCH}#")
+then
+	ARCH="i386"
+fi
+
+DISTRO_QUERY=""
+for P in /usr/bin ${OSCAR_HOME}/scripts
+do
+	if test -x ${P}/distro-query
+	then
+		DISTRO_QUERY="${P}/distro-query"
+		break
+	fi
+done
+
+if test -n "${DISTRO_QUERY}"
+then
+	DISTRO="$(distro-query |awk '/compat / { printf("%s-",$3) }')${ARCH}"
+	echo "${URL_BASE}/${OSCAR_VERSION}/${DISTRO}"
+	exit 0
+else
+	echo "ERROR: Unable to find distro-query script in /usr/bin \${OSCAR_HOME}/scripts"
+	echo "       Please check your OSCAR installation"
+	exit 1
+fi
