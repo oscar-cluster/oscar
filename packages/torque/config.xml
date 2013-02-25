@@ -76,7 +76,12 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
-    <versionEntry version="2.1.16-1">
+    <versionEntry version="2.1.16-2">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-02-25T18:12:38+01:00">
+        <item>Fix torque binary names when /etc/alternatives is used.</item>
+      </changelogEntry>
+    </versionEntry>
+     <versionEntry version="2.1.16-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-01-30T18:47:38+01:00">
         <item>Updated torque to v4.1.4.</item>
       </changelogEntry>
