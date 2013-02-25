@@ -25,7 +25,7 @@
       </filters>
       <pkg>jobmonarch</pkg>
       <pkg>pbs_python</pkg>
-      <pkg>DRMAA-python</pkg>
+      <pkg>drmaa-python</pkg>
     </requires>
     <requires>
       <filters>
@@ -33,12 +33,11 @@
       </filters>
       <pkg>jobmonarch</pkg>
       <pkg>pbs_python</pkg>
-      <pkg>DRMAA-python</pkg>
+      <pkg>drmaa-python</pkg>
       <pkg>mysql-client</pkg>
       <pkg>python-mysql</pkg>
       <pkg>php4-gd</pkg>
       <pkg>php4-mbstring</pkg>
-      <pkg>DRMAA-python</pkg>
     </requires>
     <requires>
       <filters>
@@ -46,13 +45,12 @@
       </filters>
       <pkg>jobmonarch</pkg>
       <pkg>pbs_python</pkg>
-      <pkg>DRMAA-python</pkg>
+      <pkg>drmaa-python</pkg>
       <pkg>mysql-client</pkg>
       <pkg>python-mysql</pkg>
       <pkg>php5-gd</pkg>
       <pkg>php5-mbstring</pkg>
       <pkg>php5-mysql</pkg>
-      <pkg>DRMAA-python</pkg>
     </requires>
     <requires>
       <filters>
@@ -61,7 +59,7 @@
       </filters>
       <pkg>jobmonarch</pkg>
       <pkg>pbs_python</pkg>
-      <pkg>DRMAA-python</pkg>
+      <pkg>drmaa-python</pkg>
       <pkg>mysql</pkg>
       <pkg>MySQL-python</pkg>
       <pkg>php-gd</pkg>
@@ -72,7 +70,12 @@
   <clientDeps/>
   <apiDeps/>
   <changelog>
-    <versionEntry version="0.1.4-1">
+    <versionEntry version="0.1.4-2">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-02-25T11:00:00°01:00">
+        <item>Updated the requirements DRMAA-python => drmaa-python to be complient with python and distro package name</item>
+      </changelogEntry>
+    </versionEntry>
+     <versionEntry version="0.1.4-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-10-02T11:07:42-05:00">
         <item>Fix the server-post-install script: we now rely on OS_Detect to get the compat distro, rather than distro-query.</item>
       </changelogEntry>
