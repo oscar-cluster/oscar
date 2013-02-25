@@ -40,10 +40,15 @@ then
     qdel='/usr/bin/qdel'
     qstat='/usr/bin/qstat'
     pbsnodes='/usr/bin/pbsnodes'
-else
+elif test -f '/opt/pbs/bin/qsub'
     qsub='/opt/pbs/bin/qsub'
     qdel='/opt/pbs/bin/qdel'
     qstat='/opt/pbs/bin/qstat'
+    pbsnodes='/opt/pbs/bin/pbsnodes'
+else # Handle alternatives names
+    qsub='/opt/pbs/bin/qsub-torque'
+    qdel='/opt/pbs/bin/qdel-torque'
+    qstat='/opt/pbs/bin/qstat-torque'
     pbsnodes='/opt/pbs/bin/pbsnodes'
 fi
 
