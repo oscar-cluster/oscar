@@ -1,0 +1,40 @@
+#!/bin/bash
+# $Id: client-post-install 6022 2012-10-30 15:39:07Z ol222822 $
+# Copyright (c) 2012, CEA² Commissariat à l'Énergie Atomique et Énergies Alternatives
+#		      All rights reserved.
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+# Purpose: api-post-image for munge (run after image creation)
+# Copy /etc/munge/munge.key for oscar_server to the image which was just created.
+# This is required in order to give nodes the ability to authenticate across the
+# cluster
+
+IMAGEDIR=$1
+if [ -z "$IMAGEDIR" -o ! -d "$IMAGEDIR" ]; then
+    echo "Image directory doesn't exist!"
+    exit 1
+fi
+
+/bin/mkdir -p ${IMAGEDIR}/etc/munge/
+/bin/chmod 700 ${IMAGEDIR}/etc/munge/
+
+if test ! -r /etc/munge/munge.key
+then
+	echo "ERROR: Unable to update image $IMAGEDIR with munge key: key not found"
+	exit 1
+fi
+
+/bin/cp -f /etc/munge/munge.key ${IMAGEDIR}/etc/munge/

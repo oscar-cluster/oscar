@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<oscar>
+  <name>munge</name>
+  <class>included</class>
+  <summary>MUNGE cluster authentication mechanism for OSCAR Clusters</summary>
+  <description>MUNGE (MUNGE Uid 'N' Gid Emporium) is an authentication service for creating and validating credentials. It is designed to be highly scalable for use in an HPC cluster environment.  It allows a process to authenticate the UID and GID of another local or remote process within a group of hosts having common users and groups.</description>
+  <license>BSD</license>
+  <group>Application/System</group>
+  <uri>http://munge.googlecode.com/</uri>
+  <authors>
+    <author cat="maintainer">
+      <name>Olivier Lahaye</name>
+      <email>olivier.lahaye@cea.fr</email>
+    </author>
+  </authors>
+  <serverDeps>
+    <requires>
+      <pkg>munge</pkg>
+    </requires>
+  </serverDeps>
+  <clientDeps>
+    <requires>
+      <pkg>munge</pkg>
+    </requires>
+  </clientDeps>
+  <apiDeps/>
+  <changelog>
+    <versionEntry version="1.0.0-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-02-25T18:19:00+02:00">
+        <item>Initial OPKG for MUNGE</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
+</oscar>
