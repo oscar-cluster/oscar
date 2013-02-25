@@ -37,6 +37,9 @@ my $default;       # Did we type --default on the command line?
 #########################################################################
 
 my $torque_home;
+# Trying to find the torque home using pbsnodes. Note that even if alternatives
+# is used, pbsnodes is not part of alternatives, thus we are sure that if found,
+# it's the original one (pbsnodes-torque does not exists)
 if (-f '/usr/bin/pbsnodes') {
    $torque_home='/usr';
 } else {
@@ -86,9 +89,20 @@ sub startPBSserver
   close(CMD);
   system('/etc/init.d/pbs_server start')
       unless ($result =~ /is running/);
+  # Trying to find the qstat binary. if alternatives is used, it can be named qstat-torque
+  # So we check for qstat and qstat-torque in $torque_home/bin
+  my $qstat_bin="";
+  if ( -f $torque_home."/bin/qstat" ) {
+      my $qstat_bin=$torque_home."/bin/qstat"; }
+  elsif ( -f $torque_home."/bin/qstat-torque" ) {
+      my $qstat_bin=$torque_home."/bin/qstat-torque"; }
+  else {
+      warn("Unable to find qstat binary in $torque_home/bin/\n");
+      return -1;
+  }
   # need to wait until pbs_server is up.(we are here before it is up)
   for(my $i=0; $i < 10; $i++) {
-      system($torque_home."/bin/qstat 2> /dev/null");
+      system($qstat_bin." 2> /dev/null");
       if($? != 0) {
           print "Server not ready for communication: sleeping 1 second....\n";
           sleep 1;
@@ -98,6 +112,7 @@ sub startPBSserver
   }
   # 10 qstat without success, there is a problem.
   warn("Unable to communicatate with pbs_server\n");
+  return -1;
 }
 
 sub restartPBSserver
