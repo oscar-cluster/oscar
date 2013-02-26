@@ -24,5 +24,6 @@ use Carp;
 
 # Generate a secret key
 system('/usr/sbin/create-munge-key');
+
 # Config munge service to start
 system('/sbin/chkconfig --add munge');

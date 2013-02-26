@@ -28,8 +28,25 @@ if [ -z "$IMAGEDIR" -o ! -d "$IMAGEDIR" ]; then
     exit 1
 fi
 
-/bin/mkdir -p ${IMAGEDIR}/etc/munge/
-/bin/chmod 700 ${IMAGEDIR}/etc/munge/
+# If ${IMAGEDIR}/etc/munge does not exists, assume that munge is not yet installed.
+# Thus we prepare the correct tree.
+if test ! -d ${IMAGEDIR}/etc/munge
+then
+	/bin/mkdir -p ${IMAGEDIR}/etc/munge
+	/bin/mkdir -p ${IMAGEDIR}/var/log/munge
+	/bin/mkdir -p ${IMAGEDIR}/var/lib/munge
+	/bin/mkdir -p ${IMAGEDIR}/var/run/munge
+fi
+
+# Make sure that correct permissions and owners are set.
+/bin/chmod 700 ${IMAGEDIR}/etc/munge
+/bin/chmod 711 ${IMAGEDIR}/var/log/munge
+/bin/chmod 700 ${IMAGEDIR}/var/lib/munge
+/bin/chmod 755 ${IMAGEDIR}/var/run/munge
+/bin/chown munge.munge ${IMAGEDIR}/etc/munge
+/bin/chown munge.munge ${IMAGEDIR}/var/log/munge
+/bin/chown munge.munge ${IMAGEDIR}/var/lib/munge
+/bin/chown munge.munge ${IMAGEDIR}/var/run/munge
 
 if test ! -r /etc/munge/munge.key
 then
@@ -38,3 +55,5 @@ then
 fi
 
 /bin/cp -f /etc/munge/munge.key ${IMAGEDIR}/etc/munge/
+/bin/chown munge.munge ${IMAGEDIR}/etc/munge/
+/bin/chmod 600 ${IMAGEDIR}/etc/munge/munge.key
