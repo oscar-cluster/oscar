@@ -23,7 +23,10 @@ use strict;
 use Carp;
 
 # Generate a secret key
-system('/usr/sbin/create-munge-key');
+system('/usr/sbin/create-munge-key') if ( ! -f '/etc/munge/munge.key' );
 
 # Config munge service to start
 system('/sbin/chkconfig --add munge');
+
+# Start munge service
+system('/sbin/service munge start');

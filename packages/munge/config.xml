@@ -25,6 +25,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.0.2-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-02-26T15:26:00+02:00">
+        <item>Updated the server-post-install to make it more robust and start the service.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.1-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-02-25T18:19:00+02:00">
         <item>Updated the api-post-image to make sure correct permissions and owners are set.</item>
