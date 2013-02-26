@@ -23,18 +23,7 @@
       <pkg>blcr</pkg>
       <pkg>blcr-libs</pkg>
       <pkg>blcr-testsuite</pkg>
-    </requires>
-   <requires>
-      <filters>
-        <dist version="5" >rhel</dist>
-      </filters>
-      <pkg>blcr-modules_2.6.18_128.1.6.el5</pkg>
-    </requires>
-    <requires>
-      <filters>
-        <dist version="6" >rhel</dist>
-      </filters>
-      <pkg>blcr-modules_2.6.32_279.2.1.el6</pkg>
+      <pkg>blcr-modules</pkg>
     </requires>
   </serverDeps>
   <clientDeps>
@@ -42,18 +31,7 @@
       <pkg>blcr</pkg>
       <pkg>blcr-libs</pkg>
       <pkg>blcr-testsuite</pkg>
-    </requires>
-    <requires>
-      <filters>
-        <dist version="5" >rhel</dist>
-      </filters>
-      <pkg>blcr-modules_2.6.18_128.1.6.el5</pkg>
-    </requires>
-    <requires>
-      <filters>
-        <dist version="6" >rhel</dist>
-      </filters>
-      <pkg>blcr-modules_2.6.32_279.2.1.el6</pkg>
+      <pkg>blcr-modules</pkg>
     </requires>
     <requires>
       <filters>
@@ -65,6 +43,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.0.2-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-02-26T13:41:00+02:00">
+        <item>Simplifed the modules dependancy using blcr-modules which is a generic provides</item>
+      </changelogEntry>
+    </versionEntry> 
     <versionEntry version="1.0.1-1">
       <changelogEntry authorName="Olivier Lahaye" date="2012-10-30T17:25:00+02:00">
         <item>Port to CentOS-6; take into account modules versions</item>

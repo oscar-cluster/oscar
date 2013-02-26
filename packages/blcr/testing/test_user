@@ -99,3 +99,4 @@ sleep 2 # avoid NFS "issues"
 rm -Rf $tmp_dir
 test $FAIL -eq 0
 exit $?
+# END
