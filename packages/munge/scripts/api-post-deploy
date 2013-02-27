@@ -17,6 +17,8 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+# Authors: Olivier LAHAYE
+
 # Purpose: api-post-deploy for munge (run after STEP7)
 # Restarts the service in case it was not already running. (should not be necesssary)
 

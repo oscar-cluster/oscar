@@ -25,7 +25,19 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
-    <versionEntry version="1.0.2-1">
+    <versionEntry version="1.0.4-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-02-27T17:18:00+02:00">
+        <item>Moved test_user to test_root as the test needs roots priviledeges.</item>
+        <item>Improved robustness.</item>
+        <item>Updated copyrights headers in scripts.</item>
+      </changelogEntry>
+    </versionEntry>
+    <versionEntry version="1.0.3-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-02-27T13:30:00+02:00">
+        <item>Updated the the scripts and added an api-post-deploy.</item>
+      </changelogEntry>
+    </versionEntry>
+     <versionEntry version="1.0.2-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-02-26T15:26:00+02:00">
         <item>Updated the server-post-install to make it more robust and start the service.</item>
       </changelogEntry>

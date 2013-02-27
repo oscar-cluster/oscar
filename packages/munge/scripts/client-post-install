@@ -17,8 +17,11 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+# Authors: Olivier LAHAYE
+
 # Purpose: client-post-install for munge (run after )
-# Register the munge service on the client image.
+# Register and enable the munge service on the client image.
+
 
 # Registers the munge service in the client image
 if /sbin/chkconfig --add munge
@@ -26,4 +29,12 @@ then
 	echo "MUNGE: client-post-install => registering the munge service in the client image"
 else
 	echo "ERROR: MUNGE: client-post-install: Unable to register the munge service in the client image"
+fi
+
+# Enable the service
+if /sbin/chkconfig munge on
+then
+	echo "MUNGE: client-post-install => enabling the munge service in the client image"
+else
+	echo "ERROR: MUNGE: client-post-install: unabling the munge service failed in the client image"
 fi

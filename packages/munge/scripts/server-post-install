@@ -17,6 +17,8 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+# Authors: Olivier LAHAYE
+
 # Purpose: server-post-install for munge (run after STEP3)
 # Create the /etc/munge/munge.key for oscar_server.
 
@@ -33,6 +35,14 @@ then
 	echo "MUNGE: server-post-install => registering the munge service"
 else
 	echo "ERROR: MUNGE: server-post-install => failed to register the munge service"
+fi
+
+# Enable the service
+if /sbin/chkconfig munge on
+then
+        echo "MUNGE: client-post-install => enabling the munge service in the client image"
+else
+        echo "ERROR: MUNGE: client-post-install: unabling the munge service failed in the client image"
 fi
 
 # Start munge service

@@ -17,6 +17,8 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+# Authors: Olivier LAHAYE
+
 # Purpose: api-post-image for munge (run after image creation)
 # Copy /etc/munge/munge.key for oscar_server to the image which was just created.
 # This is required in order to give nodes the ability to authenticate across the
