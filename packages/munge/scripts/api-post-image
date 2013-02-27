@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: client-post-install 6022 2012-10-30 15:39:07Z ol222822 $
+# $Id: $
 # Copyright (c) 2012, CEA² Commissariat à l'Énergie Atomique et Énergies Alternatives
 #		      All rights reserved.
 
@@ -35,8 +35,9 @@ then
 	/bin/mkdir -p ${IMAGEDIR}/etc/munge
 	/bin/mkdir -p ${IMAGEDIR}/var/log/munge
 	/bin/mkdir -p ${IMAGEDIR}/var/lib/munge
-	/bin/mkdir -p ${IMAGEDIR}/var/run/munge
 fi
+# Create the /var/run/munge directory
+/bin/mkdir -p ${IMAGEDIR}/var/run/munge
 
 # Make sure that correct permissions and owners are set.
 /bin/chmod 700 ${IMAGEDIR}/etc/munge

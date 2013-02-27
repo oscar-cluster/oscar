@@ -17,13 +17,13 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-# Purpose: client-post-install for munge (run after )
-# Register the munge service on the client image.
+# Purpose: api-post-deploy for munge (run after STEP7)
+# Restarts the service in case it was not already running. (should not be necesssary)
 
-# Registers the munge service in the client image
-if /sbin/chkconfig --add munge
+# Start munge service
+if /sbin/service munge restart
 then
-	echo "MUNGE: client-post-install => registering the munge service in the client image"
+	echo "MUNGE: api-post-deploy => restarting the munge service"
 else
-	echo "ERROR: MUNGE: client-post-install: Unable to register the munge service in the client image"
+	echo "ERROR: MUNGE: api-post-deploy: Unable to restart the munge service"
 fi

@@ -1,5 +1,5 @@
-#!/usr/bin/perl
-# $Id: client-post-install 6022 2012-10-30 15:39:07Z ol222822 $
+#!/bin/bash
+# $Id: $
 # Copyright (c) 2012, CEA² Commissariat à l'Énergie Atomique et Énergies Alternatives
 #		      All rights reserved.
 
@@ -17,16 +17,28 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#   server-post-install for munge
-
-use strict;
-use Carp;
+# Purpose: server-post-install for munge (run after STEP3)
+# Create the /etc/munge/munge.key for oscar_server.
 
 # Generate a secret key
-system('/usr/sbin/create-munge-key') if ( ! -f '/etc/munge/munge.key' );
+if test ! -f /etc/munge/munge.key
+then
+	echo "MUNGE: server-post-install => creating munge sercret key /etc/munge/munge.key"
+	/usr/sbin/create-munge-key
+fi
 
 # Config munge service to start
-system('/sbin/chkconfig --add munge');
+if /sbin/chkconfig --add munge
+then
+	echo "MUNGE: server-post-install => registering the munge service"
+else
+	echo "ERROR: MUNGE: server-post-install => failed to register the munge service"
+fi
 
 # Start munge service
-system('/sbin/service munge start');
+if /sbin/service munge start
+then
+	echo "MUNGE: server-post-install => starting the munge service"
+else
+	echo "ERROR: MUNGE: server-post-install: Unable to start the munge service"
+fi
