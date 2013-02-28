@@ -41,6 +41,7 @@ then
     qstat='/usr/bin/qstat'
     pbsnodes='/usr/bin/pbsnodes'
 elif test -f '/opt/pbs/bin/qsub'
+then
     qsub='/opt/pbs/bin/qsub'
     qdel='/opt/pbs/bin/qdel'
     qstat='/opt/pbs/bin/qstat'

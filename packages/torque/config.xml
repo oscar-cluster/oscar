@@ -76,6 +76,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.1.17-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-02-27T17:34:38+01:00">
+        <item>bug fixes for client-post-install and pbs_test</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.1.16-2">
       <changelogEntry authorName="Olivier Lahaye" date="2013-02-25T18:12:38+01:00">
         <item>Fix torque binary names when /etc/alternatives is used.</item>
