@@ -138,6 +138,41 @@ sub init_log_file ($) {
     return 0;
 }
 
+################################################################################
+# Update the existing log file for a given process.
+# This is added for sync_files log to prevent sync_files from creating useless 
+# log files with redundant log messages.
+#
+# Input: Absolute path of the log file.
+# Return: 0 if the log file can be set correctly, -1 else.
+################################################################################
+sub update_log_file ($) {
+    my $log_file = shift;
+
+    # Setup to capture all stdout/stderr
+    require File::Basename;
+    my $oscar_log_dir = File::Basename::dirname ($log_file);
+    if (! -d $oscar_log_dir ) {
+        print "$oscar_log_dir does not exist, we create it\n";
+        mkdir ($oscar_log_dir);
+    }
+
+    if (!open (STDOUT,"| tee -a $log_file") || !open(STDERR,">&STDOUT")) {
+        (carp("ERROR: Cannot tee stdout/stderr into the OSCAR logfile: ".
+        "$log_file\n\nAborting the install.\n\n"), return -1);
+    }
+
+    my $timestamp = `date +\"%Y-%m-%d-%k-%M-%m\"`;
+    print ">> $timestamp";
+    if (defined ($ENV{OSCAR_VERBOSE})) {
+        print ("Verbosity: $ENV{OSCAR_VERBOSE}\n");
+    } else {
+        print ("Verbosity: 0\n");
+    }
+
+    return 0;
+}
+
 1;
 
 __END__
