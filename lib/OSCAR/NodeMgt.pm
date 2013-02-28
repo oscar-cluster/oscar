@@ -643,7 +643,10 @@ sub get_list_of_down_nodes {
         }
     }
 
-    OSCAR::Utils::print_array (@down_nodes);
+    if ($verbose) {
+        print "Down nodes:\n";
+    	OSCAR::Utils::print_array (@down_nodes);
+    }
 
     return (@down_nodes);
 }
@@ -680,6 +683,9 @@ sub update_list_alive_nodes () {
         if ($pos == -1) {
             carp "ERROR: Impossible to find an entry for $node in /etc/c3.conf";
             return -1;
+        }
+        if ($verbose) {
+            print "WARNING: disabling node ".$node." in /etc/c3.conf as it seems down.\n";
         }
         OSCAR::FileUtils::replace_line_in_file ("/etc/c3.conf", $pos, "\tdead $node"); 
     }
