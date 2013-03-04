@@ -71,7 +71,7 @@
   <apiDeps/>
   <changelog>
     <versionEntry version="0.1.4-2">
-      <changelogEntry authorName="Olivier Lahaye" date="2013-02-25T11:00:00°01:00">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-02-25T11:00:00-01:00">
         <item>Updated the requirements DRMAA-python => drmaa-python to be complient with python and distro package name</item>
       </changelogEntry>
     </versionEntry>
