@@ -52,8 +52,19 @@ sub get_config {
 
     $conf->{'http_user'}     = http_info();
 
-    $conf->{'gangliawww'}    = "/var/www/html/ganglia";
-    $conf->{'ganglia_conf'}  = $conf->{'gangliawww'}."/conf.php";
+    if ( -d "/usr/share/ganglia" ) {
+        $conf->{'gangliawww'}    = "/usr/share/ganglia";
+    } elsif ( -d "/var/www/html/ganglia" ) {
+        $conf->{'gangliawww'}    = "/var/www/html/ganglia";
+    } else {
+        $conf->{'gangliawww'}    = "/opt/ganglia";
+    }
+
+    if ( -f "/etc/ganglia/conf.php" ) {
+        $conf->{'ganglia_conf'}  = "/etc/ganglia/conf.php";
+    } else {
+        $conf->{'ganglia_conf'}  = $conf->{'gangliawww'}."/conf.php";
+    }
 
     $conf->{'monarchrrd'}    = "/data/jobarch/rrds";
     $conf->{'jobarchive_db'} = "jobarchive";
