@@ -26,7 +26,7 @@ use Carp;
 use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
 
-@EXPORT = qw(oscar_log_section oscar_log_subsection verbose vprint);
+@EXPORT = qw(oscar_log_section oscar_log_subsection verbose vprint init_log_file update_log_file print_error_strings);
 
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
