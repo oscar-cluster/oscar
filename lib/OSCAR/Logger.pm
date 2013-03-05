@@ -26,7 +26,7 @@ use Carp;
 use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
 
-@EXPORT = qw(oscar_log_section oscar_log_subsection verbose vprint init_log_file update_log_file print_error_strings);
+@EXPORT = qw(oscar_log_section oscar_log_subsection verbose vprint init_log_file update_log_file);
 
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
@@ -72,21 +72,6 @@ sub verbose {
 
 sub vprint {
     print @_ if ($verbose || $ENV{OSCAR_VERBOSE});
-}
-
-sub print_error_strings ($) {
-    my $passed_errors_ref = shift;
-    my @error_strings = ();
-    my $error_strings_ref = ( defined $passed_errors_ref && 
-                  ref($passed_errors_ref) eq "ARRAY" ) ?
-                  $passed_errors_ref : \@error_strings;
-
-    if ( defined $passed_errors_ref 
-         && ! ref($passed_errors_ref) 
-         && $passed_errors_ref ) {
-        warn shift @$error_strings_ref while @$error_strings_ref;
-    }
-    $error_strings_ref = \@error_strings;
 }
 
 ################################################################################
