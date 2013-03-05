@@ -43,7 +43,7 @@ if ( -f "/etc/yum.conf" ) {
 
     # Check if the oscar repo has been added to /etc/yum.repos.d
     my $value;
-    my $file = `grep oscar /etc/yum.repos.d/* | awk -F':' '{print \$1}'`;
+    my $file = `grep "^\\[oscar\\]\$" /etc/yum.repos.d/* | awk -F':' '{print \$1}'`;
     chomp $file;
 
     if ($file ne "") {
@@ -64,7 +64,7 @@ if ( -f "/etc/yum.conf" ) {
             $rc = FAILURE;
         }
     } else { 
-        print "[WARN] Could not find oscar repo in /etc/yum.repos.d/.".
+        print "[WARN] Could not find oscar repo in /etc/yum.repos.d/.\n".
               "Checking /etc/yum.conf...\n";
 
         $value = OSCAR::ConfigFile::get_value ("/etc/yum.conf",
