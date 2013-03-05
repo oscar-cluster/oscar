@@ -51,6 +51,7 @@ use Carp;
             merge_arrays
             print_array
             print_hash
+            print_error_strings
             trim
             ltrim
             rtrim
@@ -193,6 +194,26 @@ sub print_hash ($$$) {
 }
 
 ################################################################################
+#                                                                              #
+#                                                                              #
+#                                                                              #
+################################################################################
+sub print_error_strings {
+    my $passed_errors_ref = shift;
+    my @error_strings = ();
+    my $errors_ref = ( defined $passed_errors_ref &&
+                  ref($passed_errors_ref) eq "ARRAY" ) ?
+                  $passed_errors_ref : \@error_strings;
+
+    if ( defined $passed_errors_ref &&
+     ! ref($passed_errors_ref) &&
+     $passed_errors_ref ) {
+        warn shift @$errors_ref while @$errors_ref;
+    }
+    $errors_ref = \@error_strings;
+}
+
+################################################################################
 # Detects the architecture of the local machine.                               #
 #                                                                              #
 # Return: the local architecture. For i*86 architecutre, we always return      #
@@ -319,6 +340,8 @@ returns 1 if $elt is in the @my_array array, 0 else.
 =item print_array
 
 =item print_hash
+
+=item print_error_strings
 
 =item trim
 
