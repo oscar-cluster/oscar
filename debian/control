@@ -23,6 +23,12 @@ Description: Binaries for OSCAR
  Set of binaries for OSCAR
 Depends: liboscar
 
+Package: oscar-utils
+Architecture: all
+Description: Utils for OSCAR (head and clients)
+ Set of utilities for OSCAR (head and clients nodes)
+Depends: liboscar
+
 Package: liboscar
 Architecture: all
 Description: Libraries for OSCAR 

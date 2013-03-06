@@ -27,7 +27,7 @@
 
 PKGDEST=.
 DESTDIR=
-SUBDIRS := lib oscarsamples scripts share testing rpm
+SUBDIRS := lib oscarsamples scripts utils share testing rpm
 
 include ./Config.mk
 
@@ -112,7 +112,7 @@ install: doc-install
 	install -d -m 0755 $(DESTDIR)/usr/lib/oscar/build
 	install    -m 0755 Config.mk $(DESTDIR)/usr/lib/oscar/build
 	# Then, we call the different Makefiles.
-	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} install ) ; done
+	for dir in $(SUBDIRS) ; do ( cd $$dir ; $(MAKE) install ) ; done
 
 localrepos:
 	@echo "Creating local repositories"; \

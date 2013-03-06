@@ -127,6 +127,12 @@ install: build
 	# mv $(CURDIR)/install_cluster \
 	#	$(CURDIR)/debian/oscar-bin/usr/bin
 
+	# Prepare the oscar-utils package
+	# We make sure to clean everything up, it order to not deal with old stuff
+	cd  $(CURDIR)/utils; make clean;
+	# Then we install the binaries
+	cd  $(CURDIR)/utils; make install DESTDIR=$(CURDIR)/debian/oscar-utils
+
 	# Prepare the "oscar-base" package
 	mkdir -p $(CURDIR)/debian/oscar-base
 

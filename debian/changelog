@@ -1,4 +1,10 @@
-oscar (6.1.2~svn20121219-0gv1) precise; urgency=low
+oscar (6.1.2~svn20130306-0ol1) precise; urgency=low
+
+  * Added the oscar-utils package so clients can have distro-query.
+
+ -- Olivier Lahaye <olivier.lahaye@cea.fr>  Wed, 06 Mar 2013 17:08:24 +0100
+
+ooscar (6.1.2~svn20121219-0gv1) precise; urgency=low
 
   * New upstream version.
 

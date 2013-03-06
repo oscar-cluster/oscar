@@ -86,7 +86,6 @@ those packages from an online package repository, either on or off site.
 %{_sysconfdir}/oscar/*
 %{_datadir}/oscar/*
 %{_datadir}/doc/oscar/*
-%{_mandir}/man1/*
 
 %package -n oscar-base-client
 Group: Applications/System
@@ -142,6 +141,24 @@ Scripts for OSCAR clustering base package.
 %defattr(-,root,root)
 %dir %{_bindir}/system-sanity.d
 %{_bindir}/*
+%exclude %{_bindir}/distro-query
+%{_mandir}/man1/*
+%exclude %{_mandir}/man1/distro-query.*
+
+%package -n oscar-utils
+Group: Applications/System
+Summary: Utilities for OSCAR clustering package.
+Requires: %{name}-base-lib == %{version}-%{release}
+Requires: syslinux
+AutoReqProv: no
+
+%description -n oscar-utils
+Scripts for OSCAR clustering base package.
+
+%files -n oscar-utils
+%defattr(-,root,root)
+%{_bindir}/distro-query
+%{_mandir}/man1/distro-query.*
 
 %package -n oscar-devel
 Group: Applications/System
