@@ -88,12 +88,12 @@ if ($options{pool}) {
     }
     die "Unable to find node $node in SIS database.\n" if (!@clients);
 
-    my $img = $clients[0]->imagename;
+    my $img = $clients[0]->{'imagename'};
     die "No image name defined for client $img" if (!$img);
     my @images;
     eval { @images = SIS::NewDB::list_image(name => $img); };
     die "Image $img not found in SIS database" if (!@images);
-    my $imagepath = $images[0]->location;
+    my $imagepath = $images[0]->{'location'};
 
     &print_image_detect($imagepath);
 
