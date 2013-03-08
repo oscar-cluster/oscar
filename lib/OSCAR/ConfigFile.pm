@@ -5,6 +5,10 @@ package OSCAR::ConfigFile;
 #                         Oak Ridge National Laboratory
 #                         All rights reserved.
 #
+# Copyright (c) 2013 Indiana University Bloomington
+#                    DongInn Kim <dikim@cs.indiana.edu>
+#                    All rights reserved.
+#
 #   $Id$
 #
 #   This program is free software; you can redistribute it and/or modify
@@ -46,6 +50,7 @@ use warnings "all";
 @EXPORT = qw(
             get_all_values
             get_block_list
+            get_list_values
             get_value
             set_value
             );
@@ -121,6 +126,35 @@ sub get_block_list ($) {
     }
     return @final_blocks;
 }
+
+# Return the hash list of blocks and sources within a config file.
+#
+# Input: the path to the config file to parse and the key value in a config file.
+# Return: a hash  with blocks' names and sources or undef if no blocks or errors.
+sub get_list_values ($$){
+    my ($config_file, $key) = @_;
+
+    if (! -f $config_file) {
+        carp "ERROR: the config file ($config_file) does not exist";
+        return undef;
+    }
+
+    my $list_blocks = `grep '\\[' $config_file`;
+
+    my @blocks = split ("\n", $list_blocks);
+    my %final_blocks = ();
+    for (my $i=0; $i < scalar(@blocks); $i++) {
+        if (!OSCAR::Utils::is_a_valid_string ($blocks[$i]) 
+            || OSCAR::Utils::is_a_comment($blocks[$i])) {
+            next;
+        }
+        $blocks[$i] =~ s/\[//g;
+        $blocks[$i] =~ s/\]//g;
+        $final_blocks{$blocks[$i]} = get_value($config_file, $blocks[$i], $key); 
+    }
+    return %final_blocks;
+}
+
 
 # Return: 0 if success, -1 else.
 sub set_value ($$$$) {
