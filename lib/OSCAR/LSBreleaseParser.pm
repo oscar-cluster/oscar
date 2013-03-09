@@ -38,6 +38,8 @@ use OSCAR::Utils;
 use Carp;
 use warnings "all";
 
+my $verbose = $ENV{OSCAR_VERBOSE};
+
 my $lsbrelease_file = "etc/lsb-release";
 
 ################################################################################
@@ -67,6 +69,10 @@ sub parse_lsbrelease ($) {
     my @data = <FILE>;
     close (FILE);
 
+    if (scalar (@data) == 1) {
+        print "This suspects to be an RPM based system\n" if $verbose;
+        return undef;
+    }
     if (scalar (@data) < 4) {
         carp "ERROR: the $lsbrelease_file file cannot be parsed";
         return undef;
