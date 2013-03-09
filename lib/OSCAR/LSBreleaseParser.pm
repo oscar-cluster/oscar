@@ -51,17 +51,19 @@ my $lsbrelease_file = "etc/lsb-release";
 sub parse_lsbrelease ($) {
     my ($root) = @_;
 
-    $lsbrelease_file = "$root/$lsbrelease_file";
+    $lsbrelease_file = $root . $lsbrelease_file;
     if ( ! -f $lsbrelease_file ) {
         oscar_log_subsection "INFO: no $lsbrelease_file file\n";
         return "";
-    }
+    }else{
 
-    # This function may called during bootstrapping, we have to do almost
-    # everything manually.
-    open (FILE, $lsbrelease_file)
-        or (carp ("ERROR: Could not open file ($lsbrelease_file)."), 
-            return undef);
+         # This function may called during bootstrapping, we have to do almost
+         # everything manually.
+    
+         open (FILE, $lsbrelease_file)
+            or (carp ("ERROR: Could not open file ($lsbrelease_file)."), 
+               return undef);
+    }
     my @data = <FILE>;
     close (FILE);
 
