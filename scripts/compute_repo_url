@@ -22,7 +22,12 @@ fi
 
 if [ -z "$OSCAR_HOME" ]
 then
-	OSCAR_HOME=/etc/oscar
+    if [ -d "/etc/oscar" ]
+    then
+	    OSCAR_HOME=/etc/oscar
+    else
+        OSCAR_HOME=`pwd`/..
+    fi
 fi
 
 source ${OSCAR_HOME}/VERSION
@@ -42,7 +47,7 @@ then
 fi
 
 DISTRO_QUERY=""
-for P in /usr/bin ${OSCAR_HOME}/scripts
+for P in /usr/bin ${OSCAR_HOME}/utils
 do
 	if test -x ${P}/distro-query
 	then
@@ -53,7 +58,7 @@ done
 
 if test -n "${DISTRO_QUERY}"
 then
-	DISTRO="$(distro-query |awk '/compat / { printf("%s-",$3) }')${ARCH}"
+	DISTRO="$($DISTRO_QUERY |awk '/compat / { printf("%s-",$3) }')${ARCH}"
 	echo "${URL_BASE}/${OSCAR_VERSION}/${DISTRO}"
 	exit 0
 else
