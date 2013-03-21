@@ -38,9 +38,9 @@ else
 fi
 
 # Enable the service
-if /sbin/chkconfig munge on
+if /sbin/chkconfig --level 235 munge on
 then
-        echo "MUNGE: client-post-install => enabling the munge service in the client image"
+        echo "MUNGE: server-post-install => enabling the munge service in the client image"
 else
         echo "ERROR: MUNGE: client-post-install: unabling the munge service failed in the client image"
 fi
