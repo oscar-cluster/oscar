@@ -84,10 +84,10 @@ sub parseCommandLine
 #########################################################################
 sub startPBSserver
 {
-  open(CMD,"/etc/init.d/pbs_server status |");
+  open(CMD,"/sbin/service pbs_server status |");
   my $result = <CMD>;
   close(CMD);
-  system('/etc/init.d/pbs_server start')
+  system('/sbin/service pbs_server start')
       unless ($result =~ /is running/);
   # Trying to find the qstat binary. if alternatives is used, it can be named qstat-torque
   # So we check for qstat and qstat-torque in $torque_home/bin
@@ -117,7 +117,7 @@ sub startPBSserver
 
 sub restartPBSserver
 {
-  system('/etc/init.d/pbs_server restart');
+  system('/sbin/service pbs_server restart');
 }
 
 ######################################################################
