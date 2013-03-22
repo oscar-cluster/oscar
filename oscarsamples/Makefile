@@ -4,9 +4,12 @@ SUBDIRS :=
 FILES := debian-4-i386.rpmlist debian-4-x86_64.rpmlist \
 	debian-5-i386.rpmlist debian-5-x86_64.rpmlist \
 	ubuntu-804-i386.rpmlist ubuntu-904-x86_64.rpmlist ubuntu-1004-x86_64.rpmlist ubuntu-1204-x86_64.rpmlist \
-	fc-3-i386.rpmlist fc-3-x86_64.rpmlist fc-4-i386.rpmlist fc-4-x86_64.rpmlist \
-	fc-5-i386.rpmlist fc-5-x86_64.rpmlist fc-6-i386.rpmlist \
-	fc-7-i386.rpmlist fc-7-x86_64.rpmlist fc-8-i386.rpmlist fc-8-x86_64.rpmlist \
+	ubuntu-1210-x86_64.rpmlist \
+	fc-3-i386.rpmlist fc-3-x86_64.rpmlist \
+	fc-4-i386.rpmlist fc-4-x86_64.rpmlist \
+	fc-5-i386.rpmlist fc-5-x86_64.rpmlist \
+	fc-6-i386.rpmlist \
+	fc-7-i386.rpmlist fc-7-x86_64.rpmlist \
 	fc-8-i386.rpmlist fc-8-x86_64.rpmlist \
 	fc-9-x86_64.rpmlist fc-10-x86_64.rpmlist \
 	rhel-3-i386.rpmlist rhel-3-ia64.rpmlist rhel-3-x86_64.rpmlist \
