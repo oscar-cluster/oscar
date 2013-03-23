@@ -44,6 +44,7 @@ my $distro_flavor;
 
 # The different Debian codenames, useful to set the distro_flavor variable
 my %codenames = (
+                '7.0'   => "wheezy",
                 '6.0'   => "squeeze",
                 '5.0'   => "lenny",
                 '4.0'   => "etch",
