@@ -81,7 +81,7 @@ sub file_type ($) {
         carp "ERROR: the file does not exist ($file)";
         return undef;
     }
-    return OSCAR::Defs::TARBALL() if $file =~ m/\.tar\.gz$/ or $file =~ m/\.tar\.bz2$/;
+    return OSCAR::Defs::TARBALL() if $file =~ m/\.tar\.gz$/ or $file =~ m/\.tar\.bz2$/ or $file =~ m/\.tar\.xz$/;
 
     my $type = `file $file`;
     return OSCAR::Defs::SRPM() if $type =~ m/RPM v[1-9][0-9]*\.?[0-9]* src$/;
