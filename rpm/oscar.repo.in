@@ -7,8 +7,8 @@
 
 [oscar]
 name=OSCAR - ##OSCAR_VERSION##
-mirrorlist= http://svn.oscar.openclustergroup.org/oscar/trunk/rpm/oscar.mirrors.txt
-#baseurl=##URL##
+#mirrorlist= http://svn.oscar.openclustergroup.org/oscar/trunk/rpm/oscar.mirrors.txt
+baseurl=##URL##
 gpgcheck=0
 enable=1
 #gpgkey=http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-5
