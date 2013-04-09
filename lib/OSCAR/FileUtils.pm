@@ -29,6 +29,7 @@ BEGIN {
 }
 
 use strict;
+use Switch;
 use OSCAR::Defs;
 use OSCAR::Logger;
 use File::Basename;
@@ -41,6 +42,7 @@ use Carp;
             add_line_to_file_without_duplication
             add_to_annoted_block
             download_file
+			extract_file
             file_type
             find_block_from_file
             get_line_in_file
@@ -117,6 +119,38 @@ sub download_file ($$$$) {
         return -1;
     }
     return 0;
+}
+
+################################################################################
+# Extract an archive using adequate command                                    #
+################################################################################
+sub extract_file ($$) {
+	my ($file,$destination) = @_;
+	my $verbose_switch="";
+	my $compression_switch="";
+	my $cmd="";
+	switch (file_type($file)) {
+		case OSCAR::Defs::TARBALL() {
+			$verbose_switch="v" if ($verbose > 0);
+			switch ($file) {
+				case /\.gz|\.tgz/ { $compression_switch = "z"; }
+				case /\.bz2|\.tbz/ { $compression_switch = "j"; }
+				case /\.xz/ { $compression_switch = "J"; }
+				else { $compression_switch = ""; }
+			}
+			$cmd="tar x".$verbose_switch.$compression_switch."Cf ".$destination." ".$file;
+		} else {
+				carp "ERROR: Unhandled archive type: for $file";
+				return -1;
+		}
+	}
+	oscar_log_subsection "Extracting $file using: $cmd";
+	my $rc = system ($cmd);
+	if ($rc) {
+		carp "ERROR: ($rc) Failed to execute: $cmd\n";
+		return -1;
+	}
+	return 0;
 }
 
 ################################################################################
