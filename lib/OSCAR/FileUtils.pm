@@ -106,6 +106,7 @@ sub download_file ($$$$) {
         $cmd = "cd $dest; wget ";
         $cmd .= "-nc " if ($overwrite eq OSCAR::Defs::NO_OVERWRITE());
         $cmd .= "$source";
+        $cmd .= " 1>/dev/null 2>/dev/null" if (!$verbose);
         my $rc = system ($cmd);
         # It seems that the wget return code for errors is 1. Note that other 
         # values > 0 are returned in some specific case which are not 
