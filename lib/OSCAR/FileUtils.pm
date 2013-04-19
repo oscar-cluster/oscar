@@ -56,7 +56,7 @@ use Carp;
             replace_block_in_file
             );
 
-my $verbose = $ENV{OSCAR_VERBOSE};
+our $verbose = $ENV{OSCAR_VERBOSE};
 
 sub get_line_in_file ($$) {
     my ($file, $pos) = @_;
