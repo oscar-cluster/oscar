@@ -20,6 +20,10 @@
       <name>Geoffroy Vallee</name>
       <email>valleegr@ornl.gov</email>
     </author>
+    <author cat="maintainer">
+      <name>Olivier Lahaye</name>
+      <email>olivier.lahaye@cea.fr</email>
+    </author>
   </authors>
   <serverDeps>
     <requires>
@@ -29,9 +33,9 @@
       <filters>
         <dist>fc</dist>
       </filters>
-      <pkg version="3.1.7" rel=">=" >ganglia-gmetad</pkg>
-      <pkg version="3.1.7" rel=">=" >ganglia-gmond</pkg>
-      <pkg version="3.1.7" rel=">=" >ganglia-web</pkg>
+      <pkg version="3.5.0" rel=">=" >ganglia-gmetad</pkg>
+      <pkg version="3.5.0" rel=">=" >ganglia-gmond</pkg>
+      <pkg version="3.5.7" rel=">=" >ganglia-web</pkg>
       <pkg>php-gd</pkg>
       <pkg>php-common</pkg>
     </requires>
@@ -40,36 +44,36 @@
         <dist>ydl</dist>
         <dist>rhel</dist>
       </filters>
-      <pkg version="3.1.7" rel=">=" >ganglia-gmetad</pkg>
-      <pkg version="3.1.7" rel=">=" >ganglia-gmond</pkg>
-      <pkg version="3.1.7" rel=">=" >ganglia-web</pkg>
+      <pkg version="3.5.0" rel=">=" >ganglia-gmetad</pkg>
+      <pkg version="3.5.0" rel=">=" >ganglia-gmond</pkg>
+      <pkg version="3.5.7" rel=">=" >ganglia-web</pkg>
       <pkg>php-gd</pkg>
     </requires>
     <requires>
       <filters>
         <dist>sles</dist>
       </filters>
-      <pkg version="3.1.7" rel=">=" >ganglia-gmetad</pkg>
-      <pkg version="3.1.7" rel=">=" >ganglia-gmond</pkg>
-      <pkg version="3.1.7" rel=">=" >ganglia-web</pkg>
+      <pkg version="3.5.0" rel=">=" >ganglia-gmetad</pkg>
+      <pkg version="3.5.0" rel=">=" >ganglia-gmond</pkg>
+      <pkg version="3.5.7" rel=">=" >ganglia-web</pkg>
       <pkg>php4-gd</pkg>
     </requires>
     <requires>
       <filters>
         <dist>suse</dist>
       </filters>
-      <pkg version="3.1.7" rel=">=" >ganglia-gmetad</pkg>
-      <pkg version="3.1.7" rel=">=" >ganglia-gmond</pkg>
-      <pkg version="3.1.7" rel=">=" >ganglia-web</pkg>
+      <pkg version="3.5.0" rel=">=" >ganglia-gmetad</pkg>
+      <pkg version="3.5.0" rel=">=" >ganglia-gmond</pkg>
+      <pkg version="3.5.7" rel=">=" >ganglia-web</pkg>
       <pkg>php5-gd</pkg>
     </requires>
     <requires>
       <filters>
         <dist>debian</dist>
       </filters>
-      <pkg version="3.1.7" rel=">=" >gmetad</pkg>
-      <pkg version="3.1.7" rel=">=" >ganglia-monitor</pkg>
-      <pkg version="3.1.7" rel=">=" >libganglia1</pkg>
+      <pkg version="3.5.0" rel=">=" >gmetad</pkg>
+      <pkg version="3.5.0" rel=">=" >ganglia-monitor</pkg>
+      <pkg version="3.5.7" rel=">=" >libganglia1</pkg>
     </requires>
   </serverDeps>
   <clientDeps>
@@ -87,11 +91,16 @@
       <filters>
         <dist>debian</dist>
       </filters>
-      <pkg version="3.1.7" rel=">=" >ganglia-monitor</pkg>
+      <pkg version="3.5.0" rel=">=" >ganglia-monitor</pkg>
     </requires>
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="3.5.0-1">      
+      <changelogEntry authorName="Olivier Lahaye" date="2013-04-23T09:56:13+02:00">
+        <item>Update to version 3.5.0 (ganglia) / 3.5.7 (ganglia-web).</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="3.1.0-1">      
       <changelogEntry authorName="Geoffroy Vallee" date="2011-02-16T15:53:13+02:00">
         <item>Update to version 3.1.7 (patch from Olivier Lahaye).</item>
