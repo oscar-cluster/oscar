@@ -1,6 +1,8 @@
 6.1.2 (not yet released):
 - Add the support for Scientific Linux 6.0.
+- Add the support for Fedora 17 and 18.
 - Add the support for Ubuntu 12.04 (Precise).
+- Add the support for Ubuntu 12.10 (Wheezy).
 - Fix some formatting problems in man pages.
 - Add GPU support in the database and torque configuration
 - Add blcr and munge support
