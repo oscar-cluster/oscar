@@ -40,6 +40,12 @@ revisions much simpler than with rpm.
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.0-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-05-30T17:23:00+01:00">
+        <item>Added support for redhat and fedora (usefull when developping)</item>
+        <item>Updated release to 1 (0 is for betatests)</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0-0">
       <changelogEntry authorName="Jean Parpaillon" date="2007-08-06T18:30:00-01:00">
         <item>Restrict summary tag to 67 chars</item>
