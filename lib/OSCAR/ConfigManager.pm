@@ -56,6 +56,8 @@ our $prereq_mode;
 our $opkgs_path;
 # Specify where ODA flat config file are (i.e., when not using ODA w/ a real db
 our $oda_files_path;
+# Specify where oscar-packager will download files.
+our $packager_download_path;
 
 sub new {
     my $invocant = shift;
@@ -92,6 +94,7 @@ sub load_oscar_config ($) {
         'PREREQ_MODE'               => { ARGCOUNT => 1 },
         'OPKGS_PATH'                => { ARGCOUNT => 1 },
         'PATH_ODA_CONFIG_FILES'     => { ARGCOUNT => 1 },
+        'PACKAGER_DOWNLOAD_PATH'    => { ARGCOUNT => 1 },
         );
     $config->file ($config_file);
 
@@ -107,6 +110,7 @@ sub load_oscar_config ($) {
     $prereq_mode        = $config->get('PREREQ_MODE');
     $oda_files_path     = $config->get('PATH_ODA_CONFIG_FILES');
     $opkgs_path         = $config->get('OPKGS_PATH');
+    $packager_download_path = $config->get('PACKAGER_DOWNLOAD_PATH');
 }
 
 sub get_config () {
@@ -123,6 +127,7 @@ sub get_config () {
                 'prereq_mode'       => $prereq_mode,
                 'oda_files_path'    => $oda_files_path,
                 'opkgs_path'        => $opkgs_path,
+                'packager_download_path' => $packager_download_path,
               );
     return \%cfg;
 }
