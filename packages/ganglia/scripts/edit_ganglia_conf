@@ -580,9 +580,19 @@ sub add_httpd_conf() {
         open C, "> $confdir/ganglia.conf" 
             or (carp "ERROR: Could not open ganglia.conf: $!",
                 return -1);
+
+        # Find ganglia root (php pages)
+        my $ganglia_root;
+        for my $d ("/usr/share/ganglia", "/var/www/html/ganglia") {
+            if (-f "$d/ganglia.php") {
+                $ganglia_root=$d;
+                last;
+            }
+        }
+
         print C <<EOI;
-Alias /ganglia /var/www/html/ganglia/
-<Directory /var/www/html/ganglia/>
+Alias /ganglia $ganglia_root/
+<Directory $ganglia_root/>
    Options None
    order deny,allow
    deny from all

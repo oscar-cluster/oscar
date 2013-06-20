@@ -96,17 +96,23 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
-    <versionEntry version="3.5.0-1">      
+    <versionEntry version="3.5.0-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-04-23T09:56:13+02:00">
+        <item>Now properly detect ganglia php files root dir (/var/www/html/ganglia</item>
+        <item>or /usr/share/ganglia).</item>
+      </changelogEntry>
+    </versionEntry>
+    <versionEntry version="3.5.0-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-04-23T09:56:13+02:00">
         <item>Update to version 3.5.0 (ganglia) / 3.5.7 (ganglia-web).</item>
       </changelogEntry>
     </versionEntry>
-    <versionEntry version="3.1.0-1">      
+    <versionEntry version="3.1.0-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2011-02-16T15:53:13+02:00">
         <item>Update to version 3.1.7 (patch from Olivier Lahaye).</item>
       </changelogEntry>
     </versionEntry>
-     <versionEntry version="3.0.13-1">      
+     <versionEntry version="3.0.13-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2011-02-12T00:40:13-05:00">
         <item>Fix a few issues in the test_user script (patch from Sue McGlashan).</item>
       </changelogEntry>
