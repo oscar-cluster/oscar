@@ -53,6 +53,7 @@
   <apiDeps>
   </apiDeps>
   <changelog>
+    <versionEntry version="1.0.0-1">
       <changelogEntry authorName="Paul Greidanus" date="2008-08-18T10:34:08-04:00">
         <item>Create the NFS opkg</item>
       </changelogEntry>
