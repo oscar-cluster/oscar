@@ -1,3 +1,38 @@
+oscar (6.1.2~svn20130628-1) precise; urgency=low
+
+  * [oscar:packages/config.xml] Add missing version to the opkg-nfs package.
+  * [OS_Detect/Ubuntu.pm] Add missin ubuntu entries
+  * [OS_Detect/Debian.pm] Added debian 8 entry
+  * [oscar-base: OS_Detect] Added support for Ubuntu 12.10 and Debian 7.0
+  * [lib-oscar:Ubuntu.pm] Add support for Ubuntu 1304 (raring)
+  * [oscar:lib] Add a "tar.bz2" format as a tarball.
+  * [supported_distros.txt] Add support for Ubuntu 12.10 (Quantal)
+  * [supported_distros.txt] Added support for ubuntu-13.04 "raring".
+  * [supported_distros.txt] Add support for Fedora-17-x86_64
+  * [supported_distros.txt] Add support for Fedora-18-x86_64
+  * [OSCAR:ConfigManager.pm] Fix PACKAGER_DOWNLOAD_PATH no such variable
+    warning.
+  * [oscar:templates/oscar.conf] Add entry for PACKAGER_DOWNLOAD_PATH
+  * [oscar:FileUtils.pm] set $verbose as global variable so it can be
+    propagated from main.
+  * [oscar:FileUtils.pm] Manage verbosity for wget.
+  * [oscar:FileUtils.pm] Added the extract_files sub routine.
+  * [oscar:FileUtils.pm] Add support for *.tgz tarball name recognition.
+  * [oscar:FileUtils.pm] Add detection of *.tar.xz in
+    OSCAR::FileUtils::file_type
+  * [opkg:rapt] Added support for rhel|fc
+  * [opkg/ganglia:edit_ganglia_conf] Now handle correct ganglia root directory
+  * [opkg-torque-oscar] Use /sbin/service to ease move to systemd.
+  * [opkg-munge] updated client and server postinstall to make sure the
+    service is enabled and started.
+  * [oscar:scripts] "make rpm" simply fails when oscar-utils is not installed
+    yet.
+  * Remove the annonying missing lsb file error.
+  * Add a subroutine to make oscar-packager a little more convenient and
+    efficient.
+
+ -- Olivier Lahaye <olivier.lahaye@cea.fr>  Fri, 28 June 2013 10:48:52 +0200
+
 oscar (6.1.2~svn20130306-0ol1) precise; urgency=low
 
   * Added the oscar-utils package so clients can have distro-query.
