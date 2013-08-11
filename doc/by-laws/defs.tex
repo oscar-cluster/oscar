@@ -18,15 +18,8 @@
 % Image Scaling
 \def\imgscale{0.75}
 
+\RequirePackage{ifpdf}
 % PDF stuff
- 
-\newif\ifpdf
-\ifx\pdfoutput\undefined
-   \pdffalse
-\else
-   \pdfoutput=1
-   \pdftrue
-\fi
  
 \setcounter{tocdepth}{2}
  

@@ -9,15 +9,8 @@
 \usepackage{graphicx}
 \usepackage{fullpage}
 
+\RequirePackage{ifpdf}
 % PDF stuff
- 
-\newif\ifpdf
-\ifx\pdfoutput\undefined
-   \pdffalse
-\else
-   \pdfoutput=1
-   \pdftrue
-\fi
  
 \setcounter{tocdepth}{3}
  
