@@ -111,38 +111,46 @@ sub create_dbase_entries {
     my ($conf) = @_;
     my $http_user = $conf->{'http_user'};
     my $jobarchive_db = $conf->{'jobarchive_db'};
+    my $db_passwd = "";
 
+	# Get the database password from /etc/jobarchived.conf (generated from package post install)
+	$db_password = `egrep "^JOB_SQL_PASSWORD" /etc/jobarchived.conf`
+    chomp($db_password);
+	$db_password = (split(/: /,$db_password))[1];
+	print "jobarchive db password: ".$db_password;
 
-    # Establish connection to MySQL database on localhost
+    # Establish connection to Postgress database on localhost
 
-    my $db_user = "root";
-    my $dsn = "DBI:mysql:host=localhost:database=mysql";
-    my $dbh = DBI->connect($dsn, $db_user, undef, {'RaiseError' => 1, 'AutoCommit' => 1});
+    my $db_user = "postgres";
+    my $dsn = "DBI:Pg:host=localhost:dbname=$jobarchive_db";
+    my $dbh = DBI->connect($dsn, $db_user, $db_passwd, {'RaiseError' => 1, 'AutoCommit' => 1});
     my $res;
 
     my $have_http_user = 0;
 
 
     if ($dbh != undef) {
-	print "Connection to database successful\n";
+	    print "Connection to database successful\n";
     } else {
-	print "No connection to database: Giving up.\n";
+	    print "No connection to database: Giving up.\n";
     }
 
 
+	# No need to create the apache user in the db. new jobmonarch handle that with jobarchive db user.
+	
     # No go and check if the web user already exists,
     # create it otherwise.
 
-    my $sth = $dbh->prepare("SELECT \* FROM user WHERE User='$http_user' AND Host = 'localhost'");
-    if($sth) {
-	if($sth->execute) {
-	    while($res = $sth->fetchrow_hashref()) {
-		if($res->{'User'} eq $http_user && $res->{'Host'} eq "localhost") {
-		    $have_http_user = 1;
-		}
-	    }
-	}
-    }
+    #my $sth = $dbh->prepare("SELECT \* FROM user WHERE User='$http_user' AND Host = 'localhost'");
+    #if($sth) {
+	#if($sth->execute) {
+	#    while($res = $sth->fetchrow_hashref()) {
+	#	if($res->{'User'} eq $http_user && $res->{'Host'} eq "localhost") {
+	#	    $have_http_user = 1;
+	#	}
+	#    }
+	#}
+    #}
 
     # The old mysql version 4 does not have 'CREATE USER'...
 
@@ -160,7 +168,10 @@ sub create_dbase_entries {
     # is of no use to us.
 
     $dbh->do("DROP DATABASE IF exists $jobarchive_db");
+    #system('su - postgres -c "dropdb jobarchive"');
+
     $dbh->do("CREATE DATABASE $jobarchive_db");
+    #system('su - postgres -c "createdbdb jobarchive"');
 
     
     # And create tables for the jobarchive database
@@ -169,11 +180,11 @@ sub create_dbase_entries {
 
     $dbh->do("
 CREATE TABLE jobs (
-        job_id                  INT NOT NULL UNIQUE PRIMARY KEY,
-        job_name                VARCHAR(100),
+        job_id                  VARCHAR(20) NOT NULL UNIQUE PRIMARY KEY,
+        job_name                VARCHAR(255),
         job_queue               VARCHAR(50),
-        job_owner               VARCHAR(30),
-        job_requested_time      VARCHAR(12),
+        job_owner               VARCHAR(50),
+        job_requested_time      VARCHAR(10),
         job_requested_memory    VARCHAR(10),
         job_ppn                 INT,
         job_status              VARCHAR(2),

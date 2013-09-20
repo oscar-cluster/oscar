@@ -9,6 +9,10 @@
   <uri>https://subtrac.sara.nl/oss/jobmonarch</uri>
   <authors>
     <author cat="maintainer">
+      <name>Olivier Lahaye</name>
+      <email>olivier.lahaye@cea.fr</email>
+    </author>
+    <author cat="maintainer">
       <name>Babu Sundaram</name>
       <email>babu@cs.uh.edu</email>
     </author>
@@ -23,7 +27,7 @@
         <dist>mdv</dist>
         <dist>ydl</dist>
       </filters>
-      <pkg>jobmonarch</pkg>
+      <pkg>jobmonarch-jobmond</pkg>
       <pkg>pbs_python</pkg>
       <pkg>drmaa-python</pkg>
     </requires>
@@ -31,25 +35,23 @@
       <filters>
         <dist>suse</dist>
       </filters>
-      <pkg>jobmonarch</pkg>
+      <pkg>jobmonarch-jobmond</pkg>
       <pkg>pbs_python</pkg>
       <pkg>drmaa-python</pkg>
       <pkg>mysql-client</pkg>
       <pkg>python-mysql</pkg>
       <pkg>php4-gd</pkg>
-      <pkg>php4-mbstring</pkg>
     </requires>
     <requires>
       <filters>
         <dist>sles</dist>
       </filters>
-      <pkg>jobmonarch</pkg>
+      <pkg>jobmonarch-jobmond</pkg>
       <pkg>pbs_python</pkg>
       <pkg>drmaa-python</pkg>
       <pkg>mysql-client</pkg>
       <pkg>python-mysql</pkg>
       <pkg>php5-gd</pkg>
-      <pkg>php5-mbstring</pkg>
       <pkg>php5-mysql</pkg>
     </requires>
     <requires>
@@ -57,19 +59,30 @@
         <dist>fc</dist>
         <dist>rhel</dist>
       </filters>
-      <pkg>jobmonarch</pkg>
+      <pkg>jobmonarch-jobmond</pkg>
       <pkg>pbs_python</pkg>
       <pkg>drmaa-python</pkg>
       <pkg>mysql</pkg>
       <pkg>MySQL-python</pkg>
       <pkg>php-gd</pkg>
-      <pkg>php-mbstring</pkg>
       <pkg>php-mysql</pkg>
     </requires>
   </serverDeps>
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.0-2">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-09-20T11:00:00-01:00">
+        <item>Fixed dependancy. now jobmonarch is splitted in 3 package. We need jobmonarch-jobmond</item>
+      </changelogEntry>
+    </versionEntry>
+    <versionEntry version="1.0-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-05-21T11:00:00-01:00">
+        <item>Bumped version to V1.0 as now jobmoanarch final release is out and thus the opkg package.</item>
+        <item>Updated the configuration interface to accept slurm and lsf batch queuing system (supported by jobmonarch-1.1)</item>
+        <item>Removed php-mbstring requirement as it is not needed eventhough jobmonarch-webfrontend uses Dwoo which requires mbstring. None of the Dwoo functions that require mbstring are used in jobmonarch-webfrontend. Thus no need for this requirement which is problematic under debian (php built without mbstring support)</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="0.1.4-2">
       <changelogEntry authorName="Olivier Lahaye" date="2013-02-25T11:00:00-01:00">
         <item>Updated the requirements DRMAA-python => drmaa-python to be complient with python and distro package name</item>
