@@ -1,0 +1,116 @@
+#!/usr/bin/env perl
+# $Id: server-post-install 9565 2013-01-30 17:51:47Z olahaye74 $
+# Copyright (c) 2004, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   post_server_rpm_install for torque
+
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
+use strict;
+use Carp;
+use lib '/usr/lib/systeminstaller';
+use SystemInstaller::Machine;
+
+use OSCAR::Opkg;
+
+#######################################################
+#  Start up 'Torque Server' by restarting the daemon  #
+#######################################################
+sub startPBSserver
+{
+  system('/etc/init.d/trqauthd start');
+  if(!-f '/var/lib/torque/server_priv/serverdb' && !-f '/var/spool/pbs/server_priv/serverdb') {
+    system('/etc/init.d/pbs_server create'); # no config file: need to initialise config.
+  }
+  system('/etc/init.d/pbs_server restart');
+}
+
+
+########################
+#  BEGIN MAIN PROGRAM  #
+########################
+
+startPBSserver();
+
+# Config Torque sched service not to start since we use Maui
+# In order to prevent a conflict when Maui is to be used,
+# 'pbs_sched' is disabled, then. 'pbs_sched' should be installed
+# by default
+if (-f '/etc/init.d/pbs_sched') {
+    if (-f '/etc/init.d/maui') {
+        system('/sbin/chkconfig --del pbs_sched');
+    }
+} else {
+    print "WARNING! PBS Scheduler is not installed, but should be.\n";
+}
+# Config Torque server service to start
+system('/sbin/chkconfig --add pbs_server');
+
+opkg_print("...updating xpbsmonrc file\n");
+my $arch = `uname -i`;
+chomp($arch);
+
+my $xpbsmonrc;
+
+# Attention: More sophistication needed here.
+# Check for 32/64 bit architecture AND
+# Check if using /opt located oscar torque package or distro torque package
+if ($arch eq "x86_64") {
+    if (-f "/usr/lib64/xpbsmon/xpbsmonrc") {
+        $xpbsmonrc = "/usr/lib64/xpbsmon/xpbsmonrc";
+    } else {
+        $xpbsmonrc = "/opt/pbs/lib64/xpbsmon/xpbsmonrc";
+    } 
+} else {
+    if (-f "/usr/lib/xpbsmon/xpbsmonrc") {
+        $xpbsmonrc = "/usr/lib/xpbsmon/xpbsmonrc";
+    } else {
+        $xpbsmonrc = "/opt/pbs/lib/xpbsmon/xpbsmonrc";
+    }
+}
+
+# Eventually 'torque_gui' is not installed, so we cannot configure xpbsmonrc
+if (-f $xpbsmonrc) {
+    my @lines = `cat $xpbsmonrc`;
+    grep { s/ICON.*$/ICON;pbs_oscar;pbs_oscar;;;}/ } @lines;
+
+    open (RCFILE, ">$xpbsmonrc") 
+      or croak("Error: XPBSMONRC not setup - Couldn't open $xpbsmonrc.\n");
+    print RCFILE @lines; 
+    close (RCFILE);
+} else {
+    print "xpbsmon not installed!\n"
+}
+
+my $rm_detect_dir;
+if (defined $ENV{OSCAR_HOME}) {
+    $rm_detect_dir = "$ENV{OSCAR_HOME}/lib/";
+} else {
+    require OSCAR::Utils;
+    $rm_detect_dir = OSCAR::Utils::get_path_perl_modules ();
+}
+$rm_detect_dir .= "/OSCAR/OCA/RM_Detect";
+
+# Copy RM_Detect component for TORQUE to the right location
+my $rm_file = "/var/lib/oscar/packages/torque/TORQUE.pm";
+system("cp -a $rm_file $rm_detect_dir") == 0 
+    or croak("Failed to copy $rm_file to $rm_detect_dir");

@@ -1,0 +1,207 @@
+#!/bin/sh
+#
+# Copyright (c) 2002 The Trustees of Indiana University.  
+#                    All rights reserved.
+# Copyright (c) 2005 Bernard Li <bli@bcgsc.ca>.
+#                    All rights reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+#
+# $Id$
+#
+# Command line arguments:
+#
+# $1: Number of clients
+# $2: Processors per node
+# $3: PBS script to qsub
+# $4: grep string for success
+# $5: output filename prefix
+# $6: timeout scaling factor
+# $7: testprint label
+#
+
+# JMS This seems to do harm -- not sure why it is here...?  The
+# relevant parts of /etc/profile should be run automatically.
+#. /etc/profile
+
+# Default timeout for TORQUE tests.  Increase this number if tests
+# are failing due to timeouts (not because of failing package tests)
+default_timeout=60
+
+#########################################################################
+# Guess TORQUE home is it /usr or /opt/pbs ?
+#########################################################################
+
+if test -f '/usr/bin/pbsnodes'
+then
+    qsub='/usr/bin/qsub'
+    qdel='/usr/bin/qdel'
+    qstat='/usr/bin/qstat'
+    pbsnodes='/usr/bin/pbsnodes'
+elif test -f '/opt/pbs/bin/qsub'
+then
+    qsub='/opt/pbs/bin/qsub'
+    qdel='/opt/pbs/bin/qdel'
+    qstat='/opt/pbs/bin/qstat'
+    pbsnodes='/opt/pbs/bin/pbsnodes'
+else # Handle alternatives names
+    qsub='/opt/pbs/bin/qsub-torque'
+    qdel='/opt/pbs/bin/qdel-torque'
+    qstat='/opt/pbs/bin/qstat-torque'
+    pbsnodes='/opt/pbs/bin/pbsnodes'
+fi
+
+exit_status=0
+
+# Check usage (since this can be run seperately)
+
+if [ $# -eq 0 ]; then
+  # Get cluster info from user
+  echo -n "Enter the number of client nodes: "
+  read clients
+  
+  echo -n "Enter the number of processors per client: "
+  read ppn
+  
+  echo -n "Enter the full path to the script to be run: "
+  read pbs_script
+  
+  echo -n "Enter the string that we should search for: "
+  read grep_string
+  
+  echo -n "Enter the name of the output file (defaults to the script name): "
+  read output
+  opt=${output:=$pbs_script}
+
+  echo -n "Enter a time scaling factor (Default is 3): "
+  read scaling_factor
+  opt=${scaling_factor:=3}
+
+  echo -n "Enter a test name (Default is \"TORQUE TEST\"): "
+  read pbs_test_type
+  opt=${pbs_test_type:="PBS TEST"}
+elif [ $# -lt 4 ]; then
+  echo "usage: $0 [<num clients> <num procs/client> <script> <searchstring> (outputfile) (time scale) (test name)]"
+  exit 1
+else
+  clients=$1
+  ppn=$2
+  pbs_script=$3
+  grep_string=$4
+  opt=$5
+  output=${opt:=$pbs_script}
+  opt=$6
+  scaling_factor=${opt:=3}
+  opt=$7
+  pbs_test_type=${opt:="TORQUE TEST"}
+fi
+
+#echo "scalingfactor is $scaling_factor"
+#echo "output is $output"
+#exit
+
+numprocs=`expr $clients \* $ppn`
+script_name=`basename $pbs_script`
+
+function waitexit {
+        # Function to wait for a key press before
+        # exiting. Used by guis.
+        if [ $wizard_launch ] && [ $wizard_launch = yes ]; then
+          echo ...Hit a key to exit...
+          read -n 1 -s  key
+        fi
+        exit $exit_status
+}
+
+function calc_timeout {
+  if [ ! $min_timeout ]; then min_timeout=$default_timeout; fi
+  if [ ! $scaling_factor ]; then scaling_factor=3; fi
+  timeout=`expr $numprocs \* $scaling_factor`
+  if [ $timeout -lt $default_timeout ] || [ $timeout -lt $min_timeout ]; then
+    if [ $min_timeout -gt $default_timeout ]; then
+      timeout=$min_timeout;
+    else
+      timeout=$default_timeout;
+    fi
+  fi
+}              
+
+function check_free_nodes () {
+  free=`$pbsnodes -a | grep -c 'state = free'`
+  if [ $free -eq $clients ] || [ $free -gt $clients ]; then  
+    # at least $clients free nodes
+    echo -n ""
+  else
+    $OSCAR_TESTPRINT --label "Checking for $clients free nodes:" --fail
+    echo Not enough free nodes.  Tests incomplete.
+    exit_status=1
+    waitexit
+  fi
+}
+        
+#     TORQUE TEST ROUTINE
+#     -------------------
+# Generic routine to run any test through TORQUE depending on environment
+pbs_test_routine () {
+  sleep 1
+  calc_timeout
+  check_free_nodes
+  $OSCAR_TESTPRINT --label "$pbs_test_type"
+  cd `dirname $pbs_script`
+  if [ -f $output.out ]; then /bin/rm -f $output.out; fi
+  if [ -f $output.err ]; then /bin/rm -f $output.err; fi
+  jobname=`basename $output`
+  job=`$qsub -N $jobname -l nodes=$clients:ppn=$ppn -o $jobname.out -e $jobname.err -q workq $pbs_script`
+  # Check that job submitted properly
+  if [ -z $job ]; then 
+    $OSCAR_TESTPRINT --label "$pbs_test_type" --fail
+  else
+    timeleft=$timeout
+    job_state=incomplete
+    while [ $job_state = incomplete ]; do
+      # Displays remaining seconds
+      $OSCAR_TESTPRINT --label "$pbs_test_type" --status "$timeleft"
+      sleep 1
+      # Tests for success or timeout
+      if [ -f "$output.out" ]; then
+        grep "$grep_string" "$output.out" > /dev/null
+        string_test=$?
+        if [ $string_test = 0 ]; then
+          job_state=success
+          $OSCAR_TESTPRINT --label "$pbs_test_type" --pass
+        else
+          timeleft=0
+        fi
+      fi
+      if [ $timeleft -eq 0 ]; then  #more than timeout
+        $OSCAR_TESTPRINT --label "$pbs_test_type" --fail
+        job_state=fail
+	exit_status=1
+        if [ `$qstat | grep -c $job` -eq 1 ]; then
+          $qdel $job
+          sleep 1 # Allows nodes to free up again
+        fi
+        if [ "$exit_on_fail" = yes ]; then waitexit ; fi
+      fi
+      timeleft=`expr $timeleft - 1`
+    done
+  fi
+  unset min_timeout
+  cd ..
+}
+
+# Run the actual test
+
+if [ -f $sge_script ]; then
+  pbs_test_routine
+else
+  $OSCAR_TESTPRINT --label "$pbs_test_type" --skipped
+  job_state=skipped
+  exit_status=2
+fi
+
+# Return a meaningful exit status
+
+exit $exit_status

@@ -1,0 +1,126 @@
+% -*- latex -*-
+%
+% $Id: install.tex,v 1.10 2003/04/21 21:58:41 brechin Exp $
+%
+% $COPYRIGHT$
+%
+
+\subsection{Torque Resource Manager and Maui Scheduler}
+\label{app:torque-overview}
+
+Torque serves as the job launcher and batch queueing system for
+OSCAR. Torque includes a basic FIFO scheduler with it, but is
+disabled by default in OSCAR.  A more robust, open source scheduler
+named ``Maui'' is used instead.
+
+Basic Torque functionality is tested by OSCAR's test suite, and is
+also used to launch jobs when testing other software included in
+OSCAR. If the Torque test passes, Torque and Maui are up and
+working.
+
+If the users of your OSCAR cluster have not used Torque before, you
+can expect somewhat of a learning curve.  The OSCAR user's
+documentation contains some useful information to get them started.
+The user's document instructs users to ask the system administrator
+to provide them with sample Torque scripts used in the OSCAR test
+suite.  Once the OSCAR test suite has been run (step 6 in the
+install process), these scripts can be found in the home directory
+of the \user{oscartst} user if the tests have been run previously.
+
+\subsubsection{Configuring Torque}
+
+By default, Torque installs without any queues or cluster specific
+paremeters defined.  OSCAR configures Torque with sensible defaults
+based on what it finds in the SIS database.  When the ``Complete
+Cluster Setup'' step is executed from the wizard, the
+\cmd{post\_install} script from the Torque package in OSCAR is
+called. The \cmd{post\_install} configures only Torque parameters
+that are non-existent, so as not to overwrite local customizations
+by the system administrator.  However, if you wish to force the
+default values back in place over any local customizations, the
+\cmd{post\_install} script can be invoked manually with a
+\cmd{--default} option.  This will revert all values to the original
+OSCAR settings.
+
+\cmd{qmgr} can be used to configure queues and Torque server
+parameters. The OSCAR Torque \cmd{post\_install} script (located off
+the top-level OSCAR installation directory in
+\file{packages/torque/scripts}) uses \cmd{qmgr} behind the scenes.
+There are man pages available, but reading the Torque admin guide is
+the best way to learn how to use it. It is available on Torque's
+homepage, listed below.  You will have to create an account on their
+site in order to download the admin guide.
+
+\subsubsection{Torque Resources}
+
+Arbitrary node properties can be set by the administrator.  Torque
+calls these properties ``resources''.  These resources can be
+specified on the \cmd{qsub} command line when a user submits a job.
+This allows a user to restrict their jobs to run only on nodes
+exhibiting certain properties.  If some nodes of a cluster have more
+memory, a different network, faster prcoessors, etc., jobs can be
+submitted so they only run a specific subset.  These properties are
+stored in plain text in \file{/usr/spool/PBS/server\_priv/nodes}.
+However, if adjusted in the plain text file, the Torque server must
+be restarted in order for changes to take effect.  The more
+elaborate method is to use the \cmd{qmgr} command to modify node
+properties via the Torque API.  OSCAR gives each node a starting
+property of ``{\tt all}''.
+
+\subsubsection{An FAQueue}
+
+A popular misconception about Torque queues is that they are bound
+to a group of nodes.  This is false.  If you have a four node queue
+defined, it is not associated with any specific nodes.  You can
+think of a queue as a multidimensional box that a job must fit in in
+order to allow submission.  That is, the submitted parameters must
+fit within certain max and min values for nodes, ppn (procs per
+node), walltime, etc.  If specific nodes are desired to run on, then
+resource attributes must be defined.
+
+If you would like to get a full dump of your Torque server and queue
+configuration, you can issue this command:
+
+\begin{verbatim}
+  # qmgr -c "print server"
+\end{verbatim}
+
+The \cmd{qmgr} interface can be used to define additional queues and
+their parameters.  You can also change the parameters on the default
+OSCAR queue, ``{\tt workq}''.  For example, to show the configuration
+of the {\tt workq}, execute the following:
+
+\begin{verbatim}
+  # qmgr -c "list queue workq"
+\end{verbatim}
+
+To change any of the values listed, use the following:
+
+\begin{verbatim}
+  # qmgr -c "set queue workq PARAMETER = VALUE"
+\end{verbatim}
+
+where \cmd{PARAMETER} is a parameter from the ``\cmd{list queue}''
+command, and \cmd{VALUE} is a valid value for that parameter.  You can
+use the ``\cmd{print server}'' and/or ``\cmd{list queue}'' commands to
+verify your changes.
+
+Be aware that if you call the \cmd{post\_install} command with the
+\cmd{--default} option, you will lose your customizations.  Also note
+that OSCAR's default wallclock limit on {\tt workq} is 10,000 hours.
+Depending on the application mix that will run on your cluster, you
+may wish to adjust this value.
+
+Some useful links:
+
+\begin{itemize}
+\item Torque: \url{http://www.clusterresources.com/products/torque/}
+
+\item Maui Scheduler: \url{http://www.clusterresources.com/products/maui/}
+
+\item OpenPBS: \url{http://www.openpbs.org/}
+
+\item PBSPro: \url{http://www.pbspro.com/}
+\end{itemize}
+
+% LocalWords:  Exp

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<oscar>
+  <name>slurm</name>
+  <class>included</class>
+  <summary>Simple Linux Utility for Resource Management</summary>
+  <description>SLURM is an open source, fault-tolerant, and highly scalable cluster management and job scheduling system for Linux clusters containing up to 65,536 nodes. Components include machine status, partition management, job management, scheduling and accounting modules
+</description>
+  <license>GPL</license>
+  <group>Applications/batch</group>
+  <uri>http://slurm.schedmd.com/</uri>
+  <authors>
+    <author cat="maintainer">
+      <name>Olivier Lahaye</name>
+      <email>olivier.lahaye@cea.fr</email>
+    </author>
+  </authors>
+  <serverDeps>
+    <requires>
+      <filters>
+        <dist>fc</dist>
+        <dist>ydl</dist>
+        <dist>rhel</dist>
+        <dist>sles</dist>
+        <dist>suse</dist>
+      </filters>  
+      <pkg>slurm</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>debian</dist>
+      </filters>
+      <pkg>slurm</pkg>
+    </requires>
+  </serverDeps>
+  <clientDeps>
+    <requires>
+      <filters>
+        <dist>fc</dist>
+        <dist>ydl</dist>
+        <dist>rhel</dist>
+        <dist>sles</dist>
+        <dist>suse</dist>
+      </filters>  
+      <pkg>slurm</pkg>
+    </requires>
+     <requires>
+      <filters>
+        <dist>debian</dist>
+      </filters>
+      <pkg>slurm</pkg>
+    </requires>
+  </clientDeps>
+  <apiDeps/>
+  <changelog>
+    <versionEntry version="2.6.1-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-09-04T18:21:49+02:00">
+        <item>Initial packaging.</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
+</oscar>

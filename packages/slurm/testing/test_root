@@ -1,0 +1,60 @@
+#!/bin/sh
+
+# Copyright (c) 2004, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
+# Copyright (C) 2005 Bernard Li <bli@bcgsc.ca>. All Rights Reserved.
+# 
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+
+# $Id$
+#
+# Authors: Jason Brechin
+#          Jeremy Enos
+#          Bernard Li
+
+#########################################################################
+# Guess TORQUE home is it /usr or /opt/pbs ?
+#########################################################################
+
+if test -f '/usr/bin/pbsnodes'
+then
+   pbsnodes='/usr/bin/pbsnodes';
+else
+   pbsnodes='/opt/pbs/bin/pbsnodes';
+fi
+
+
+# Stop TORQUE Server if any nodes exhibit "state-unknown" status.
+# This condition could be due to the 5 minute polling interval to the moms
+# by the server.  Restarting the server will induce a fresh poll.
+unknown_nodes=`$pbsnodes -a |grep -c state-unknown`
+if [ $unknown_nodes != 0 ] ; then
+  /etc/init.d/pbs_server stop
+fi
+unknown_nodes=`$pbsnodes -a |grep -c state-unknown`
+if [ $unknown_nodes != 0 ] ; then
+  $OSCAR_TESTPRINT --label "TORQUE node check" -f
+#  exit 1;
+else 
+  $OSCAR_TESTPRINT --label "TORQUE node check" -p
+fi
+
+for serv in pbs_server ; do
+  if [ `/etc/init.d/$serv status | grep -c "running"` -eq 0 ]; then
+    # Let's try to start the service
+    /etc/init.d/$serv start
+    if [ `/etc/init.d/$serv status | grep -c "running"` -eq 0 ]; then
+      echo "Could not start $serv, please check configuration and rerun tests"
+        $OSCAR_TESTPRINT --label "TORQUE service check:$serv" -f
+        exit 1
+    else
+        $OSCAR_TESTPRINT --label "TORQUE service check:$serv" -p
+    fi
+  else
+    $OSCAR_TESTPRINT --label "TORQUE service check:$serv" -p
+  fi
+done
+
+exit 0

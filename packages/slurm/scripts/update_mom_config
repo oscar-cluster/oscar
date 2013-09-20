@@ -1,0 +1,53 @@
+#!/bin/bash
+# $Id: update_mom_config 9565 2013-01-30 17:51:47Z olahaye74 $
+# Copyright (c) 2004, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
+
+# Author:	Jeremy Enos jenos@ncsa.uiuc.edu
+#		Bernard Li <bli@bcgsc.ca>
+#		Olivier Lahaye <olivier.lahaye@cea.fr>
+
+# Updates mom config file with real TORQUE server hostname and pushes it out.
+# 
+
+# Try to find the correct mom config file.
+mom_config_files=( /etc/torque/mom/config /var/lib/torque/mom_priv/config /var/spool/pbs/mom_priv/config )
+# server_name is also required.
+server_name_files=( /etc/torque/server_name /var/lib/torque/server_name /var/spool/pbs/server_name )
+. /etc/profile
+
+for i in ${!mom_config_files[*]} # expands to array indices
+do
+  if [ -f ${mom_config[$i]} ] ; then
+    # OL: update the $pbsserver full line instead of replacing pbs_oscar
+    # this permits the use of distro torque package.
+    # if there is no $pbsserver line in the file, it doesn't fail and
+    # the $PBS_SERVER_HOME/server_name hostname is used instead.
+    sed -i -e "s/\$pbsserver.*$/\$pbsserver $HOSTNAME/g" ${mom_config[$i]}
+    echo "TORQUE mom config file ${mom_config[$i]}"
+    echo "updated with clienthost: $HOSTNAME"
+    echo "Pushing config file to clients..."
+    if [ -x `which cpush` ] ; then
+      cpush ${mom_config[$i]} ${mom_config[$i]}
+      cpush ${server_name_files[$i]} ${server_name_files[$i]} # push the server_name as well.
+    else
+      echo "Error:  Can't find cpush utility."
+      exit 1
+    fi
+    echo "Sending SIGHUP to all moms..."
+    if [ -x `which cexec` ] ; then
+      cexec killall -1 pbs_mom
+    else
+      echo "Error:  Can't find cexec utility."
+      exit 1
+    fi
+    exit 0 # Config done, we can exit now
+  fi
+done
+
+# Still here: we did not find any config file to update.
+echo "Error:  Not updating TORQUE mom config file."
+echo "None of the following config file found:"
+echo "${mom_config_files[*]}"
+exit 1
+ 

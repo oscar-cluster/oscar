@@ -1,0 +1,45 @@
+#!/bin/sh
+
+# Copyright (c) 2004, The Board of Trustees of the University of Illinois.
+#                     All rights reserved.
+# Copyright (C) 2005 Bernard Li <bli@bcgsc.ca>. All Rights Reserved.
+#
+# This file is part of the OSCAR software package.  For license
+# information, see the COPYING file in the top level directory of the
+# OSCAR source distribution.
+
+# $Id$
+#
+# Authors: Jason Brechin
+#          Jeremy Enos
+#          Bernard Li
+
+#########################################################################
+# Guess TORQUE home is it /usr or /opt/pbs ?
+#########################################################################
+
+if test -f '/usr/bin/qmgr'
+then
+   qmgr='/usr/bin/qmgr'
+else
+   qmgr='/opt/pbs/bin/qmgr'
+fi
+
+
+cd ~
+clients=0
+for i in $@ 
+do
+    clients=`expr $clients + 1`
+done
+
+#                       DEFAULT TORQUE QUEUE
+#                       --------------------
+
+if [ `$qmgr -c "l s" | grep -c 'default_queue'` -eq 1 ]; then
+        $OSCAR_TESTPRINT --label "TORQUE default queue definition" -p
+else
+        $OSCAR_TESTPRINT --label "TORQUE default queue definition" -f
+fi
+
+~/pbs_test $clients 1 ~/torque/pbs_script.shell "Hello" ~/torque/shelltest 3 "TORQUE Shell Test"

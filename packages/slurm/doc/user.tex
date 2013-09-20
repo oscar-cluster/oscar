@@ -1,0 +1,125 @@
+% -*- latex -*-
+%
+% $Id: user.tex,v 1.6 2002/08/28 05:23:16 jenos Exp $
+%
+% $COPYRIGHT$
+%
+
+\subsection{Using The Torque Resource Manager and Maui Scheduler}
+\label{app:torque-overview}
+
+The Torque architecture consists of three major components:
+
+\begin{itemize}
+\item The Torque server.  This runs on the OSCAR head node.  It controls
+  the submission and running of jobs.
+
+\item The Maui scheduler.  This takes care of scheduling jobs across
+  the cluster according sophisticated algorithms.
+
+\item A ``mom'' daemon on each cluster node.  The moms are responsible
+  for actually starting and stopping jobs on the client nodes.
+\end{itemize}
+
+\subsubsection{Torque Commands}
+
+All Torque commands can be found under \file{/opt/pbs/bin} on
+the OSCAR head node.  There are man pages available for these
+commands, but here are the most popular with some basic options:
+
+\begin{itemize}
+\item \cmd{qsub}: submits job to Torque
+
+\item \cmd{qdel}: deletes Torque job
+
+\item \cmd{qstat [-n]}: displays current job status and node
+  associations
+
+\item \cmd{pbsnodes [-a]}: displays node status
+
+\item \cmd{pbsdsh}: distributed process launcher
+\end{itemize}
+
+\subsubsection{Submitting a Torque Job}
+
+The \cmd{qsub} command is not necessarily intuitive.  Here are some
+handy tips to know:
+
+\begin{itemize}
+\item Be sure to read the \cmd{qsub} man page.
+
+\item \cmd{qsub} only accepts a script filename for a target.
+
+\item The target script cannot take any command line arguments.
+
+\item For parallel jobs, the target script is only launched on ONE
+  node.  Therefore the script is responsible for launching all
+  processes in the parallel job.
+
+\item One method of launching processes is to use the \cmd{pbsdsh}
+  command within the script used as \cmd{qsub}'s target.
+  \cmd{pbsdsh}  will launch its target on all allocated processors and nodes
+  (specified as arguments to \cmd{qsub}).  Other methods of parallel
+  launch exist, such as \cmd{mpirun}, included with each of the MPI packages.
+
+\item Job parameters can be specifed to \cmd{qsub} on the command
+  line, or within the submitted script.  You can get a good start by
+  looking at examples provided by the OSCAR test suite.  Ask your
+  system administrator if you would like to see these.  They can
+  likely be found in the home directory of the ``\user{oscartst}''
+  user.
+\end{itemize}
+
+Here is a sample \cmd{qsub} command line:
+
+\begin{verbatim}
+$ qsub -N my_jobname -e my_stderr.txt -o my_stdout.txt -q workq -l \
+       nodes=X:ppn=Y:all,walltime=1:00:00 my_script.sh
+\end{verbatim}
+
+Here is the contents of the \file{script.sh} file:
+
+\begin{verbatim}
+#!/bin/sh
+
+echo Launchnode is `hostname`
+pbsdsh /path/to/my_executable
+
+# All done
+\end{verbatim}
+
+Alternatively, you can specify most of the qsub parameters in
+\file{script.sh} itself:
+
+\begin{verbatim}
+$ qsub -l nodes=X:ppn=Y:all,walltime=1:00:00 script.sh
+\end{verbatim}
+
+Here is the contents of the \file{script.sh} file:
+
+\begin{verbatim}
+#!/bin/sh
+#PBS -N my_jobname
+#PBS -o my_stdout.txt
+#PBS -e my_stderr.txt
+#PBS -q workq
+
+echo Launchnode is `hostname`
+pbsdsh /path/to/my_executable
+
+# All done
+\end{verbatim}
+
+Notes about the above examples:
+\begin{itemize}
+\item``\cmd{all}'' is an optional specification of a node attribute,
+  or ``resource''.
+
+\item ``\cmd{workq}'' is a default queue name that is used in OSCAR
+  clusters.
+
+\item 1:00:00 is in HH:MM:SS format (although leading zeros are optional).
+
+\end{itemize}
+
+% LocalWords:  Exp
