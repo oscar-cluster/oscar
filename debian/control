@@ -21,7 +21,7 @@ Package: oscar-bin
 Architecture: all
 Description: Binaries for OSCAR
  Set of binaries for OSCAR
-Depends: liboscar
+Depends: liboscar, libnetwork-ipv4addr-perl
 
 Package: oscar-utils
 Architecture: all

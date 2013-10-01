@@ -132,6 +132,7 @@ Group: Applications/System
 Summary: Libraries for OSCAR clustering package.
 Requires: %{name}-base-lib == %{version}-%{release}
 Requires: syslinux
+Requires: perl-Net-IPv4Addr
 AutoReqProv: no
 
 %description -n oscar-base-scripts
