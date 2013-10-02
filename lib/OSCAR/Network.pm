@@ -30,6 +30,7 @@ BEGIN {
 use strict;
 use vars qw($VERSION @EXPORT);
 use File::Copy;
+use Net::IPv4Addr;
 use OSCAR::Database;
 use OSCAR::Logger qw ( verbose );
 use OSCAR::Utils;
@@ -117,15 +118,16 @@ sub interface2ip ($) {
 
     my ($ip, $broadcast, $net);
     # open pipes are better for controlling output than backticks
-    open(IFCONFIG,"/sbin/ifconfig $interface |") 
-        or (carp("Couldn't run 'ifconfig $interface'"), return undef);
-    while(<IFCONFIG>) {
-        if(/^.*:($ipregex).*:($ipregex).*:($ipregex)\s*$/o) {
-            ($ip, $broadcast, $net) = ($1,$2,$3);
+    open(IP_ADDR_SHOW,"/usr/sbin/ip addr show $interface |") 
+        or (carp("Couldn't run 'ip addr show $interface'"), return undef);
+    while(<IP_ADDR_SHOW>) {
+        if(/\s+inet ($ipregex)\/([0-9]{2}) brd ($ipregex) scope .*$/o) {
+            ($ip, $net, $broadcast) = ($1,$2,$3);
+            $net = Net::IPv4Addr::ipv4_cidr2msk($net);
             last;
         }
     }
-    close(IFCONFIG);
+    close(IP_ADDR_SHOW);
     return ($ip, $broadcast, $net);
 }
 

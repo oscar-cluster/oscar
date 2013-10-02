@@ -116,6 +116,7 @@ Group: Applications/System
 Summary: Libraries for OSCAR clustering package.
 Requires:   perl-XML-Simple
 Requires:   perl-AppConfig
+Requires:   perl-Net-IPv4Addr
 Requires:   wget
 AutoReqProv: no
 %description -n oscar-base-lib

@@ -32,6 +32,7 @@ Depends: liboscar
 Package: liboscar
 Architecture: all
 Description: Libraries for OSCAR 
+Depends: libnetwork-ipv4addr-perl
  Set of libraries for OSCAR
 
 Package: oscar-base-server
