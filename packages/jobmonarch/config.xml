@@ -28,6 +28,8 @@
         <dist>ydl</dist>
       </filters>
       <pkg>jobmonarch-jobmond</pkg>
+      <pkg>jobmonarch-jobarchived</pkg>
+      <pkg>jobmonarch-webfrontend</pkg>
       <pkg>pbs_python</pkg>
       <pkg>drmaa-python</pkg>
     </requires>
@@ -36,6 +38,8 @@
         <dist>suse</dist>
       </filters>
       <pkg>jobmonarch-jobmond</pkg>
+      <pkg>jobmonarch-jobarchived</pkg>
+      <pkg>jobmonarch-webfrontend</pkg>
       <pkg>pbs_python</pkg>
       <pkg>drmaa-python</pkg>
       <pkg>mysql-client</pkg>
@@ -47,6 +51,8 @@
         <dist>sles</dist>
       </filters>
       <pkg>jobmonarch-jobmond</pkg>
+      <pkg>jobmonarch-jobarchived</pkg>
+      <pkg>jobmonarch-webfrontend</pkg>
       <pkg>pbs_python</pkg>
       <pkg>drmaa-python</pkg>
       <pkg>mysql-client</pkg>
@@ -59,7 +65,10 @@
         <dist>fc</dist>
         <dist>rhel</dist>
       </filters>
+      <pkg>perl-DBD-Pg</pkg>
       <pkg>jobmonarch-jobmond</pkg>
+      <pkg>jobmonarch-jobarchived</pkg>
+      <pkg>jobmonarch-webfrontend</pkg>
       <pkg>pbs_python</pkg>
       <pkg>drmaa-python</pkg>
       <pkg>mysql</pkg>

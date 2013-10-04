@@ -113,17 +113,19 @@ sub create_dbase_entries {
     my $jobarchive_db = $conf->{'jobarchive_db'};
     my $db_passwd = "";
 
-	# Get the database password from /etc/jobarchived.conf (generated from package post install)
-	$db_password = `egrep "^JOB_SQL_PASSWORD" /etc/jobarchived.conf`
-    chomp($db_password);
-	$db_password = (split(/: /,$db_password))[1];
-	print "jobarchive db password: ".$db_password;
+    # Get the database password from /etc/jobarchived.conf (generated from package post install)
+    $db_passwd = `egrep "^JOB_SQL_PASSWORD" /etc/jobarchived.conf`;
+    chomp($db_passwd);
+    $db_passwd = (split(/: /,$db_passwd))[1];
+    print "jobarchive db password: ".$db_passwd."\n";
 
     # Establish connection to Postgress database on localhost
 
     my $db_user = "postgres";
-    my $dsn = "DBI:Pg:host=localhost:dbname=$jobarchive_db";
-    my $dbh = DBI->connect($dsn, $db_user, $db_passwd, {'RaiseError' => 1, 'AutoCommit' => 1});
+    my $dsn = "DBI:Pg:host=localhost;dbname=$jobarchive_db";
+
+    # DBI->connect($dsn, $db_user, $db_passwd, ...) # db_passwd = "" for postgres.
+    my $dbh = DBI->connect($dsn, $db_user, "", {'RaiseError' => 1, 'AutoCommit' => 1});
     my $res;
 
     my $have_http_user = 0;
@@ -209,17 +211,63 @@ CREATE TABLE job_nodes (
 )
 ");
     
+    # Check if user jobarchive already exists
+    # $dbh->do("SELECT * FROM pg_user WHERE username = 'jobarchive'");
+    # TODO: Need to parse the output of the above line. If = 0, then we need to create the user
+
+    # Create the jobarchive user.
+    $dbh->do("CREATE USER jobarchive");
+
+    # Set the jobarchive password.
+    $dbh->do("ALTER USER jobarchive WITH PASSWORD '$db_passwd'");
+
+    # Grant privileges to the jobarchive.
+    $dbh->do("GRANT ALL ON $jobarchive_db.jobs,$jobarchive_db.nodes,$jobarchive_db.job_nodes TO 'jobarchive'");
+    $dbh->do("GRANT ALL ON $jobarchive_db.nodes_node_id_seq TO 'jobarchive'");
 
     # And, finally, grant all rights to root and $http_user
 
-    $dbh->do("GRANT ALL ON $jobarchive_db.jobs TO root,$http_user\@localhost");
-    $dbh->do("GRANT ALL ON $jobarchive_db.nodes TO root,$http_user\@localhost");
-    $dbh->do("GRANT ALL ON $jobarchive_db.job_nodes TO root,$http_user\@localhost");
+    #$dbh->do("GRANT ALL ON $jobarchive_db.jobs TO root,$http_user\@localhost");
+    #$dbh->do("GRANT ALL ON $jobarchive_db.nodes TO root,$http_user\@localhost");
+    #$dbh->do("GRANT ALL ON $jobarchive_db.job_nodes TO root,$http_user\@localhost");
 
     $dbh->disconnect();
 }
 
+sub edit_pgserver_config {
+    my $conf = "/var/lib/pgsql/data/pg_hba.conf";
+    open PG_CONF, $conf;
+    open(TMP_CONF, '>', "/tmp/pg_hba.conf");
 
+    # print the lines before the insertion.
+    my $line ="";
+    while(<PG_CONF>) {
+        print TMP_CONF $_;
+        last if /^# TYPE[ ]+DATABASE[ ]+USER[ ]+/ ;
+    }
+
+    # Insert the lines
+    print TMP_CONF "local    jobarchive    jobarchive                      trust\n";
+    print TMP_CONF "host     jobarchive    jobarchive    127.0.0.1/32      trust\n";
+    print TMP_CONF "host     jobarchive    jobarchive    ::1/128           trust\n";
+
+    # print the rest of the lines
+    while(<PG_CONF>) {
+        print TMP_CONF $_;
+    }
+
+    close TMP_CONF;
+    close PG_CONF;
+
+    if (! -e "$conf.save") {
+        rename "$conf", "$conf.save";
+    }
+    rename "/tmp/pg_hba.conf", "$conf";
+    my ($login,$pass,$uid,$gid) = getpwnam("postgres")
+        or die "postgres login not in passwd file";
+    chown($uid,$gid,$conf);
+    chmod(0600, $conf);
+}
 
 sub create_config_files {
 
@@ -348,8 +396,29 @@ my $jobmonarch_conf;
 
 $jobmonarch_conf = get_config();
 
+# PostgreSQL setup (redhat only)
+if (! -e "/var/lib/pgsql/data/PG_VERSION") {
+    system("service postgresql initdb");
+}
+
+# Allow "jobarchive" user to connect to the database.
+edit_pgserver_config();
+
+# Restart the database (redhat only)
+system('su - postgres -c "/usr/bin/pg_ctl restart"');
+
+# Wait for database to be up.
+sleep(3);
+
+# Create the database;
 create_dbase_entries($jobmonarch_conf);
+
+# Setup jobmonarch
 create_config_files($jobmonarch_conf);
+
+# Setup ganglia
 change_ganglia_conf($jobmonarch_conf);
 
+# Start jobmonarch services.
 start_services($jobmonarch_conf);
+
