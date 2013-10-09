@@ -151,8 +151,6 @@
       <pkg>syslinux</pkg>
       <pkg>systemimager-x86_64boot-standard</pkg>
       <pkg>systemimager-x86_64initrd_template</pkg>
-      <pkg>systemimager-i386boot-standard</pkg>
-      <pkg>systemimager-i386initrd_template</pkg>
     </requires>
   </serverDeps>
   <clientDeps>
