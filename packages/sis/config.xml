@@ -164,7 +164,7 @@
   <changelog>
     <versionEntry version="4.0.8-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-10-09T10:55:24+02:00">
-        <item>Removed requirement on i386 boot&initrd pkgs on x86_64 arch. (same behaviour as debian)</item>
+        <item>Removed requirement on i386 boot and initrd pkgs on x86_64 arch. (same behaviour as debian)</item>
       </changelogEntry>
     </versionEntry>
     <versionEntry version="4.0.7-1">
