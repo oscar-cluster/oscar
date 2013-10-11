@@ -22,26 +22,15 @@
 
 # $Id: 
 
-BEGIN {
-    if (defined $ENV{OSCAR_HOME}) {
-        unshift @INC, "$ENV{OSCAR_HOME}/lib";
-    }
-}
-
 use strict;
-use OSCAR::OCA::OS_Settings;
 use OSCAR::SystemServices;
-use Carp;
+use OSCAR::SystemServicesDefs;
 
-my $named = OSCAR::OCA::OS_Settings::getitem("dns_service");
-
-# If undefined, we assume that the $service is named "named".
-$named = "named" if (not defined $named);
 
 # Enabling DNS service
-OSCAR::SystemServices::enable_system_services( ($named) );
+OSCAR::SystemServices::enable_system_services( (OSCAR::SystemServicesDefs::DNS()) );
 
 # Restarting DNS service
-OSCAR::SystemServices::system_service(OSCAR::SystemServicesDefs::STOP(),$named);
-OSCAR::SystemServices::system_service(OSCAR::SystemServicesDefs::START(),$named);
+OSCAR::SystemServices::system_service(OSCAR::SystemServicesDefs::DNS(), OSCAR::SystemServicesDefs::STOP());
+OSCAR::SystemServices::system_service(OSCAR::SystemServicesDefs::DNS(), OSCAR::SystemServicesDefs::START());
 
