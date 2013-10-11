@@ -71,7 +71,7 @@ our $basedir = "/etc/oscar/clusters";
 #
 # return: 1 if yes, 0 else, -1 if error.
 sub is_nis_env () {
-    my $cmd = "domainname";
+    my $cmd = "LC_ALL=C domainname";
 
     my $output = `$cmd`;
     chomp ($output);
