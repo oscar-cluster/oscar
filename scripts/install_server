@@ -174,8 +174,6 @@ oscar_log_subsection("Done marking installed bits in ODA");
 oscar_log_subsection("Running post_server_install scripts " .
 		     "for server non-core packages");
 foreach my $opkg (@opkgs) {
-    # if($opkg ne "networking"){   # EF: why was this here?
-                                   # if it doesn't work, fix it!  
     OSCAR::Package::run_pkg_script($opkg, "post_server_install", 0, undef) 
         or die("ERROR: Failed running post_server_install for $opkg");
 }

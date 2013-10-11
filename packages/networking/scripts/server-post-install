@@ -1,21 +1,47 @@
-#!/bin/sh
+#!/usr/bin/perl
 
-# After server is installed
-# Restart the name service daemon
+# Copyright 2013     CEA Commisariat à l'Energie Atomique
+#                    Olivier Lahaye <olivier.lahaye@cea.fr>
+# 
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
 
-debian() {
-    true
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#   This is a script which does everything that needs to be done for
+#   networking server post install.
+
+# $Id: 
+
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
 }
 
-rpm() {
-    /sbin/chkconfig named on
-    /etc/init.d/named stop 
-    sleep 2
-    /etc/init.d/named start
-}
+use strict;
+use OSCAR::OCA::OS_Settings;
+use OSCAR::SystemServices;
+use Carp;
 
-scriptname=$0
-case $scriptname in
-    *postinst) debian $*;;
-    *rpm-tmp.*) rpm $*;;
-esac
+my $named = OSCAR::OCA::OS_Settings::getitem("dns_service");
+
+# If undefined, we assume that the $service is named "named".
+$named = "named" if (not defined $named);
+
+# Enabling DNS service
+OSCAR::SystemServices::enable_system_services( ($named) );
+
+# Restarting DNS service
+OSCAR::SystemServices::system_service(OSCAR::SystemServicesDefs::STOP(),$named);
+OSCAR::SystemServices::system_service(OSCAR::SystemServicesDefs::START(),$named);
+
