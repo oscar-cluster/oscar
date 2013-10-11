@@ -306,7 +306,7 @@ sub detect_pools_format (@) {
             # comparison
             $format = $type;
         } else{
-            if ($type ne $type) {
+            if ($type ne $type) { # OL: There is a BUG here... Need to analyse
                 carp "ERROR: the two pools for the local distro are not of".
                      "the same type ($format, $type)\n";
                 return undef;
