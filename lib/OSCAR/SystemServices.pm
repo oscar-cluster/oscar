@@ -50,6 +50,7 @@ use base qw(Exporter);
 
 @EXPORT = qw (
              enable_system_services
+             disable_system_services
              system_service
              get_system_services
              );
