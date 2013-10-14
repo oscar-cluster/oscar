@@ -240,7 +240,7 @@ sub set_system_services ($@) {
 
                         # OL: Also, use /sbin/update-rc.d when possible.
                         #system("/bin/ln -s $initrd_path/$service_name $initrd_path/../$run_level/$service_name");
-                        system("/usr/sbin/update-rc.d -f $service_name $command";
+                        system("/usr/sbin/update-rc.d -f $service_name $command");
                         # OL: BUG: need to prepend #order before linkname.
                         if ($? != 0) {
                             OSCAR::Logger::oscar_log_subsection ("[ERROR] Failed to $command $service");
