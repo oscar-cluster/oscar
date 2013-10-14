@@ -28,6 +28,7 @@
         <opkg>sc3</opkg>
         <opkg>selinux</opkg>
         <opkg>sge</opkg>
+        <opkg>slurm</opkg>
         <opkg>sis</opkg>
         <opkg>switcher</opkg>
         <opkg>sync-files</opkg>

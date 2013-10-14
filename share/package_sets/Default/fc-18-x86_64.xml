@@ -2,25 +2,16 @@
 <package_set>
     <name>Default</name>
     <packages>
-        <opkg>apitest</opkg>
         <opkg>base</opkg>
         <opkg>c3</opkg>
         <opkg>ganglia</opkg>
-        <opkg>jobmonarch</opkg>
-        <opkg>lam</opkg>
-        <opkg>mtaconfig</opkg>
-        <opkg>munge</opkg>
         <opkg>oda</opkg>
-        <opkg>oscarv-kvm</opkg>
         <opkg>opium</opkg>
-        <opkg>rapt</opkg>
         <opkg>sc3</opkg>
+        <opkg>selinux</opkg>
         <opkg>sis</opkg>
-        <opkg>sis-diskless</opkg>
-        <opkg>slurm</opkg>
         <opkg>switcher</opkg>
         <opkg>sync-files</opkg>
-        <opkg>torque-oscar</opkg>
         <opkg>yume</opkg>
     </packages>
 </package_set>
