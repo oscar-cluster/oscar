@@ -44,7 +44,9 @@ use Carp;
 use OSCAR::Logger;
 use OSCAR::Database;
 use OSCAR::OCA::OS_Detect;
+use OSCAR::OCA::OS_Settings;
 use OSCAR::ConfigManager;
+use OSCAR::SystemServices;
 use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
 
@@ -127,15 +129,25 @@ sub __setup_dhcpd ($) {
     clean_hostsfile() 
         or (carp "ERROR: Couldn't clean hosts file!", return -1);
 
-    my $dhcpd_configfile = "/etc/dhcpd.conf";
-    # Under RHEL6 like, the dhcpd config file is in /etc/dhcp
-    $dhcpd_configfile = "/etc/dhcp/dhcpd.conf" if -x "/etc/dhcp";
-    # Under Debian the dhcpd config file is in /etc/dhcp3
-    $dhcpd_configfile = "/etc/dhcp3/dhcpd.conf" if -x "/etc/dhcp3";
+    # Get DHCP config file and leases file.
+    my $config = getconf();
+    my $dhcpd_configfile = $config->{'dhcp_configfile'};
+    my $dhcpd_leases = $config->{'dhcp_leases'};
+
+    if (undef $dhcpd_configfile) {
+        oscar_log_subsection ("ERROR: dhcpd_configfile not set up for this distro. Check the configuration files in lib/OSCAR/OCA/OS_Settings/*");
+    } else {
+       oscar_log_subsection ("[INFO] dhcp_configfile: $dhcpd_configfile"); 
+    }
+    if (undef $dhcpd_leases) {
+        oscar_log_subsection ("ERROR: dhcpd_configfile not set up for this distro. Check the configuration files in lib/OSCAR/OCA/OS_Settings/*");
+    } else {
+        oscar_log_subsection ("[INFO] dhcp_leases: $dhcpd_leases");
+    }
     oscar_log_subsection ("Step $step_number: About to run setup_dhcpd...");
     if(-e $dhcpd_configfile) {
         copy($dhcpd_configfile, $dhcpd_configfile.".oscarbak") 
-            or (carp "ERROR: Couldn't backup dhcpd.conf file", return -1);
+            or (carp "ERROR: Couldn't backup dhcp server config file ($dhcpd_configfile)", return -1);
     }
     my ($ip, $broadcast, $netmask) = interface2ip($interface);
     if (!defined $interface || OSCAR::Network::is_a_valid_ip ($ip) == 0) {
@@ -158,19 +170,6 @@ sub __setup_dhcpd ($) {
     oscar_log_subsection("Step $step_number: Successfully ran \"$cmd\"");
 
     oscar_log_subsection("Step $step_number: Checking the DHCP lease file");
-    # The DHCP lease can be in different places, depending on the distro, 
-    # we detect where
-    my $dhcpd_leases;
-    if ( -d "/var/lib/dhcp3" ) {
-        $dhcpd_leases = "/var/lib/dhcp3/dhcpd.leases";
-    } elsif ( -d "/var/lib/dhcp" ) {
-        $dhcpd_leases = "/var/lib/dhcp/dhcpd.leases";
-    } elsif ( -d "/var/lib/dhcpd" ) {
-        $dhcpd_leases = "/var/lib/dhcpd/dhcpd.leases";
-    } else {
-        carp "ERROR: Impossible to detect where the DHCP lease is stored.";
-        return -1;
-    }
 
     if(!-f "$dhcpd_leases") {
         oscar_log_subsection("Step $step_number: Creating $dhcpd_leases");
@@ -194,11 +193,12 @@ sub __setup_dhcpd ($) {
         }
     }
 
-    # We get the path to the DHCP server and restart it.
-    my $dhcpdpath = OSCAR::OCA::OS_Settings::getitem ("dhcp_daemon");
+    # We restart the DHCP server.
     oscar_log_subsection("Step $step_number: Restarting dhcpd service");
-    !system("$dhcpdpath restart")
-        or (carp "ERROR: Couldn't restart $dhcpdpath.\n", return -1);
+
+    !system_service(OSCAR::SystemServicesDefs::DHCP(),OSCAR::SystemServicesDefs::RESTART())
+        or (carp "ERROR: Couldn't restart dhcp service.\n", return -1);
+
     oscar_log_subsection("Step $step_number: Successfully restarted dhcpd ".
                          "service");
     return 0;
@@ -518,77 +518,25 @@ sub __enable_install_mode () {
     my $script;
     my $file;
     if ($install_mode eq "systemimager-rsync") {
-        # Stop systemimager-server-flamethrowerd
-        $script = "/etc/init.d/systemimager-server-flamethrowerd";
-	if (-f $script) {
-            $cmd = "$script stop";
-            if (system ($cmd)) {
-                carp "ERROR: Impossible to execute $cmd";
-                return 0;
-            }
+        # Stop systemimager-server-flamethrowerd and systemimager-server-bittorrent
+        !system_service(OSCAR::SystemServicesDefs::SI_FLAMETHROWER(),OSCAR::SystemServicesDefs::STOP())
+            or (carp "ERROR: Couldn't stop systemimager-server-flamethrowerd.\n", return 0);
+        !system_service(OSCAR::SystemServicesDefs::SI_BITTORRENT(),OSCAR::SystemServicesDefs::STOP())
+            or (carp "ERROR: Couldn't stop systemimager-server-bittorent.\n", return 0);
 
-            # Remove systemimager-server-flamethrowerd from chkconfig
-            if ($binary_format ne "deb") {
-                $cmd = "/sbin/chkconfig systemimager-server-flamethrowerd off";
-                if (system ($cmd)) {
-                    carp "ERROR: Impossible to execute $cmd";
-                    return 0;
-                }
-            } else {
-                $cmd = "update-rc.d -f systemimager-server-flamethrowerd remove";
-                if (system ($cmd)) {
-                    carp "ERROR: Impossible to execute $cmd";
-                    return 0;
-                }
-            }
-        }
-
-        # Stop systemimager-server-bittorrent if bittorrent is installed.
-        $script = "/etc/init.d/systemimager-server-bittorrent";
-        if (-f $script) {
-            $cmd = "$script stop";
-            if (system ($cmd)) {
-                carp "ERROR: Impossible to execute $cmd";
-                return 0;
-            }
-
-            # Remove systemimager-server bittorrent from chkconfig
-            if ($binary_format ne "deb") {
-                $cmd = "/sbin/chkconfig systemimager-server-bittorrent off";
-                if (system ($cmd)) {
-                    carp "ERROR: Impossible to execute $cmd";
-                    return 0;
-                }
-            } else {
-                $cmd = "update-rc.d -f systemimager-server-bittorrent remove";
-                if (system ($cmd)) {
-                    carp "ERROR: Impossible to execute $cmd";
-                    return 0;
-                }
-            }
-        }
+        # disable systemimager-server-flamethrowerd and systemimager-server-bittorrent
+        disable_system_services( (OSCAR::SystemServicesDefs::SI_FLAMETHROWER(),
+                                  OSCAR::SystemServicesDefs::SI_BITTORRENT()) )
+            or (carp "ERROR: Couldn't disable si_flametrhower and si_bittorrent.\n", return 0);
 
         # Restart systemimager-server-rsyncd
-        $cmd = "/etc/init.d/systemimager-server-rsyncd restart";
-        if (system ($cmd)) {
-            carp "ERROR: Impossible to execute $cmd";
-            return 0;
-        }
+        !system_service(OSCAR::SystemServicesDefs::SI_RSYNC(),OSCAR::SystemServicesDefs::RESTART())
+            or (carp "ERROR: Couldn't restart systemimager-rsync.\n", return 0);
 
         # Enable systemimager-server-rsyncd
-        if ($binary_format ne "deb") {
-            $cmd = "/sbin/chkconfig systemimager-server-rsyncd on";
-            if (system ($cmd)) {
-                carp "ERROR: Impossible to execute $cmd";
-                return 0;
-            }
-        } else {
-            $cmd = "update-rc.d -f systemimager-server-rsyncd start 20 2 .";
-            if (system ($cmd)) {
-                carp "ERROR: Impossible to execute $cmd";
-                return 0;
-            }
-        }
+        !enable_system_services( (OSCAR::SystemServicesDefs::SI_RSYNC()) )
+            or (carp "ERROR: Couldn't enable systemimager-rsync.\n", return 0);
+
     } elsif ($install_mode eq "systemimager-multicast") {
         # Stop systemimager-server-bittorrent
         $script = "/etc/init.d/systemimager-server-bittorrent";

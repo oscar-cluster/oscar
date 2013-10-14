@@ -90,7 +90,7 @@ sub system_service_status ($) {
     my $service_name = OSCAR::OCA::OS_Settings::getitem($service . "_service");
 
     # If undefined, we assume that the $service is the exact name.
-    $service_name = "$service" if (undef $service_name);
+    $service_name = "$service" if (not defined $service_name);
 
     # Can't use switch/case here: for unknown reason, switch/given keyword is not recognized...
     if ($service_mgt eq "systemd") {
@@ -173,7 +173,7 @@ sub set_system_services ($@) {
                     my $service_name = OSCAR::OCA::OS_Settings::getitem($service . "_service");
 
                     # If undefined, we assume that the $service is the exact name.
-                    $service_name = "$service" if (undef $service_name);
+                    $service_name = "$service" if (not defined $service_name);
 
                     system("/sbin/systemctl $command $service_name");
                     my $status = system_service_status ($service);
@@ -204,7 +204,7 @@ sub set_system_services ($@) {
                     my $service_name = OSCAR::OCA::OS_Settings::getitem($service . "_service");
 
                     # If undefined, we assume that the $service is the exact name.
-                    $service_name = "$service" if (undef $service_name);
+                    $service_name = "$service" if (not defined $service_name);
 
                     system("/sbin/chkconfig $service_name $command");
                     my $status = system_service_status ($service);
@@ -236,7 +236,7 @@ sub set_system_services ($@) {
                         my $service_name = OSCAR::OCA::OS_Settings::getitem($service . "_service");
 
                         # If undefined, we assume that the $service is the exact name.
-                        $service_name = "$service" if (undef $service_name);
+                        $service_name = "$service" if (not defined $service_name);
 
                         # OL: Also, use /sbin/update-rc.d when possible.
                         #system("/bin/ln -s $initrd_path/$service_name $initrd_path/../$run_level/$service_name");
@@ -284,7 +284,7 @@ sub system_service ($$) {
     # Get the real daemon name (example: http service can be httpd or apache2)
     my $service_name = OSCAR::OCA::OS_Settings::getitem ($service . "_service");
     # If undefined, we assume that $service is the exact name.
-    $service_name = $service if (undef $service_name);
+    $service_name = $service if (not defined $service_name);
 
     my $cmd="";
     my $cmd_action="";
