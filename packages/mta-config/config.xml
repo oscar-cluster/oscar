@@ -9,6 +9,10 @@
   <uri>http://oscar.openclustergroup.org/</uri>
   <authors>
     <author cat="maintainer">
+      <name>Olivier Lahaye</name>
+      <email>olivier.lahaye@cea.fr</email>
+    </author>
+    <author cat="maintainer">
       <name>DongInn Kim</name>
       <email>dikim@osl.iu.edu</email>
     </author>
@@ -17,10 +21,48 @@
       <email>valleegr@ornl.gov</email>
     </author>
   </authors>
-  <serverDeps/>
-  <clientDeps/>
+  <serverDeps>
+    <requires>
+      <filters>
+        <dist>fc</dist>
+        <dist>mdk</dist>
+        <dist>mdv</dist>
+        <dist>rhel</dist>
+      </filters>
+      <pkg>postfix</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>sles</dist>
+        <dist>suse</dist>
+      </filters>
+      <pkg>postfix</pkg>
+    </requires>
+  </serverDeps>
+  <clientDeps>
+    <requires>
+      <filters>
+        <dist>fc</dist>
+        <dist>mdk</dist>
+        <dist>mdv</dist>
+        <dist>rhel</dist>
+      </filters>
+      <pkg>postfix</pkg>
+    </requires>
+    <requires>
+      <filters>
+        <dist>sles</dist>
+        <dist>suse</dist>
+      </filters>
+      <pkg>postfix</pkg>
+    </requires>
+  </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.1.2-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-10-14T10:30:17+02:00">
+        <item>Add dependancies so postfix package is required.</item>
+      </changelogEntry>
     <versionEntry version="1.1.1-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-12-08T15:29:03-05:00">
         <item>Fix a useless warning in api-post-deploy.</item>
