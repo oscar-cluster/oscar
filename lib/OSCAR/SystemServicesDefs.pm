@@ -19,8 +19,10 @@ use constant SSH            => 'ssh';
 use constant DHCP           => 'dhcp';
 use constant MYSQL          => 'mysql';
 use constant POSTGRESQL     => 'pgsql';
-use constant SI_MONITORD    => 'monitord';
-use constant SI_RSYNCD      => 'rsyncd';
+use constant SI_MONITOR     => 'monitor';
+use constant SI_RSYNC       => 'rsync';
+use constant SI_FLAMETHROWER => 'flamethrower';
+use constant SI_BITTORRENT  => 'bittorrent';
 
 # List of actions related to system services
 use constant START      => 0;
@@ -41,8 +43,10 @@ our @EXPORT = qw(
                 DHCP
                 MYSQL
                 POSTGRESQL
-                SI_MONITORD
-                SI_RSYNCD
+                SI_MONITOR
+                SI_RSYNC
+                SI_FLAMETHROWER
+                SI_BITTORRENT
                 START
                 STOP
                 RESTART
