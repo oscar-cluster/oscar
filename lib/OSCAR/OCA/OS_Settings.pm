@@ -52,16 +52,16 @@ sub readfile ($$) {
 # if any are missing, they will be ignored.
 
 sub getconf () {
-	my $config = {};
-	my $os = OSCAR::OCA::OS_Detect::open();
+    my $config = {};
+    my $os = OSCAR::OCA::OS_Detect::open();
     my $distro = $os->{distro};
     my $version = $os->{distro_version};
-	my $compatdistro = $os->{compat_distro};
-	my $compatversion = $os->{compat_distrover};
-	my $ident = $os->{ident};
-	readfile ("default", $config);
-	readfile ("$compatdistro", $config);
-	readfile ("$compatdistro$compatversion", $config);
+    my $compatdistro = $os->{compat_distro};
+    my $compatversion = $os->{compat_distrover};
+    my $ident = $os->{ident};
+    readfile ("default", $config);
+    readfile ("$compatdistro", $config);
+    readfile ("$compatdistro$compatversion", $config);
     readfile ("$distro", $config);
     readfile ("$distro$version", $config);
 	# This line specifies very specific OS versions, and should
@@ -74,18 +74,18 @@ sub getconf () {
 # a configuration item.  It returns the string specified in the configuration
 # files.
 sub getitem ($) {
-	my $request = shift;
-	my $config = getconf();
-	if ($verbose) { print "Called getitem with " . $request . " and returning " . $config->{$request} . "\n" };
-	if ($verbose) { print Dumper($config) };
-	if ( $config->{$request} ) {
-		return $config->{$request};
-		} else {
-		# Unclear if we should die, or return undef here..
-		if ($verbose) { print "We did not find a config option for " . $request . " please check the configuration files in lib/OSCAR/OCA/OS_Settings\n" };
-		return undef;
-		}
-	}
+    my $request = shift;
+    my $config = getconf();
+    if ($verbose) { print "Called getitem with " . $request . " and returning " . $config->{$request} . "\n" };
+    if ($verbose) { print Dumper($config) };
+    if ( $config->{$request} ) {
+        return $config->{$request};
+    } else {
+        # Unclear if we should die, or return undef here..
+        if ($verbose) { print "We did not find a config option for " . $request . " please check the configuration files in lib/OSCAR/OCA/OS_Settings\n" };
+        return undef;
+    }
+}
 
 #stub for additem
 # which will allow opkgs or other to add configuration into the OS_Setting 

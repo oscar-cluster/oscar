@@ -3,7 +3,7 @@ TOP_LIB_DIR = ../../..
 include $(TOP_LIB_DIR)/Config.mk
 
 SUBDIRS := 
-FILES := default debian fedora7 suse ubuntu1204
+FILES := default debian fedora suse ubuntu1204
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done

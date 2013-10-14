@@ -1,10 +1,8 @@
-# Ubuntu 12.04 specific settings
 # Overwrite few deamons
-
-# Overwrite few services
+dhcp_daemon=/etc/init.d/dhcp3-server
 
 # Overwrite few package names
+nfs_package=nfs-kernel-server
 
 # Overwrite few config file locations
 dhcp_configfile=/etc/dhcp3/dhcpd.conf
-dhcp_leases=/var/lib/dhcp3/dhcpd.leases

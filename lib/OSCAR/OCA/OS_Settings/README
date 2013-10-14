@@ -6,6 +6,12 @@ OS_Settings.pm reads from general through to specific.  This means that
 it will read and use the most specific setting, even if the setting exists
 in a "higher" config.  
 
+OS_Settings::getconf reads the configuration files for default, distro, distro with 
+version, compatible distro, compatible distro with version and then the
+complete ident string.  For example it will read:
+default -> centos -> centos5 -> rhel -> rhel5 -> linux-x86_64-centos-5-0
+if any are missing, they will be ignored.
+
 All configuration options should exist in the default file.
 
 The format of the file is as such:

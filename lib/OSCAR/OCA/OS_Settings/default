@@ -5,14 +5,31 @@ init=/etc/init.d
 nfs_package=nfs
 ssh_package=sshd
 portmap_package=portmap
+dns_package=bind
 
-# Specifies the name of few deamons
+# Specifies the name of few deamons (obsolete)
 ssh_daemon=/etc/init.d/sshd
 dhcp_daemon=/etc/init.d/dhcpd
 mysql_daemon=/etc/init.d/mysqld
 monitord_daemon=/etc/init.d/systemimager-server-monitord
 rsyncd_daemon=/etc/init.d/systemimager-server-rsyncd
 
+# Specifies the name of few services
+ssh_service=sshd
+dhcp_service=dhcpd
+mysql_service=mysqld
+postresql_service=postgresql
+monitor_service=systemimager-server-monitord
+rsync_service=systemimager-server-rsyncd
+flamethrower_service=systemimager-server-flamethrowerd
+bittorrent_service=systemimager-server-bittorrent
+tftp_service=atftpd
+ftp_service=ftpd
+http_service=httpd
+dns_service=named
+
 # Specifies few configuration files
 exports_file=/etc/exports
-dhcp_configfile=/etc/dhcpd.conf
+dhcp_configfile=/etc/dhcp/dhcpd.conf
+dhcp_leases=/var/lib/dhcp/dhcpd.leases
+dns_configfile=/etc/named.conf

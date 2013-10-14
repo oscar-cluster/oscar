@@ -1,4 +1,4 @@
-# Ubuntu 12.04 specific settings
+# debian 6 specific settings
 # Overwrite few deamons
 
 # Overwrite few services
