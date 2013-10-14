@@ -147,6 +147,9 @@ sub detect_dir {
     my $full_distro_ver = "$deb_ver.$deb_update";
     $id->{codename} = $codenames{$full_distro_ver};
 
+    # determine services management subsystem (systemd, initscripts, manual)
+    $id->{service_mgt} = "manual";
+
     # Make final string
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}-$id->{distro_update}";
     return $id;

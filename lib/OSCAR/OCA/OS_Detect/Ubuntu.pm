@@ -141,6 +141,9 @@ sub detect_dir {
     $id->{pkg} = $pkg;   
     $id->{codename} = $codenames{$distro_version};
 
+    # determine services management subsystem (systemd, initscripts, manual)
+    $id->{service_mgt} = "manual";
+
     # Make final string
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}";
     $id->{ident} .= $id->{distro_update} if defined $id->{distro_update};

@@ -49,7 +49,7 @@ sub detect_dir {
 	my $os_version = $1;
 	my $os_update = $2;
         $id->{distro} = $distro;
-	$id->{distro_upgrade} = $os_update;
+        $id->{distro_upgrade} = $os_update;
         $id->{distro_version} = $os_version;
         $id->{compat_distro} = $compat_distro;
         $id->{compat_distrover} = $os_version;
@@ -63,6 +63,13 @@ sub detect_dir {
     # determine architecture
     my $arch = main::OSCAR::OCA::OS_Detect::detect_arch_file($root,$detect_file);
     $id->{arch} = $arch;
+
+    # determine services management subsystem (systemd, initscripts, manual)
+    if ($id->{distro_version} <= 12) {
+        $id->{service_mgt} = "initscripts";
+    } else {
+        $id->{service_mgt} = "systemd"; # In use since 12.1
+    }
 
     # Make final string
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}";

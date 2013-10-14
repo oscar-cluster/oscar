@@ -57,6 +57,9 @@ sub detect_dir {
     my $arch = main::OSCAR::OCA::OS_Detect::detect_arch_file($root,$detect_file);
     $id->{arch} = $arch;
 
+    # determine services management subsystem (systemd, initscripts, manual)
+    $id->{service_mgt} = "initscripts";
+
     # Make final string
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}";
 
