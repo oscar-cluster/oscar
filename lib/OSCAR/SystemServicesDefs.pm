@@ -49,9 +49,14 @@ our @EXPORT = qw(
                 SI_RSYNC
                 SI_FLAMETHROWER
                 SI_BITTORRENT
+                GANGLIA_GMOND
+                GANGLIA_GMETAD
                 START
                 STOP
                 RESTART
+                STATUS
+                STARTED
+                STOPPED
                 );
 
 1;
