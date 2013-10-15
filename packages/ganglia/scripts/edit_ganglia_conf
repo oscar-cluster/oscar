@@ -65,8 +65,8 @@ GetOptions(
             'verbose'   => \$verbose, 
           ) || help_and_die();
 
-my $gmetad_conf = getitem(GANGLIA_GMETAD()."_configfile");
-my $gmmond_conf = getitem(GANGLIA_GMOND()."_configfile");
+my $gmetad_conf = OSCAR::OCA::OS_Settings::getitem(GANGLIA_GMETAD()."_configfile");
+my $gmond_conf = OSCAR::OCA::OS_Settings::getitem(GANGLIA_GMOND()."_configfile");
 # GV: this cannot work currently so we deactivate.
 #if ($test) {
 #    $gmetad_conf = "gmetad.conf";
@@ -75,8 +75,8 @@ my $gmmond_conf = getitem(GANGLIA_GMOND()."_configfile");
 #}
 
 # Backup config files.
-backup_file_if_not_exist($gmetad_conf) or carp "ERROR: Couldn't backup $gmetad_conf");
-backup_file_if_not_exist($gmmond_conf) or carp "ERROR: Couldn't backup $gmmond_conf");
+backup_file_if_not_exist($gmetad_conf) or carp "ERROR: Couldn't backup $gmetad_conf";
+backup_file_if_not_exist($gmond_conf) or carp "ERROR: Couldn't backup $gmond_conf";
 
 my $pkgdir = OSCAR::Package::get_scripts_dir("ganglia", "");
 if (!-d $pkgdir) {
@@ -219,7 +219,6 @@ if ($image) {
         opkg_print("Ganglia gmetad configuration file modified, re-starting daemon...\n");
         !system_service(GANGLIA_GMETAD(),RESTART())
             or die "ERROR: Couldn't restart gmetad.";
-        }
 
         opkg_print("Adding ganglia configuration to httpd service\n");
         if (add_httpd_conf()) {
