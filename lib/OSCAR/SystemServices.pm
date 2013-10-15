@@ -336,6 +336,7 @@ sub system_service ($$) {
 
     # my $ret_code = system ($cmd) / 256;
     my $ret_code = system ($cmd);
+    $ret_code = $ret_code/256 if ($ret_code > 255);
     OSCAR::Logger::oscar_log_subsection ("[SystemService] Return code: $ret_code");
 
     return $ret_code;
