@@ -29,7 +29,19 @@ http_service=httpd
 dns_service=named
 
 # Specifies few configuration files
-exports_file=/etc/exports
-dhcp_configfile=/etc/dhcp/dhcpd.conf
 dhcp_leases=/var/lib/dhcp/dhcpd.leases
+dhcp_configfile=/etc/dhcp/dhcpd.conf
 dns_configfile=/etc/named.conf
+ganglia_gmond_configfile=/etc/ganglia/gmond.conf
+ganglia_gmetad_configfile=/etc/ganglia/gmetad.conf
+ssh_configfile=/etc/ssh/sshd_config
+monitor_configfile=
+bittorrent_configfile=/etc/systemimager/bittorrent.conf
+flamethrower_configfile=/etc/systemimager/flamethrower.conf
+rsync_configfile=
+ftp_configfile=
+dns_configfile=/etc/named.conf
+exports_configfile=/etc/exports
+# For compatibility
+exports_file=/etc/exports
+
