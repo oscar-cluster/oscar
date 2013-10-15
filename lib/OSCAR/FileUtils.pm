@@ -41,6 +41,7 @@ use Carp;
 @EXPORT = qw(
             add_line_to_file_without_duplication
             add_to_annoted_block
+            backup_file_if_not_exist
             download_file
 			extract_file
             file_type
@@ -57,6 +58,38 @@ use Carp;
             );
 
 our $verbose = $ENV{OSCAR_VERBOSE};
+
+################################################################################
+# Crate a backup of a file with .bak extention in the same directory if        #
+# file.bak is not already there. (avoid overwriting the real back upon multiple#
+# runs                                                                         #
+#                                                                              #
+# Parameter: file to backup                                                    #
+#                                                                              #
+# return:    1 If success (backup created or already exists).                  #
+#            0 else.(Same behavior as File::Copy:copy)                         #
+################################################################################
+sub backup_file_if_not_exist($) {
+    my $file = shift;
+    if ( -e $file ) {
+        if ( -e "$file.bak" ) {
+            OSCAR::Logger::oscar_log_subsection("[INFO] $file not backed up. (backup already exists)");
+            return 1;
+        } else {
+            my $cmd = "/bin/cp -f $file $file.oscarbak";
+            if (system ($cmd)) {
+                carp "ERROR: ($!) Impossible to execute $cmd";
+                OSCAR::Logger::oscar_log_subsection("ERROR: Failed to backup $file. [$cmd => $!]");
+                return 0;
+            } else {
+                OSCAR::Logger::oscar_log_subsection("[INFO] $file backed up as $file.oscarback.");
+                return 1;
+            }
+        }
+    } else {
+        carp ("ERROR: File not found: $file");
+    }
+}
 
 sub get_line_in_file ($$) {
     my ($file, $pos) = @_;
@@ -659,6 +692,10 @@ A set of usefull functions for the manipulation of files. This package is design
 
 Add a line into a file and make sure the line appears only one.
 add_line_to_file_without_duplication($line, $file);
+
+=item backup_file_if_not_exist
+
+returns 1 if backup file created or already exists, 0 else.
 
 =item download_file
 
