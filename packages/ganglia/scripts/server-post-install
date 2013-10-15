@@ -21,7 +21,7 @@
 # Copyright (c) 2008    Oak Ridge National Laboratory
 #                       Geoffroy Vallee <valleegr@ornl.gov>
 #                       All rights reserved.
-
+# Copyright (c) 2013    Olivier Lahaye <olivier.lahaye@cea.fr>
 #$Id$
 
 BEGIN {
@@ -33,14 +33,12 @@ BEGIN {
 use strict;
 use warnings "all";
 use OSCAR::Package;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 
-my $file = "/etc/init.d/gmond";
-if (!-f $file) {
-    die "ERROR: $file does not exit";
-}
-my $cmd = "/etc/init.d/gmond stop";
-system ($cmd); # Note that we do not care if "stop" does not work, we just want
-               # to be sure the service is stopped.
+
+# Note that we do not care if "stop" does not work, we just want to be sure the service is stopped.
+system_service(OSCAR::SystemServicesDefs::GANGLIA_GMOND(),OSCAR::SystemServicesDefs::STOP())
 
 my $pkgdir = OSCAR::Package::get_scripts_dir("ganglia", "post_server_install");
 

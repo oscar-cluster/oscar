@@ -43,6 +43,10 @@ if (system ($cmd)) {
     die "ERROR: Impossible to execute $cmd";
 }
 
+# TODO: Need to update for systemd. (use OSCAR::SystemServices)
+# Not yet possible. Need support for remote command.
+# !system_service(GANGLIA_GMOND(),RESTART(),"/usr/bin/cexec")
+#    or die "ERROR: Couldn't restart gmondi on all nodes.";
 $cmd = "/usr/bin/cexec /etc/init.d/gmond restart";
 if (system ($cmd)) {
     die "ERROR: Impossible to execute $cmd";

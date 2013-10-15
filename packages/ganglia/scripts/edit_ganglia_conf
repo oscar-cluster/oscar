@@ -25,6 +25,7 @@
 # Copyright 2008-2009   Oak Ridge National Laboratory
 #                       Geoffroy Vallee <valleegr@ornl.gov>
 #                       All rights reserved.
+# Copyright 2013 Olivier Lahaye <olivier.lahaye@cea.fr>
 #
 
 BEGIN {
@@ -44,8 +45,12 @@ use OSCAR::Configurator_backend;
 use OSCAR::Database;
 use OSCAR::Opkg;
 use OSCAR::OCA::OS_Detect;
+use OSCAR::OCA::OS_Settings;
 use OSCAR::Package;
 use OSCAR::Utils;
+use OSCAR::FileUtils;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 use Data::Dumper;
 
 my ($do_gmond, $do_gmetad, $image, @options, $test, $verbose);
@@ -60,14 +65,19 @@ GetOptions(
             'verbose'   => \$verbose, 
           ) || help_and_die();
 
-my $gmetad_conf = "/etc/ganglia/gmetad.conf";
-my $gmond_conf = "/etc/ganglia/gmond.conf";
+my $gmetad_conf = getitem(GANGLIA_GMETAD()."_configfile");
+my $gmmond_conf = getitem(GANGLIA_GMOND()."_configfile");
 # GV: this cannot work currently so we deactivate.
 #if ($test) {
 #    $gmetad_conf = "gmetad.conf";
 #    $gmond_conf = "gmond.conf";
 #    $ENV{OSCAR_PACKAGE_HOME} = ".";
 #}
+
+# Backup config files.
+backup_file_if_not_exist($gmetad_conf) or carp "ERROR: Couldn't backup $gmetad_conf");
+backup_file_if_not_exist($gmmond_conf) or carp "ERROR: Couldn't backup $gmmond_conf");
+
 my $pkgdir = OSCAR::Package::get_scripts_dir("ganglia", "");
 if (!-d $pkgdir) {
     die "ERROR: the package directory for Ganglia does not exist ($pkgdir)";
@@ -190,23 +200,42 @@ if ($image) {
             die "ERROR: Impossible to edit gmond configuration ($gmond_conf, ".
                 "$master_conf)";
         }
-        if (restart_gmond()) {
-            die "ERROR: Impossible to restart gmond";
-        }
+        opkg_print("Ganglia gmond configuration file modified, re-starting daemon...\n");
+        !system_service(GANGLIA_GMOND(),RESTART())
+            or die "ERROR: Couldn't restart gmond.";
     }
     if ($do_gmetad) {
         if (add_multicast_route()) {
             die "ERROR: Impossible to add multicast route";
         }
-        if (restart_gmond()) {
-            die "ERROR: Impossible to restart gmond";
-        }
+        opkg_print("Ganglia gmond configuration file modified, re-starting daemon...\n");
+        !system_service(GANGLIA_GMOND(),RESTART())
+            or die "ERROR: Couldn't restart gmond.";
+
         if (edit_gmetad_conf($gmetad_conf, $master_conf)) {
             die "ERROR: Impossible to edit gmetad_conf";
         }
-        if (restart_gmetad()) {
-            die "ERROR: Impossible to restart gmetad";
+
+        opkg_print("Ganglia gmetad configuration file modified, re-starting daemon...\n");
+        !system_service(GANGLIA_GMETAD(),RESTART())
+            or die "ERROR: Couldn't restart gmetad.";
         }
+
+        opkg_print("Adding ganglia configuration to httpd service\n");
+        if (add_httpd_conf()) {
+            carp "ERROR: Impossible to update httpd configuration";
+            exit 1;
+        }
+
+        opkg_print("enabling httpd service at boot time\n");
+        !enable_system_services( (HTTP()) )
+            or (carp "ERROR: Couldn't enable http service.\n", exit 1);
+
+        opkg_print("restarting httpd service\n");
+        !system_service(HTTP(),RESTART())
+            or die "ERROR: Couldn't restart http service.";
+
+        opkg_print("Ganglia page is located at http://$hostname/ganglia/\n");
     }
 }
 
@@ -501,81 +530,16 @@ sub add_multicast_route () {
 }
 
 # Return: 0 if success, -1 else.
-sub restart_gmond () {
-    opkg_print("Ganglia gmond configuration file modified, re-starting daemon...\n");
-
-    my $file = "/etc/init.d/gmond";
-    if (!-f $file) {
-        carp "ERROR: $file does not exist";
-        return -1;
-    }
-
-    my $cmd = "$file restart";
-    # restart gmond
-    if (system($cmd)) {
-        carp("ERROR: Impossible to execute $cmd");
-        return -1;
-    }
-
-    return 0;
-}
-
-# Return: 0 if success, -1 else.
-sub restart_gmetad () {
-    opkg_print("Ganglia gmetad configuration file modified, re-starting daemon...\n");
-    my $file = "/etc/init.d/gmetad";
-    if (!-f $file) {
-        carp "ERROR: $file does not exist";
-        return -1;
-    }
-    # restart gmetad
-    my $cmd = "$file restart";
-    if (system($cmd)) {
-        carp ("ERROR: Impossible to execute $cmd");
-        return -1;
-    }
-    opkg_print("Starting up apache...\n");
-    # autoload apache in levels 345 and start it up
-    my $HTTPD;
-    for my $srv ("httpd", "apache2", "apache") {
-        if (-x "/etc/init.d/$srv") {
-            $HTTPD=$srv;
-            last;
-        }
-    }
-    if (!$HTTPD) {
-        carp ("ERROR: Could not find any init script for httpd!");
-        return -1;
-    }
-    if (add_httpd_conf()) {
-        carp "ERROR: Impossible to update httpd configuration";
-        return -1;
-    }
-    if (system("/sbin/chkconfig $HTTPD on")) {
-        carp("ERROR: Failed to turn on $HTTPD with chkconfig");
-        return -1;
-    }
-    if (system("/etc/init.d/$HTTPD restart")) {
-        carp ("ERROR: Failed to restart $HTTPD");
-        return -1;
-    }
-    opkg_print("Ganglia page is located at http://$hostname/ganglia/\n");
-    return 0;
-}
-
-# Return: 0 if success, -1 else.
 sub add_httpd_conf() {
-    my $confdir;
-    for my $d ("httpd", "apache2", "apache") {
-        if (-d "/etc/$d/conf.d") {
-            $confdir="/etc/$d/conf.d";
-            last;
-        }
-    }
+    # Get httpd config directory.
+    my $confdir=OSCAR::OCA::OS_Settings::getitem(HTTP()."_configdir");
+
     if (!$confdir) {
-        carp ("ERROR: Could not find apache configuration directory!");
+        carp ("ERROR: Could not find httpd configuration directory!");
         return -1;
     }
+
+    # If no ganglia config present for httpd, create it. (otherwise, do nothing)
     if (! -f "$confdir/ganglia.conf") {
         open C, "> $confdir/ganglia.conf" 
             or (carp "ERROR: Could not open ganglia.conf: $!",
