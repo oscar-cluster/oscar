@@ -15,16 +15,17 @@ use constant SERVICE_DISABLED => 0;
 use constant SERVICE_ENABLED  => 1;
 
 # List of supported services
-use constant SSH            => 'ssh';
 use constant DHCP           => 'dhcp';
+use constant GANGLIA_GMOND  => 'gmond';
+use constant GANGLIA_GMETAD => 'gmetad';
+use constant HTTP           => 'http';
 use constant MYSQL          => 'mysql';
 use constant POSTGRESQL     => 'pgsql';
 use constant SI_MONITOR     => 'monitor';
 use constant SI_RSYNC       => 'rsync';
 use constant SI_FLAMETHROWER => 'flamethrower';
 use constant SI_BITTORRENT  => 'bittorrent';
-use constant GANGLIA_GMOND  => 'gmond';
-use constant GANGLIA_GMETAD => 'gmetad';
+use constant SSH            => 'ssh';
 
 # List of actions related to system services
 use constant START      => 0;
@@ -43,14 +44,15 @@ our @EXPORT = qw(
                 SERVICE_ENABLED
                 SSH
                 DHCP
+                GANGLIA_GMOND
+                GANGLIA_GMETAD
+                HTTP
                 MYSQL
                 POSTGRESQL
                 SI_MONITOR
                 SI_RSYNC
                 SI_FLAMETHROWER
                 SI_BITTORRENT
-                GANGLIA_GMOND
-                GANGLIA_GMETAD
                 START
                 STOP
                 RESTART
