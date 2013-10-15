@@ -23,6 +23,8 @@ use constant SI_MONITOR     => 'monitor';
 use constant SI_RSYNC       => 'rsync';
 use constant SI_FLAMETHROWER => 'flamethrower';
 use constant SI_BITTORRENT  => 'bittorrent';
+use constant GANGLIA_GMOND  => 'gmond';
+use constant GANGLIA_GMETAD => 'gmetad';
 
 # List of actions related to system services
 use constant START      => 0;
