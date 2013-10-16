@@ -43,6 +43,11 @@ rsync_configfile=
 ftp_configfile=
 dns_configfile=/etc/named.conf
 exports_configfile=/etc/exports
+
+# Specifies a few directories
+postgresql_datadir=/var/lib/pgsql/data
+postgresql_bindir=/usr/bin
+
 # For compatibility
 exports_file=/etc/exports
 
