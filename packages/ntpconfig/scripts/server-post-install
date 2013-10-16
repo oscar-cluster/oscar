@@ -21,9 +21,12 @@
 # (C)opyright Bernard Li <bli@bcgsc.ca>
 
 use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Opkg;
 use OSCAR::Network;
 use OSCAR::Database;
 use OSCAR::Configurator_backend;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 use Carp;
 
 my $ntpBuffer = "";
@@ -96,7 +99,15 @@ open(CONF, ">$ntp_conf") or croak("Failed to open $ntp_conf");
 print CONF $ntpBuffer;
 close(CONF);
 
-!system("chkconfig $ntpd on") or croak("Failed to enable $ntpd");
-!system("/etc/init.d/$ntpd restart") or croak("Failed to restart $ntpd");
+#!system("chkconfig $ntpd on") or croak("Failed to enable $ntpd");
+#!system("/etc/init.d/$ntpd restart") or croak("Failed to restart $ntpd");
+
+opkg_print("enabling ntp service at boot time\n");
+!enable_system_services( (NTP()) )
+    or (carp "ERROR: Couldn't enable ntp service.\n", exit 1);
+
+opkg_print("restarting ntp service\n");
+!system_service(NTP(),RESTART())
+    or die "ERROR: Couldn't restart http service.";
 
 exit(0);
