@@ -43,7 +43,7 @@ use Carp;
             add_to_annoted_block
             backup_file_if_not_exist
             download_file
-			extract_file
+            extract_file
             file_type
             find_block_from_file
             get_line_in_file
@@ -60,7 +60,7 @@ use Carp;
 our $verbose = $ENV{OSCAR_VERBOSE};
 
 ################################################################################
-# Crate a backup of a file with .bak extention in the same directory if        #
+# Crate a backup of a file with .oscarbak extention in the same directory if   #
 # file.bak is not already there. (avoid overwriting the real back upon multiple#
 # runs                                                                         #
 #                                                                              #
@@ -159,32 +159,32 @@ sub download_file ($$$$) {
 # Extract an archive using adequate command                                    #
 ################################################################################
 sub extract_file ($$) {
-	my ($file,$destination) = @_;
-	my $verbose_switch="";
-	my $compression_switch="";
-	my $cmd="";
-	switch (file_type($file)) {
-		case OSCAR::Defs::TARBALL() {
-			$verbose_switch="v" if ($verbose > 0);
-			switch ($file) {
-				case /\.gz|\.tgz/ { $compression_switch = "z"; }
-				case /\.bz2|\.tbz/ { $compression_switch = "j"; }
-				case /\.xz/ { $compression_switch = "J"; }
-				else { $compression_switch = ""; }
-			}
-			$cmd="tar x".$verbose_switch.$compression_switch."Cf ".$destination." ".$file;
-		} else {
-				carp "ERROR: Unhandled archive type: for $file";
-				return -1;
-		}
-	}
-	oscar_log_subsection "Extracting $file using: $cmd";
-	my $rc = system ($cmd);
-	if ($rc) {
-		carp "ERROR: ($rc) Failed to execute: $cmd\n";
-		return -1;
-	}
-	return 0;
+    my ($file,$destination) = @_;
+    my $verbose_switch="";
+    my $compression_switch="";
+    my $cmd="";
+    switch (file_type($file)) {
+        case OSCAR::Defs::TARBALL() {
+            $verbose_switch="v" if ($verbose > 0);
+            switch ($file) {
+                case /\.gz|\.tgz/ { $compression_switch = "z"; }
+                case /\.bz2|\.tbz/ { $compression_switch = "j"; }
+                case /\.xz/ { $compression_switch = "J"; }
+                else { $compression_switch = ""; }
+            }
+            $cmd="tar x".$verbose_switch.$compression_switch."Cf ".$destination." ".$file;
+        } else {
+                carp "ERROR: Unhandled archive type: for $file";
+                return -1;
+        }
+    }
+    oscar_log_subsection "Extracting $file using: $cmd";
+    my $rc = system ($cmd);
+    if ($rc) {
+        carp "ERROR: ($rc) Failed to execute: $cmd\n";
+        return -1;
+    }
+    return 0;
 }
 
 ################################################################################
