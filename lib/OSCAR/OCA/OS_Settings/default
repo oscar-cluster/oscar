@@ -29,6 +29,7 @@ http_service=httpd
 dns_service=named
 jobmonitor_service=jobmond
 jobarchive_service=jobarchived
+ntp_service=ntpd
 
 # Specifies few configuration files
 dhcp_leases=/var/lib/dhcp/dhcpd.leases
@@ -47,6 +48,7 @@ dns_configfile=/etc/named.conf
 exports_configfile=/etc/exports
 jobmonitor_configfile=/etc/jobmond.conf
 jobarchive_configfile=/etc/jobarchived.conf
+ntp_configfile=/etc/ntpd.conf
 
 # Specifies a few directories
 postgresql_datadir=/var/lib/pgsql/data
