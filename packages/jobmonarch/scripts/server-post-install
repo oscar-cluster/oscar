@@ -23,8 +23,8 @@ use Carp;
 use File::Copy;
 use File::Path;
 
-use DBI;
-use DBD::mysql;
+#use DBI;
+#use DBD::Pg;
 
 use OSCAR::Configbox;
 use OSCAR::Configurator_backend;
@@ -32,9 +32,14 @@ use OSCAR::Database;
 use OSCAR::Distro;
 use OSCAR::Opkg;
 use OSCAR::OCA::OS_Detect;
+use OSCAR::OCA::OS_Settings;;
 use OSCAR::Utils;
+use OSCAR::FileUtils;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 
-our ($distro);
+
+our ($distro, $pgdata, $pgbin);
 
 
 sub get_config {
@@ -42,12 +47,12 @@ sub get_config {
     my $config_data = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 
     if (-e $config_data) {
-	my $ref = OSCAR::Configurator_backend::readInConfigValues($config_data,
+    my $ref = OSCAR::Configurator_backend::readInConfigValues($config_data,
         "jobmonarch",
         "",noarray=>1);
-	$conf->{'clustername'} = $ref->{clustername};
-	$conf->{'drm'} = $ref->{drm};
-	$conf->{'archived'} = $ref->{archived};
+    $conf->{'clustername'} = $ref->{clustername};
+    $conf->{'drm'} = $ref->{drm};
+    $conf->{'archived'} = $ref->{archived};
     }
 
     $conf->{'http_user'}     = http_info();
@@ -119,123 +124,39 @@ sub create_dbase_entries {
     $db_passwd = (split(/: /,$db_passwd))[1];
     print "jobarchive db password: ".$db_passwd."\n";
 
-    # Establish connection to Postgress database on localhost
+    my $test_jobarchive_db;
+    my $test_jobarchive_user;
+    $test_jobarchive_db=`su - postgres -c "echo 'SELECT datname FROM pg_database' |psql -t|grep jobarchive"`;
+    $test_jobarchive_user=`su - postgres -c "echo 'SELECT rolname FROM pg_roles' |psql -t|grep jobarchive"`;
+    $test_jobarchive_db=OSCAR::Utils::trim($test_jobarchive_db);
+    $test_jobarchive_user=OSCAR::Utils::trim($test_jobarchive_user);
 
-    my $db_user = "postgres";
-    my $dsn = "DBI:Pg:host=localhost;dbname=$jobarchive_db";
-
-    # DBI->connect($dsn, $db_user, $db_passwd, ...) # db_passwd = "" for postgres.
-    my $dbh = DBI->connect($dsn, $db_user, "", {'RaiseError' => 1, 'AutoCommit' => 1});
-    my $res;
-
-    my $have_http_user = 0;
-
-
-    if ($dbh != undef) {
-	    print "Connection to database successful\n";
-    } else {
-	    print "No connection to database: Giving up.\n";
+    # Drop database before driopping user (dependancy)
+    if ($test_jobarchive_db eq "jobarchive") {
+        # Database already exists, we need to drop it.
+        system('su - postgres -c "/usr/bin/dropdb jobarchive"');
     }
+    if ($test_jobarchive_user eq "jobarchive") {
+        # User does not already exists, we need to drop it.
+        system('su - postgres -c "/usr/bin/dropuser jobarchive"');
+    }
+    # Create the jobarchive database.
+    system('su - postgres -c "/usr/bin/createdb jobarchive"');
 
-
-	# No need to create the apache user in the db. new jobmonarch handle that with jobarchive db user.
-	
-    # No go and check if the web user already exists,
-    # create it otherwise.
-
-    #my $sth = $dbh->prepare("SELECT \* FROM user WHERE User='$http_user' AND Host = 'localhost'");
-    #if($sth) {
-	#if($sth->execute) {
-	#    while($res = $sth->fetchrow_hashref()) {
-	#	if($res->{'User'} eq $http_user && $res->{'Host'} eq "localhost") {
-	#	    $have_http_user = 1;
-	#	}
-	#    }
-	#}
-    #}
-
-    # The old mysql version 4 does not have 'CREATE USER'...
-
-    # if($have_http_user == 0) {
-	# print "Http user not found in database.\n";
-	# my $cmd_str = "CREATE USER $http_user\@localhost";
-	# my $cmd_str = "GRANT ALL ON jobarchiveUSER $http_user\@localhost";
-	# print "Command: $cmd_str\n";
-	# $dbh->do($cmd_str);
-    # }
-
-    
-    # Now continue with creating the database. We drop it first,
-    # because any exsisting database with the name 'jobarchive'
-    # is of no use to us.
-
-    $dbh->do("DROP DATABASE IF exists $jobarchive_db");
-    #system('su - postgres -c "dropdb jobarchive"');
-
-    $dbh->do("CREATE DATABASE $jobarchive_db");
-    #system('su - postgres -c "createdbdb jobarchive"');
-
-    
-    # And create tables for the jobarchive database
-
-    $dbh->do("USE $jobarchive_db");
-
-    $dbh->do("
-CREATE TABLE jobs (
-        job_id                  VARCHAR(20) NOT NULL UNIQUE PRIMARY KEY,
-        job_name                VARCHAR(255),
-        job_queue               VARCHAR(50),
-        job_owner               VARCHAR(50),
-        job_requested_time      VARCHAR(10),
-        job_requested_memory    VARCHAR(10),
-        job_ppn                 INT,
-        job_status              VARCHAR(2),
-        job_start_timestamp     VARCHAR(10),
-        job_stop_timestamp      VARCHAR(10)
-)
-");
-
-    $dbh->do("
-CREATE TABLE nodes (
-        node_id                 SERIAL NOT NULL UNIQUE PRIMARY KEY,
-        node_hostname           VARCHAR(100),
-        node_location           VARCHAR(10)
-)
-");
-
-    $dbh->do("
-CREATE TABLE job_nodes (
-        job_id                  INT NOT NULL REFERENCES jobs ON DELETE CASCADE,
-        node_id                 INT NOT NULL REFERENCES nodes ON DELETE RESTRICT,
-        PRIMARY KEY ( job_id, node_id )
-)
-");
-    
-    # Check if user jobarchive already exists
-    # $dbh->do("SELECT * FROM pg_user WHERE username = 'jobarchive'");
-    # TODO: Need to parse the output of the above line. If = 0, then we need to create the user
-
-    # Create the jobarchive user.
-    $dbh->do("CREATE USER jobarchive");
-
+    # Create jobarchive database tables and jobarchive role (user)
+    system('su - postgres -c "/usr/bin/psql -f /usr/share/jobarchived/job_dbase.sql"');
     # Set the jobarchive password.
-    $dbh->do("ALTER USER jobarchive WITH PASSWORD '$db_passwd'");
-
-    # Grant privileges to the jobarchive.
-    $dbh->do("GRANT ALL ON $jobarchive_db.jobs,$jobarchive_db.nodes,$jobarchive_db.job_nodes TO 'jobarchive'");
-    $dbh->do("GRANT ALL ON $jobarchive_db.nodes_node_id_seq TO 'jobarchive'");
-
-    # And, finally, grant all rights to root and $http_user
-
-    #$dbh->do("GRANT ALL ON $jobarchive_db.jobs TO root,$http_user\@localhost");
-    #$dbh->do("GRANT ALL ON $jobarchive_db.nodes TO root,$http_user\@localhost");
-    #$dbh->do("GRANT ALL ON $jobarchive_db.job_nodes TO root,$http_user\@localhost");
-
-    $dbh->disconnect();
+    system("su - postgres -c \"psql -c \\\"ALTER USER jobarchive WITH PASSWORD '$db_passwd'\\\"\"");
 }
 
 sub edit_pgserver_config {
-    my $conf = "/var/lib/pgsql/data/pg_hba.conf";
+    my $conf = "$pgdata/pg_hba.conf";
+    my $jobarchive_config_lines=`grep jobarchive /var/lib/pgsql/data/pg_hba.conf|wc -l`;
+    if ($jobarchive_config_lines > 0) {
+        # config already ok.
+        return;
+    }
+
     open PG_CONF, $conf;
     open(TMP_CONF, '>', "/tmp/pg_hba.conf");
 
@@ -259,9 +180,9 @@ sub edit_pgserver_config {
     close TMP_CONF;
     close PG_CONF;
 
-    if (! -e "$conf.save") {
-        rename "$conf", "$conf.save";
-    }
+    backup_file_if_not_exist($conf)
+        or die "Can't create a backup copy of $conf: Aborting";
+
     rename "/tmp/pg_hba.conf", "$conf";
     my ($login,$pass,$uid,$gid) = getpwnam("postgres")
         or die "postgres login not in passwd file";
@@ -276,35 +197,34 @@ sub create_config_files {
     my @parts;
 
     if($conf->{'archived'} eq "yes" || 1) {
-	print "Creating config for jobarchived.\n";
+    print "Creating config for jobarchived.\n";
 
-	open JOBARCHD_CONF, "/etc/jobarchived.conf";
-	open(TMP_CONF, '>', "/tmp/jobarchived.conf");
+    open JOBARCHD_CONF, "/etc/jobarchived.conf";
+    open(TMP_CONF, '>', "/tmp/jobarchived.conf");
 
-	while(<JOBARCHD_CONF>) {
-	    $line = $_;
-	    chomp($line);
-	    if($line =~ /^ARCHIVE_DATASOURCES/) {
-		@parts = split(/:/, $line);
-		print TMP_CONF "$parts[0]: \"$conf->{'clustername'}\"\n";
-	    } elsif($line =~ /^ARCHIVE_PATH/) {
-		@parts = split(/:/, $line);
-		print TMP_CONF "$parts[0]: $conf->{'monarchrrd'}\n";
-	    } elsif($line =~ /JOB_SQL_DBASE/) {
-	        @parts = split(/:/, $line);
-		print TMP_CONF "$parts[0]: localhost/$conf->{'jobarchive_db'}\n";
-	    } else {
-		print TMP_CONF "$line\n";
-	    }
-	}
+    while(<JOBARCHD_CONF>) {
+        $line = $_;
+        chomp($line);
+        if($line =~ /^ARCHIVE_DATASOURCES/) {
+        @parts = split(/:/, $line);
+        print TMP_CONF "$parts[0]: \"$conf->{'clustername'}\"\n";
+        } elsif($line =~ /^ARCHIVE_PATH/) {
+        @parts = split(/:/, $line);
+        print TMP_CONF "$parts[0]: $conf->{'monarchrrd'}\n";
+        } elsif($line =~ /JOB_SQL_DBASE/) {
+            @parts = split(/:/, $line);
+        print TMP_CONF "$parts[0]: localhost/$conf->{'jobarchive_db'}\n";
+        } else {
+        print TMP_CONF "$line\n";
+        }
+    }
 
-	close TMP_CONF;
-	close JOBARCHD_CONF;
+    close TMP_CONF;
+    close JOBARCHD_CONF;
 
-	if (! -e "/etc/jobarchived.conf.save") {
-	    rename "/etc/jobarchived.conf", "/etc/jobarchived.conf.save";
-	}
-	rename "/tmp/jobarchived.conf", "/etc/jobarchived.conf";
+    backup_file_if_not_exist("/etc/jobarchived.conf")
+        or die "Can't create a backup copy of /etc/jobarchived.conf: Aborting";
+    rename "/tmp/jobarchived.conf", "/etc/jobarchived.conf";
 
     }
 
@@ -315,26 +235,26 @@ sub create_config_files {
     open(TMP_CONF, '>', "/tmp/jobmond.conf");
     
     while(<JOBMOND_CONF>) {
-	$line = $_;
-	chomp($line);
-	if($line =~ /^BATCH_SERVER/) {
-	    print "Found batch server entry\n";
-	    @parts = split(/:/, $line);
-	    print TMP_CONF  "$parts[0]: pbs_oscar\n";
-	}
-	elsif($line =~ /^BATCH_API/) {
-	    @parts = split(/:/, $line);
-	    print TMP_CONF  "$parts[0]: $conf->{'drm'}\n";
-	} else {
-	    print TMP_CONF  "$line\n";
-	}
+    $line = $_;
+    chomp($line);
+    if($line =~ /^BATCH_SERVER/) {
+        print "Found batch server entry\n";
+        @parts = split(/:/, $line);
+        print TMP_CONF  "$parts[0]: pbs_oscar\n";
+    }
+    elsif($line =~ /^BATCH_API/) {
+        @parts = split(/:/, $line);
+        print TMP_CONF  "$parts[0]: $conf->{'drm'}\n";
+    } else {
+        print TMP_CONF  "$line\n";
+    }
     }
     close TMP_CONF;
     close JOBMOND_CONF;
 
-    if (! -e "/etc/jobmond.conf.save") {
-	rename "/etc/jobmond.conf", "/etc/jobmond.conf.save";
-    }
+    
+    backup_file_if_not_exist("/etc/jobmond.conf")
+        or die "Can't create a backup copy of /etc/jobmond.conf: Aborting";
     rename "/tmp/jobmond.conf", "/etc/jobmond.conf";
 
 }
@@ -348,7 +268,7 @@ sub change_ganglia_conf {
 
     open CONF, $ganglia_conf;
     while($line = <CONF>) {
-	$buffer = $buffer.$line;
+    $buffer = $buffer.$line;
     }
     close CONF;
 
@@ -367,24 +287,19 @@ sub start_services {
 
     if($conf->{'archived'} eq "yes") {
 
-	# Now, make sure the path (/data/jobarch/rrds) to Monarch's archives exist
-	eval { mkpath($conf->{'monarchrrd'}) };
-	if ($@){
-	    print "Cannot create archive dir for jobarchived";
-	}
+        # Now, make sure the path (/data/jobarch/rrds) to Monarch's archives exist
+        eval { mkpath($conf->{'monarchrrd'}) };
+        if ($@){
+            print "Cannot create archive dir for jobarchived";
+        }
 
-	if($distro eq "suse" || $distro eq "sles") {
-	    system("chkconfig jobarchived on");
-	} else {
-	    system("chkconfig --level 345 jobarchived on");
-	}
+        # TODO: Check return codes.
+        enable_system_services((JOBARCHIVE()));
+        system_service(JOBARCHIVE(),START());
     }
 
-    if($distro eq "suse" || $distro eq "sles") {
-	system("chkconfig jobmond on");
-    } else {
-	system("chkconfig --level 345 jobmond on");
-    }
+    enable_system_services((JOBMONITOR()));
+    system_service(JOBMONITOR(),START());
 }
 
 
@@ -392,20 +307,33 @@ sub start_services {
 # Start of the actual program
 #
 
+$pgdata = OSCAR::OCA::OS_Settings::getitem(POSTGRESQL()."_datadir");
+$pgbin  = OSCAR::OCA::OS_Settings::getitem(POSTGRESQL()."_bindir");
 my $jobmonarch_conf;
 
 $jobmonarch_conf = get_config();
 
-# PostgreSQL setup (redhat only)
-if (! -e "/var/lib/pgsql/data/PG_VERSION") {
-    system("service postgresql initdb");
+#my $pkgdir = OSCAR::Package::get_scripts_dir("jobmonarch", "post_server_install");
+
+# PostgreSQL setup
+if (! -e "$pgdata/PG_VERSION") {
+    # No PG_VERSION, we need to initialise the database.
+    # 1st, we need to create the directories and set correct permissions.
+    File::Path::make_path($pgdata, {
+                              verbose => 0,
+                              mode => 0700,
+                              owner => 'postgres',
+                              group => 'postgres',
+                          });
+    # 2nd, we init the database default cluster
+    system("su - postgres -c \"$pgbin/initdb --pgdata=$pgdata --auth='ident'\"")
 }
 
 # Allow "jobarchive" user to connect to the database.
 edit_pgserver_config();
 
 # Restart the database (redhat only)
-system('su - postgres -c "/usr/bin/pg_ctl restart"');
+system_service(POSTGRESQL(),RESTART());
 
 # Wait for database to be up.
 sleep(3);
