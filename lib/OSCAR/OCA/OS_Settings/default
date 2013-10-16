@@ -27,6 +27,8 @@ tftp_service=atftpd
 ftp_service=ftpd
 http_service=httpd
 dns_service=named
+jobmonitor_service=jobmond
+jobarchive_service=jobarchived
 
 # Specifies few configuration files
 dhcp_leases=/var/lib/dhcp/dhcpd.leases
@@ -43,6 +45,8 @@ rsync_configfile=
 ftp_configfile=
 dns_configfile=/etc/named.conf
 exports_configfile=/etc/exports
+jobmonitor_configfile=/etc/jobmond.conf
+jobarchive_configfile=/etc/jobarchived.conf
 
 # Specifies a few directories
 postgresql_datadir=/var/lib/pgsql/data

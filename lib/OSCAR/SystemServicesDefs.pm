@@ -19,6 +19,8 @@ use constant DHCP           => 'dhcp';
 use constant GANGLIA_GMOND  => 'gmond';
 use constant GANGLIA_GMETAD => 'gmetad';
 use constant HTTP           => 'http';
+use constant JOBARCHIVE     => 'jobarchive';
+use constant JOBMONITOR     => 'jobmonitor';
 use constant MYSQL          => 'mysql';
 use constant POSTGRESQL     => 'postgresql';
 use constant SI_MONITOR     => 'monitor';
@@ -47,6 +49,8 @@ our @EXPORT = qw(
                 GANGLIA_GMOND
                 GANGLIA_GMETAD
                 HTTP
+                JOBARCHIVE
+                JOBMONITOR
                 MYSQL
                 POSTGRESQL
                 SI_MONITOR
