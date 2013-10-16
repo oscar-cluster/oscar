@@ -1,6 +1,6 @@
 # Copyright (c) 2008 Paul Greidanus <paul@majestik.org>
 #                    All rights reserved
-#		- New framework to set specific settings rationally
+#        - New framework to set specific settings rationally
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -12,6 +12,7 @@
 package OSCAR::OCA::OS_Settings;
 
 use strict;
+use OSCAR::OCA::OS_Detect;
 use vars qw(@EXPORT $LOCAL_NODE_OS);
 use base qw(Exporter);
 use Data::Dumper;
@@ -24,7 +25,7 @@ my $verbose = $ENV{OSCAR_VERBOSE};
 # Should this be converted to lib/OSCAR/ConfigFile.pm
 
 sub readfile ($$) {
-	my ($file, $config) = @_;
+    my ($file, $config) = @_;
     my $path;
     if (defined $ENV{OSCAR_HOME}) {
         $path = "$ENV{OSCAR_HOME}/lib/OSCAR/OCA/OS_Settings/$file";
@@ -33,16 +34,16 @@ sub readfile ($$) {
         $path .= "/OSCAR/OCA/OS_Settings/$file";
     }
     print "Opening file $path\n" if $verbose;
-	open(CONFIG,"$path") or return $config;
-	while (<CONFIG>) {
-		chomp;
-		next if /^\s*\#/;
-		next unless /=/;
-		my ($key, $variable) = split(/=/,$_,2);
-		$variable =~ s/(\$(\w+))/$config->{$2}/g;
-		$config->{$key} = $variable;
-	}
-	return $config;
+    open(CONFIG,"$path") or return $config;
+    while (<CONFIG>) {
+        chomp;
+        next if /^\s*\#/;
+        next unless /=/;
+        my ($key, $variable) = split(/=/,$_,2);
+        $variable =~ s/(\$(\w+))/$config->{$2}/g;
+        $config->{$key} = $variable;
+    }
+    return $config;
 }
 
 # getconf reads the configuration files for default, distro, distro with 
@@ -64,10 +65,10 @@ sub getconf () {
     readfile ("$compatdistro$compatversion", $config);
     readfile ("$distro", $config);
     readfile ("$distro$version", $config);
-	# This line specifies very specific OS versions, and should
-	# never be used if possible.
-	readfile("$ident", $config);
-	return $config;
+    # This line specifies very specific OS versions, and should
+    # never be used if possible.
+    readfile("$ident", $config);
+    return $config;
 }
 
 # getitem returns a config item.  It is called with a string containing 
@@ -80,12 +81,12 @@ sub getitem ($) {
     if ($verbose) { print Dumper($config) };
     if ( $config->{$request} ) {
         return $config->{$request};
-    } else {
+        } else {
         # Unclear if we should die, or return undef here..
         if ($verbose) { print "We did not find a config option for " . $request . " please check the configuration files in lib/OSCAR/OCA/OS_Settings\n" };
         return undef;
+        }
     }
-}
 
 #stub for additem
 # which will allow opkgs or other to add configuration into the OS_Setting 
@@ -98,11 +99,11 @@ sub getitem ($) {
 #  however, use of distro is recomended,
 
 sub additem ($) {
-	my $tag = shift @_;
-	my $data = shift @_;
-	my $distro = shift @_;
-	if (!defined $distro || $distro eq "") { $distro = "default" } ;
-	
+    my $tag = shift @_;
+    my $data = shift @_;
+    my $distro = shift @_;
+    if (!defined $distro || $distro eq "") { $distro = "default" } ;
+    
     my $path;
     if (defined $ENV{OSCAR_HOME}) {
         $path = "$ENV{OSCAR_HOME}/lib/OSCAR/OCA/OS_Settings/$distro";
@@ -110,11 +111,11 @@ sub additem ($) {
         $path = OSCAR::Utils::get_path_perl_modules();
         $path .= "/OSCAR/OCA/OS_Settings/$distro";
     }
-	open(CONFIG,"$path") or return 0;
+    open(CONFIG,"$path") or return 0;
 
-	printf (CONFIG $tag."=".$data."\n");
+    printf (CONFIG $tag."=".$data."\n");
 
-	return 1;
+    return 1;
 }
 
 1;
