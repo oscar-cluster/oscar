@@ -51,6 +51,7 @@ sub get_cluster_private_ip() {
     my $config = $oscar_configurator->get_config();
 
     # Get the head NIC.
+    # OL: Why not use OSCAR::Database::get_headnode_nic(undef,undef) instead?
     my $headnic = $config->{'nioscar'};
     if (!OSCAR::Utils::is_a_valid_string ($headnic)) {
         carp "ERROR: Impossible to get the headnode NIC";
