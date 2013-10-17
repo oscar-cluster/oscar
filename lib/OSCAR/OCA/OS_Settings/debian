@@ -5,9 +5,10 @@ dhcp_daemon=/etc/init.d/isc-dhcp-server
 mysql_daemon=/etc/init.d/mysql
 
 # Overwrite few services
-ssh_service=ssh
 dhcp_service=isc-dhcp-server
 mysql_service=mysql
+nfs_service=nfs-kernel-server
+ssh_service=ssh
 
 # Overwrite few package names
 nfs_package=nfs-kernel-server
