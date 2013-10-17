@@ -5,10 +5,14 @@ use Data::Dumper;
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
+use Carp;
+#use Data::Dumper;
 use POSIX; # gives us uname function
 use File::Path;
 use File::Copy;
 use File::Basename;
+use OSCAR::FileUtils;
+use OSCAR::Configurator_backend;
 use OSCAR::Network;
 use OSCAR::Logger;
 use OSCAR::Database;
@@ -16,8 +20,6 @@ use OSCAR::Package;
 use OSCAR::PackMan;
 use OSCAR::PackageSmart;
 use OSCAR::Configbox;
-use Carp;
-use Data::Dumper;
 use OSCAR::OCA::OS_Detect;
 use OSCAR::OCA::OS_Settings;
 use OSCAR::Env qw ( oscar_home_env);
@@ -32,17 +34,17 @@ my $nfs_data = readInConfigValues($xml_data,"nfs","",noarray=>1);
  # init counters
 my $mount_counter = 1;
 my $max_counter = $nfs_data->{num_nfs_mounts};
-my $INTERFACE = "eth1";
-my ($ip,$bcast,$netmask) = interface2ip($INTERFACE)
+my $iface = OSCAR::Database::get_headnode_iface(undef, undef);
+my ($ip,$bcast,$netmask) = interface2ip($iface)
     or croak("Couldn't determine internal ip address");
 
-
-my $nfs = OSCAR::OCA::OS_Settings::getitem("nfs_package");
 
 #print Dumper($nfs_data);
 
 chomp(my $nfs_export = `which exportfs`);
-!system("/etc/init.d/$nfs restart") or croak("Couldn't restart $nfs");
+!system_service(NFS(),RESTART())
+    croak("Couldn't restart nfs service");
+!enable_system_services((NFS())) or croak("Couldn't enable nfs service");
 !system("exportfs -a") or croak("Couldn't refresh nfs exports")
     if $nfs_export;
 
@@ -69,15 +71,13 @@ sub add_export {
     my $ip = shift;
     my $netmask = shift;
     my $done = 0;
-    my $exports_file = OSCAR::OCA::OS_Settings::getitem("exports_file");
+    my $exports_file = OSCAR::OCA::OS_Settings::getitem("exports_configfile");
 
     verbose("Backing up exports file : " . $exports_file);
-    if ( -f $exports_file ) {
-        copy ($exports_file, $exports_file . ".bak") or return undef;
-        }
+    backup_file_if_not_exist($exports_file) or (carp "Couldn't backup $exports_file file!", return undef);
 
-    if ( -f $exports_file . ".bak" ) {
-        open(IN, $exports_file . ".bak") or return undef;
+    if ( -f $exports_file . ".oscarbak" ) {
+        open(IN, $exports_file . ".oscarbak") or return undef;
         #} else {
         #open(IN, "/dev/null");
         }

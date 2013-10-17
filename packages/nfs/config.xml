@@ -24,12 +24,14 @@
       </filters>
       <pkg>c3</pkg>
       <pkg>c3-profiled</pkg>
+      <pkg>nfs-utils</pkg>
     </requires>
     <requires>
       <filters>
         <dist>debian</dist>
       </filters>
       <pkg>c3</pkg>
+      <pkg>nfs-kernel-server</pkg>
     </requires>
   </serverDeps>
   <clientDeps>
@@ -53,7 +55,12 @@
   <apiDeps>
   </apiDeps>
   <changelog>
-    <versionEntry version="1.0.0-1">
+    <versionEntry version="1.0.1-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-10-17T17:40:55+02:00">
+        <item>Added server dep for nfs service package</item>
+      </changelogEntry>
+    </versionEntry>
+     <versionEntry version="1.0.0-1">
       <changelogEntry authorName="Paul Greidanus" date="2008-08-18T10:34:08-04:00">
         <item>Create the NFS opkg</item>
       </changelogEntry>
