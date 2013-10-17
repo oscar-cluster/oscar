@@ -533,7 +533,7 @@ sub __enable_install_mode () {
             or (carp "ERROR: Couldn't stop systemimager-server-bittorent.\n", return 0);
 
         # disable systemimager-server-flamethrowerd and systemimager-server-bittorrent
-        disable_system_services( (OSCAR::SystemServicesDefs::SI_FLAMETHROWER(),
+        !disable_system_services( (OSCAR::SystemServicesDefs::SI_FLAMETHROWER(),
                                   OSCAR::SystemServicesDefs::SI_BITTORRENT()) )
             or (carp "ERROR: Couldn't disable si_flametrhower and si_bittorrent.\n", return 0);
 
@@ -551,7 +551,7 @@ sub __enable_install_mode () {
             or (carp "ERROR: Couldn't stop systemimager-server-bittorent.\n", return 0);
 
         # Disable systemimager-server-bittorrent (prevent start at boot)
-        disable_system_services( (OSCAR::SystemServicesDefs::SI_BITTORRENT()) )
+        !disable_system_services( (OSCAR::SystemServicesDefs::SI_BITTORRENT()) )
             or (carp "ERROR: Couldn't disable si_flametrhower and si_bittorrent.\n", return 0);
 
         # Restart systemimager-server-rsyncd (needed by netbootmond and also
@@ -588,7 +588,7 @@ sub __enable_install_mode () {
                 or (carp "ERROR: Couldn't stop systemimager-server-flamethrowerd.\n", return 0);
 
             # Add systemimager-server-flamethrowerd to chkconfig
-            enable_system_services( (OSCAR::SystemServicesDefs::SI_FLAMETHROWER()) )
+            !enable_system_services( (OSCAR::SystemServicesDefs::SI_FLAMETHROWER()) )
                 or (carp "ERROR: Couldn't disable si_flametrhower and si_bittorrent.\n", return 0);
         }
     } elsif ($install_mode eq "systemimager-bt") {
@@ -597,7 +597,7 @@ sub __enable_install_mode () {
             or (carp "ERROR: Couldn't stop systemimager-server-flamethrowerd.\n", return 0);
 
         # Remove systemimager-server-flamethrower from chkconfig
-        disable_system_services( (OSCAR::SystemServicesDefs::SI_FLAMETHROWER()) )
+        !disable_system_services( (OSCAR::SystemServicesDefs::SI_FLAMETHROWER()) )
             or (carp "ERROR: Couldn't disable si_flametrhower and si_bittorrent.\n", return 0);
 
         # Restart systemimager-server-rsyncd (needed by netbootmond and also for calculating image size in si_monitortk)
@@ -627,7 +627,7 @@ sub __enable_install_mode () {
                 or (carp "ERROR: Couldn't stop systemimager-server-bittorent.\n", return 0);
 
             # Add systemimager-server-bittorrent to chkconfig
-            enable_system_services( (OSCAR::SystemServicesDefs::SI_BITTORRENT()) )
+            !enable_system_services( (OSCAR::SystemServicesDefs::SI_BITTORRENT()) )
                 or (carp "ERROR: Couldn't disable si_flametrhower and si_bittorrent.\n", return 0);
         }
     }
@@ -687,4 +687,4 @@ sub __run_setup_pxe ($) {
 1;
 
 __END__
-
+:
