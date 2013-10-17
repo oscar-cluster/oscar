@@ -28,9 +28,9 @@ use OSCAR::SystemServicesDefs;
 
 
 # Enabling DNS service
-OSCAR::SystemServices::enable_system_services( (OSCAR::SystemServicesDefs::DNS()) );
+enable_system_services( (DNS()) );
 
 # Restarting DNS service
-OSCAR::SystemServices::system_service(OSCAR::SystemServicesDefs::DNS(), OSCAR::SystemServicesDefs::STOP());
-OSCAR::SystemServices::system_service(OSCAR::SystemServicesDefs::DNS(), OSCAR::SystemServicesDefs::START());
+system_service(DNS(), STOP());
+system_service(DNS(), START());
 
