@@ -72,7 +72,7 @@ our $verbose = $ENV{OSCAR_VERBOSE};
 sub backup_file_if_not_exist($) {
     my $file = shift;
     if ( -e $file ) {
-        if ( -e "$file.bak" ) {
+        if ( -e "$file.oscarbak" ) {
             OSCAR::Logger::oscar_log_subsection("[INFO] $file not backed up. (backup already exists)");
             return 1;
         } else {
