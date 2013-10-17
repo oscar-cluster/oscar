@@ -30,6 +30,7 @@ mysql_service=mysqld
 nfs_service=nfs
 ntp_service=ntpd
 postresql_service=postgresql
+rpc_service=rpcbind
 rsync_service=systemimager-server-rsyncd
 ssh_service=sshd
 tftp_service=atftpd

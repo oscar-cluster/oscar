@@ -1,0 +1,9 @@
+# rhel 5specific settings
+# Overwrite few deamons
+
+# Overwrite few services
+rpc_service=portmap
+#
+# Overwrite few package names
+
+# Overwrite few config file locations

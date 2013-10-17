@@ -25,6 +25,7 @@ use constant MYSQL          => 'mysql';
 use constant NFS            => 'nfs';
 use constant NTP            => 'ntp';
 use constant POSTGRESQL     => 'postgresql';
+use constant RPC            => 'rpc';
 use constant SI_MONITOR     => 'monitor';
 use constant SI_RSYNC       => 'rsync';
 use constant SI_FLAMETHROWER => 'flamethrower';
@@ -57,6 +58,7 @@ our @EXPORT = qw(
                 NFS
                 NTP
                 POSTGRESQL
+                RPC
                 SI_MONITOR
                 SI_RSYNC
                 SI_FLAMETHROWER
