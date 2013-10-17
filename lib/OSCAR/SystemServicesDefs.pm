@@ -22,6 +22,7 @@ use constant HTTP           => 'http';
 use constant JOBARCHIVE     => 'jobarchive';
 use constant JOBMONITOR     => 'jobmonitor';
 use constant MYSQL          => 'mysql';
+use constant NFS            => 'nfs';
 use constant NTP            => 'ntp';
 use constant POSTGRESQL     => 'postgresql';
 use constant SI_MONITOR     => 'monitor';
@@ -53,6 +54,7 @@ our @EXPORT = qw(
                 JOBARCHIVE
                 JOBMONITOR
                 MYSQL
+                NFS
                 NTP
                 POSTGRESQL
                 SI_MONITOR
