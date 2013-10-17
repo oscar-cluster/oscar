@@ -41,6 +41,7 @@ use POSIX; # gives us uname function
 use File::Path;
 use File::Copy;
 use File::Basename;
+use OSCAR::FileUtils;
 use OSCAR::Network;
 use OSCAR::Logger;
 use OSCAR::Database;
@@ -48,6 +49,7 @@ use OSCAR::Package;
 use OSCAR::PackMan;
 use OSCAR::PackageSmart;
 use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 use Carp;
 use Data::Dumper;
 use OSCAR::OCA::OS_Detect;
@@ -55,15 +57,6 @@ use OSCAR::OCA::OS_Settings;
 use OSCAR::Opkg;
 
 ## Begin distribution specific stuff ##
-
-# Defaults
-my $nfs = OSCAR::OCA::OS_Settings::getitem("nfs_package");
-my $sshd = OSCAR::OCA::OS_Settings::getitem("ssh_daemon");
-my $portmap = OSCAR::OCA::OS_Settings::getitem("portmap_package");
-
-if (!defined $nfs || !defined $sshd || !defined $portmap) {
-    die "ERROR: Impossible to get the basic system info ($nfs, $sshd, $portmap)";
-}
 
 my $OSCAR_SERVER_NODE = "oscar_server";
 my $OSCAR_SERVER_GROUP = "oscar_server";
@@ -199,14 +192,22 @@ oscar_log_subsection("Refreshing services");
 # Note: it is better to try to restart the service, "start" generates an error
 # if the service is already running
 chomp(my $nfs_export = `which exportfs`);
-!system("/etc/init.d/$nfs restart") or croak("ERROR: Couldn't restart $nfs");
+
+# Start or restart the nfs server service
+!system_service(NFS(),RESTART())
+    or croak "ERROR: Couldn't restart nfs service.";
+
+# Export filesystems
 if ($nfs_export) {
     !system("exportfs -a") or croak("Couldn't refresh nfs exports");
 }
-!system("$sshd restart") or croak("ERROR: Couldn't start .$sshd. ($?)");
 
+# Start or restart ssh service
+!system_service(SSH(),RESTART())
+    or croak "ERROR: Couldn't restart ssh service.";
 
-my @services = ("$sshd", "dhcpd", "$portmap", "$nfs");
+# Enable essential services.
+my @services = (SSH(), DHCP(), RPC(), NFS());
 if (OSCAR::SystemServices::enable_system_services (@services)) {
     die "ERROR: Impossible to enable some system services";
 }
@@ -259,10 +260,13 @@ sub update_exports ($$) {
     }
 
     my $done=0;
-    verbose("Backing up /etc/exports");
-    copy("/etc/exports","/etc/exports.bak") or return -1;
-    open(IN,"</etc/exports.bak") or return -1;
-    open(OUT,">/etc/exports") or return -1;
+    # 1st, we backup $dhcpd_configfile. (if not done yet)
+    my $exports=OSCAR::OCA::OS_Settings::getitem("exports_configfile");
+    backup_file_if_not_exist($exports)
+        or (carp "ERROR: Couldn't backup dhcp server config file ($exports)", return -1);
+
+    open(IN,"<$exports.oscarbak") or return -1;
+    open(OUT,">$exports") or (close(IN), return -1);
     verbose("Checking for /home export");
     while (<IN>) {
 	    if (/^\/home/) {
