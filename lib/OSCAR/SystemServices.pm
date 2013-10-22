@@ -52,7 +52,7 @@ use base qw(Exporter);
              enable_system_services
              disable_system_services
              system_service
-             remote_system_services
+             remote_system_service
              system_service_status
              get_system_services
              );
