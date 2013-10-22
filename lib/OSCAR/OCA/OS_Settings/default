@@ -52,7 +52,7 @@ dns_configfile=/etc/named.conf
 exports_configfile=/etc/exports
 jobmonitor_configfile=/etc/jobmond.conf
 jobarchive_configfile=/etc/jobarchived.conf
-ntp_configfile=/etc/ntpd.conf
+ntp_configfile=/etc/ntp.conf
 
 # Specifies a few directories
 postgresql_datadir=/var/lib/pgsql/data

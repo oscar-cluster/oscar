@@ -1,1 +1,9 @@
+# SuSE specific settings
 nfs=nfsserver
+# Overwrite few deamons
+# Overwrite few services
+nfs_service=nfsserver
+ntp_service=ntp
+# Overwrite few package names
+# Overwrite few config file locations
+# Overwrite a few directories
