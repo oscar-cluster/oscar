@@ -22,16 +22,16 @@
 # oscar_server
 
 use Carp;
+use OSCAR::Opkg;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
+use OSCAR::OS_Settings;
 
 my $ntpBuffer = "";
-my $ntp_conf = "/etc/ntp.conf";
-my $ntp_dir = "/etc/ntp";
+my $ntp_conf = OSCAR::OS_Settings::getitem(NTP()."_configfile");
+my $ntp_dir = OSCAR::OS_Settings::getitem(NTP()."_dir");
 my $step_tickers = "$ntp_dir/step-tickers";
 my $ntpserver = "oscar_server";
-my $ntpd = "ntpd";
-
-# SUSE Linux's ntpd initscript name is "ntp"
-$ntpd = "ntp" if -x "/etc/init.d/ntp";
 
 open(CONF, $ntp_conf) or croak("Error: unable to open ($ntp_conf)\n");
 
@@ -62,6 +62,8 @@ open(STEP, $step_tickers) or croak("Error: unable to open ($step_tickers)\n");
 print STEP $ntpserver;
 close (STEP);
 
-!system("chkconfig $ntpd on") or croak("Failed to enable $ntpd");
+opkg_print("enabling ntp service at boot time\n");
+!enable_system_services( (NTP()) )
+    or (carp "ERROR: Couldn't enable ntp service.\n", exit 1);
 
 exit(0);

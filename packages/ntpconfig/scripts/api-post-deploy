@@ -8,11 +8,14 @@
 # causing network saturation.  This causes the ntpd to give up and try later.
 
 use Carp;
+use OSCAR::Opkg;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 
-my $ntpd = "ntpd";
+opkg_print("restarting ntp service\n");
+!system_service(NTP(),RESTART())
+    or croak "ERROR: Couldn't restart ntp service.";
 
-# SUSE Linux's ntpd initscript name is "ntp"
-$ntpd = "ntp" if -x "/etc/init.d/ntp";
-
-!system("/etc/init.d/$ntpd restart") or croak ("Failed to restart $ntpd");
-system("cexec /etc/init.d/$ntpd restart");
+opkg_print("restarting ntp service on all nodes\n");
+!remote_system_service(NTP(),RESTART(),"/usr/bin/cexec");
+    or croak "ERROR: Couldn't restart ntp service on all nodes.";

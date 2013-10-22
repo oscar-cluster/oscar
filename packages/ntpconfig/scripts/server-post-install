@@ -30,14 +30,10 @@ use OSCAR::SystemServicesDefs;
 use Carp;
 
 my $ntpBuffer = "";
-my $ntp_conf = "/etc/ntp.conf";
-my $ntp_dir = "/etc/ntp";
+my $ntp_conf = OSCAR::OS_Settings::getitem(NTP()."_configfile");
+my $ntp_dir = OSCAR::OS_Settings::getitem(NTP()."_dir");;
 my $step_tickers = "$ntp_dir/step-tickers";
 my $configurator = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
-my $ntpd = "ntpd";
-
-# SUSE Linux's ntpd initscript name is "ntp"
-$ntpd = "ntp" if -x "/etc/init.d/ntp";
 
 # get headnode's interface information from OSCAR database
 my $iface = OSCAR::Database::get_headnode_iface(undef, undef);
@@ -99,15 +95,12 @@ open(CONF, ">$ntp_conf") or croak("Failed to open $ntp_conf");
 print CONF $ntpBuffer;
 close(CONF);
 
-#!system("chkconfig $ntpd on") or croak("Failed to enable $ntpd");
-#!system("/etc/init.d/$ntpd restart") or croak("Failed to restart $ntpd");
-
 opkg_print("enabling ntp service at boot time\n");
 !enable_system_services( (NTP()) )
     or (carp "ERROR: Couldn't enable ntp service.\n", exit 1);
 
 opkg_print("restarting ntp service\n");
 !system_service(NTP(),RESTART())
-    or die "ERROR: Couldn't restart http service.";
+    or die "ERROR: Couldn't restart ntp service.";
 
 exit(0);
