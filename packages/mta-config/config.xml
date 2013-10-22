@@ -63,6 +63,7 @@
       <changelogEntry authorName="Olivier Lahaye" date="2013-10-14T10:30:17+02:00">
         <item>Add dependancies so postfix package is required.</item>
       </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.1.1-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-12-08T15:29:03-05:00">
         <item>Fix a useless warning in api-post-deploy.</item>
