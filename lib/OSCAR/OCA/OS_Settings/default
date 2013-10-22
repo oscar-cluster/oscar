@@ -57,6 +57,7 @@ ntp_configfile=/etc/ntp.conf
 # Specifies a few directories
 postgresql_datadir=/var/lib/pgsql/data
 postgresql_bindir=/usr/bin
+ntp_dir=/etc/ntp
 
 # For compatibility
 exports_file=/etc/exports
