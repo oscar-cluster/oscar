@@ -81,7 +81,6 @@ libselinux
 libsepol
 libstdc++
 libstdc++-devel
-compat-libtermcap
 libuser
 logrotate
 lsof
@@ -188,9 +187,6 @@ libobjc
 libmng
 libtiff
 rdma
-rhpl
-pyxf86config
-xorg-x11-drv-synaptics
 tcp_wrappers
 ttmkfdir
 tzdata
