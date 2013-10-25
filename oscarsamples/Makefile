@@ -28,6 +28,7 @@ FILES := debian-4-i386.rpmlist debian-4-x86_64.rpmlist \
 	suse-10.0-i386.rpmlist suse-10.0-x86_64.rpmlist \
 	                       suse-10.2-x86_64.rpmlist \
 	                       suse-10.3-x86_64.rpmlist \
+	                       suse-12.3-x86_64.rpmlist \
 	mdv-2006-i386.rpmlist \
 	ydl-5-ppc64.rpmlist \
 	ide-pata.disk ide-sata.disk \
