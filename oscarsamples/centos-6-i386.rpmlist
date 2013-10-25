@@ -158,6 +158,7 @@ telnet-server
 coreutils
 time
 tmpwatch
+torque-oscar-libs
 traceroute
 udev
 units
