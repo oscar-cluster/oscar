@@ -132,19 +132,21 @@ sub __setup_dhcpd ($) {
         or (carp "ERROR: Couldn't clean hosts file!", return -1);
 
     # Get DHCP config file and leases file.
-    my $config = getconf();
-    my $dhcpd_configfile = $config->{dhcp_configfile};
-    my $dhcpd_leases = $config->{dhcp_leases};
+    my $config = OSCAR::OCA::OS_Settings::getconf();
+    my $dhcpd_configfile = $config->{'dhcp_configfile'};
+    my $dhcpd_leases = $config->{'dhcp_leases'};
 
-    if (undef $dhcpd_configfile) {
-        oscar_log_subsection ("ERROR: dhcpd_configfile not set up for this distro. Check the configuration files in lib/OSCAR/OCA/OS_Settings/*");
-    } else {
+    if (defined $dhcpd_configfile) {
         oscar_log_subsection ("[INFO] dhcp_configfile: $dhcpd_configfile"); 
-    }
-    if (undef $dhcpd_leases) {
-        oscar_log_subsection ("ERROR: dhcpd_configfile not set up for this distro. Check the configuration files in lib/OSCAR/OCA/OS_Settings/*");
     } else {
+        oscar_log_subsection ("ERROR: dhcpd_configfile not set up for this distro. Check the configuration files in lib/OSCAR/OCA/OS_Settings/*");
+        return -1;
+    }
+    if (defined $dhcpd_leases) {
         oscar_log_subsection ("[INFO] dhcp_leases: $dhcpd_leases");
+    } else {
+        oscar_log_subsection ("ERROR: dhcpd_configfile not set up for this distro. Check the configuration files in lib/OSCAR/OCA/OS_Settings/*");
+        return -1;
     }
 
     oscar_log_subsection ("Step $step_number: About to run setup_dhcpd...");
@@ -216,7 +218,7 @@ sub clean_hostsfile {
     # 1st, backup $file if not done yet.
     backup_file_if_not_exist($file) or (carp "Couldn't backup rsyncable hosts file!",
                                  and return undef);
-    open(IN,"<$file.bak") or (carp "Couldn't open $file.bak for reading!",
+    open(IN,"<$file.oscarbak") or (carp "Couldn't open $file.oscarbak for reading!",
                                  and return undef);
     open(OUT,">$file") or (carp "Couldn't open $file for writing!",
                                  and return undef);
@@ -656,7 +658,7 @@ sub __run_setup_pxe ($) {
         return undef;
     }
     my $config = $oscar_configurator->get_config();
-    my $bin_path = $config->{binaries_path};
+    my $bin_path = $config->{'binaries_path'};
 
     my $cmd = "$bin_path/setup_pxe";
     if ($ENV{OSCAR_VERBOSE}) {
