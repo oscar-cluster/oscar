@@ -61,6 +61,7 @@ postgresql_datadir=/var/lib/pgsql/data
 postgresql_bindir=/usr/bin
 pxe_configdir=/tftpboot/pxelinux.cfg/
 pxe_dir=/usr/lib/syslinux/
+tftp_dir=/tftpboot/
 
 # For compatibility
 exports_file=/etc/exports
