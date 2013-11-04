@@ -39,6 +39,7 @@ use SIS::Client;
 use SIS::NewDB;
 use SIS::Image;
 use OSCAR::Network;
+use OSCAR::FileUtils;
 
 use Carp;
 use OSCAR::Logger;
