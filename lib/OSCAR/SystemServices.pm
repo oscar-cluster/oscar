@@ -418,6 +418,8 @@ sub remote_system_service($$$) {
     if (defined $remote_cmd and ( not -x $remote_cmd or -d $remote_cmd )) {
         carp "ERROR: remote command ($remote_cmd) not an executable.\n Can't perform remote action $action on remote service $service";
         return -1;
+    } elsif ( not defined $remote_cmd ) {
+        $remote_cmd = "";
     }
     my $os = OSCAR::OCA::OS_Detect::open();
     my $service_mgt = $os->{service_mgt}; # (systemd, initscripts, manual)
