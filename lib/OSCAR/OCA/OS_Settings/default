@@ -44,7 +44,6 @@ flamethrower_configfile=/etc/systemimager/flamethrower.conf
 ftp_configfile=
 gmond_configfile=/etc/ganglia/gmond.conf
 gmetad_configfile=/etc/ganglia/gmetad.conf
-http_configdir=/etc/httpd/conf.d/
 monitor_configfile=
 rsync_configfile=
 ssh_configfile=/etc/ssh/sshd_config
@@ -53,11 +52,15 @@ exports_configfile=/etc/exports
 jobmonitor_configfile=/etc/jobmond.conf
 jobarchive_configfile=/etc/jobarchived.conf
 ntp_configfile=/etc/ntp.conf
+pxe_bootbin=pxelinux.0
 
 # Specifies a few directories
+http_configdir=/etc/httpd/conf.d/
+ntp_dir=/etc/ntp
 postgresql_datadir=/var/lib/pgsql/data
 postgresql_bindir=/usr/bin
-ntp_dir=/etc/ntp
+pxe_configdir=/tftpboot/pxelinux.cfg/
+pxe_dir=/usr/lib/syslinux/
 
 # For compatibility
 exports_file=/etc/exports

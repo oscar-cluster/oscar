@@ -18,4 +18,3 @@ nfs_package=nfs-kernel-server
 # Overwrite a few directories
 postgresql_datadir=/var/lib/postgresql/9.1/main
 postgresql_bindir=/usr/libpostgresql/9.1/bin
-

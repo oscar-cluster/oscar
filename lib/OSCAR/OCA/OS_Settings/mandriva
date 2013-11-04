@@ -1,0 +1,11 @@
+# mandriva specific settings
+# Overwrite few deamons
+
+# Overwrite few services
+
+# Overwrite few package names
+
+# Overwrite few config file locations
+pxe_bin=linux.0
+
+# Overwrite a few directories

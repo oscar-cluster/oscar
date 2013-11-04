@@ -3,7 +3,7 @@ TOP_LIB_DIR = ../../..
 include $(TOP_LIB_DIR)/Config.mk
 
 SUBDIRS := 
-FILES := debian debian5 debian6 default fc rhel rhel5 suse ubuntu1204
+FILES := debian debian5 debian6 default fc mandriva rhel rhel5 suse ubuntu1204
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done
