@@ -1080,7 +1080,11 @@ sub update_image_initrd ($) {
         carp "ERROR: the chroot binary ($chroot_bin) is not available";
         return -1;
     }
-    $cmd = "$chroot_bin $imgpath /sbin/mkinitrd -v -f --fstab=/etc/fstab.fake ".
+    # OL: Temporary fix to support dracut using mkinitrd alias. the alias is in /usr/bin, no /sbin, thus the fix.
+    my $mkinitrd_cmd="/sbin/mkinitrd";
+    $mkinitrd_cmd="/usr/bin/mkinitrd" if ( -f "/usr/bin/mkinitrd" );
+    # OL: End of tmp fix. (should be replaced with OS_Settings::getitem).
+    $cmd = "$chroot_bin $imgpath $mkinitrd_cmd -v -f --fstab=/etc/fstab.fake ".
            "--allow-missing $initrd $version";
     print "[INFO] Running $cmd...\n";
     if (system ($cmd)) {
