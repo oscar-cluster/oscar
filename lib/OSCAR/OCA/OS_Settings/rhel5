@@ -1,4 +1,4 @@
-# rhel 5specific settings
+# rhel 5 specific settings
 # Overwrite few deamons
 
 # Overwrite few services

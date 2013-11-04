@@ -1,4 +1,4 @@
-# rhel specific settings (valid for rhel, centos)
+# Fedora specific settings (valid for all Fedora)
 # Init directory specific to this distribution
 init=/etc/rc.d/init.d 
 
