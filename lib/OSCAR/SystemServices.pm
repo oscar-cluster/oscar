@@ -146,14 +146,14 @@ sub system_service_status ($) {
 
     # Can't use switch/case here: for unknown reason, switch/given keyword is not recognized...
     if ($service_mgt eq "systemd") {
-        open SYSTEMCTL, "LC_ALL=C /bin/systemctl status $service_name |"
+        open SYSTEMCTL, "LC_ALL=C /bin/systemctl is-enabled $service_name.service |"
             or (carp "ERROR: Could not run: $!", return undef);
         while (<SYSTEMCTL>) {
-            if (/Loaded:.*\.service; enabled/) {
+            if (/^enabled/) {
                 close SYSTEMCTL;
                 return OSCAR::SystemServicesDefs::SERVICE_ENABLED();
             }
-            if (/Loaded:.*\.service; disabled/) {
+            if (/^disabled/) {
                 close SYSTEMCTL;
                 return OSCAR::SystemServicesDefs::SERVICE_DISABLED();
             }
@@ -271,7 +271,7 @@ sub set_system_services ($@) {
                     # If undefined, we assume that the $service is the exact name.
                     $service_name = "$service" if (not defined $service_name);
 
-                    system("LC_ALL=C /bin/systemctl $command $service_name");
+                    system("LC_ALL=C /bin/systemctl $command $service_name.service");
                     my $status = system_service_status ($service);
                     if ($status ne $config) {
                         OSCAR::Logger::oscar_log_subsection ("[ERROR] Failed to $command $service");
@@ -454,11 +454,11 @@ sub remote_system_service($$$) {
     OSCAR::Logger::oscar_log_subsection ("Performing '$cmd_action' on service $service_name ($service)... ");
     given ($service_mgt) {
         when "systemd" {
-            $cmd = "/bin/systemctl ".$cmd_action." ".$service_name;
+            $cmd = "LC_ALL=C /bin/systemctl ".$cmd_action." ".$service_name.".service";
             last
         }
         when "initscripts" {
-            $cmd = "/sbin/service ".$service_name." ".$cmd_action;
+            $cmd = "LC_ALL=C /sbin/service ".$service_name." ".$cmd_action;
             last
         }
         when "manual" {

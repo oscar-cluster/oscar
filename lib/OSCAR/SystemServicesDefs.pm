@@ -26,11 +26,13 @@ use constant NFS            => 'nfs';
 use constant NTP            => 'ntp';
 use constant POSTGRESQL     => 'postgresql';
 use constant RPC            => 'rpc';
+use constant TFTP           => 'tftp';
 use constant SI_MONITOR     => 'monitor';
 use constant SI_RSYNC       => 'rsync';
 use constant SI_FLAMETHROWER => 'flamethrower';
 use constant SI_BITTORRENT  => 'bittorrent';
 use constant SSH            => 'ssh';
+use constant XINETD         => 'xinetd';
 
 # List of actions related to system services
 use constant START      => 0;
@@ -65,10 +67,12 @@ our @EXPORT = qw(
                 SI_BITTORRENT
                 START
                 STOP
+                TFTP
                 RESTART
                 STATUS
                 STARTED
                 STOPPED
+                XINETD
                 );
 
 1;
