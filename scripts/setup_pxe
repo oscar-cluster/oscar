@@ -53,6 +53,9 @@ use warnings "all";
 
 use OSCAR::Database;
 use OSCAR::OCA::OS_Detect;
+use OSCAR::OCA::OS_Settings;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 
 my $ARCH=(uname)[4]; # Default architecture
 $ARCH =~ s/i.86/i386/;
@@ -62,6 +65,7 @@ if (!defined $os) {
     die "ERROR: Impossible to detect the local distribution";
 }
 my $is_suse = 1 if ($os->{'distro'} eq "suse");
+my $tftpboot = OSCAR::OCA::OS_Settings::getitem("tftp_dir");
 
 my $options=AppConfig->new(
         Help=>{ ARGCOUNT=> ARGCOUNT_NONE,
@@ -101,41 +105,47 @@ if ($options->pxegrub) {
 # Mandrake's tftp-server expects the tftpboot directory to be under /var/lib/,
 # but OSCAR's standard location is simply under /.
 # Most code by TJN, with mods by BLI
-if (-e "/etc/mandrake-release") {
-	my $root_tftp = "/tftpboot";
-        my $var_tftp = "/var/lib/tftpboot";
-
-        croak "Error: $! - $root_tftp\n" if( not -e $root_tftp );
-
-        my $symlinks_exist = eval { symlink("", ""); 1 };
-
-        if( $symlinks_exist && ! $@ ) {
-		if( ( not -l $var_tftp ) && ( -d $var_tftp ) ) {
-			# if $var_tftp is a directory and not a link, remove
-			verbose("Removing directory $var_tftp.");
-			rmdir($var_tftp);
-		}
-                if( not -e $var_tftp ) {
-                        symlink($root_tftp, $var_tftp) or croak "Error: $!\n";
-                        verbose("Created symlink: $var_tftp => $root_tftp\n")
-                            if($? == 0);
-                }
-        } else {
-                  carp "Symlinks not supportted on this system! - $@\n";
-        }
-
-}
+#if (-e "/etc/mandrake-release") {
+#	my $root_tftp = "/tftpboot";
+#        my $var_tftp = "/var/lib/tftpboot";
+#
+#        croak "Error: $! - $root_tftp\n" if( not -e $root_tftp );
+#
+#        my $symlinks_exist = eval { symlink("", ""); 1 };
+#
+#        if( $symlinks_exist && ! $@ ) {
+#		if( ( not -l $var_tftp ) && ( -d $var_tftp ) ) {
+#			# if $var_tftp is a directory and not a link, remove
+#			verbose("Removing directory $var_tftp.");
+#			rmdir($var_tftp);
+#		}
+#                if( not -e $var_tftp ) {
+#                        symlink($root_tftp, $var_tftp) or croak "Error: $!\n";
+#                        verbose("Created symlink: $var_tftp => $root_tftp\n")
+#                            if($? == 0);
+#                }
+#        } else {
+#                  carp "Symlinks not supportted on this system! - $@\n";
+#        }
+#
+#}
 
 # SUSE's atftpd is not part of xinetd
 if ($is_suse) {
     verbose("Restarting atftpd");
-    !system("/etc/init.d/atftpd restart") or croak("Failed to restart atftpd");
+    !system_service(TFTP(),RESTART())
+        or croak "ERROR: Couldn't restart tftp service.";
     verbose("Enabling atftpd");
-    !system("/sbin/chkconfig atftpd on") or croak("Failed to enable atftpd");
+    !enable_system_services( (TFTP()) )
+        or croak("Failed to enable atftpd");
 } else {
     verbose("Restarting xinetd");
-    !system("/etc/init.d/xinetd restart") or croak("Couldn't restart xinetd");
+    !system_service(XINETD(),RESTART()) or croak("Couldn't restart xinetd");
     verbose("Enabling tftp");
+# OL: BUG: can we handle xinetd services thru systemctl ? No! systemd replaces xinetd. we are in compatibility mode using sysvinit cmds...
+#     We need to avoid this. => either fix atftp-server package or add xinetd service managemr to OSCAR::SystemServices
+#    !enable_system_services( (TFTP()) )
+#        or croak("Failed to enable atftpd");
     if ($os->{pkg} ne "deb") {
         !system("/sbin/chkconfig tftp on") or croak("Couldn't enable tftp");
     } else {
@@ -150,14 +160,15 @@ if ($is_suse) {
 }
 
 verbose("Creating directories.");
-my $netboot_cfg_d = "/tftpboot/pxelinux.cfg";
+#my $netboot_cfg_d = "/tftpboot/pxelinux.cfg";
+my $netboot_cfg_d = OSCAR::OCA::OS_Settings::getitem("pxe_configdir");
 
 my $kboot_cfg_d = "/etc/systemimager/kboot.cfg";
-$netboot_cfg_d = "/tftpboot/kboot.cfg" if ($ARCH eq "ppc64" && -d $kboot_cfg_d );
+$kboot_cfg_d = "/tftpboot/kboot.cfg" if ($ARCH eq "ppc64" && -d $kboot_cfg_d );
 
 mkpath($netboot_cfg_d);
 unless (-d $netboot_cfg_d) {
-	 croak("Unable to create /tftpboot directories.");
+	 croak("Unable to create $netboot_cfg_d directories.");
 }
 
 my $archdir = "$ARCH-boot";
@@ -189,34 +200,10 @@ if (scalar (@result) == 0) {
 
 my $node_ref = pop @result;
 my $ip = $$node_ref{ip};
-my $pxelinux_dir = "/usr/lib/syslinux"; # default directory containing pxelinux.0
-my $pxelinux_bin = "pxelinux.0"; # default binary name for pxelinux.0 boot code.
-
-if(! -e "$pxelinux_dir/$pxelinux_bin") {
-    # [GV] TODO: We should use OS_Setting here
-    switch ($os->{'distro'}) {
-        case "centos" {
-            $pxelinux_dir = "/usr/share/syslinux";
-            $pxelinux_bin = "pxelinux.0"; 
-        }
-        case "rhel" {
-            $pxelinux_dir = "/usr/share/syslinux";
-            $pxelinux_bin = "pxelinux.0";
-        }
-        case "suse" {
-            $pxelinux_dir = "/usr/share/syslinux";
-            $pxelinux_bin = "pxelinux.0";
-        }
-        case "mandriva" {
-            $pxelinux_dir = "/var/lib/tftpboot/X86PC/linux";
-            $pxelinux_bin = "linux.0";
-        }
-        else {
-            $pxelinux_dir = "/usr/lib/syslinux";
-            $pxelinux_bin = "pxelinux.0";
-        }
-    }
-}
+#my $pxelinux_dir = "/usr/lib/syslinux"; # default directory containing pxelinux.0
+#my $pxelinux_bin = "pxelinux.0"; # default binary name for pxelinux.0 boot code.
+my $pxelinux_dir = OSCAR::OCA::OS_Settings::getitem("pxe_dir"); # default directory containing pxelinux.0
+my $pxelinux_bin = OSCAR::OCA::OS_Settings::getitem("pxe_bootbin"); # default binary name for pxelinux.0 boot code.
 
 if (! -e "$pxelinux_dir/$pxelinux_bin") {
     die "ERROR: $pxelinux_dir/$pxelinux_bin does not exist";
@@ -224,8 +211,8 @@ if (! -e "$pxelinux_dir/$pxelinux_bin") {
 
 if (($ARCH eq "i386") || ($ARCH eq "x86_64")) {
     verbose("Getting $pxelinux_bin.");
-    copy("$pxelinux_dir/$pxelinux_bin", "/tftpboot/pxelinux.0") or
-        croak("ERROR: Unable to copy \"$pxelinux_bin\" file to /tftpboot.");
+    copy("$pxelinux_dir/$pxelinux_bin", "$tftpboot/pxelinux.0") or
+        croak("ERROR: Unable to copy \"$pxelinux_bin\" file to $tftpboot.");
 
     verbose("Copying default pxelinux.cfg file");
     copy("/etc/systemimager/pxelinux.cfg/syslinux.cfg", 
@@ -238,7 +225,7 @@ if (($ARCH eq "i386") || ($ARCH eq "x86_64")) {
     # SKIP_LOCAL_CFG prevents this from happening.
     verbose("Updating $netboot_cfg_d/default file to skip local.cfg and support si_monitor.");
     if ( system("sed 's|root=/dev/ram|root=/dev/ram SKIP_LOCAL_CFG=y MONITOR_SERVER=$ip MONITOR_CONSOLE=yes|g' $netboot_cfg_d/default > $netboot_cfg_d/default.new && mv $netboot_cfg_d/default.new $netboot_cfg_d/default") ) {
-      croak("ERROR: Unable to update /tftpboot/pxelinux.cfg/default file to skip local.cfg and support si_monitor.");
+      croak("ERROR: Unable to update $netboot_cfg_d/default file to skip local.cfg and support si_monitor.");
     }
 
     if (defined $install_mode && $install_mode eq "systemimager-bt") {
@@ -265,13 +252,13 @@ if (($ARCH eq "i386") || ($ARCH eq "x86_64")) {
     copy("/etc/systemimager/pxelinux.cfg/message.txt", "$netboot_cfg_d/") or 
       croak("Unable to copy \"message.txt\" file to $netboot_cfg_d.");
 } elsif ($ARCH eq "ia64") {
-    verbose("Copying elilo.efi to /tftpboot");
-    copy("/boot/efi/elilo.efi","/tftpboot") or
-      copy("/boot/efi/EFI/redhat/elilo.efi","/tftpboot") or
-      croak("Unable to copy \"elilo.efi\" to /tftpboot");
+    verbose("Copying elilo.efi to $tftpboot");
+    copy("/boot/efi/elilo.efi","$tftpboot") or
+      copy("/boot/efi/EFI/redhat/elilo.efi","$tftpboot") or
+      croak("Unable to copy \"elilo.efi\" to $tftpboot");
 
     verbose("Writing out \"elilo.conf\" file with si_monitor support");
-    open(OUT,">/tftpboot/elilo.conf") or croak("Couldn't open /tftpboot/elilo.conf for writing");
+    open(OUT,">$tftpboot/elilo.conf") or croak("Couldn't open $tftpboot/elilo.conf for writing");
     print OUT "prompt\n";
     print OUT "timeout=50\n";
     print OUT "default=sisboot\n";
@@ -325,18 +312,18 @@ if ($options->uyok) {
     }
 }
 
-verbose("Copying SystemImager $bootpackage boot kernel and initrd.img to /tftpboot");
-unlink "/tftpboot/kernel", "/tftpboot/initrd.img";
-copy("$kernel", "/tftpboot/$tftp_kernel") or 
-  croak("Unable to copy $bootpackage boot kernel file to /tftpboot.");
-copy("$ramdisk", "/tftpboot/$tftp_ramdisk") or
-  croak("Unable to copy $bootpackage initrd.img file to /tftpboot.");
+verbose("Copying SystemImager $bootpackage boot kernel and initrd.img to $tftpboot");
+unlink "$tftpboot/kernel", "$tftpboot/initrd.img";
+copy("$kernel", "$tftpboot/$tftp_kernel") or 
+  croak("Unable to copy $bootpackage boot kernel file to $tftpboot.");
+copy("$ramdisk", "$tftpboot/$tftp_ramdisk") or
+  croak("Unable to copy $bootpackage initrd.img file to $tftpboot.");
 
-verbose("Symlinking SystemImager $bootpackage boot kernel and initrd.img to /tftpboot/kernel and /tftpboot/initrd.img respectively");
-symlink("/tftpboot/$tftp_kernel", "/tftpboot/kernel") or
-  croak("Unable to symlink $bootpackage boot kernel file to /tftpboot.");
-symlink("/tftpboot/$tftp_ramdisk", "/tftpboot/initrd.img") or 
-  croak("Unable to symlink $bootpackage initrd.img file to /tftpboot.");
+verbose("Symlinking SystemImager $bootpackage boot kernel and initrd.img to $tftpboot/kernel and $tftpboot/initrd.img respectively");
+symlink("$tftpboot/$tftp_kernel", "$tftpboot/kernel") or
+  croak("Unable to symlink $bootpackage boot kernel file to $tftpboot.");
+symlink("$tftpboot/$tftp_ramdisk", "$tftpboot/initrd.img") or 
+  croak("Unable to symlink $bootpackage initrd.img file to $tftpboot.");
 
 # setup netbootmgr for multi-arch boot
 
