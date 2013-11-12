@@ -130,34 +130,14 @@ if ($options->pxegrub) {
 #
 #}
 
-# SUSE's atftpd is not part of xinetd
-if ($is_suse) {
-    verbose("Restarting atftpd");
-    !system_service(TFTP(),RESTART())
-        or croak "ERROR: Couldn't restart tftp service.";
-    verbose("Enabling atftpd");
-    !enable_system_services( (TFTP()) )
-        or croak("Failed to enable atftpd");
-} else {
-    verbose("Restarting xinetd");
-    !system_service(XINETD(),RESTART()) or croak("Couldn't restart xinetd");
-    verbose("Enabling tftp");
-# OL: BUG: can we handle xinetd services thru systemctl ? No! systemd replaces xinetd. we are in compatibility mode using sysvinit cmds...
-#     We need to avoid this. => either fix atftp-server package or add xinetd service managemr to OSCAR::SystemServices
-#    !enable_system_services( (TFTP()) )
-#        or croak("Failed to enable atftpd");
-    if ($os->{pkg} ne "deb") {
-        !system("/sbin/chkconfig tftp on") or croak("Couldn't enable tftp");
-    } else {
-        # We use this specific command on Debian because it seems that the
-        # default script for the creation of a daemon is not working. I did
-        # not really investigate the problem
-        # The command i initially wanted to use was: 
-        #   !system("update-rc.d atftpd defaults") 
-        !system("sudo /usr/sbin/atftpd --daemon /tftpboot/")
-            or croak("Couldn't enable tftp");
-    }
-}
+
+# OL: BUG: Need to fix atftpd TFTP_DIR in /etc/sysconfig/atftpd (rpm distro) and on debian as well.
+verbose("Restarting atftpd");
+!system_socket(TFTP(),RESTART())
+    or croak "ERROR: Couldn't restart tftp service.";
+verbose("Enabling atftpd");
+!enable_system_sockets( (TFTP()) )
+    or croak("Failed to enable atftpd");
 
 verbose("Creating directories.");
 #my $netboot_cfg_d = "/tftpboot/pxelinux.cfg";
