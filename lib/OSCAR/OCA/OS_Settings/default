@@ -62,6 +62,7 @@ postgresql_bindir=/usr/bin
 pxe_configdir=/tftpboot/pxelinux.cfg/
 pxe_dir=/usr/lib/syslinux/
 tftp_dir=/tftpboot/
+xinetd_dir=/etc/xinetd.d/
 
 # For compatibility
 exports_file=/etc/exports

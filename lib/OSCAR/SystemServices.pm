@@ -443,7 +443,7 @@ sub set_system_sockets ($@) {
 
                 # FIXME: OL: To be tested. Also note that if line disabled = does not exists,
                 # the service config will not change.
-                system("sed -i -e 's/\(.*disabled.*:\).*\$/\1 $command");
+                system("sed -i -e 's/\(.*disabled.*:\).*\$/\1 $command' $xinetd_path".TFTP());
             }
         }
     }
