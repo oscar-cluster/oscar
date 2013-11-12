@@ -212,6 +212,27 @@ sub enable_system_services (@) {
 }
 
 ###############################################################################
+=item enable_system_socketss( $service )
+
+Enable multiple system socket services to automatically start at boot.
+
+ Input: a list of services (either MACROS, generic names or real names)
+Return:  0: Success.
+        -1: Error.
+
+Example: enable_system_sockets((TFTP()))
+
+Exported: YES
+
+=cut
+###############################################################################
+
+sub enable_system_sockets (@) {
+    OSCAR::Logger::oscar_log_subsection("Unabling socket services:");
+    return set_system_sockets(SERVICE_ENABLED(),@_);
+}
+
+###############################################################################
 =item disable_system_services( $service )
 
 Disable multiple system services to automatically start at boot.
