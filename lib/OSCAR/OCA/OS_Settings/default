@@ -33,7 +33,7 @@ postresql_service=postgresql
 rpc_service=rpcbind
 rsync_service=systemimager-server-rsyncd
 ssh_service=sshd
-tftp_service=atftpd
+tftp_service=atftp
 
 # Specifies few configuration files
 bittorrent_configfile=/etc/systemimager/bittorrent.conf
