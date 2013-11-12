@@ -50,9 +50,12 @@ use base qw(Exporter);
 
 @EXPORT = qw (
              enable_system_services
+             enable_system_sockets
              disable_system_services
              system_service
+             system_socket
              remote_system_service
+             remote_system_socket
              system_service_status
              get_system_services
              );
@@ -259,7 +262,7 @@ sub set_system_services ($@) {
     given ($service_mgt) {
         when "systemd" {
             my $command = "enable";
-            $command = "disable" if ($config eq OSCAR::SystemServicesDefs::SERVICE_DISABLED());
+            $command = "disable" if ($config eq SERVICE_DISABLED());
             foreach my $service (@services) {
                 OSCAR::Logger::oscar_log_subsection("Setting service $service to ".$command."d...");
                 my $status = system_service_status ($service);
@@ -287,7 +290,7 @@ sub set_system_services ($@) {
         }
         when "initscripts" {
             my $command = "on";
-            $command = "off" if ($config eq OSCAR::SystemServicesDefs::SERVICE_DISABLED());
+            $command = "off" if ($config eq SERVICE_DISABLED());
             foreach my $service (@services) {
                 OSCAR::Logger::oscar_log_subsection("Setting service $service to $command... ");
                 # First we check if the service is already enabled (chkconfig has
@@ -318,7 +321,7 @@ sub set_system_services ($@) {
         }
         when "manual" {
             my $command = "start 20 2";
-            $command = "remove" if ($config eq OSCAR::SystemServicesDefs::SERVICE_DISABLED());
+            $command = "remove" if ($config eq SERVICE_DISABLED());
             #my $initrd_path="/etc/init.d";
             my $initrd_path= OSCAR::OCA::OS_Settings::getitem('init');
             foreach my $service (@services) {
@@ -363,6 +366,90 @@ sub set_system_services ($@) {
 }
 
 ###############################################################################
+=item set_system_sockets( $service )
+
+Configure multiple system sockets (xinetd or equivalent service start behavior at boot).
+
+ Input: - SERVICE_ENABLED() or SERVICE_DISABLED()
+        - a list of services (either MACROS, generic names or real names)
+Return:  0: Success.
+        -1: Error.
+
+Example: set_system_sockets(SERVICE_ENABLED(),(TFTP()))
+
+Exported: YES
+
+=cut
+###############################################################################
+
+sub set_system_sockets ($@) {
+    # OL FIXME: Fix return codes in all calls.
+    my $config = shift;
+    my @services = @_;
+    my @failed_services;
+
+    # chkconfig is a RPM specific command, so we do not use it on Debian-like
+    # systems.
+
+    my $os = OSCAR::OCA::OS_Detect::open();
+    my $service_mgt = $os->{service_mgt}; # (systemd, initscripts, manual)
+    given ($service_mgt) {
+        when "systemd" {
+            my $command = "disable";
+            $command = "enable" if ($config eq SERVICE_ENABLED());
+            foreach my $service (@services) {
+                OSCAR::Logger::oscar_log_subsection("Setting socket service $service to ".$command."d...");
+                # Need to get the real service name (example: http can be either httpd or apache2)
+                my $service_name = OSCAR::OCA::OS_Settings::getitem($service . "_service");
+
+                # If undefined, we assume that the $service is the exact name.
+                $service_name = "$service" if (not defined $service_name);
+
+                system("LC_ALL=C /bin/systemctl $command $service_name.socket");
+                system("LC_ALL=C systemctl daemon-reload");
+            }
+         }
+        when "initscripts" {
+            my $command = "off";
+            if ($config eq SERVICE_ENABLED()) {
+                $command = "on";
+                # When enabling a xinetd service, we also need to enable xinetd.
+                set_system_service(SERVICE_ENABLED(), (XINETD()));
+            }
+            foreach my $service (@services) {
+                OSCAR::Logger::oscar_log_subsection("Setting xinetd service $service to $command... ");
+                # Need to get the real service name (example: http can be either httpd or apache2)
+                my $service_name = OSCAR::OCA::OS_Settings::getitem($service . "_service");
+
+                # If undefined, we assume that the $service is the exact name.
+                $service_name = "$service" if (not defined $service_name);
+
+                system("/sbin/chkconfig $service_name $command");
+            }
+            # FIXME: check return codes.
+            system_service(XINETD(), RESTART());
+         }
+        when "manual" {
+            my $command = "no";
+            $command = "yes" if ($config eq SERVICE_DISABLED());
+            my $xinetd_path= OSCAR::OCA::OS_Settings::getitem('xinetd_dir');
+            foreach my $service (@services) {
+                OSCAR::Logger::oscar_log_subsection("Setting ixinetd service $service to ".$command."d...");
+                # Need to get the real service name (example: http can be either httpd or apache2)
+                my $service_name = OSCAR::OCA::OS_Settings::getitem($service . "_service");
+
+                # If undefined, we assume that the $service is the exact name.
+                $service_name = "$service" if (not defined $service_name);
+
+                # FIXME: OL: To be tested. Also note that if line disabled = does not exists,
+                # the service config will not change.
+                system("sed -i -e 's/\(.*disabled.*:\).*\$/\1 $command");
+            }
+        }
+    }
+}
+
+###############################################################################
 =item system_service( $service , $action )
 
 Perform an action on a service: START, STOP, RESTART, STATUS
@@ -389,6 +476,35 @@ sub system_service ($$) {
     my $service = shift;
     my $action = shift;
     return remote_system_service($service,$action,undef);
+}
+
+###############################################################################
+=item system_socket( $service , $action )
+
+Perform an action on a service: START, STOP, RESTART, STATUS
+
+ Input: - service (either MACRO, generic name or real name)
+        - action (START(), STOP(),RESTART(),STATUS())
+
+Return:     0: Success.
+        non 0: Error.
+
+Examples: system_socket(TFTP(),RESTART()) # Prefered method
+          system_socket("tftp","restart")
+          system_ssocket("atftpd","restart")
+          => TFTP() points to "tftp" (SystemServiceDefs.pm) which in turn
+             allow to point to the real service name when appending _service
+             (tftp_service from OS_Settings/{default,...})
+
+Exported: YES
+
+=cut
+###############################################################################
+
+sub system_socket ($$) {
+    my $service = shift;
+    my $action = shift;
+    return remote_system_socket($service,$action,undef);
 }
 
 ###############################################################################
@@ -479,6 +595,104 @@ sub remote_system_service($$$) {
     my $ret_code = system ("LC_ALL=C $remote_cmd $cmd");
     $ret_code = $ret_code/256 if ($ret_code > 255);
     OSCAR::Logger::oscar_log_subsection ("[SystemService] Return code: $ret_code");
+
+    return $ret_code;
+}
+
+###############################################################################
+=item remote_system_socket( $service , $action , $remote_cmd)
+
+Perform an action on a remote service: START, STOP, RESTART, STATUS
+
+ Input: - service (either MACRO, generic name or real name)
+        - action (START(), STOP(),RESTART(),STATUS())
+        - remote command (typically: /usr/bin/ssh $host or /usr/bin/cexec)
+
+Return:     0: Success.
+        non 0: Error.
+
+Exported: YES
+
+=cut
+###############################################################################
+
+sub remote_system_socket($$$) {
+    my ($service, $action, $remote_cmd) = @_;
+
+    # If remote command is defined but is not executable or is a directory => Problem.
+    if (defined $remote_cmd and ( not -x $remote_cmd or -d $remote_cmd )) {
+        carp "ERROR: remote command ($remote_cmd) not an executable.\n Can't perform remote action $action on remote socket service $service";
+        return -1;
+    } elsif ( not defined $remote_cmd ) {
+        $remote_cmd = "";
+    }
+    my $os = OSCAR::OCA::OS_Detect::open();
+    my $service_mgt = $os->{service_mgt}; # (systemd, initscripts, manual)
+
+    # Get the real daemon name (example: http service can be httpd or apache2)
+    my $service_name = OSCAR::OCA::OS_Settings::getitem ($service . "_service");
+    # If undefined, we assume that $service is the exact name.
+    $service_name = $service if (not defined $service_name);
+
+    my $cmd="";
+    my $cmd_action="";
+
+    if ($action eq START()) {
+        if (system_socket ($service, STATUS())) { 
+            # not running
+            $cmd_action = "start";
+        } else { 
+            # already running, we restart to avoid errors (bad init stripts)
+            $cmd_action = "restart";
+        }
+    } elsif ($action eq STOP()) {
+        $cmd_action = "stop";
+    } elsif ($action eq RESTART()) {
+        $cmd_action = "restart";
+    } elsif ($action eq STATUS()) {
+        $cmd_action = "status";
+    } else {
+        carp "ERROR: Unknow system socket service action ($action)";
+        return -1;
+    }
+
+    OSCAR::Logger::oscar_log_subsection ("Performing '$cmd_action' on socket service $service_name ($service)... ");
+    given ($service_mgt) {
+        when "systemd" {
+            $cmd = "LC_ALL=C /bin/systemctl ".$cmd_action." ".$service_name.".socket ; /bin/systemctl daemon-reload";
+            last
+        }
+        when "initscripts" {
+            $service_name = OSCAR::OCA::OS_Settings::getitem (XINETD() . "_service");
+            # we won't stop xinetd as it would stop all xinetd services.
+            system_service(XINETD(), $cmd_action) if ($cmd_action ne STOP());
+            $cmd="";
+            last
+        }
+        when "manual" {
+            # we won't stop xinetd as it would stop all xinetd services.
+            system_service(XINETD(), $cmd_action) if ($cmd_action ne STOP());
+            $cmd="";
+            last
+        }
+    }
+
+    # FIXME: OL: should init return code with above system_service real return code.
+    my $ret_code = 0;
+    if ($cmd ne "") {
+        OSCAR::Logger::oscar_log_subsection "Executing: $cmd";
+
+        # start returns 0 if start ok or already running
+        # stop returns 0 is deamon running and succesfully stopped (else error)
+        # retart: same as start
+        # status: 0 if running 3 or 1 if not.
+        # command not found: 127
+        # unknown service: 1
+
+        $ret_code = system ("LC_ALL=C $remote_cmd $cmd");
+        $ret_code = $ret_code/256 if ($ret_code > 255);
+    }
+    OSCAR::Logger::oscar_log_subsection ("[SystemSocket] Return code: $ret_code");
 
     return $ret_code;
 }
