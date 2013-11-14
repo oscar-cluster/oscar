@@ -381,6 +381,8 @@ sub load_from_file {
 # subroutine if string is validated to be a sane MAC address
 # TODO: - merge with load_from_file subroutine as there seems to be code duplication
 #       - better MAC address validation
+#       - Support infiniband MACS (20 hex numbers instead of 6 (size 59 instead of 17).)
+#       - Support firewire MACS
 sub __load_macs {
     my $string = shift;
 
@@ -395,10 +397,13 @@ sub __load_macs {
     return 1;
 }
 
+# Fuction call by GUI_MAC and CLI_MAC to put all server mac addresses into @SERVERMACS
 sub set_servermacs {
     # OL: BUG/TODO: ifconfig output has changed in latest distros. Need to be fixed using /sbin/ip addr
-    open(CMD, "/sbin/ifconfig|");
-    my @hostmacs = map {/HWaddr\s+([[:xdigit:]:]+)\s+/} grep /HWaddr/, <CMD>;
+#    open(CMD, "/sbin/ifconfig|");
+#    my @hostmacs = map {/HWaddr\s+([[:xdigit:]:]+)\s+/} grep /HWaddr/, <CMD>;
+    open(CMD, "/sbin/ip addr|");
+    my @hostmacs = map {/link\/.[a-z]+\s+([[:xdigit:]:]+)\s+/} grep /link\//, <CMD>;
     close CMD;
     foreach (@hostmacs) {
        $_ = uc mactransform( $_ );
