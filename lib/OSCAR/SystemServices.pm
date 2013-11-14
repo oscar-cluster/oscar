@@ -583,6 +583,8 @@ sub remote_system_service($$$) {
         $cmd_action = "restart";
     } elsif ($action eq OSCAR::SystemServicesDefs::STATUS()) {
         $cmd_action = "status";
+    } elsif ($action eq OSCAR::SystemServicesDefs::RELOAD()) {
+        $cmd_action = "reload";
     } else {
         carp "ERROR: Unknow system service action ($action)";
         return -1;

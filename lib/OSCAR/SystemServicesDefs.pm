@@ -39,6 +39,7 @@ use constant START      => 0;
 use constant STOP       => 1;
 use constant RESTART    => 2;
 use constant STATUS     => 3;
+use constant RELOAD     => 4;
 
 # List of service status
 use constant STARTED    => 0;
@@ -69,6 +70,7 @@ our @EXPORT = qw(
                 STOP
                 TFTP
                 RESTART
+                RELOAD
                 STATUS
                 STARTED
                 STOPPED

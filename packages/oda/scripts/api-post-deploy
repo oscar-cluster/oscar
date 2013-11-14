@@ -31,22 +31,26 @@ use strict;
 use Carp;
 use OSCAR::Logger;
 use OSCAR::Opkg;
+use OSCAR::OCA::OS_Settings;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 
 my ($db_type, $chk) = split(':', $ENV{OSCAR_DB});
 my $cmd;
-if ( $db_type eq "pgsql" ){
-    my $PG_DATA_DIR = "/var/lib/pgsql/data";
-    my $database_daemon = "postgresql";
+
+# OL: Nothing to do if $db_type eq "mysql"
+#
+if ( $db_type eq "pgsql" ) {
+    # OL: FIXME: need to use OS_Settings: The path below is hardcodded for rhel/fedora.
+    my $PG_DATA_DIR = OSCAR::OCA::OS_Settings::getitem("postgresql_datadir");
     my $pg_conf = "$PG_DATA_DIR/pg_hba.conf";
     my $postgresql_conf = "$PG_DATA_DIR/postgresql.conf";
-    if ($chk eq "old"){
-        $cmd = "/etc/init.d/$database_daemon status | grep -c stopped";
-        if ( !system($cmd) ) {
-            $cmd = "/etc/init.d/$database_daemon start";
-            if (system($cmd)) {
-                die ("ERROR: Impossible to execute $cmd");
-            }
-        }
+    if ($chk eq "old") {
+        # Start the database daemon if not started yet. OL Q: Should we enable it?
+        !system_service(POSTGRESQL(),START())
+            or die "ERROR: Couldn't start postgresql server.";
+        # 1st, create a backup of the config file if not already done.
+        backup_file_if_not_exist($pg_conf) or die "ERROR: Cannot backup $pg_conf";
 
         open OLD_CFG, "$pg_conf"
             or die ("ERROR: Can not open $pg_conf file");
@@ -67,9 +71,9 @@ if ( $db_type eq "pgsql" ){
             
         chomp(my @ip_addrs = `oda nics | grep -v List | grep -v =`);
 
-        if ($#ip_addrs > -1){ #If @ip_addrs is not empty
+        if ($#ip_addrs > -1) { #If @ip_addrs is not empty
             print UPDATE_CFG "# All the nodes to access oda(pgsql)\n";
-            foreach my $ip (@ip_addrs){
+            foreach my $ip (@ip_addrs) {
                 print "$ip\n";
                 print UPDATE_CFG "host  all  all  $ip  255.255.255.0  trust\n";
             }
@@ -82,37 +86,25 @@ if ( $db_type eq "pgsql" ){
         if (system($cmd)) {
             die "ERROR: Impossible to execute $cmd";
         }
+        # OL: FIXME3: Check if this is ok for all distros.
         $cmd = "chown postgres:postgres $pg_conf";
         if (system($cmd)) {
             die "ERROR: Impossible to execute $cmd";
         }
     }
 
-    my $database_daemon = "postgresql";
-    oscar_log_subsection("Checking status of $db_type server $database_daemon");
-    if (! -x "/etc/init.d/$database_daemon") {
-        die ("ERROR: Couldn't find /etc/init.d/$database_daemon. ".
-              "$db_type server not correctly installed?");
-    }
     # Reload the database if it is running. Otherwise, just start it.
-    # TODO: Should be using OSCAR::SystemServices
-    $cmd = "/etc/init.d/$database_daemon status | ".
-           "grep -c stopped > /dev/null 2>&1";
-    if ( system($cmd) ){
-        $cmd = "/etc/init.d/$database_daemon reload";
-        if (system($cmd)) {
-            die ("ERROR: Couldn't reload $database_daemon");
-        }
+    if ( system_service(POSTGRESQL(),STATUS()) == STARTED() ) {
+        !system_service(POSTGRESQL(),RELOAD())
+            or die "ERROR: Couldn't reload postgresql server.";
+        # OL: What does mean "old"?
         $chk = "old";
         $ENV{OSCAR_DB} = "$db_type:$chk";
     } else {
-        oscar_log_subsection("$database_daemon was not running and will start");
-        $cmd = "/etc/init.d/$database_daemon start";
-        if (system($cmd)) {
-            die ("ERROR: Couldn't start $database_daemon");
-        }
+        oscar_log_subsection("Postgresql daemon was not running and will start");
+        !system_service(POSTGRESQL(),START())
+            or die "ERROR: Couldn't start postgresql server.";
     }
-
 }
 
 
