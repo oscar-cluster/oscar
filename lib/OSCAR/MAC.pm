@@ -399,7 +399,6 @@ sub __load_macs {
 
 # Fuction call by GUI_MAC and CLI_MAC to put all server mac addresses into @SERVERMACS
 sub set_servermacs {
-    # OL: BUG/TODO: ifconfig output has changed in latest distros. Need to be fixed using /sbin/ip addr
 #    open(CMD, "/sbin/ifconfig|");
 #    my @hostmacs = map {/HWaddr\s+([[:xdigit:]:]+)\s+/} grep /HWaddr/, <CMD>;
     open(CMD, "/sbin/ip addr|");
