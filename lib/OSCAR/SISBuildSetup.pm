@@ -28,6 +28,9 @@ use English;
 use Carp;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
+use OSCAR::OCA::OS_Settings;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 
 #export main for use
 use vars qw(@EXPORT);
@@ -36,7 +39,8 @@ our @EXPORT = qw(invoke);
 
 #permanent vars
 #files
-my $conf_file_dhcp = "/etc/dhcpd.conf"; #location of the dhcpd.conf
+my $conf_file_dhcp = OSCAR::OCA::OS_Settings::getitem(DHCP()."_configfile"); #location of the dhcpd.conf
+#my $conf_file_dhcp = "/etc/dhcpd.conf"; #location of the dhcpd.conf
 my $conf_file_etchosts = "/etc/hosts"; #sim /etc/hosts
 my $conf_file_sishosts = "/var/lib/systemimager/scripts/hosts"; #sim /var/lib/systemimager/hosts
 my $data_file = "/tmp/data"; #raw data
@@ -75,13 +79,13 @@ sub invoke
 	generate_dhcpd_entries();
 	oscar_log_subsection("Dhcp entries complete.");
 	
-	oscar_log_subsection("Redoing /etc/dhcpd.conf file.");
+	oscar_log_subsection("Redoing $conf_file_dhcp file.");
 	if ( redo_file($conf_file_dhcp, $front_marker, $back_marker, @temp_array_dhcp) == 1)
 	{
 		print_errors();	
 		return 1;
 	}
-	oscar_log_subsection("Redoing /etc/dhcpd.conf file complete.");
+	oscar_log_subsection("Redoing $conf_file_dhcp file complete.");
 
 	oscar_log_subsection("Setting up SIS stuff.");
 	if (setup_sis_stuff() == 1)
@@ -102,11 +106,9 @@ sub invoke
 	oscar_log_subsection("SIS stuff setup complete.");
 
 	oscar_log_subsection("Restarting dhcpd.");
-	if ( restart_dhcpd() == 1)
-	{
-		print_errors();
-		return 1;
-	}
+    !system_service(DHCP(),RESTART())
+        or (print_errors(), return 1);
+
 	oscar_log_subsection("Completed restarting dhcpd.");
 
 	oscar_log_section("Completed running ODA/SIS updater.");
@@ -192,14 +194,6 @@ sub generate_dhcpd_entries
 		$line = "}\n";
 		push @temp_array_dhcp, "$line\n";
 	}
-}
-
-sub restart_dhcpd
-#restarts the dhcpd by calling a 'service restart'
-#returns 0 if successfull restarting the daemon, 1 otherwise
-{
-	my $command = "/etc/init.d/dhcpd restart"; 
-	return (run_command_general($command));
 }
 
 sub setup_sis_stuff
