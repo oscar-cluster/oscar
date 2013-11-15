@@ -35,7 +35,8 @@ my $root;
 
 our $interface;
 
-open(CMD, "/sbin/ifconfig | grep -e '^[[:alpha:]]' | cut -d ' ' -f 1 | grep -v -e '^lo' |");
+#open(CMD, "/sbin/ifconfig | grep -e '^[[:alpha:]]' | cut -d ' ' -f 1 | grep -v -e '^lo' |");
+open(CMD, "/sbin/ip -o link | grep UP | cut -d' ' -f2 | grep -v lo: | sort |");
 my @interfaces = <CMD>;
 close CMD;
 chomp @interfaces;
@@ -124,7 +125,7 @@ my @errors = ();
 # them in case innodb works as we expected.
 #locking("write", \%options, \@tables, \@errors);
 
-unless ( dec_already_locked("read_records oscar.interface", \@results, 0) && defined(@results) ) {
+unless ( dec_already_locked("read_records oscar.interface", \@results, 0) && @results ) {
   dec_already_locked("add_fields oscar interface=text", undef, 1);
 }
 
