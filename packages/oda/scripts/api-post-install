@@ -91,8 +91,10 @@ if ($db_type eq "pgsql"){
 
 
 # Reconfigure MySQL
-goto RESTART_DATABASE
-    if($os->{'distro'} eq "mandriva");
+
+# FIXME: OL: mandriva not supported. need to check if code below still needed.
+#goto RESTART_DATABASE
+#    if($os->{'distro'} eq "mandriva");
 
 # Set up the InnoDB type to the oscar database tables.
 # 
