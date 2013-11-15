@@ -34,20 +34,23 @@ use SIS::NewDB;
 use SystemInstaller::Env;
 use SystemInstaller::Machine qw(synchosts linkscript);
 use SystemInstaller::Log qw(start_verbose stop_verbose verbose logger_file);
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 use Data::Dumper;
 
 
 sub collect_new_macs {
     my @line;
     my %macs;
-    open IN, "cexec -p \"env LC_ALL=C /sbin/ifconfig eth0 | grep HWaddr\" |"
+    # open IN, "cexec -p \"env LC_ALL=C /sbin/ip -o link show dev eth0\" |"
+    open IN, "cexec -p \"env LC_ALL=C /sbin/ip -o link show dev eth0|grep link/\" |"
 	or die "Could not cexec...";
     while (<IN>) {
 	chomp;
 	@line = split /\s+/;
 	my $name = $line[1];
 	$name =~ s/:$//;
-	my $mac = $line[$#line];
+	my $mac = $line[14];
 	$mac = lc($mac);
 	$macs{$name} = $mac;
     }
@@ -149,5 +152,6 @@ my $cmd = "mkdhcpconf -o $dhcpd_configfile --interface=$interface --gateway=$gwi
 if (system($cmd)) {
     die "ERROR: Impossible to successfully execute $cmd";
 }
-system("/etc/init.d/dhcpd restart");
 
+!system_service(DHCP(),RESTART())
+    or die "ERROR: Couldn't restart dhcp service.";
