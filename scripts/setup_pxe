@@ -253,7 +253,8 @@ if (($ARCH eq "i386") || ($ARCH eq "x86_64")) {
 
 } elsif ($ARCH eq "ppc64" && -d $kboot_cfg_d ) {
     verbose("Restarting dhcpd");
-    !system("/etc/init.d/dhcpd restart") or croak("Couldn't restart dhcpd");
+    !system_service(DHCP(),RESTART())
+        or croak("Couldn't restart dhcpd");
     verbose("Copying default kboot.cfg file");
     copy("$kboot_cfg_d/default", "$netboot_cfg_d/default") or 
         croak("Unable to copy \"default\" file to $netboot_cfg_d.");
