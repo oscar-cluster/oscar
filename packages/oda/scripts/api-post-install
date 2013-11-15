@@ -22,6 +22,9 @@ use OSCAR::ConfigFile;
 use OSCAR::Logger;
 use OSCAR::PackagePath;
 use File::Copy;
+use OSCAR::OCA::OS_Settings;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 
 my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
                                                       undef,
@@ -29,26 +32,34 @@ my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
 my $db_type = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
                                                       undef,
                                                      "DB_TYPE");
+# NOTE: OL: The above line will get the dbtype but will never get the $chk that we used to have with the line below
+#my ($db_type, $chk) = split(':', $ENV{OSCAR_DB});
+
 my $oda_cmd = "$binaries_path/oda";
 
-#my ($db_type, $chk) = split(':', $ENV{OSCAR_DB});
-my $mysqld;
-my $pgsqld = "postgresql";
-my $database_daemon = $pgsqld if $db_type eq "pgsql";
 # We currently force the restart all the time: this script is executed when
 # updating the opkg-oda package, it is difficult to know the exact status of
 # the system so we just assume this is a new install.
 my $chk = "new";
 
+# Default database is MySQL.
+my $database = OSCAR::OCA::OS_Settings::getitem(MYSQL());
+
 # Reconfigure PostgreSQL
 if ($db_type eq "pgsql"){
-    my $PG_DATA_DIR = "/var/lib/pgsql/data";
+    $database = OSCAR::OCA::OS_Settings::getitem(POSTGRESQL());
+    my $PG_DATA_DIR = OSCAR::OCA::OS_Settings::getitem("postgresql_datadir");
     my $pg_conf = "$PG_DATA_DIR/pg_hba.conf";
     my $postgresql_conf = "$PG_DATA_DIR/postgresql.conf";
+    # OL: Always true......
     if ($chk eq "new"){
-        if ( !system("/etc/init.d/$database_daemon status | grep -c stopped > /dev/null 2>&1") ) {
-          !system("/etc/init.d/$database_daemon start") or croak("Couldn't restart $database_daemon");
-        }
+        # Start the database daemon if not started yet. OL Q: Should we enable it?
+        !system_service(POSTGRESQL(),START())
+            or croak("ERROR: Couldn't start postgresql server.");
+
+        # 1st, create a backup of the config file if not already done.
+        backup_file_if_not_exist($pg_conf) or die "ERROR: Cannot backup $pg_conf";
+
         open OLD_CFG, "<$pg_conf"
             or croak("Can not open $pg_conf file");
         open NEW_CFG, ">$pg_conf.$$";
@@ -57,8 +68,10 @@ if ($db_type eq "pgsql"){
             print NEW_CFG "$line\n";
         }
         close NEW_CFG; close OLD_CFG;
-        rename $pg_conf, "$pg_conf.bak";
         rename "$pg_conf.$$", $pg_conf;
+
+        # 1st, create a backup of the config file if not already done.
+        backup_file_if_not_exist($postgresql_conf) or die "ERROR: Cannot backup $postgresql_conf";
 
         open PG_CFG, "<$postgresql_conf"
             or croak("Can not open $postgresql_conf file");
@@ -68,46 +81,23 @@ if ($db_type eq "pgsql"){
             print PG_BAK "$line\n";
         }
         close PG_BAK; close PG_CFG;
-        rename $postgresql_conf, "$postgresql_conf.bak";
         rename "$postgresql_conf.$$", $postgresql_conf;
         system("chmod 600 $pg_conf $postgresql_conf");
+        # FIXME: Ol: Check this works on all distros.
         system("chown postgres:postgres $pg_conf $postgresql_conf");
-        
-
     }
-
     goto RESTART_DATABASE;
 }
 
 
 # Reconfigure MySQL
-my $os = OSCAR::PackagePath::distro_detect_or_die("/");
-
-if ($os->{compat_distro} =~ /^(rhel|fc|mdv|ydl)/) {
-    $mysqld      = 'mysqld';
-} elsif ($os->{compat_distro} =~ /^(suse|mdk|debian)/) {
-    $mysqld      = 'mysql';
-} else {
-    print "\n\nCannot determine distribution and version!!!!\nCannot determine oda rpms to install!!!!\n\n";
-    exit 1;
-}
-$database_daemon = $mysqld if $db_type eq "mysql";
-
-# MySQL on Mandriva 2006 should not have the following
-# innodb conf on /etc/my.cnf
-# So, we skip the innodb.conf when distro is mandriva.
 goto RESTART_DATABASE
     if($os->{'distro'} eq "mandriva");
 
 # Set up the InnoDB type to the oscar database tables.
 # 
 # This script needs to run for MySQL 3.28 ( < 4.0 ).
-my $mysql_conf;
-if ($os->{compat_distro} =~ /^(debian)/) {
-        $mysql_conf = "/etc/mysql/my.cnf";
-} else {
-        $mysql_conf = "/etc/my.cnf";
-}
+my $mysql_conf = OSCAR::OCA::OS_Settings::getitem(MYSQL()."_datadir");
 my $innodb_conf = "innodb_data_file_path=ibdata1:10M:autoextend";
 my $innodb_flag = 0;
 
@@ -125,7 +115,9 @@ close DB_CONF;
 
 # If my.cnf is not setup for InnoDB, configure it so
 if(! $innodb_flag ){
-    open BACKUP, ">$mysql_conf.bak"
+    # 1st, create a backup of the config file if not already done.
+    backup_file_if_not_exist($mysql_conf) or die "ERROR: Cannot backup $mysql_conf";
+    open NEW_DB_CONF, ">$mysql_conf.$$"
         or die "Can not create a copy file $mysql_conf.bak";
     open DB_CONF, "$mysql_conf"
         or die "Can not open $mysql_conf file";
@@ -137,31 +129,30 @@ if(! $innodb_flag ){
             $line =~ s/$1/$innodb_conf\n/g;
             $flag = 0;
         }    
-        print BACKUP "$line\n";
+        print NEW_DB_CONF "$line\n";
     }
     close DB_CONF;
-    close BACKUP;
+    close NEW_DB_CONF;
 
-    # COPY BACK TO THE ORIGINAL
-    copy("$mysql_conf.bak", $mysql_conf);
-    # REMOVE BACKUP
-    unlink "$mysql_conf.bak";
+    # COPY NEW_DB_CONF TO THE ORIGINAL
+    copy("$mysql_conf.$$", $mysql_conf);
+    # REMOVE NEW_DB_CONF
+    unlink "$mysql_conf.$$";
 }    
 
  RESTART_DATABASE:
 
-oscar_log_subsection("Checking status of $db_type server $database_daemon");
-if (! -x "/etc/init.d/$database_daemon") {
-    croak("Couldn't find /etc/init.d/$database_daemon. $db_type server not correctly installed?");
-}
-# Restart the database if it is running. Otherwise, just start it.
-if ( system("/etc/init.d/$database_daemon status | grep -c stopped > /dev/null 2>&1") ){
-  !system("/etc/init.d/$database_daemon restart") or croak("Couldn't restart $database_daemon");
-  $chk = "old";
-  $ENV{OSCAR_DB} = "$db_type:$chk";
+# Reload the database if it is running. Otherwise, just start it.
+if ( system_service($database,STATUS()) == STARTED() ) {
+    !system_service($database,RESTART())
+        or die "ERROR: Couldn't restart $database server.";
+    # OL: What does mean "old"?
+    $chk = "old";
+    $ENV{OSCAR_DB} = "$db_type:$chk";
 } else {
-  oscar_log_subsection("$database_daemon was not running and will start");
-  !system("/etc/init.d/$database_daemon start") or croak("Couldn't start $database_daemon");
+    oscar_log_subsection("$database daemon was not running and will start");
+    !system_service($database,START())
+        or die "ERROR: Couldn't start $database server.";
 }
 
 exit(0);

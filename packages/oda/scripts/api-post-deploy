@@ -41,7 +41,6 @@ my $cmd;
 # OL: Nothing to do if $db_type eq "mysql"
 #
 if ( $db_type eq "pgsql" ) {
-    # OL: FIXME: need to use OS_Settings: The path below is hardcodded for rhel/fedora.
     my $PG_DATA_DIR = OSCAR::OCA::OS_Settings::getitem("postgresql_datadir");
     my $pg_conf = "$PG_DATA_DIR/pg_hba.conf";
     my $postgresql_conf = "$PG_DATA_DIR/postgresql.conf";
