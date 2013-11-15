@@ -1,14 +1,12 @@
-# Mandrake, Mandriva, OpenMandriva, Mageia specific settings
+# Yellow Dog Linux specific settings
 # Overwrite few deamons
 mysql_daemon=/etc/init.d/mysql
+
 # Overwrite few services
 mysql_service=mysql
 
 # Overwrite few package names
 
 # Overwrite few config file locations
-pxe_bin=linux.0
 
 # Overwrite a few directories
-pxe_configdir=/var/lib/tftpboot/pxelinux.cfg/
-tftp_dir=/var/lib/tftpboot/

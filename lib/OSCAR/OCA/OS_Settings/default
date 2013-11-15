@@ -45,6 +45,7 @@ ftp_configfile=
 gmond_configfile=/etc/ganglia/gmond.conf
 gmetad_configfile=/etc/ganglia/gmetad.conf
 monitor_configfile=
+mysql_configfile=/etc/my.cnf
 rsync_configfile=
 ssh_configfile=/etc/ssh/sshd_config
 dns_configfile=/etc/named.conf
