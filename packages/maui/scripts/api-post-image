@@ -19,5 +19,7 @@
 #   post_clients for maui
 
 use Carp;
-
-!system("/etc/init.d/maui restart") or croak("Failed to restart Maui Scheduler");
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
+!system_service(MAUI(),RESTART())
+    or croak "ERROR: Failed to restart Maui Scheduler.";
