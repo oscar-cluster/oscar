@@ -30,8 +30,8 @@ use OSCAR::SystemServicesDefs;
 use Carp;
 
 my $ntpBuffer = "";
-my $ntp_conf = OSCAR::OS_Settings::getitem(NTP()."_configfile");
-my $ntp_dir = OSCAR::OS_Settings::getitem(NTP()."_dir");;
+my $ntp_conf = OSCAR::OCA::OS_Settings::getitem(NTP()."_configfile");
+my $ntp_dir = OSCAR::OCA::OS_Settings::getitem(NTP()."_dir");;
 my $step_tickers = "$ntp_dir/step-tickers";
 my $configurator = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 
@@ -57,17 +57,18 @@ $network = join(".", @results);
 
 # User has configured ntpconfig package with a NTP server
 if (-e $configurator) {
-    $ref = OSCAR::Configurator_backend::readInConfigValues($configurator,
+    my $ref = OSCAR::Configurator_backend::readInConfigValues($configurator,
         "ntpconfig", "", noarray=>1);
     # If ntpconfig package has configured NTP server before, replace
     if ($ntpBuffer =~ /User selected NTP Server/) {
-	$ntpBuffer =~ s/^server.*\nrestrict.*\n/server  $ref->{ntpserver}\nrestrict $ref->{ntpserver} mask 255.255.255.255\n/m;
-    # ntpconfig package has not previously configured NTP server
+	    $ntpBuffer =~ s/^server.*\nrestrict.*\n/server  $ref->{ntpserver}\nrestrict $ref->{ntpserver} mask 255.255.255.255\n/m;
+        # ntpconfig package has not previously configured NTP server
     } elsif ($ntpBuffer =~ /Added by OSCAR package ntpconfig/) {
-	$ntpBuffer =~ s/# Added by OSCAR package ntpconfig\n/# Added by OSCAR package ntpconfig\n# User selected NTP Server\nserver  $ref->{ntpserver}\nrestrict $ref->{ntpserver} mask 255.255.255.255\n/m;
+	    $ntpBuffer =~ s/# Added by OSCAR package ntpconfig\n/# Added by OSCAR package ntpconfig\n# User selected NTP Server\nserver  $ref->{ntpserver}\nrestrict $ref->{ntpserver} mask 255.255.255.255\n/m;
     # ntpconfig package has not been installed previously
     } else {
-	system("cp $ntp_conf $ntp_conf.oscarbak");
+        # 1st, create a backup of the config file if not already done.
+        backup_file_if_not_exist($ntp_conf) or (carp "ERROR: Couldn't backup $ntp_conf.\n", exit 1);
     	$ntpBuffer = "# Added by OSCAR package ntpconfig\n# User selected NTP Server\nserver  $ref->{ntpserver}\nrestrict $ref->{ntpserver} mask 255.255.255.255\nrestrict $network mask $netmask\n\n".$ntpBuffer;
     }
 
