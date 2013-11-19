@@ -6,6 +6,9 @@ nfs_package=nfs
 ssh_package=sshd
 portmap_package=portmap
 dns_package=bind
+postfix_package=postfix
+exim_package=exim
+sendmail_package=sendmail
 
 # Specifies the name of few deamons (obsolete)
 ssh_daemon=/etc/init.d/sshd
