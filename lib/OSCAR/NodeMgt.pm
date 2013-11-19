@@ -164,6 +164,7 @@ sub del_ip_node ($) {
     }
 
     require SIS::NewDB;
+    # FIXME: OL: hardcoded devname? can it be ib0 or em0?
     my %h = (devname=>"eth0",client=>$node);
     my $adapter = SIS::NewDB::list_adapter(\%h);
     if (!defined ($adapter) && scalar (@$adapter) != 1) {
@@ -223,6 +224,10 @@ sub delete_clients (@) {
     # get the list of services for servers
     get_packages_servicelists(\@server_services, "oscar_server", undef, undef);
 
+    # FIXME: OL: Need to migrate to SystemServices new API.
+    #            Need to check that the content of the table matches service names
+    #            as defined in OSCAR::SystemServicesDefs
+    #            (avoid stopping dhcpd when service name is isc-dhcpd for example)
     print ">> Turning off generic services\n";
     foreach my $services_ref (@generic_services) {
         my $generic_service = $$services_ref{service};
