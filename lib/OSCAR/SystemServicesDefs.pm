@@ -16,6 +16,7 @@ use constant SERVICE_ENABLED  => 1;
 
 # List of supported services
 use constant DHCP           => 'dhcp';
+use constant EXIM           => 'exim';
 use constant GANGLIA_GMOND  => 'gmond';
 use constant GANGLIA_GMETAD => 'gmetad';
 use constant HTTP           => 'http';
@@ -25,9 +26,11 @@ use constant MAUI           => 'maui';
 use constant MYSQL          => 'mysql';
 use constant NFS            => 'nfs';
 use constant NTP            => 'ntp';
+use constant POSTFIX        => 'postfix';
 use constant POSTGRESQL     => 'postgresql';
 use constant RPC            => 'rpc';
 use constant TFTP           => 'tftp';
+use constant SENDMAIL       => 'sendmail';
 use constant SI_MONITOR     => 'monitor';
 use constant SI_RSYNC       => 'rsync';
 use constant SI_FLAMETHROWER => 'flamethrower';
