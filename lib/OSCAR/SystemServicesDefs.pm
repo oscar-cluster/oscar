@@ -21,6 +21,7 @@ use constant GANGLIA_GMETAD => 'gmetad';
 use constant HTTP           => 'http';
 use constant JOBARCHIVE     => 'jobarchive';
 use constant JOBMONITOR     => 'jobmonitor';
+use constant MAUI           => 'maui';
 use constant MYSQL          => 'mysql';
 use constant NFS            => 'nfs';
 use constant NTP            => 'ntp';
@@ -32,6 +33,7 @@ use constant SI_RSYNC       => 'rsync';
 use constant SI_FLAMETHROWER => 'flamethrower';
 use constant SI_BITTORRENT  => 'bittorrent';
 use constant SSH            => 'ssh';
+use constant SYSLOG         => 'syslog';
 use constant XINETD         => 'xinetd';
 
 # List of actions related to system services
@@ -57,6 +59,7 @@ our @EXPORT = qw(
                 HTTP
                 JOBARCHIVE
                 JOBMONITOR
+                MAUI
                 MYSQL
                 NFS
                 NTP
@@ -68,6 +71,7 @@ our @EXPORT = qw(
                 SI_BITTORRENT
                 START
                 STOP
+                SYSLOG
                 TFTP
                 RESTART
                 RELOAD

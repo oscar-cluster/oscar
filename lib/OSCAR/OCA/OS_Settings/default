@@ -25,6 +25,7 @@ gmond_service=gmond
 http_service=httpd
 jobarchive_service=jobarchived
 jobmonitor_service=jobmond
+maui_service=maui
 monitor_service=systemimager-server-monitord
 mysql_service=mysqld
 nfs_service=nfs-server
@@ -33,6 +34,7 @@ postresql_service=postgresql
 rpc_service=rpcbind
 rsync_service=systemimager-server-rsyncd
 ssh_service=sshd
+syslog_service=rsyslog
 tftp_service=atftp
 
 # Specifies few configuration files
@@ -44,6 +46,7 @@ flamethrower_configfile=/etc/systemimager/flamethrower.conf
 ftp_configfile=
 gmond_configfile=/etc/ganglia/gmond.conf
 gmetad_configfile=/etc/ganglia/gmetad.conf
+maui_configfile=/opt/maui/maui.cfg
 monitor_configfile=
 mysql_configfile=/etc/my.cnf
 rsync_configfile=
@@ -53,6 +56,7 @@ exports_configfile=/etc/exports
 jobmonitor_configfile=/etc/jobmond.conf
 jobarchive_configfile=/etc/jobarchived.conf
 ntp_configfile=/etc/ntp.conf
+syslog_configfile=/etc/rsyslog.conf
 pxe_bootbin=pxelinux.0
 
 # Specifies a few directories
