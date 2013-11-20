@@ -1,98 +1,89 @@
-#!/bin/sh
+#!/usr/bin/perl
 #
+# Copyright (c) 2013 CEA Commissariat à l'Énergie Atomique All rights reserved.
+#
+# Previous deprecated version written in bash is
 # Copyright (c) 2004 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
-# This file is part of the OSCAR software package.  For license
-# information, see the COPYING file in the top level directory of the
-# OSCAR source distribution.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# This scripts configure the mail transfer agent on the head node
+# for the following purpose:
+#
+# 1. Allow all nodes in the oscar cluster to access to the oscar_server
+# so that the oscar_server can receive the mail in the same domain.
+#
+# 2. Make all mail from the client nodes have a "From" address that
+# looks like it originated from the head node.  This is necessary for
+# OSCAR clusters that are private and may have non-public IP names and
+# addresses -- some mail servers will reject mail if they have a
+# "From" address that is not DNS-resolvable.  Hence, we allow it to
+# have a "From" address the same as the OSCAR head node's public IP
+# address, which hopefully will be DNS resolvable.  Specifically, mail
+# servers receiving mail from the OSCAR server will accept it because
+# it can DNS resolve the OSCAR server (etc.).
+#
+# Supported mta: postfix (exim and sendmail planed).
 
 #
 # $Id$
 #
 
-#
-# Disable incoming mail upon bootup (ignore errors)
-#
+use Carp;
+use OSCAR::Opkg;
+use OSCAR::FileUtils;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
+use OSCAR::OCA::OS_Detect;
+use OSCAR::OCA::OS_Settings;
+use OSCAR::Database;
+use OSCAR::Configurator_backend;
+#use Switch;
+use feature "switch";
 
-# Check if sendmail, exim, or postfix is running. If so, kill it.
-# No mailing service will run.
+my $configurator = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 
-services="sendmail exim postfix"
-for service in $services; do
+# User has configured mta package.
+my $mta_service;
 
-    # See if this is the daemon installed
-
-    chkconfig --list $service > /dev/null 2>&1
-    if test "$?" = "0"; then
-
-	# Disable this service upon bootup
-
-	chkconfig --del $service
-    fi
-done
-
+if (-e $configurator) {
+    my $ref = OSCAR::Configurator_backend::readInConfigValues($configurator,
+        "mta-config", "", noarray=>1);
+    $mta_service = $ref->{mta};
+}
 
 #
 # Configure a mailing service for localhost only in the server file system
 #
 
-# Check if postfix, sendmail, or exim rpm is installed
-# If any one of them is installed, return the package name
-# and then the configuration file corresponding to the package name is configured
-# for only localhost.
-# Otherwise, it throws an error.
-
-# The list of the mailing service rpms
-services="postfix sendmail exim"
-for service in $services; do
-
-    # See if this is the rpm installed
-
-    rpm -qa | grep $service > /dev/null 2>&1
-    if test "$?" = "0"; then
-	service_name=$service
-
-	# If any above rpm exists,
-	# assign the name of the rpm found to the variable $service_name
-	# and then break out the 'for' loop 
-
-	break
-    fi
-done
-
+# Check that chosen mta is installed. if not, then install it.
 #
-# The only postfix is supported for the oscar-3.0.1b1.
-# If there is no MTA in the head node, install_postfix (perl script)
-# is called to install postfix rpm.
+# FIXME: write the code to check
+# if not installed, then run $OSCAR_PACKAGE_HOME/scripts/install_mta
 #
-if [ -z "$service_name" ]; then
-    dir="$OSCAR_PACKAGE_HOME/scripts"
-    $dir/install_postfix
-    service_name="postfix"
-fi
 
-
-	# If $service_name contains the "postfix, sendmail, or exim",
-    # each case handles the configuration corresponding to
-	# the installed rpm for the localhost only.
-    # Otherwise, the error will be thrown.
-
-case "$service_name" in
-	postfix) echo "POSTFIX exists"
-
-        # The list of configuration files possible for the Postfix
-        # in the current linux distro. 
-
-        configure_files="/etc/postfix/main.cf /etc/main.cf /usr/lib/postfix/main.cf"
-        found=0
-        for file in $configure_files; do
-            if test -n "$found" -a -f $file -a -n "`grep postfix $file`"; then
-                found=1
-                break
-            fi
-        done
-
+given ($service_name) {
+    when (/postfix/) {
+        # FIXME: check that /etc/postfix/main.cf /etc/main.cf /usr/lib/postfix/main.cf
+        #        is correctly setup in OS_Settings/*
+        my $config_file = OSCAR::OCA::Os_Settings::getitem(POSTFIX()."_configfile");
+        if (not -e $config_file) {
+            carp("ERROR: Cound not find $config_file. Postfix configuration aborted!\n there will be no mailservices for client nodes");
+            exit -1;
+        }
         # First, comment out 'mynetworks_style = ' part.
         # If the inet_interfaces = all, then leave that option.
         # If the inet_interfaces has already a different option,
@@ -106,33 +97,59 @@ case "$service_name" in
         # Copy the main.cf.server.$$ to the configuration file (main.cf) to update
         # the original configuration.
 
-        if test $found = "1"; then
-            postfix_conf=$file
-            # Make a backup copy of the postfix config file before editing it.
-            cp $file $file.bak
+        # 1st, create a backup of the config file if not already done.
+        backup_file_if_not_exist($config_file) or return -1;
 
-            # Comment out 'mynetworks = ' part.
-            # If the inet_interfaces = all, then leave that option.
-            # If the inet_interfaces alreay has the oscar_server, remove it.
-            # If the inet_interfaces has a different option,
-            # then add the oscar option (oscar_server) behind it
-            cat $postfix_conf | sed  -e 's/^[ \t]*mynetworks[ \t]*=/#mynetworks =/' \
-                -e '/^[ \t]*inet_interfaces[ \t]*=[ \t]*all/! s/\(^[ \t]*inet_interfaces[ \t]*=[ \t]*\)\(.*\)\(, oscar_server\)/\1\2/' \
-                -e '/^[ \t]*inet_interfaces[ \t]*=[ \t]*all/! s/\(^[ \t]*inet_interfaces[ \t]*=[ \t]*\)\(.*\)/\1\2, oscar_server/' \
-                > main.cf.server.$$ 
+        # Comment out 'mynetworks = ' part.
+        # If the inet_interfaces = all, then leave that option.
+        # If the inet_interfaces alreay has the oscar_server, leave it untouched.
+        # If the inet_interfaces has a different option,
+        # then add the oscar option (oscar_server) behind it
+ 
+        open(IN,"<$config_file.oscarbak") or (carp "Couldn't open $config_file.oscarbak for reading!",
+                                 and return undef); # FIXME: check what to return.
+        open(OUT,">$config_file") or (carp "Couldn't open $config_file for writing!",
+                                 and return undef); # FIXME: check what to return.
+        my $inet_interface_is_set=0;
+        my $masquerade_domains_is_set=0;
+        my $oscar_comment_present=0;
+        while(my $line = <IN>) {
+            chomp($line);
+            if ($line =~ /^[ \t]*mynetworks[ \t]*=/) {
+                # Comment out 'mynetworks = ' part.
+                print OUT "# $line\n";
+            } elsif($line =~/^[ \t]*masquerade_domains[ \t]*=[ \t]*/) {
+                # Check if masquerade_domains is set
+                $masquerade_domains_is_set=1;
+                print OUT "$line\n";
+            } elsif($line =~/^# ADDED CONFIGURATION OPTIONS FOR OSCAR/) {
+                # Check if configuration file has already been modified by oscar.
+                $oscar_comment_present=1;
+                print OUT "$line\n";
+            } elsif ($line =~/^[ \t]*inet_interfaces[ \t]*=[ \t]*all/) {
+                # If the inet_interfaces = all, then leave that option.
+                print OUT "$line\n";
+                $inet_interface_is_set=1;
+            } elsif ($line =~/^[ \t]*inet_interfaces[ \t]*=[ \t]*oscar_server/) {
+                # If the inet_interfaces contains oscar_server: it is already added: nothing to do.
+                print OUT "$line\n";
+                $inet_interface_is_set=1;
+            } elsif ($line =~/^[ \t]*inet_interfaces[ \t]*=[ \t]*.*/) {
+                # inet_interfaces is not set to all, nor it contains oscar_server. We need to add it.
+                print OUT "$line, oscar_server\n";
+                $inet_interface_is_set=1;
+            } else {
+                # It's another line, just report it.
+                print OUT "$line\n";
+            }
+        }
 
-            # If there is no option for inet_interfaces,
-            # uncomment out the "#inet_interfaces = all" and replace the 'all' option
-            # with the oscar option (oscar_server). 
-            no_of_uncommented=`cat main.cf.server.$$ | sed -n '/^[ \t]*inet_interfaces[ \t]*=[ \t]*/p' | wc -l`
-            if test $no_of_uncommented = "0"; then
-                cat main.cf.server.$$ | sed \
-                    -e 's/^#\([ \t]*inet_interfaces[ \t]*=[ \t]*\)\(all\)/\1oscar_server/' \ 
-                    > main.cf.server.$$
-            fi
-            domains=`hostname -d`
+        if ($inet_interface_is_set == 0) {
+            print OUT "inet_interfaces = oscar_server\n";
+        }
 
-            cat >> main.cf.server.$$ << EOF
+        if ($oscar_comment_present == 0) {
+            print OUT <<INLINE_TEXT;
 
 #
 # ADDED CONFIGURATION OPTIONS FOR OSCAR
@@ -154,55 +171,49 @@ case "$service_name" in
 # servers receiving mail from the OSCAR server will accept it because
 # it can DNS resolve the OSCAR server (etc.).
 
-EOF
-            # If the user has not configured the masquerdae_domains yet,
-            # assign the domain name of the head node to the masquerade_domains.
-            no_of_uncommented_masq=`cat main.cf.server.$$ | sed -n '/^[ \t]*masquerade_domains[ \t]*=[ \t]*/p' | wc -l`
-            if test $no_of_uncommented_masq = "0"; then
-                cat >> main.cf.server.$$ << EOF
+INLINE_TEXT
+        }
 
-# Strips any.thing.$domains to $domains in the domain part of email address.
-masquerade_domains = $domains
+        if ($masquerade_domains_is_set == 0) {
+            my $dnsdomainname=`hostname -d`;
+            printf OUT <<INLINE_TEXT;
+# Strips any.thing.$dnsdomainname to $dnsdomainname in the domain part of email address.
+masquerade_domains = $dnsdomainname
 
-EOF
-            fi
-            
-            cp main.cf.server.$$ $postfix_conf
-    	    rm -rf main.cf.server.$$
-            echo "Postfix is succesfully configured. : SERVER NODE";
-            
-            # Restart postfix.
-            /etc/init.d/postfix stop
-            /etc/init.d/postfix start
-            
-            #check to see if postfix is running.
-            /etc/init.d/postfix status > /dev/null 2>&1
-            echo $?
-            if [ "$?" != "0" ]; then
-                echo "WARNING : The configuration of the postfix is completed"
-                echo "WARNING : Your postfix can not run. Please check your smtp port"
-            else
-                # Enable this service upon bootup 
-                chkconfig --add $service_name
-                echo "- finished configuring postfix"
-            fi
-        else
-            echo "WARNING: I could not find postfix's configuration file!"
-            echo "WARNING: There will be no mail service running on the client nodes!"
-        fi
-		;;
-	sendmail)
-    echo "WARNING: OSCAR does not know how to configure sendmail yet."
-    echo "WARNING: Please bug the OSCAR developers to finish the mta-config package!"
-    echo "WARNING: There will be no mail service running on the client nodes!"
-		;;
-	exim)
-    echo "WARNING: OSCAR does not know how to configure exim yet."
-    echo "WARNING: Please bug the OSCAR developers to finish the mta-config package!"
-    echo "WARNING: There will be no mail service running on the client nodes!"
-		;;
-    *) echo "WARNING: OSCAR did not found any mailing service"
-        ;;
-esac
+INLINE_TEXT
+        }
+        close(OUT);
+        close(IN);
+        print "[INFO] Postfix is succesfully configured. : SERVER NODE\n";
+
+        # Restart the postfix service
+       !system_service(POSTFIX(),RESTART())
+        or (carp "ERROR: Couldn't restart postfix service.", return -1);
+
+        # Enable the postfix service
+        !enable_system_services( (POSTFIX()) )
+            or (carp "ERROR: Couldn't enable postfix service.", return 0);
+    }
+    when (/exim/) {
+        my $config_file = OSCAR::OCA::Os_Settings::getitem(EXIM()."_configfile");
+        # exim not yet supported
+        carp "[ERROR] Exim not yet supported";
+        exit -1;
+    }
+    when (/sendmail/) {
+        my $config_file = OSCAR::OCA::Os_Settings::getitem(SENDMAIL()."_configfile");
+        # sendmail not yet supported
+        carp "[ERROR] sendmail not yet supported";
+        exit -1;
+    }
+    default {
+        # Unknown mailing service. configurator.html not in sync with this script.
+        carp "[ERROR] ($service_name) not supported";
+        exit -1;
+    }
+}
+
+# Succeffully configured mta.
+print "[INFO] mta-config: successfully configured Mail Transfert Agent on the server\n";
 
 exit 0;

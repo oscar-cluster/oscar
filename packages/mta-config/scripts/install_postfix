@@ -16,6 +16,7 @@ use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Package;
 use OSCAR::PackageSmart;
+use OSCAR::OCA::OS_Settings;
 
 my $os = &OSCAR::PackagePath::distro_detect_or_die();
 
@@ -31,8 +32,10 @@ if ($verbose && !$ENV{YUME_VERBOSE}) {
 #-------------------------------------------------------------------------
 
 my $pm = OSCAR::PackageSmart::prepare_distro_pools($os);
-my @rpm_lists = ("postfix");
-my ($ret, @out) = $pm->smart_install(@rpm_lists);
+my $postfix_package_name = OSCAR::OCA::OS_Settings::getitem(POSTFIX()."_package");
+
+my @packages_list = ("$postfix_package_name");
+my ($ret, @out) = $pm->smart_install(@packages_list);
 if (!$ret) {
     print "Error occured during postfix install:\n".join("\n",@out)."\n";
     croak("Couldn't install postfix needed for mta-config package");

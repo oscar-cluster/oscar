@@ -20,6 +20,10 @@ BEGIN {
 use strict;
 
 use OSCAR::Database;
+use OSCAR::FileUtils;
+use OSCAR::OCA::OS_Settings;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 use File::Copy;
 
 my %options = ('debug' => 0,
@@ -80,7 +84,7 @@ if($service_name eq "postfix"){
 
     if( $found ){
         # Make a backup copy of the postfix config file before editing it.
-        copy "$postfix_conf", "$postfix_conf.bak";
+        backup_file_if_not_exist($postfix_conf) or print "ERROR: Can't make a backup copy of $postfix_conf\n";
         
         my $line_num = `cat $postfix_conf | wc -l`;
         my $added_line = 8;
