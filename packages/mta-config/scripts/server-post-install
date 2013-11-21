@@ -61,7 +61,7 @@ my $mta_service;
 
 if (-e $configurator) {
     my $ref = OSCAR::Configurator_backend::readInConfigValues($configurator,
-        "mta-config", "", noarray=>1);
+        "mtaconfig", "", noarray=>1);
     $mta_service = $ref->{mta};
 }
 
