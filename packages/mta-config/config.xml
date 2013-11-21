@@ -21,44 +21,20 @@
       <email>valleegr@ornl.gov</email>
     </author>
   </authors>
-  <serverDeps>
-    <requires>
-      <filters>
-        <dist>fc</dist>
-        <dist>mdk</dist>
-        <dist>mdv</dist>
-        <dist>rhel</dist>
-      </filters>
-      <pkg>postfix</pkg>
-    </requires>
-    <requires>
-      <filters>
-        <dist>sles</dist>
-        <dist>suse</dist>
-      </filters>
-      <pkg>postfix</pkg>
-    </requires>
-  </serverDeps>
-  <clientDeps>
-    <requires>
-      <filters>
-        <dist>fc</dist>
-        <dist>mdk</dist>
-        <dist>mdv</dist>
-        <dist>rhel</dist>
-      </filters>
-      <pkg>postfix</pkg>
-    </requires>
-    <requires>
-      <filters>
-        <dist>sles</dist>
-        <dist>suse</dist>
-      </filters>
-      <pkg>postfix</pkg>
-    </requires>
-  </clientDeps>
+  <serverDeps/>
+  <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.0.0-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-10-14T10:30:17+02:00">
+        <item>Add configuration.html so the MTA can be chosen.</item>
+        <item>Full rewrite of server-post-install from bash to perl so</item>
+        <item>configurator can get chosen MTA (not possible from bash)</item>
+        <item>Now supports systemd enabled distros</item>
+        <item>Remove dependancy requiring postfix (chosen mta is installed by</item>
+        <item>scrits according to what was chosen in configurator.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.1.2-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-10-14T10:30:17+02:00">
         <item>Add dependancies so postfix package is required.</item>

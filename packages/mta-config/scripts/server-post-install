@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 #
-# Copyright (c) 2013 CEA Commissariat à l'Énergie Atomique All rights reserved.
+# Copyright (c) 2013 CEA Commissariat à l'Énergie Atomique
+#                    All rights reserved.
 #
 # Previous deprecated version written in bash is
 # Copyright (c) 2004 The Trustees of Indiana University.  
@@ -51,7 +52,6 @@ use OSCAR::OCA::OS_Detect;
 use OSCAR::OCA::OS_Settings;
 use OSCAR::Database;
 use OSCAR::Configurator_backend;
-#use Switch;
 use feature "switch";
 
 my $configurator = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
@@ -70,12 +70,14 @@ if (-e $configurator) {
 #
 
 # Check that chosen mta is installed. if not, then install it.
+my $mta_package = OSCAR::OCA::OS_Settings::getitem($mta_service."_package");
+!system("/usr/bin/packman install $mta_package")
+            or (carp "ERROR: Couldn't install $mta_package package (provides a mail transfert agent).\n", return 0);
 #
-# FIXME: write the code to check
-# if not installed, then run $OSCAR_PACKAGE_HOME/scripts/install_mta
+# FIXME: OL: Shoul we use the install_mta (install_postfix) script instead. or maybe yume?
 #
 
-given ($service_name) {
+given ($mta_service) {
     when (/postfix/) {
         # FIXME: check that /etc/postfix/main.cf /etc/main.cf /usr/lib/postfix/main.cf
         #        is correctly setup in OS_Settings/*
@@ -208,7 +210,7 @@ INLINE_TEXT
     }
     default {
         # Unknown mailing service. configurator.html not in sync with this script.
-        carp "[ERROR] ($service_name) not supported";
+        carp "[ERROR] ($mta_service) not supported";
         exit -1;
     }
 }

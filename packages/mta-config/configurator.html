@@ -1,0 +1,28 @@
+<!--
+Copyright (c) 2013, CEA - Commissariat à l'Énergie Atomique. All rights reserved.
+Author: Olivier LAHAYE olivier.lahaye@cea.fr
+$Id: $
+-->
+<html>
+<head>
+	<title>Mail Transfer Agent configuration.</title>
+</head>
+<body>
+	<form>
+		<p order="1">
+			<h2>Chose MTA to use</h2>
+		</p>
+		<input type="radio" name="mta" order="2" value="postfix" checked="checked">
+			postfix
+		</input> <br />
+		<input type="radio" name="mta" order="2" value="exim">
+			exim
+		</input> <br />
+		<input type="radio" name="mta" order="3" value="sendmail">
+			sendmail
+		</input> <br />
+		<input type="reset" value='Reset Form' />
+	</form>
+	<hr />
+</body>
+</html>
