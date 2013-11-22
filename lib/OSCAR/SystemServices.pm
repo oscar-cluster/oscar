@@ -435,7 +435,7 @@ sub set_system_sockets ($@) {
             if ($config eq SERVICE_ENABLED()) {
                 $command = "on";
                 # When enabling a xinetd service, we also need to enable xinetd.
-                set_system_service(SERVICE_ENABLED(), (XINETD()));
+                set_system_services(SERVICE_ENABLED(), (XINETD()));
             }
             foreach my $service (@services) {
                 OSCAR::Logger::oscar_log_subsection("Setting xinetd service $service to $command... ");
