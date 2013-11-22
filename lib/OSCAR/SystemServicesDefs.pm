@@ -57,6 +57,7 @@ our @EXPORT = qw(
                 SERVICE_ENABLED
                 SSH
                 DHCP
+                EXIM
                 GANGLIA_GMOND
                 GANGLIA_GMETAD
                 HTTP
@@ -67,6 +68,7 @@ our @EXPORT = qw(
                 NFS
                 NTP
                 POSTGRESQL
+                POSTFIX
                 RPC
                 SI_MONITOR
                 SI_RSYNC
@@ -78,6 +80,7 @@ our @EXPORT = qw(
                 TFTP
                 RESTART
                 RELOAD
+                SENDMAIL
                 STATUS
                 STARTED
                 STOPPED
