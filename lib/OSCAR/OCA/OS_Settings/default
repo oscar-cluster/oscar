@@ -42,6 +42,7 @@ sendmail_service=sendmail
 ssh_service=sshd
 syslog_service=rsyslog
 tftp_service=atftp
+xinetd_service=xinetd
 
 # Specifies few configuration files
 bittorrent_configfile=/etc/systemimager/bittorrent.conf
