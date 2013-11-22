@@ -81,7 +81,7 @@ given ($mta_service) {
     when (/postfix/) {
         # FIXME: check that /etc/postfix/main.cf /etc/main.cf /usr/lib/postfix/main.cf
         #        is correctly setup in OS_Settings/*
-        my $config_file = OSCAR::OCA::Os_Settings::getitem(POSTFIX()."_configfile");
+        my $config_file = OSCAR::OCA::OS_Settings::getitem(POSTFIX()."_configfile");
         if (not -e $config_file) {
             carp("ERROR: Cound not find $config_file. Postfix configuration aborted!\n there will be no mailservices for client nodes");
             exit -1;
@@ -197,13 +197,13 @@ INLINE_TEXT
             or (carp "ERROR: Couldn't enable postfix service.", return 0);
     }
     when (/exim/) {
-        my $config_file = OSCAR::OCA::Os_Settings::getitem(EXIM()."_configfile");
+        my $config_file = OSCAR::OCA::OS_Settings::getitem(EXIM()."_configfile");
         # exim not yet supported
         carp "[ERROR] Exim not yet supported";
         exit -1;
     }
     when (/sendmail/) {
-        my $config_file = OSCAR::OCA::Os_Settings::getitem(SENDMAIL()."_configfile");
+        my $config_file = OSCAR::OCA::OS_Settings::getitem(SENDMAIL()."_configfile");
         # sendmail not yet supported
         carp "[ERROR] sendmail not yet supported";
         exit -1;
