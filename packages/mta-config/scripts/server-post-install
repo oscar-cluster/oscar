@@ -190,11 +190,11 @@ INLINE_TEXT
 
         # Restart the postfix service
        !system_service(POSTFIX(),RESTART())
-        or (carp "ERROR: Couldn't restart postfix service.", return -1);
+        or (carp "ERROR: Couldn't restart postfix service.", exit -1);
 
         # Enable the postfix service
         !enable_system_services( (POSTFIX()) )
-            or (carp "ERROR: Couldn't enable postfix service.", return 0);
+            or (carp "ERROR: Couldn't enable postfix service.", exit -1);
     }
     when (/exim/) {
         my $config_file = OSCAR::OCA::OS_Settings::getitem(EXIM()."_configfile");
