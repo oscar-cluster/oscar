@@ -118,8 +118,8 @@ sub interface2ip ($) {
 
     my ($ip, $broadcast, $net);
     # open pipes are better for controlling output than backticks
-    open(IP_ADDR_SHOW,"/usr/sbin/ip addr show $interface |") 
-        or (carp("Couldn't run 'ip addr show $interface'"), return undef);
+    open(IP_ADDR_SHOW,"/sbin/ip addr show $interface |") 
+        or (carp("Couldn't run '/sbin/ip addr show $interface'"), return undef);
     while(<IP_ADDR_SHOW>) {
         if(/\s+inet ($ipregex)\/([0-9]{2}) brd ($ipregex) scope .*$/o) {
             ($ip, $net, $broadcast) = ($1,$2,$3);
