@@ -15,6 +15,7 @@ nfs_package=nfs-kernel-server
 
 # Overwrite few config file locations
 mysql_configfile=/etc/mysql/my.cnf
+postfix_configfile=/usr/lib/postfix/main.cf
 
 # Overwrite a few directories
 postgresql_datadir=/var/lib/postgresql/9.1/main
