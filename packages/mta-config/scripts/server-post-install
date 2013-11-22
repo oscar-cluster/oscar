@@ -132,7 +132,7 @@ given ($mta_service) {
                 # If the inet_interfaces = all, then leave that option.
                 print OUT "$line\n";
                 $inet_interface_is_set=1;
-            } elsif ($line =~/^[ \t]*inet_interfaces[ \t]*=[ \t]*oscar_server/) {
+            } elsif ($line =~/^[ \t]*inet_interfaces[ \t]*=[ \t]*.*oscar_server.*/) {
                 # If the inet_interfaces contains oscar_server: it is already added: nothing to do.
                 print OUT "$line\n";
                 $inet_interface_is_set=1;
