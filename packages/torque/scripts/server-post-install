@@ -45,8 +45,8 @@ sub startPBSserver
   if(!-f '/var/lib/torque/server_priv/serverdb' && !-f '/var/spool/pbs/server_priv/serverdb') {
     system('/etc/init.d/pbs_server create'); # no config file: need to initialise config.
   }
-  !system_service(PBS_SERVER(),RESTART())
-      or carp "ERROR: Couldn't restart pbs server service.\n";
+  !system_service(PBS_SERVER(),START())
+      or carp "ERROR: Couldn't start pbs server service.\n";
 }
 
 
