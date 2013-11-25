@@ -34,6 +34,9 @@ monitor_service=systemimager-server-monitord
 mysql_service=mysqld
 nfs_service=nfs
 ntp_service=ntpd
+pbs_sched_service=pbs_sched
+pbs_mom_service=pbs_mom
+pbs_server_service=pbs_server
 postfix_service=postfix
 postresql_service=postgresql
 rpc_service=rpcbind
@@ -42,6 +45,7 @@ sendmail_service=sendmail
 ssh_service=sshd
 syslog_service=rsyslog
 tftp_service=atftp
+trqauthd_service=trqauthd
 xinetd_service=xinetd
 
 # Specifies few configuration files

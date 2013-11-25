@@ -26,6 +26,10 @@ use constant MAUI           => 'maui';
 use constant MYSQL          => 'mysql';
 use constant NFS            => 'nfs';
 use constant NTP            => 'ntp';
+use constant PBS_MOM        => 'pbs_mom';
+use constant PBS_SCHED      => 'pbs_sched';
+use constant PBS_SERVER     => 'pbs_server';
+use constant PBS_TRQAUTHD   => 'trqauthd';
 use constant POSTFIX        => 'postfix';
 use constant POSTGRESQL     => 'postgresql';
 use constant RPC            => 'rpc';
@@ -67,6 +71,10 @@ our @EXPORT = qw(
                 MYSQL
                 NFS
                 NTP
+                PBS_MOM
+                PBS_SCHED
+                PBS_SERVERVER
+                PBS_TRQAUTHD
                 POSTGRESQL
                 POSTFIX
                 RPC
