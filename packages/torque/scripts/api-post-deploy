@@ -86,7 +86,7 @@ sub parseCommandLine
 #########################################################################
 sub startPBSserver
 {
-  !system_service(PBS(),START())
+  !system_service(PBS_SERVER(),START())
       or carp "ERROR: Couldn't start pbs service.\n";
 
   # Trying to find the qstat binary. if alternatives is used, it can be named qstat-torque
@@ -374,21 +374,15 @@ if(isWorkqDefined()) {
 !system_service(MAUI(),RESTART())
     or carp "ERROR: Couldn't restart MAUI service.\n";
 
-# Get current state of server's mom
-open(CMD,"/etc/init.d/pbs_mom status |");
-  my $mom_state = <CMD>;
-close(CMD);
-#print "Server's mom state: $mom_state\n";
-
 # Set server's mom to configured state
 if ($compute_on_head eq "YES") {
-  system('/sbin/chkconfig --add pbs_mom');
-  if ( $mom_state !~ /^.*is running.*$/) {
-    system('/etc/init.d/pbs_mom start');
-  }
+  !enable_system_services( (PBS_MOM()) )
+      or carp "ERROR: Couldn't enable pbs_mom.\n";
+  !system_service(PBS_MOM(),START())
+      or carp "ERROR: Couldn't start pbs_mom service.\n";
 } else {
-  system('/sbin/chkconfig --del pbs_mom');
-  if ( $mom_state =~ /^.*is running.*$/) {
-    system('/etc/init.d/pbs_mom stop');
-  }
+  !disable_system_services( (PBS_MOM()) )
+      or carp "ERROR: Couldn't disable pbs_mom.\n";
+  !system_service(PBS_MOM(),STOP())
+      or carp "ERROR: Couldn't stop pbs_mom service.\n";
 }
