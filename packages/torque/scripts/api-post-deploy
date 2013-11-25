@@ -26,6 +26,8 @@ use lib "$ENV{OSCAR_HOME}/lib";
 use lib "/usr/lib/systeminstaller";
 use OSCAR::Opkg;
 use OSCAR::Package;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 use Carp;
 use Data::Dumper;
 use SystemInstaller::Machine;
@@ -84,11 +86,9 @@ sub parseCommandLine
 #########################################################################
 sub startPBSserver
 {
-  open(CMD,"/sbin/service pbs_server status |");
-  my $result = <CMD>;
-  close(CMD);
-  system('/sbin/service pbs_server start')
-      unless ($result =~ /is running/);
+  !system_service(PBS(),START())
+      or carp "ERROR: Couldn't start pbs service.\n";
+
   # Trying to find the qstat binary. if alternatives is used, it can be named qstat-torque
   # So we check for qstat and qstat-torque in $torque_home/bin
   my $qstat_bin="";
@@ -115,11 +115,6 @@ sub startPBSserver
   return -1;
 }
 
-sub restartPBSserver
-{
-  system('/sbin/service pbs_server restart');
-}
-
 ######################################################################
 #  Check to see if workq is defined                                  #
 ######################################################################
@@ -133,18 +128,6 @@ sub isWorkqDefined
   } else {
     return 0;
   }
-}
-
-######################################################################
-#  Check to see if 'Maui' is running.  If not, then start it.        #
-######################################################################
-sub restartMaui
-{
-#  open(CMD,"/etc/init.d/maui status |");
-#  my $result = <CMD>;
-#  close(CMD);
-  system('/etc/init.d/maui restart');
-  #    unless ($result =~ /is running/);
 }
 
 # Use Schwartzian transform to sort node names alphabetically and numerically.
@@ -290,8 +273,6 @@ foreach my $node (sortnodes( keys %pbsnodes ))
   {
     system($torque_home.'/bin/qmgr -a -e -c "delete node ' . $node . '"');
   }
-# OL: we don't need to restart the server.
-# restartPBSserver();
 
 if(isWorkqDefined()) {
   opkg_print("workq already defined...Skipping queue creation...\n");
@@ -390,7 +371,8 @@ if(isWorkqDefined()) {
     }
 }
 
-restartMaui();
+!system_service(MAUI(),RESTART())
+    or carp "ERROR: Couldn't restart MAUI service.\n";
 
 # Get current state of server's mom
 open(CMD,"/etc/init.d/pbs_mom status |");
