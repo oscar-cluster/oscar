@@ -21,11 +21,14 @@
 
 use strict;
 use Carp;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 
 
 # Config Torque mom service to start
-system('/sbin/chkconfig --add pbs_mom');
-# The line below should be useless as the initscript has a default start.
-# but some distros provide an old school script with no default start.
-system('/sbin/chkconfig --level 35 pbs_mom on');
-system('/sbin/service pbs_mom start');
+!enable_system_services( (PBS_MOM()) )
+    or carp "ERROR: Couldn't enable pbs_mom.\n";
+
+# Start pbs_mom service.
+!system_service(PBS_MOM(),START())
+    or carp "ERROR: Couldn't start pbs_mom.\n";

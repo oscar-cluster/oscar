@@ -27,6 +27,8 @@ BEGIN {
 
 use strict;
 use Carp;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 use lib '/usr/lib/systeminstaller';
 use SystemInstaller::Machine;
 
@@ -37,11 +39,14 @@ use OSCAR::Opkg;
 #######################################################
 sub startPBSserver
 {
-  system('/etc/init.d/trqauthd start');
+  !system_service(PBS_TRQAUTHD(),START())
+      or carp "ERROR: Couldn't start pbs trqauthd service.\n";
+  # OL: FIXME: The following 2 lines are not compatible with systemd.
   if(!-f '/var/lib/torque/server_priv/serverdb' && !-f '/var/spool/pbs/server_priv/serverdb') {
     system('/etc/init.d/pbs_server create'); # no config file: need to initialise config.
   }
-  system('/etc/init.d/pbs_server restart');
+  !system_service(PBS_SERVER(),RESTART())
+      or carp "ERROR: Couldn't restart pbs server service.\n";
 }
 
 
@@ -51,19 +56,20 @@ sub startPBSserver
 
 startPBSserver();
 
-# Config Torque sched service not to start since we use Maui
+# Config Torque sched service not to start if we use Maui
 # In order to prevent a conflict when Maui is to be used,
-# 'pbs_sched' is disabled, then. 'pbs_sched' should be installed
-# by default
-if (-f '/etc/init.d/pbs_sched') {
-    if (-f '/etc/init.d/maui') {
-        system('/sbin/chkconfig --del pbs_sched');
+# 'pbs_sched' is disabled, then.
+
+if ( system_service_status(PBS_SCHED()) == SERVICE_ENABLED() ) {
+    if ( system_service_status(MAUI()) == SERVICE_ENABLED() ) {
+        !disable_system_services( (PBS_SCHED()) )
+            or carp "ERROR: MAUI scheduler enabled, but couldn't disable pbs scheduler.\n";
     }
-} else {
-    print "WARNING! PBS Scheduler is not installed, but should be.\n";
 }
+
 # Config Torque server service to start
-system('/sbin/chkconfig --add pbs_server');
+!enable_system_services( (PBS_SERVER()) )
+    or carp "ERROR: Couldn't enable pbs server.\n";
 
 opkg_print("...updating xpbsmonrc file\n");
 my $arch = `uname -i`;
