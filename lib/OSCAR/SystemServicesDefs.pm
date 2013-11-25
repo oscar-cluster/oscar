@@ -73,7 +73,7 @@ our @EXPORT = qw(
                 NTP
                 PBS_MOM
                 PBS_SCHED
-                PBS_SERVERVER
+                PBS_SERVER
                 PBS_TRQAUTHD
                 POSTGRESQL
                 POSTFIX
