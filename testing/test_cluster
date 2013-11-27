@@ -139,6 +139,7 @@ foreach my $pkg (@pkgs) {
     for my $dir (@OSCAR::PackagePath::PKG_SOURCE_LOCATIONS) {
 	$script = "$dir/../testing/$file";
 	if (-x $script) {
+        print "About to run $script\n";
 	    if (!run_pkg_user_test($script, "root", 0,
 				   join(" ", @clientlist))) {
 		$return++;
