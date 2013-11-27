@@ -14,10 +14,10 @@ my $format;
 
 print "\n\n*** Test few repository format detection related functions.***\n\n";
 
-my @rpm_online_repos = ("http://mirror.centos.org/centos/5.3/os/x86_64/",
-                        "http://bison.csm.ornl.gov/repos/unstable/rhel-5-x86_64");
-my @deb_online_repos = ("http://us.archive.ubuntu.com/ubuntu/+hardy+main+universe+multiverse",
-                        "http://bear.csm.ornl.gov/repos/unstable/debian-4-i386/+etch+/");
+my @rpm_online_repos = ("http://mirror.centos.org/centos/6.4/os/x86_64/",
+                        "http://svn.oscar.openclustergroup.org/repos/unstable/rhel-6-x86_64/");
+my @deb_online_repos = ("distro:http://us.archive.ubuntu.com/ubuntu/+raring+main+universe+multiverse",
+                        "http://svn.oscar.openclustergroup.org/repos/unstable/debian-7-x86_64/+wheezy+/");
 my @fake_repos = ("http://toto.com/titi/");
 foreach my $r (@rpm_online_repos) {
     if (OSCAR::PackagePath::repo_local ($r) == 1) {
