@@ -24,7 +24,8 @@ if (OSCAR::PackagePath::repo_empty ($path) != 1) {
 
 print "Test the preparation of pools.\n";
 
-my $fake_pool = "/tftpboot/oscar/rhel-4-x86_64";
+# FIXME: need to get rhel-6-x86_64 for OS_Detect
+my $fake_pool = "/tftpboot/oscar/rhel-6-x86_64";
 my $yume_cmd = "/usr/bin/yume";
 if (! -f $yume_cmd) {
     print "For testing we need to use yume\n";
