@@ -135,9 +135,9 @@ if (defined $ENV{OSCAR_HOME}) {
 my $file;
 my $script;
 foreach my $pkg (@pkgs) {
-    $file = "$pkg/testing/test_root";
+    $file = "$pkg/test_root";
     for my $dir (@OSCAR::PackagePath::PKG_SOURCE_LOCATIONS) {
-	$script = "$dir/$file";
+	$script = "$dir/../testing/$file";
 	if (-x $script) {
 	    if (!run_pkg_user_test($script, "root", 0,
 				   join(" ", @clientlist))) {
@@ -255,7 +255,11 @@ system("chown -R $tid:$tgid $test_user_homedir");
 # First test ssh
 #
 # Make sure ssh keys are generated quietly
-system("/bin/su -c '' - $test_user > /dev/null 2>&1");
+# OL: On some systems (centos6 for example), keys are not generated at 1st login.
+#system("/bin/su -c '' - $test_user > /dev/null 2>&1");
+
+# Make sure we have keys in ~oscartst/.ssh/
+system("/bin/su -c 'ssh-keygen -t rsa -f ~oscartst/.ssh/id_rsa -N \"\"' - oscartst </dev/null >/dev/null 2>&1");
 
 my $clistring=join(" ",@clientlist);
 if (!OSCAR::Utils::is_a_valid_string ($clistring)) {
