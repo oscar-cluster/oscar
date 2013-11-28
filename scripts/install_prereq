@@ -363,7 +363,8 @@ sub install_prereq($$$$$) {
 
         OSCAR::Logger::oscar_log_subsection "Adding repos $oscar_pkg_pool, ".
             "$distro_pkg_pool";
-        my $local_repos = "$oscar_pkg_pool, $distro_pkg_pool";
+        my $local_repos = "$oscar_pkg_pool";
+        $local_repos .= ", $distro_pkg_pool" if $distro_pkg_pool ne "";
         my @repos = split (",", $local_repos);
         OSCAR::Utils::print_array (@repos);
         $pm = PackMan->new;
