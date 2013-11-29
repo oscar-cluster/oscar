@@ -352,11 +352,26 @@ sub init_server ($) {
         "selected...";
     my %selection_data = ();
     # We call ODA_Defs only here to avoid bootstrapping issues.
+    # We get the list of OPKGs in the package set
+    require OSCAR::PackagePath;
+    require OSCAR::PackageSet;
+    my $distro = OSCAR::PackagePath::get_distro ();
+    my $compat_distro = OSCAR::PackagePath::get_compat_distro ($distro);
+    my @available_opkgs
+        = OSCAR::PackageSet::get_list_opkgs_in_package_set ('Experimental',
+                                                            $compat_distro);
     require OSCAR::ODA_Defs;
-    my $selection = OSCAR::ODA_Defs::SELECTED();
-    foreach my $opkg (@core_opkgs) {
-        $selection_data{$opkg} = $selection;
+    my $selected = OSCAR::ODA_Defs::SELECTED();
+    my $unselected = OSCAR::ODA_Defs::UNSELECTED();
+
+    require OSCAR::OCA::OS_Detect;
+    my $os = OSCAR::OCA::OS_Detect::open();
+    foreach my $opkg (@available_opkgs) {
+        next if ($os->{pkg} eq "rpm" and $opkg eq 'rapt'); 
+        next if ($os->{pkg} eq "deb" and $opkg eq 'yume'); 
+        $selection_data{$opkg} = (grep(/$opkg/,@core_opkgs)?$selected:$unselected);
     }
+
     OSCAR::Database::set_opkgs_selection_data (%selection_data);
 
     OSCAR::Logger::oscar_log_subsection(
