@@ -29,18 +29,22 @@
 <testDef>
 
   <info>
-This script tests that [Describe what test does here]
+This script tests that SELinux is not enforced
 
 Desired result : PASS
 </info>
 
-  <shortDescription>Are all nodes up?</shortDescription>
+  <shortDescription>Is SELinux disabled?</shortDescription>
 
   <test type="script">
   
-    <command interpreter="/bin/bash" wdir="/tmp" uname="oscartst">
-# Insert your script lines here.
-# Don't forget to make sure exit codes are consistent
+    <command interpreter="/bin/bash" wdir="/tmp">
+if grep 'SELINUX=.*enforcing' /etc/selinux/config
+then
+    exit 1
+else
+    exit 0
+fi
     </command>
 
     <output name="stdout" format="regexp"></output>
