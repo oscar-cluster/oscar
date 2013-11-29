@@ -555,6 +555,11 @@ sub bootstrap_stage1 ($) {
         carp "ERROR: impossible to install ODA prereqs ($odaprereqs_path)\n";
         return -1;
     }
+    require OSCAR::ODA::Bootstrap;
+    if(OSCAR::ODA::Bootstrap::bootstrap_oda(OSCAR::SystemServicesDefs::MYSQL())){
+        carp "ERROR: impossible to setup the ODA bootstrap with " .OSCAR::SystemServicesDefs::MYSQL() . "\n";
+        return -1;
+    }
 
     # Now we try to install Selector
     my $selector_prereqs_path = $config->{'prereqs_path'} . "/Selector";
