@@ -32,6 +32,7 @@
     Check that everything is ok before we enter wizard step 7.
   </info>
 
-  <test name="true.apt"/>
+  <test name="before_step_0.apb"/>
+  <dep parent="ssh_user_tests.apb" child="home_mounts_ok.apt"/>
 
 </testBatch>

@@ -55,6 +55,10 @@ do
         echo "$node/home not properly mounted"
     fi
 done
+
+# Delete the testfile
+rm ~oscartst/oscartestfile
+
 exit $SOME_NODES_HAVE_BAD_HOME
     </command>
 

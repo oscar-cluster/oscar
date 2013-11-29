@@ -32,10 +32,6 @@
    Check that SSH works in both directions between head and nodes.
   </info>
 
-  <test name="all_nodes_up.apt"/>
-  <test name="ssh_server_to_node.apt"/>
-  <test name="ssh_node_to_server.apt"/>
-
   <dep parent="all_nodes_up.apt" child="ssh_node_to_server.apt"/>
   <dep parent="all_nodes_up.apt" child="ssh_server_to_node.apt"/>
 
