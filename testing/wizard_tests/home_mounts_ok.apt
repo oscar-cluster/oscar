@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <!--
+  #############################################################################
+  #
+  #   This program is free software; you can redistribute it and/or modify
+  #   it under the terms of the GNU General Public License as published by
+  #   the Free Software Foundation; either version 2 of the License, or
+  #   (at your option) any later version.
+  #
+  #   This program is distributed in the hope that it will be useful,
+  #   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  #   GNU General Public License for more details.
+  #
+  #   You should have received a copy of the GNU General Public License
+  #   along with this program; if not, write to the Free Software
+  #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  #
+  #   Copyright (c) 2013 CEA - Commissariat à l'énergie atomique et
+  #                            aux énergies alternatives
+  #                      All rights reserved.
+  #   Copyright (C) 2013 Olivier LAHAYE <olivier.lahaye@cea.fr>
+  #                      All rights reserved.
+  #
+  # $Id: $
+  #
+  #############################################################################
+  -->
+<testDef>
+
+  <info>
+this script tests that all nodes have a properly mounted /home
+
+Desired result : PASS
+</info>
+
+  <shortDescription>Are all nodes up?</shortDescription>
+
+  <test type="script">
+  
+    <command interpreter="/bin/bash" wdir="/tmp" uname="oscartst">
+# 1st create a dummy file in ~oscartst/
+if ! echo "OSCAR IS COOL" > ~oscartst/oscartestfile 2>/dev/null
+then
+    echo "Unable to create ~oscartst/oscartestfile as user oscartst on head"
+    exit 2
+fi
+
+SOME_NODES_HAVE_BAD_HOME=0
+for node in $(/usr/share/oscar/testing/wizard_tests/helpers/oscar_nodes.sh)
+do
+    if ! ssh $node ls ~oscartst/oscartestfile > /dev/null 2>&amp;1
+    then
+        SOME_NODES_HAVE_BAD_HOME=1
+        echo "$node/home not properly mounted"
+    fi
+done
+exit $SOME_NODES_HAVE_BAD_HOME
+    </command>
+
+    <output name="stdout" format="literal"></output>
+    <output name="stderr" format="literal"></output>
+    <output name="status" format="literal">0</output>
+
+  </test>
+
+</testDef>
+
+<!-- EOF -->

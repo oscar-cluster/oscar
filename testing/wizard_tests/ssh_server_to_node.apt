@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <!--
+  #############################################################################
+  #
+  #   This program is free software; you can redistribute it and/or modify
+  #   it under the terms of the GNU General Public License as published by
+  #   the Free Software Foundation; either version 2 of the License, or
+  #   (at your option) any later version.
+  #
+  #   This program is distributed in the hope that it will be useful,
+  #   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  #   GNU General Public License for more details.
+  #
+  #   You should have received a copy of the GNU General Public License
+  #   along with this program; if not, write to the Free Software
+  #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  #
+  #   Copyright (c) 2013 CEA - Commissariat à l'énergie atomique et
+  #                            aux énergies alternatives
+  #                      All rights reserved.
+  #   Copyright (C) 2013 Olivier LAHAYE <olivier.lahaye@cea.fr>
+  #                      All rights reserved.
+  #
+  # $Id: $
+  #
+  #############################################################################
+  -->
+<testDef>
+
+  <info>
+This script tests that user can ssh to all nodes from oscar_server
+
+Desired result : PASS
+</info>
+
+  <shortDescription>Can user ssh to all nodes from head</shortDescription>
+
+  <test type="script">
+  
+    <command interpreter="/bin/bash" wdir="/tmp" uname="oscartst">
+SOME_NODES_FAILED_SSH=0
+for node in $(/usr/share/oscar/testing/wizard_tests/helpers/oscar_nodes.sh)
+do
+    if ! ssh -o 'StrictHostKeyChecking no' $node hostname > /dev/null 2>&amp;1
+    then
+        SOME_NODES_FAILED=1
+        echo "failed to ssh to $node"
+    fi
+done
+exit $SOME_NODES_FAILED_SSH
+    </command>
+
+    <output name="stdout" format="literal"></output>
+    <output name="stderr" format="literal"></output>
+    <output name="status" format="literal">0</output>
+
+  </test>
+
+</testDef>
+
+<!-- EOF -->
