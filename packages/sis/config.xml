@@ -162,6 +162,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="4.0.9-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-02T15:29:39+01:00">
+        <item>Migration from /var/lib/oscar to /usr/lib/oscar (FHS).</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="4.0.8-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-10-09T10:55:24+02:00">
         <item>Removed requirement on i386 boot and initrd pkgs on x86_64 arch. (same behaviour as debian)</item>

@@ -35,7 +35,7 @@ our $id = {
     major => $xml_ref->{version}->{major},
     minor => $xml_ref->{version}->{minor},
     subversion => $xml_ref->{version}->{subversion},
-    test => "/var/lib/oscar/testing/$pkg/$test",
+    test => "/usr/lib/oscar/testing/$pkg/$test",
     jobscript => $jobscript,
 };
 

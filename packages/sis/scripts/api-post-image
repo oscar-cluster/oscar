@@ -69,7 +69,7 @@ my $base;
 if (defined $ENV{OSCAR_HOME}) {
     $base = "$ENV{OSCAR_HOME}/packages/sis";
 } else {
-    $base = "/var/lib/oscar/packages/sis";
+    $base = "/usr/lib/oscar/packages/sis";
 }
 
 my ($force, $update, $verbose);

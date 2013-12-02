@@ -52,6 +52,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.6.1.1-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-02T15:29:39+01:00">
+        <item>Migration from /var/lib/oscar to /usr/lib/oscar (FHS).</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.6.1-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-09-04T18:21:49+02:00">
         <item>Initial packaging.</item>

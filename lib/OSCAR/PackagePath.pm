@@ -78,7 +78,7 @@ my $tftpdir = "/tftpboot/";
 my $verbose = $ENV{OSCAR_VERBOSE};
 
 # The possible places where packages may live.  
-@PKG_SOURCE_LOCATIONS = ("/var/lib/oscar/packages");
+@PKG_SOURCE_LOCATIONS = ("/usr/lib/oscar/packages");
 if (defined $ENV{OSCAR_HOME}) {
     unshift (@PKG_SOURCE_LOCATIONS, "$ENV{OSCAR_HOME}/packages");
 }

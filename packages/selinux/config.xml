@@ -14,6 +14,11 @@
     </author>
   </authors>
   <changelog>
+    <versionEntry version="1.0.3-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-02T15:29:39+01:00">
+        <item>Migration from /var/lib/oscar to /usr/lib/oscar (FHS).</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.2-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-03-25T10:23:51-05:00">
         <item>Fix a problem with the api-post-image script.</item>

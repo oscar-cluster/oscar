@@ -130,7 +130,7 @@ print "Performing root tests...\n";
 if (defined $ENV{OSCAR_HOME}) {
     $ENV{OSCAR_TESTPRINT}="$ENV{OSCAR_HOME}/testing/testprint";
 } else {
-    $ENV{OSCAR_TESTPRINT}="/usr/share/oscar/testing/testprint";
+    $ENV{OSCAR_TESTPRINT}="/usr/lib/oscar/testing/testprint";
 }
 my $file;
 my $script;
@@ -213,7 +213,7 @@ my $path;
 if (defined $ENV{OSCAR_HOME}) {
     $path = "$ENV{OSCAR_HOME}/testing";
 } else {
-    $path = "/usr/share/oscar/testing";
+    $path = "/usr/lib/oscar/testing";
 }
 foreach my $file (@ufiles) {
 	copy("$path/$file",$test_user_homedir);
@@ -229,7 +229,7 @@ unless ($rm->{name} eq "None") {
 }
 
 # Copy the packages test files to the user home dir.
-my $dir = "/var/lib/oscar/testing";
+my $dir = "/usr/lib/oscar/testing";
 my $target_dir;
 my $cmd;
 foreach my $pkg (@pkgs) {
@@ -261,6 +261,7 @@ system("chown -R $tid:$tgid $test_user_homedir");
 
 # Make sure we have keys in ~oscartst/.ssh/
 system("/bin/su -c 'ssh-keygen -t rsa -f ~oscartst/.ssh/id_rsa -N \"\"' - oscartst </dev/null >/dev/null 2>&1");
+# OL: FIXME: Create the authorized keys file.
 
 my $clistring=join(" ",@clientlist);
 if (!OSCAR::Utils::is_a_valid_string ($clistring)) {

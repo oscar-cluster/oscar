@@ -25,8 +25,8 @@ if (defined $ENV{OSCAR_HOME}) {
     $pkg_dir = "$ENV{OSCAR_HOME}/packages/$pkg";
     $test = "$pkg_dir/testing/$test";
 } else {
-    $pkg_dir = "/var/lib/oscar/packages/$pkg";
-    $test = "/var/lib/oscar/testing/$pkg/$test"
+    $pkg_dir = "/usr/lib/oscar/packages/$pkg";
+    $test = "/usr/lib/oscar/testing/$pkg/$test"
 }
 my $pkg_config = "$pkg_dir/config.xml";
 

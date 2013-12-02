@@ -111,6 +111,6 @@ if (defined $ENV{OSCAR_HOME}) {
 $rm_detect_dir .= "/OSCAR/OCA/RM_Detect";
 
 # Copy RM_Detect component for TORQUE to the right location
-my $rm_file = "/var/lib/oscar/packages/torque/TORQUE.pm";
+my $rm_file = "/usr/lib/oscar/packages/torque/TORQUE.pm";
 system("cp -a $rm_file $rm_detect_dir") == 0 
     or croak("Failed to copy $rm_file to $rm_detect_dir");

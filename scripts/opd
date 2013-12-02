@@ -71,7 +71,7 @@ my $gigabyte = $megabyte * 1024;
 my $cachedir = "/var/cache/oscar";
 my $downloaddir = "$cachedir/downloads";
 my $metadatadir = "$cachedir/opd";
-my $expanddir = "/var/lib/oscar/packages";
+my $expanddir = "/usr/lib/oscar/packages";
 
 my $opd_term = new Term::ReadLine 'OPD';
 

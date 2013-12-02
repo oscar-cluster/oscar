@@ -42,7 +42,7 @@ use OSCAR::Database_generic;
             store_opkgs_switcher_data
             );
 
-my $configxml_path = "/var/lib/oscar/packages/";
+my $configxml_path = "/usr/lib/oscar/packages/";
 
 ################################################################################
 # Store Switcher data into ODA.                                                #

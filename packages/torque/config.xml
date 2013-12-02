@@ -76,6 +76,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.1.19-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-02T15:29:39+01:00">
+        <item>Migration from /var/lib/oscar to /usr/lib/oscar (FHS).</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.1.18-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-02-27T17:34:38+01:00">
         <item>Updated client-post-install and api-post-deploy to use "/sbin/service" to prepare move to systemd</item>

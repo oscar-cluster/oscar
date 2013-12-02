@@ -388,7 +388,7 @@ sub updateOda
 #  Returns   : Nothing                                                  #
 #  This subroutine takes in the name of a package and updates the       #
 #  oda database with the (newly downloaded) config.xml file found in    #
-#  /var/lib/oscar/packages/PACKAGE_NAME.  It does this by calling the   #
+#  /usr/lib/oscar/packages/PACKAGE_NAME.  It does this by calling the   #
 #  script $OSCAR_HOME/scripts/read_package_config_xml_into_database.    #
 #########################################################################
 
@@ -398,7 +398,7 @@ sub updateOda
   # off the last bit of the downloadURI.  This file should be in
   # /var/cache/oscar/downloads/.  Then using tar, list the contents of
   # the tarball and figure out the root directory of the package.  
-  # Then the config.xml file is located in /var/lib/oscar/packages/DIR.
+  # Then the config.xml file is located in /usr/lib/oscar/packages/DIR.
   my $tarball;
   my $tardir;
   my $package = $dlPackages[$dlPhase-1]->{package};
@@ -414,7 +414,7 @@ sub updateOda
       my $cmd_output = <CMD>;
       chomp $cmd_output;
       ($cmd_output =~ /\s([^\s]*)\/$/) && ($pkg = $1) &&
-        ($tardir = "/var/lib/oscar/packages/$pkg");
+        ($tardir = "/usr/lib/oscar/packages/$pkg");
       while ($cmd_output = <CMD>) { }  # To prevent tar "stdout" error
       close CMD;
 

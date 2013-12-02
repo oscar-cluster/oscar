@@ -95,9 +95,9 @@ $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 sub get_scripts_dir ($$) {
     my ($pkg, $phase) = @_;
     if ($phase eq 'test_root' || $phase eq 'test_user') {
-        return "/var/lib/oscar/testing/$pkg";
+        return "/usr/lib/oscar/testing/$pkg";
     } else {
-        return "/var/lib/oscar/packages/$pkg";
+        return "/usr/lib/oscar/packages/$pkg";
     }
 }
 
@@ -187,6 +187,9 @@ sub run_pkg_user_test ($$$$) {
 
     if (-e $script) {
             oscar_log_subsection("About to run $script") if $verbose;
+            print "\n================================================================================\n";
+            print "= Running $script\n";
+            print "================================================================================\n";
             my $uid=getpwnam($user);
         my $rc;
             if ($uid == $>) {

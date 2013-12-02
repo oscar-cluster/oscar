@@ -92,8 +92,8 @@ sub oscar_home_env {
             oscar_log_subsection("Generating ".
                                  "/etc/profile.d/oscar_home.{sh,csh} files.");
             &profiled_files_write("OSCAR_HOME", $ohome);
-            &profiled_files_write("OSCAR_PACKAGE", "/var/lib/oscar/packages");
-            &profiled_files_write("OSCAR_TEST", "/var/lib/oscar/testing");
+            &profiled_files_write("OSCAR_PACKAGE", "/usr/lib/oscar/packages");
+            &profiled_files_write("OSCAR_TEST", "/usr/lib/oscar/testing");
         }
     }
 }

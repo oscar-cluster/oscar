@@ -23,7 +23,7 @@ my $unit_testing_dir;
 if (defined $ENV{OSCAR_HOME}) {
     $unit_testing_dir = $ENV{OSCAR_HOME} . "/testing/unit_testing";
 } else {
-    $unit_testing_dir = "/usr/share/oscar/testing/unit_testing";
+    $unit_testing_dir = "/usr/lib/oscar/testing/unit_testing";
 }
 
 print "Testing few OSCAR stuff in $unit_testing_dir...\n";

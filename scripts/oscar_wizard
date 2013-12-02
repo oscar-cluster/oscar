@@ -337,7 +337,7 @@ oscar_button($window, $step_string,
 		    chdir($ENV{OSCAR_HOME} . '/lib/Qt');
 		    system('/usr/bin/perl Opder.pl');
 		    chdir($ENV{OSCAR_HOME} . '/scripts');
-		    system("./prep_oscar_repos --add --include /var/lib/oscar/packages");
+		    system("./prep_oscar_repos --add --include /usr/lib/oscar/packages");
 		    chdir($olddir);
 		}],
 	     'download_packages');
