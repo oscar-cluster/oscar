@@ -37,7 +37,7 @@ my $samples_dir;
 if (defined $ENV{OSCAR_HOME}) {
     $samples_dir = "$ENV{OSCAR_HOME}/testing/unit_testing";
 } else {
-    $samples_dir = "/usr/share/oscar/testing/unit_testing";
+    $samples_dir = "/usr/lib/oscar/testing/unit_testing";
 }
 $template = "$samples_dir/etc/yum.conf";
 File::Copy::copy ($template, $path);

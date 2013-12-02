@@ -96,6 +96,10 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="3.5.0-2">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-02T16:30:40+01:00">
+        <item>Migration from /usr/share/oscar/testing to /usr/lib/oscar/testing (FHS)</item>
+      </changelogEntry>
     <versionEntry version="3.5.0-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-04-23T09:56:13+02:00">
         <item>Now properly detect ganglia php files root dir (/var/www/html/ganglia</item>

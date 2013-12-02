@@ -28,7 +28,7 @@ my $xmlfile;
 if (defined $ENV{OSCAR_HOME}) {
     $xmlfile = "$ENV{OSCAR_HOME}/testing/unit_testing/samples/config.xml";
 } else {
-    $xmlfile = "/usr/share/oscar/testing/unit_testing/samples/config.xml";
+    $xmlfile = "/usr/lib/oscar/testing/unit_testing/samples/config.xml";
 }
 my $ref = OSCAR::FileUtils::parse_xmlfile ($xmlfile);
 if (!defined $ref) {

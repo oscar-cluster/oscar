@@ -933,7 +933,7 @@ sub run_tests {
     if (defined $ENV{OSCAR_HOME}) {
         $test_dir = "$ENV{OSCAR_HOME}/testing";
     } else {
-        $test_dir = "/usr/share/oscar/testing/";
+        $test_dir = "/usr/lib/oscar/testing/";
     }
     my $cmd = "cd $test_dir && xterm -T '$title' -n '$title' -geometry 80x47 -sl 500 -e ./test_cluster --wait";
     my $string = "";

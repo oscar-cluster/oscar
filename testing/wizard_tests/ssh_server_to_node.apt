@@ -40,7 +40,7 @@ Desired result : PASS
   
     <command interpreter="/bin/bash" wdir="/tmp" uname="oscartst">
 SOME_NODES_FAILED_SSH=0
-for node in $(/usr/share/oscar/testing/wizard_tests/helpers/oscar_nodes.sh)
+for node in $(/usr/lib/oscar/testing/wizard_tests/helpers/oscar_nodes.sh)
 do
     if ! ssh -o 'StrictHostKeyChecking no' $node hostname > /dev/null 2>&amp;1
     then

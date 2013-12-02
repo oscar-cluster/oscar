@@ -1,5 +1,5 @@
 DESTDIR=
-INSTALLDIR=/usr/share/oscar/testing/unit_testing
+INSTALLDIR=/usr/lib/oscar/testing/unit_testing
 
 SUBDIRS := etc samples
 SCRIPTS := test_config_file test_oscar_config test_systeminfo \

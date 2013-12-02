@@ -1,5 +1,5 @@
 DESTDIR=
-INSTALLDIR=/usr/share/oscar/testing/unit_testing/etc
+INSTALLDIR=/usr/lib/oscar/testing/unit_testing/etc
 
 SUBDIRS := 
 FILES := yum.conf

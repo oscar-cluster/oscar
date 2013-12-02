@@ -22,7 +22,7 @@ my $basedir;
 if (defined $ENV{OSCAR_HOME}) {
     $basedir = "$ENV{OSCAR_HOME}/testing/unit_testing";
 } else {
-    $basedir = "/usr/share/oscar/testing/unit_testing";
+    $basedir = "/usr/lib/oscar/testing/unit_testing";
 }
 
 my $orig_file = "$basedir/samples/systemconfig.conf.tmpl";

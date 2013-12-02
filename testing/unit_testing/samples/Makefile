@@ -1,5 +1,5 @@
 DESTDIR=
-INSTALLDIR=/usr/share/oscar/testing/unit_testing/samples
+INSTALLDIR=/usr/lib/oscar/testing/unit_testing/samples
 
 SUBDIRS := 
 FILES := config.xml systemconfig.conf.tmpl config_file_sample.conf

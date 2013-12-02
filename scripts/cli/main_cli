@@ -213,7 +213,7 @@ my $tests_path;
 if (defined $ENV{OSCAR_HOME}) {
     $tests_path = $ENV{OSCAR_HOME} . "/testing";
 } else {
-    $tests_path = "/usr/share/oscar/testing";
+    $tests_path = "/usr/lib/oscar/testing";
 }
 unless ($skiptest) {
     oscar_log_section("Test Cluster Setup");

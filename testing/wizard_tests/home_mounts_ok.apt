@@ -47,7 +47,7 @@ then
 fi
 
 SOME_NODES_HAVE_BAD_HOME=0
-for node in $(/usr/share/oscar/testing/wizard_tests/helpers/oscar_nodes.sh)
+for node in $(/usr/lib/oscar/testing/wizard_tests/helpers/oscar_nodes.sh)
 do
     if ! ssh $node ls ~oscartst/oscartestfile > /dev/null 2>&amp;1
     then

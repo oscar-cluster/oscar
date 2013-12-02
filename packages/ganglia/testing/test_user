@@ -107,7 +107,7 @@ my $label = "Ganglia setup test";
 
 #TODO: Find a better way to find where the testprint script is
 if (!OSCAR::Utils::is_a_valid_string ($ENV{OSCAR_TESTPRINT})) {
-    $ENV{OSCAR_TESTPRINT} = "/usr/share/oscar/testing/testprint";
+    $ENV{OSCAR_TESTPRINT} = "/usr/lib/oscar/testing/testprint";
 }
 
 # Init log file
