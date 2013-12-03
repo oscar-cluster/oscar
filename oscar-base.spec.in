@@ -81,11 +81,10 @@ those packages from an online package repository, either on or off site.
 
 %files -n oscar-base
 %defattr(-,root,root)
-%dir %{_sysconfdir}/oscar
-%dir %{_datadir}/oscar/prereqs
-%{_sysconfdir}/oscar/*
-%{_datadir}/oscar/*
-%{_datadir}/doc/oscar/*
+%{_sysconfdir}/oscar
+%{_defaultdocdir}/oscar
+%{_prefix}/lib/oscar
+%{_datarootdir}/oscar
 
 %package -n oscar-base-client
 Group: Applications/System
@@ -123,9 +122,6 @@ AutoReqProv: no
 Libraries for OSCAR clustering base package.
 %files -n oscar-base-lib
 %defattr(-,root,root)
-%dir %{perl_vendorlib}/OSCAR
-%dir %{perl_vendorlib}/Qt
-%dir %{perl_vendorlib}/Tk
 %{perl_vendorlib}/*
 
 %package -n oscar-base-scripts
@@ -141,7 +137,6 @@ Scripts for OSCAR clustering base package.
 
 %files -n oscar-base-scripts
 %defattr(-,root,root)
-%dir %{_bindir}/system-sanity.d
 %{_bindir}/*
 %exclude %{_bindir}/distro-query
 %{_mandir}/man1/*
@@ -196,6 +191,11 @@ GPG keys used to sign them.
 #{_sysconfdir}/pki/rpm-gpg/*
 
 %changelog
+* Tue Dec 03 2013 Olivier Lahaye <olivier.lahaye@cea.fr>
+- Fixed packaging for FHS
+- Removed define _unpackaged_files_terminate_build 0
+  (leads to incomplete packages without notices)
+- fixed files or directory listed twice.
 * Thu Feb 21 2013 Olivier Lahaye <olivier.lahaye@cea.fr>
 - Added oscar-release package (repository setup)
 * Mon Jan 28 2013 Olivier Lahaye <olivier.lahaye@cea.fr>
