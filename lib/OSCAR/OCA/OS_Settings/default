@@ -31,6 +31,7 @@ jobarchive_service=jobarchived
 jobmonitor_service=jobmond
 maui_service=maui
 monitor_service=systemimager-server-monitord
+munge_service=munged
 mysql_service=mysqld
 nfs_service=nfs
 ntp_service=ntpd

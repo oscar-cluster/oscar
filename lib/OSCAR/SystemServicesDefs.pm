@@ -16,6 +16,7 @@ use constant SERVICE_ENABLED  => 1;
 
 # List of supported services
 use constant DHCP           => 'dhcp';
+use constant DNS            => 'dns';
 use constant EXIM           => 'exim';
 use constant GANGLIA_GMOND  => 'gmond';
 use constant GANGLIA_GMETAD => 'gmetad';
@@ -23,6 +24,7 @@ use constant HTTP           => 'http';
 use constant JOBARCHIVE     => 'jobarchive';
 use constant JOBMONITOR     => 'jobmonitor';
 use constant MAUI           => 'maui';
+use constant MUNGE          => 'munge';
 use constant MYSQL          => 'mysql';
 use constant NFS            => 'nfs';
 use constant NTP            => 'ntp';
@@ -61,6 +63,7 @@ our @EXPORT = qw(
                 SERVICE_ENABLED
                 SSH
                 DHCP
+                DNS
                 EXIM
                 GANGLIA_GMOND
                 GANGLIA_GMETAD
@@ -68,6 +71,7 @@ our @EXPORT = qw(
                 JOBARCHIVE
                 JOBMONITOR
                 MAUI
+                MUNGE
                 MYSQL
                 NFS
                 NTP
