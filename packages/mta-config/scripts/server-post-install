@@ -140,6 +140,10 @@ given ($mta_service) {
                 # inet_interfaces is not set to all, nor it contains oscar_server. We need to add it.
                 print OUT "$line, oscar_server\n";
                 $inet_interface_is_set=1;
+            } elsif ($line =~/^[ \t]*inet_protocols[ \t]*=[ \t]*.*/) {
+                # inet_protocols imust be set to ipv4 as we have disabled ipv6.
+                print OUT "inet_protocols = ipv4\n";
+                $inet_interface_is_set=1;
             } else {
                 # It's another line, just report it.
                 print OUT "$line\n";
