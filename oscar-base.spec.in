@@ -1,6 +1,6 @@
 # $Id$
 
-%define _unpackaged_files_terminate_build 0
+#define _unpackaged_files_terminate_build 0
 
 %define opkgc_version 0.6.0
 %define packman_version 3.2.0
