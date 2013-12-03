@@ -29,6 +29,11 @@
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.32.5-2">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>Rebuild for FHS compliance</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.32.4-1">
       <changelogEntry authorName="Olivier Lahaye" date="2012-11-22T10:11:00+01:00">
         <item>Remove useless oscar_table.sql</item>

@@ -32,6 +32,11 @@
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.0.0-12.4">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>Rebuild for FHS compliance</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.0-12.3">
       <changelogEntry authorName="Olivier Lahaye" date="2012-05-04T11:46:10+01:00">
         <item>Made BuildRequires: python-elementtree conditional (included in python >= 2.6)</item>

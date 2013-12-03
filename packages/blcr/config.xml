@@ -43,6 +43,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.0.2-2">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>Rebuild for FHS compliance</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.2-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-02-26T13:41:00+02:00">
         <item>Simplifed the modules dependancy using blcr-modules which is a generic provides</item>

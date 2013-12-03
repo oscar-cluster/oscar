@@ -55,6 +55,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.0.2-2">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>Rebuild for FHS compliance</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.0.2-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-07-13T13:10:14-04:00">
         <item>Fix a problem in the server-post-install script.</item>

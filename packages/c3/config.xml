@@ -60,6 +60,11 @@ tasks on a cluster.</description>
   <apiDeps>
   </apiDeps>
   <changelog>
+    <versionEntry version="4.1.6-2">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>Rebuild for FHS compliance</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="4.1.6-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2011-06-18T03:18:33-05:00">
         <item>Remove the dependency to c3-profiled since c3 is now directly installed on the system in the context of OSCAR</item>

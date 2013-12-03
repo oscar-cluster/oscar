@@ -34,6 +34,11 @@ system package.</description>
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.707.1-2">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>Rebuild for FHS compliance</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.707.1-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-11-21T13:28:03-09:00">
         <item>Propagate a modification of the ODA API.</item>

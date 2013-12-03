@@ -31,6 +31,11 @@ files.
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.7.3-2">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>Rebuild for FHS compliance</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.7.3-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-11-05T16:23:59-05:00">
         <item>Avoid nasty situations when dealing with the monitoring deamon (server-post-install).</item>

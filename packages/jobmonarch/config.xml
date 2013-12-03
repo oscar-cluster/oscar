@@ -80,6 +80,11 @@
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.0-3">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>Rebuild for FHS compliance</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0-2">
       <changelogEntry authorName="Olivier Lahaye" date="2013-09-20T11:00:00-01:00">
         <item>Fixed dependancy. now jobmonarch is splitted in 3 package. We need jobmonarch-jobmond</item>

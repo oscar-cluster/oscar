@@ -231,6 +231,11 @@ visualized either at runtime or post-mortem.</description>
   <apiDeps>
   </apiDeps>
   <changelog>
+    <versionEntry version="7.1.4-8">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>Rebuild for FHS compliance</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="7.1.4-7">
       <changelogEntry authorName="DongInn Kim" date="2007-11-10T00:24:22-04:00">
         <item>Updated to support YDL</item>

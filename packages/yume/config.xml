@@ -42,6 +42,11 @@ revisions much simpler than with rpm.
         <item>Added functionality to manipulate repository list.</item>
       </changelogEntry>
     </versionEntry>
+    <versionEntry version="2.5-4">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>Rebuild for FHS compliance</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.5-3">
       <changelogEntry authorName="Erich Focht" date="2007-10-11T10:48:34+01:00">
         <item>Updates for perl-IO-Tty such that it compiles on SLES10, Suse10.2 and RHEL5.</item>

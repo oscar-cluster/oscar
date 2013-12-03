@@ -41,6 +41,11 @@ routines.</description>
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="3.4.5+6-4">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>Rebuild for FHS compliance</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="3.4.5+6-3">
       <changelogEntry authorName="Erich Focht" date="2007-10-06T17:11:56-04:00">
         <item>Fixed wrong dependencies.</item>

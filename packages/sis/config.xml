@@ -162,6 +162,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="4.0.9-2">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>Rebuild for FHS compliance</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="4.0.9-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-12-02T15:29:39+01:00">
         <item>Migration from /var/lib/oscar to /usr/lib/oscar (FHS).</item>

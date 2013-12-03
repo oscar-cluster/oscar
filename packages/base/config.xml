@@ -46,6 +46,11 @@ node base requirements are covered by the base prereqs.
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.0.1-2">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>Rebuild for FHS compliance</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.1-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-03-25T11:11:16-05:00">
         <item>Update the api-post-image script to remove the manual installation of scripts for the management of OSCAR_HOME in images (we do not use OSCAR_HOME anymore).</item>

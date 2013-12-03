@@ -63,6 +63,11 @@ libraries.</description>
   <apiDeps>
   </apiDeps>
   <changelog>
+    <versionEntry version="1.2.7-10">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>Rebuild for FHS compliance</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.2.7-9">
       <changelogEntry authorName="DongInn Kim" date="2007-12-22T15:10:14+05:00">
         <item>Fixed the missing dependencies on RHEL4.</item>

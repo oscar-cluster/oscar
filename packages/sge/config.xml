@@ -38,6 +38,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="6.1.5-2">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>Rebuild for FHS compliance</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="6.1.5-1">
       <changelogEntry authorName="Geoffroy Vallee" date="2009-12-15T14:27:52-05:00">
         <item>Fix the location of the test (now that we are using opkgc).</item>

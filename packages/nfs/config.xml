@@ -55,6 +55,11 @@
   <apiDeps>
   </apiDeps>
   <changelog>
+    <versionEntry version="1.0.1-2">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>Rebuild for FHS compliance</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.1-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-10-17T17:40:55+02:00">
         <item>Added server dep for nfs service package</item>

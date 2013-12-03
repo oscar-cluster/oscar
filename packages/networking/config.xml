@@ -35,6 +35,11 @@
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.0.1-2">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>Rebuild for FHS compliance</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.1-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-10-09T12:00:42+01:00">
         <item>Added "fc" as supported distro</item>
