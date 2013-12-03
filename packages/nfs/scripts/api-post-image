@@ -16,6 +16,7 @@ use OSCAR::Package;
 use OSCAR::PackMan;
 use OSCAR::PackageSmart;
 use OSCAR::Configbox;
+use OSCAR::Configurator_backend;
 use Carp;
 use Data::Dumper;
 use OSCAR::OCA::OS_Detect;
