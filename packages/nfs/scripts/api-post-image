@@ -56,7 +56,7 @@ while ( $mount_counter <= $max_counter ) {
 	my $nfs_local = "";
 	$nfs_local = $nfs_data->{"lpath_" . $mount_counter};	
 	# Add lines into script to craete mountpoint directories if they do not exist
-	printf ( SCRIPT, "mkdir -p " . $nfs_local ."\n";
+	printf ( SCRIPT "mkdir -p " . $nfs_local ."\n");
 	my $nfs_remote = "";
 	$nfs_remote = $nfs_data->{"rpath_" . $mount_counter};
 
