@@ -37,14 +37,14 @@ revisions much simpler than with rpm.
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.7-2">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>Rebuild for FHS compliance</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.7-1">
       <changelogEntry authorName="Erich Focht" date="2007-10-28T19:48:34+01:00">
         <item>Added functionality to manipulate repository list.</item>
-      </changelogEntry>
-    </versionEntry>
-    <versionEntry version="2.5-4">
-      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
-        <item>Rebuild for FHS compliance</item>
       </changelogEntry>
     </versionEntry>
     <versionEntry version="2.5-3">
