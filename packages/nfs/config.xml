@@ -55,9 +55,14 @@
   <apiDeps>
   </apiDeps>
   <changelog>
+    <versionEntry version="1.0.3-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T18:18:54+01:00">
+        <item>Fix missing use OSCAR::Configurator_backend</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.2-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T15:44:06+01:00">
-        <item>Fix missing use SystemServices+SystemServicesDefs in iserver-post-install</item>
+        <item>Fix missing use SystemServices+SystemServicesDefs in server-post-install</item>
       </changelogEntry>
     </versionEntry>
     <versionEntry version="1.0.1-2">
