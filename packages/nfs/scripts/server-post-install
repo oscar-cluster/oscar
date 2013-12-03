@@ -43,7 +43,7 @@ my ($ip,$bcast,$netmask) = interface2ip($iface)
 
 chomp(my $nfs_export = `which exportfs`);
 !system_service(NFS(),RESTART())
-    croak("Couldn't restart nfs service");
+    or croak("Couldn't restart nfs service");
 !enable_system_services((NFS())) or croak("Couldn't enable nfs service");
 !system("exportfs -a") or croak("Couldn't refresh nfs exports")
     if $nfs_export;
