@@ -55,6 +55,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.0.3-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
+        <item>bugfix release.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.0.2-2">
       <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
         <item>Rebuild for FHS compliance</item>

@@ -17,5 +17,5 @@ opkg_print("restarting ntp service\n");
     or croak "ERROR: Couldn't restart ntp service.";
 
 opkg_print("restarting ntp service on all nodes\n");
-!remote_system_service(NTP(),RESTART(),"/usr/bin/cexec");
+!remote_system_service(NTP(),RESTART(),"/usr/bin/cexec")
     or croak "ERROR: Couldn't restart ntp service on all nodes.";
