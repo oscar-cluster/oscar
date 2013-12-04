@@ -29,21 +29,20 @@
 <testDef>
 
   <info>
-This script tests that [Describe what test does here]
+This script runs the remunge benchmark
 
 Desired result : PASS
 </info>
 
-  <shortDescription>Are all nodes up?</shortDescription>
+  <shortDescription>Runs the remunge benchmark</shortDescription>
 
   <test type="script">
   
     <command interpreter="/bin/bash" wdir="/tmp" uname="oscartst">
-# Insert your script lines here.
-# Don't forget to make sure exit codes are consistent
+remunge
     </command>
 
-    <output name="stdout" format="regexp"></output>
+    <output name="stdout" format="regexp">.*</output>
     <output name="stderr" format="literal"></output>
     <output name="status" format="literal">0</output>
 
