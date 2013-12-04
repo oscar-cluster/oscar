@@ -46,7 +46,7 @@ if (system ($cmd)) {
 }
 
 # Restart gmond on nodes.
-!system_service(GANGLIA_GMOND(),RESTART(),"/usr/bin/cexec")
+!remote_system_service(GANGLIA_GMOND(),RESTART(),"/usr/bin/cexec")
     or die "ERROR: Couldn't restart gmondi on all nodes.";
 
 exit 0;
