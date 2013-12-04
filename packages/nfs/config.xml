@@ -55,6 +55,11 @@
   <apiDeps>
   </apiDeps>
   <changelog>
+    <versionEntry version="1.0.4-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-04T14:11:39+01:00">
+        <item>Fix mountpoints creation and fstab update.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.3-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T18:18:54+01:00">
         <item>Fix missing use OSCAR::Configurator_backend</item>

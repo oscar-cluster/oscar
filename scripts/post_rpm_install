@@ -111,7 +111,7 @@ my @pkgs = OSCAR::Database::list_selected_packages();
 
 my $return = 0;
 
-oscar_log_subsection "Running OSCAR package post_rpm_install scripts for"
+oscar_log_subsection "Running OSCAR package post_rpm_install scripts for "
                      .join(", ", @pkgs);
 foreach my $pkg (@pkgs) {       # %$pkg_ref has the two keys ( package, version);
     if(OSCAR::Package::run_pkg_script_chroot($pkg, $targetdir) != 1) {
