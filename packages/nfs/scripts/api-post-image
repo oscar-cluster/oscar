@@ -50,22 +50,30 @@ printf( SCRIPT "cat /etc/fstab.nfs >> /etc/fstab\n");
 
 open( NFS_FSTAB, "> $nfs_fstab");
 
+printf NFS_FSTAB '# NFS entries created by '.$script.' \n';
+
 #iterare through available mounts from ODA and setup fstab
 while ( $mount_counter <= $max_counter ) {
 	my $nfs_server = "";
 	$nfs_server = $nfs_data->{"rsrv_" . $mount_counter};
+
 	my $nfs_local = "";
 	$nfs_local = $nfs_data->{"lpath_" . $mount_counter};	
-	# Add lines into script to craete mountpoint directories if they do not exist
-	printf ( SCRIPT "mkdir -p " . $nfs_local ."\n");
+
 	my $nfs_remote = "";
 	$nfs_remote = $nfs_data->{"rpath_" . $mount_counter};
 
-	printf NFS_FSTAB $nfs_server.":".$nfs_remote."\t".$nfs_local."\tnfs\trw\t0\t0\n";
-
+    # If entry is not empty, then add line to script and to fstab.nfs
+    if ($nfs_local ne "" and $nfs_remote ne "" and $nfs_server ne "") {
+	    # Add lines into script to create mountpoint directories if they do not exist
+        printf SCRIPT "mkdir -p $nfs_local\n";
+        # Add lines to the fstab.nfs related to mountpoint
+	    printf NFS_FSTAB "$nfs_server:$nfs_remote\t$nfs_local\tnfs\trw\t0\t0\n";
+    }
 	$mount_counter++;
 	}
 
+printf NFS_FSTAB '# End entries added by '.$script.' \n';
 close NFS_FSTAB;
 
 close SCRIPT;
