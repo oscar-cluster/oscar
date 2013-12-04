@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <!--
+  #############################################################################
+  #
+  #   This program is free software; you can redistribute it and/or modify
+  #   it under the terms of the GNU General Public License as published by
+  #   the Free Software Foundation; either version 2 of the License, or
+  #   (at your option) any later version.
+  #
+  #   This program is distributed in the hope that it will be useful,
+  #   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  #   GNU General Public License for more details.
+  #
+  #   You should have received a copy of the GNU General Public License
+  #   along with this program; if not, write to the Free Software
+  #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  #
+  #   Copyright (c) 2013 CEA - Commissariat à l'énergie atomique et
+  #                            aux énergies alternatives
+  #                      All rights reserved.
+  #   Copyright (C) 2013 Olivier LAHAYE <olivier.lahaye@cea.fr>
+  #                      All rights reserved.
+  #
+  # $Id: $
+  #
+  #############################################################################
+  -->
+<testDef>
+
+  <info>
+This script tests that munge files have the mandatory permissions
+
+Desired result : PASS
+</info>
+
+  <shortDescription>Are all nodes up?</shortDescription>
+
+  <test type="script">
+  
+    <command interpreter="/bin/bash" wdir="/tmp" uname="root">
+function Test_MUNGE_Perm() {
+  FILE=$1
+  PERM=$2
+
+  if test -n "$(LC_ALL=C /bin/ls -ld $FILE |grep -- '$PERM')"
+  then
+    return 0
+  else
+    echo "ERROR: Bad permission for $FILE. should be $PERM" >2
+    return 1
+  fi
+}
+
+# Test that /etc/munge/munge.key has permission 0400
+if Test_MUNGE_Perm "/etc/munge/munge.key" "-r--------"
+then
+   exit 1
+fi
+
+# Test that /var/lib/munge/ Has permission 0700
+if Test_MUNGE_Perm "/var/lib/munge" "drwx------"
+then
+   exit 1
+fi
+
+# Test that /var/log/munge/ has permission 0711
+if Test_MUNGE_Perm "/var/log/munge" "drwx--x--x"
+then
+   exit 1
+fi
+
+# Test that /var/run/munge/ has permission 0755
+if Test_MUNGE_Perm "/var/run/munge" "drwxr-xr-x"
+then
+   exit 1
+fi
+
+exit 0
+
+    </command>
+
+    <output name="stdout" format="regexp"></output>
+    <output name="stderr" format="literal"></output>
+    <output name="status" format="literal">0</output>
+
+  </test>
+
+</testDef>
+
+<!-- EOF -->
