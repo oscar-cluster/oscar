@@ -96,6 +96,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="3.5.1-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-04T14:56:33+01:00">
+        <item>Bugfix release</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="3.5.0-2">
       <changelogEntry authorName="Olivier Lahaye" date="2013-12-02T16:30:40+01:00">
         <item>Migration from /usr/share/oscar/testing to /usr/lib/oscar/testing (FHS)</item>
