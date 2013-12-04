@@ -31,6 +31,8 @@ BEGIN {
 use strict;
 use warnings "all";
 use OSCAR::Package;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 
 my $pkgdir = OSCAR::Package::get_scripts_dir("ganglia", "post_server_install");
 
