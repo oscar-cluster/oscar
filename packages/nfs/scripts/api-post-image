@@ -46,11 +46,10 @@ $image =~ s:^.*/::g;
 my $script = "/var/lib/systemimager/scripts/post-install/90".$image.".add_nfs";
 
 open ( SCRIPT, "> $script");
-printf( SCRIPT "cat /etc/fstab.nfs >> /etc/fstab\n");
 
 open( NFS_FSTAB, "> $nfs_fstab");
 
-printf NFS_FSTAB '# NFS entries created by '.$script.' \n';
+printf NFS_FSTAB "# NFS entries created by 90".$image.".add_nfs\n";
 
 #iterare through available mounts from ODA and setup fstab
 while ( $mount_counter <= $max_counter ) {
@@ -73,9 +72,11 @@ while ( $mount_counter <= $max_counter ) {
 	$mount_counter++;
 	}
 
-printf NFS_FSTAB '# End entries added by '.$script.' \n';
+printf NFS_FSTAB "# End entries added by 90".$image.".add_nfs\n";
 close NFS_FSTAB;
 
+# Once all mkdir are successfull, append fstab.nfs to fstab.
+printf( SCRIPT "cat /etc/fstab.nfs >> /etc/fstab\n");
 close SCRIPT;
 chmod 0755, $script;
 1;
