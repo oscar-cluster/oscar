@@ -55,6 +55,12 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.0.4-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-10T17:29:09+01:00">
+        <item>Added api-post-deploy to configure ntp directly into the image.</item>
+        <item>Many bug fixes (step-tickers not filled on head, client failed config but returned ok, ...).</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.0.3-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
         <item>bugfix release.</item>
