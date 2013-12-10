@@ -74,6 +74,7 @@ if (-e $configurator) {
 
     # populate the step-tickers file with ntp server specified
     open(STEP, ">$step_tickers") or croak("Failed to open $step_tickers");
+    print STEP $ref->{ntpserver};
     close (STEP);
 
 # User has not configured ntpconfig package, sets up NTP server for local use only
