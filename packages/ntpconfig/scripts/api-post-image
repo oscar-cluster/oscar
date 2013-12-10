@@ -1,0 +1,24 @@
+#!/bin/bash
+
+IMAGE=$1
+IMAGEDIR=$2
+
+# FIXME: rewrite this in perl and use OS_Settings to get correct ntp.conf file.
+# Note: image can be for another OS: be carefull.
+
+sed -i -e 's/^server/# server/g' -e 's/^authenticate/# authenticate/g' ${IMAGEDIR}/etc/ntp.conf
+
+# step-tickers files contain a server to sync with before starting the service.
+# This is to make sure that ntp service will work (if time differs for more than
+# 1000 seconds, ntpd will not modify the date/time.
+cat >>${IMAGEDIR}/etc/ntp/step-tickers <<EOF
+oscar_server
+EOF
+
+# Set OSCAR ntp configuration
+cat >> ${IMAGEDIR}/etc/ntp.conf <<EOF
+
+# Section added by $0 after image creation.
+server oscar_server
+restrict oscar_server mask 255.255.255.255
+EOF
