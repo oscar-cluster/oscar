@@ -11,7 +11,9 @@ sed -i -e 's/^server/# server/g' -e 's/^authenticate/# authenticate/g' ${IMAGEDI
 # step-tickers files contain a server to sync with before starting the service.
 # This is to make sure that ntp service will work (if time differs for more than
 # 1000 seconds, ntpd will not modify the date/time.
-cat >>${IMAGEDIR}/etc/ntp/step-tickers <<EOF
+cat >${IMAGEDIR}/etc/ntp/step-tickers <<EOF
+# List of servers used for initial synchronization.
+
 oscar_server
 EOF
 

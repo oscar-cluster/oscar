@@ -25,7 +25,7 @@ use Carp;
 use OSCAR::Opkg;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
-use OSCAR::OS_Settings;
+use OSCAR::OCA::OS_Settings;
 
 my $ntpBuffer = "";
 my $ntp_conf = OSCAR::OS_Settings::getitem(NTP()."_configfile");
@@ -72,7 +72,7 @@ opkg_print("enabling ntp service at boot time\n");
 # starting the service.
 opkg_print("1st time date sync with server\n");
 !system("ntpdate $ntpserver")
-    or (carp("Failed to ntpdate $ntpserver", exit 1);
+    or (carp "ERROR: Failed to issue a ntpdate $ntpserver\n", exit 1);
 
 # Start ntp service.
 opkg_print("starting ntp service\n");
