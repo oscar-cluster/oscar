@@ -42,8 +42,8 @@ Desired result : PASS
 munge -n | unmunge
     </command>
 
-    <output name="stdout" format="regexp">^STATUS.*Success (0)$.*</output>
-    <output name="stderr" format="regexp">.*Error.*</output>
+    <output name="stdout" format="regexp">^STATUS:.*Success \(0\)$.*</output>
+    <output name="stderr" format="literal"></output>
     <output name="status" format="literal">0</output>
 
   </test>

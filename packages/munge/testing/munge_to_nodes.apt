@@ -56,7 +56,7 @@ exit 0
     </command>
 
     <output name="stdout" format="regexp">.*Success.*</output>
-    <output name="stderr" format="literal">.*Failed.*</output>
+    <output name="stderr" format="literal"></output>
     <output name="status" format="literal">0</output>
 
   </test>

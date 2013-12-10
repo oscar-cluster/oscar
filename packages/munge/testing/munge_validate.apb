@@ -31,8 +31,8 @@
   <info>
     Checks that munge is functionnal
   </info>
-
   <dep parent="munge_local.apt" child="munge_to_nodes.apt"/>
-  <dep parent="munge_to_nodes.apt" child="munge_remunge.apt"/>
+  <dep parent="ssh_user_tests.apb" child="munge_to_nodes.apt"/>
+  <dep parent="munge_remunge.apt" child="munge_local.apt"/>
 
 </testBatch>
