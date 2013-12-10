@@ -33,37 +33,50 @@ my $ntp_dir = OSCAR::OS_Settings::getitem(NTP()."_dir");
 my $step_tickers = "$ntp_dir/step-tickers";
 my $ntpserver = "oscar_server";
 
-open(CONF, $ntp_conf) or croak("Error: unable to open ($ntp_conf)\n");
-
-while ($line = <CONF>) {
-    $ntpBuffer = $ntpBuffer.$line;
-}
-                                                                                
-close(CONF, $ntp_conf);
-
-$ntp_conf = ">".$ntp_conf;
-
-$ntpBuffer = "# Added by OSCAR package ntpconfig\nserver  $ntpserver\nrestrict $ntpserver mask 255.255.255.255\n\n".$ntpBuffer;
-
-$ntpBuffer =~ s/^authenticate/# authenticate/m;
-
+# OL: Moved /etc/ntp.conf configuration to api-post-image. (more easy and only run once instead of each node)
 # SUSE Linux's xntp package does not create /etc/ntp, create it here
-!system("mkdir $ntp_dir") or croak("Failed to mkdir $ntp_dir") if !(-d $ntp_dir);
-
-open(CONF, $ntp_conf) or croak("Error: unable to open ($ntp_conf)\n");
-print CONF $ntpBuffer;
-close(CONF);
-
-$step_tickers = ">".$step_tickers;
-
+# !system("mkdir $ntp_dir") or croak("Failed to mkdir $ntp_dir") if !(-d $ntp_dir);
+# 
+# open(CONF, $ntp_conf) or croak("Error: unable to open ($ntp_conf)\n");
+#
+# while ($line = <CONF>) {
+#     $ntpBuffer = $ntpBuffer.$line;
+# }
+#                                                                                
+# close(CONF, $ntp_conf);
+#
+#
+# $ntpBuffer = "# Added by OSCAR package ntpconfig\nserver  $ntpserver\nrestrict $ntpserver mask 255.255.255.255\n\n".$ntpBuffer;
+#
+# $ntpBuffer =~ s/^authenticate/# authenticate/m;
+#
+# $ntp_conf = ">".$ntp_conf;
+# open(CONF, $ntp_conf) or croak("Error: unable to open ($ntp_conf)\n");
+# print CONF $ntpBuffer;
+# close(CONF);
+#
 # populate the step-tickers file with ntp server specified
-open(STEP, $step_tickers) or croak("Error: unable to open ($step_tickers)\n");
+# $step_tickers = ">".$step_tickers;
+# open(STEP, $step_tickers) or croak("Error: unable to open ($step_tickers)\n");
+#
+# print STEP $ntpserver;
+# close (STEP);
 
-print STEP $ntpserver;
-close (STEP);
-
+# Enable ntp service
 opkg_print("enabling ntp service at boot time\n");
 !enable_system_services( (NTP()) )
     or (carp "ERROR: Couldn't enable ntp service.\n", exit 1);
+
+# 1st time date sync (in case ntp startup script doesn't make use
+# of /etc/ntp/step-tickers to run a ntpdate from the server before
+# starting the service.
+opkg_print("1st time date sync with server\n");
+!system("ntpdate $ntpserver")
+    or (carp("Failed to ntpdate $ntpserver", exit 1);
+
+# Start ntp service.
+opkg_print("starting ntp service\n");
+!system_service(NTP(),START())
+    or (carp "ERROR: Couldn't start NTP service.\n", exit 1);
 
 exit(0);
