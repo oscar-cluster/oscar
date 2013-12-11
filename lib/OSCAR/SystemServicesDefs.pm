@@ -15,6 +15,7 @@ use constant SERVICE_DISABLED => 0;
 use constant SERVICE_ENABLED  => 1;
 
 # List of supported services
+use constant BLCR           => 'blcr';
 use constant DHCP           => 'dhcp';
 use constant DNS            => 'dns';
 use constant EXIM           => 'exim';
@@ -62,6 +63,7 @@ our @EXPORT = qw(
                 SERVICE_DISABLED
                 SERVICE_ENABLED
                 SSH
+                BLCR
                 DHCP
                 DNS
                 EXIM

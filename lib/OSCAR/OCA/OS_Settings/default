@@ -19,6 +19,7 @@ rsyncd_daemon=/etc/init.d/systemimager-server-rsyncd
 
 # Specifies the name of few services
 bittorrent_service=systemimager-server-bittorrent
+blcr_service=blcr
 dhcp_service=dhcpd
 dns_service=named
 exim_service=exim
