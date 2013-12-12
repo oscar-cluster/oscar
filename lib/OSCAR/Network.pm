@@ -316,12 +316,15 @@ sub update_hosts ($) {
         carp ( "Cannot update hosts without a valid ip.\n" );
         return -1;
     }
-    OSCAR::Logger::oscar_log_subsection("Backing up /etc/hosts");
-    my $timestamp = `date +\"%Y-%m-%d-%k-%M-%m\"`;
-    chomp $timestamp;
-    my $backup_file = "/etc/hosts.bak-$timestamp";
-    copy("/etc/hosts","$backup_file") 
+    # 1st backup /etc/hosts
+    backup_file_if_not_exist("/etc/hosts")
         or (carp "ERROR: Impossible to backup /etc/hosts", return -1);
+#    OSCAR::Logger::oscar_log_subsection("Backing up /etc/hosts");
+#    my $timestamp = `date +\"%Y-%m-%d-%k-%M-%m\"`;
+#    chomp $timestamp;
+#    my $backup_file = "/etc/hosts.bak-$timestamp";
+#    copy("/etc/hosts","$backup_file") 
+#        or (carp "ERROR: Impossible to backup /etc/hosts", return -1);
     my $short;
     my $hostname = qx/hostname/;
     chomp($hostname);
@@ -333,8 +336,10 @@ sub update_hosts ($) {
         }
     }
     my @aliases = qw(oscar_server nfs_oscar pbs_oscar);
-    open(IN,"<$backup_file") 
-        or (carp "ERROR: Impossible to open $backup_file", return -1);
+#    open(IN,"<$backup_file") 
+#        or (carp "ERROR: Impossible to open $backup_file", return -1);
+    open(IN,"</etc/hosts.oscarback") 
+        or (carp "ERROR: Impossible to open /etc/hosts.oscarback", return -1);
     open(OUT,">/etc/hosts") 
         or (carp "ERROR: Impossible to open /etc/hosts", return -1);
     OSCAR::Logger::oscar_log_subsection("Adding required entries to /etc/hosts");
