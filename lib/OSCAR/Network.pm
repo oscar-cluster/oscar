@@ -45,6 +45,7 @@ use base qw(Exporter);
             is_a_valid_ip
             is_head_nic_private
             set_network_adapter
+            get_host_ip
             update_hosts
             update_head_nic
             );
@@ -402,6 +403,49 @@ sub update_hosts ($) {
     }
 
     return 0;
+}
+
+################################################################################
+# This function check if a specific hostname is defined in /etc/hosts.         #
+# Comments are ignored and only one entry should exist. If not, this is an     #
+# error.                                                                       #
+# Parameter: hostname                                                          #
+# Return:    hostname IP if success                                            #
+################################################################################
+sub get_host_ip ($) {
+    my $id = shift;
+
+    my $count = 0;
+    my $my_ip;
+    local *IN;
+    open IN, "/etc/hosts"
+        or (carp "ERROR: impossible to open hosts file (/etc/hosts)\n",return -1);
+    while (<IN>) {
+        chomp;
+        next if /^\s*\#/; # We skip comments
+        if (/\s+$id(\s|$|\.)/) {
+            if (/^(\d+\.\d+\.\d+\.\d+)\s+/) {
+                $count++;
+                $my_ip = $1;
+            }
+        }
+    }
+    close IN;
+    if ($count > 1 && $my_ip ne "") {
+#         print " ---------------------------------------------------\n";
+#         print " ERROR: the hostname $id is used more than one time \n";
+#         print " in /etc/hosts                                      \n";
+#         print " ---------------------------------------------------\n";
+        return -1;
+    }
+    if ($count == 0) {
+# 	print " ---------------------------------------------------\n";
+# 	print " ERROR: the hostname $id could not be found         \n";
+# 	print " in /etc/hosts                                      \n";
+# 	print " ---------------------------------------------------\n";
+        return -1;
+    }
+    return $my_ip;
 }
 
 ################################################################################
