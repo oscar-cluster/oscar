@@ -20,8 +20,8 @@
   #                      All rights reserved.
   #   Copyright (c) 2006 Geoffroy Vallee
   #                      All rights reserved.
-  #   Copyright (c) 2013 CEA - Commissariat à l'énergie atomique et
-  #                            aux énergies alternatives
+  #   Copyright (c) 2013 CEA - Commissariat a l'Energie Atomique et
+  #                            aux Energies Alternatives
   #                      All rights reserved.
   #   Copyright (c) 2013 Olivier LAHAYE <olivier.lahaye@cea.fr>
   #                      All rights reserved.
@@ -42,8 +42,8 @@ Desired result : PASS
 
   <test type="script">
   
-    <command interpreter="/bin/bash" wdir="/tmp" uname="root">
-#!/usr/bin/perl
+    <command interpreter="perl" wdir="/tmp" uname="root">
+#!/usr/bin/perl -w
 
 BEGIN {
     if (defined $ENV{OSCAR_HOME}) {
