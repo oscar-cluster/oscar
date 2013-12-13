@@ -20,6 +20,7 @@ Requires: 	yum, createrepo, yume
 Vendor: 	OSCAR
 Distribution: 	OSCAR
 Packager: 	Geoffroy Vallee
+BuildRequires:  perl(Pod::Man)
 
 Buildroot: 	%{_tmppath}/%{name}-%{version}-root
 BuildArch: 	noarch
@@ -116,6 +117,7 @@ Summary: Libraries for OSCAR clustering package.
 Requires:   perl-XML-Simple
 Requires:   perl-AppConfig
 Requires:   perl-Net-IPv4Addr
+Requires:   iproute
 Requires:   wget
 AutoReqProv: no
 %description -n oscar-base-lib
@@ -128,6 +130,8 @@ Libraries for OSCAR clustering base package.
 Group: Applications/System
 Summary: Libraries for OSCAR clustering package.
 Requires: %{name}-base-lib == %{version}-%{release}
+Requires: %{name}-base == %{version}-%{release}
+Requires: iproute
 Requires: syslinux
 Requires: perl-Net-IPv4Addr
 AutoReqProv: no
@@ -191,6 +195,8 @@ GPG keys used to sign them.
 #{_sysconfdir}/pki/rpm-gpg/*
 
 %changelog
+* Fri Dec 3 2013 Olivier Lahaye <olivier.lahaye@cea.fr>
+- Added missing deps on iproute, oscarbase for scripts and so on.
 * Tue Dec 03 2013 Olivier Lahaye <olivier.lahaye@cea.fr>
 - Fixed packaging for FHS
 - Removed define _unpackaged_files_terminate_build 0
