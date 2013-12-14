@@ -582,7 +582,7 @@ sub __enable_install_mode () {
             # add entry for boot-<arch>-standard module
             my $march = $os->{'arch'};
             $march =~ s/i.86/i386/;
-            $cmd = "/usr/lib/systemimager/perl/confedit --file $file --entry boot-$march-standard --data \" DIR=/usr/share/systemimager/boot/$march/standard/\"";
+            $cmd = "/usr/lib/systemimager/confedit --file $file --entry boot-$march-standard --data \" DIR=/usr/share/systemimager/boot/$march/standard/\"";
             if( system( $cmd ) ) {
                 carp("ERROR: Couldn't run command $cmd");
                 return 0;
