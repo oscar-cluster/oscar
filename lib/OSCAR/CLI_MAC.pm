@@ -32,7 +32,7 @@ BEGIN {
 }
 
 use strict;
-use lib "/usr/lib/systeminstaller";
+#use lib "/usr/lib/systeminstaller";
 use SIS::NewDB;
 use OSCAR::MAC qw(save_to_file
                   load_from_file

@@ -31,7 +31,7 @@ BEGIN {
     }
 }
 
-use lib "/usr/lib/systeminstaller";
+#use lib "/usr/lib/systeminstaller";
 use strict;
 use File::Copy;
 use SIS::Adapter;

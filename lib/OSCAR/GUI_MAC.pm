@@ -32,8 +32,8 @@ BEGIN {
 }
 
 use strict;
-use lib "/usr/lib/systeminstaller";
-use lib "/usr/lib/systemimager/perl";
+#use lib "/usr/lib/systeminstaller";
+#use lib "/usr/lib/systemimager/perl";
 use Tk;
 use Tk::Tree;
 use SystemImager::Client;

@@ -32,7 +32,7 @@ BEGIN {
 }
 
 use strict;
-use lib "/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
+#use lib "/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
 use OSCAR::Logger;
 use OSCAR::PackagePath;
 use OSCAR::Database;

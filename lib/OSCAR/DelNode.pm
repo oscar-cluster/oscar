@@ -1,4 +1,4 @@
-
+package OSCAR::DelNode;
 #   $Id$
 
 #   This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,7 @@ BEGIN {
 }
 
 use strict;
-use lib "/usr/lib/systeminstaller";
+#use lib "/usr/lib/systeminstaller";
 use vars qw($VERSION @EXPORT);
 use Tk;
 use Carp;
