@@ -15,7 +15,7 @@ use strict;
 use utf8;
 
 
-package OpderDownloadPackage;
+package Qt::OpderDownloadPackage;
 use Qt;
 use Qt::isa qw(Qt::Dialog);
 use Qt::slots
