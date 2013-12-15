@@ -1,4 +1,4 @@
-package OSCAR::OpderImages;
+package Qt::OpderImages;
 # Image collection for project 'OpderImages'.
 #
 # Generated from reading image files: 

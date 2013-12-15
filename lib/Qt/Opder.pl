@@ -67,7 +67,7 @@ use OpderDownloadPackage;
 use OpderAbout;
 use Qt::attributes qw( aboutForm downloadInfoForm downloadPackageForm addRepositoryForm );
 use OpderDownloadInfo;
-use OpderImages;
+use Qt::OpderImages;
 use OpderAddRepository;
 
 sub uic_load_pixmap_Opder
