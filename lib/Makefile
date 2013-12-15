@@ -3,7 +3,8 @@ DESTDIR=
 TOPDIR = .
 include $(TOPDIR)/Config.mk
 
-SUBDIRS := OSCAR Qt Tk
+#SUBDIRS := OSCAR Qt Tk
+SUBDIRS := OSCAR Tk
 
 FILES := 
 
