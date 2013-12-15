@@ -39,7 +39,7 @@ use Qt::signals
     downloadButtonUpdate => [];
 
 use Carp;
-use OpderDownloadInfo;
+use Qt::OpderDownloadInfo;
 
 my $tablePopulated = 0;
 
