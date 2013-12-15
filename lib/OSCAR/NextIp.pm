@@ -9,7 +9,9 @@ package NextIp;
 #
 
 
-use FlatIpDB;
+# OL: FIXME: FlatIpDB package does not exists.
+# Commenting out the code for the moment.
+#use FlatIpDB;
 use Carp;
 
 use warnings;
@@ -110,7 +112,9 @@ sub set_debug_mode
 # Return: Array of addresses (strings in dotted-quad fmt)
 sub get_addresses
 {
-	return( FlatIpDB::read_IP_database() );
+    # OL: FIXME: FlatIpDB package does not exists.
+    # Commenting out the code for the moment.
+	#return( FlatIpDB::read_IP_database() );
 }
 
 
