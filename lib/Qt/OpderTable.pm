@@ -28,7 +28,7 @@
 use strict;
 use utf8;
 
-package OpderTable;
+package Qt::OpderTable;
 use Qt;
 use Qt::isa qw(Qt::Table);
 use Qt::slots
@@ -39,7 +39,7 @@ use Qt::signals
     downloadButtonUpdate => [];
 
 use Carp;
-use OpderDownloadInfo;
+use Qt::OpderDownloadInfo;
 
 my $tablePopulated = 0;
 

@@ -43,7 +43,8 @@ my ($dlProc,$dlPhase,$dlString,@dlPackages); # Execute opd and read results
 my $opdcmd = $ENV{OSCAR_HOME} . '/scripts/opd';
 use Carp;
 use Qt::signals refreshButtonSet=>['int'], downloadButtonUpdate=>[];
-use lib "$ENV{OSCAR_HOME}/lib"; use OSCAR::Package;
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Package;
 
 sub uic_load_pixmap_OpderDownloadPackage
 {

@@ -12,9 +12,9 @@ use strict;
 use utf8;
 
 
-package Opder;
+package Qt::Opder;
 use Qt;
-use OpderTable;
+use Qt::OpderTable;
 use Qt::isa qw(Qt::MainWindow);
 use Qt::slots
     init => [],
@@ -572,10 +572,10 @@ sub setRefreshButton
 1;
 
 
-package main;
+package Qt:main;
 
 use Qt;
-use Opder;
+use Qt::Opder;
 
 my $a = Qt::Application(\@ARGV);
 my $w = Opder;

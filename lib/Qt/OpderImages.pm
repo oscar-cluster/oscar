@@ -26,7 +26,7 @@ package Qt::OpderImages;
 use strict;
 use utf8;
 
-package DesignerMimeSourceFactory_OpderImages;
+package Qt::DesignerMimeSourceFactory_OpderImages;
 use Qt;
 use Qt::isa qw(Qt::MimeSourceFactory);
 
@@ -4308,10 +4308,10 @@ sub data
 
 package staticImages;
 use Qt;
-use DesignerMimeSourceFactory_OpderImages;
+use Qt::DesignerMimeSourceFactory_OpderImages;
 our %factories;
 
-my $factory = DesignerMimeSourceFactory_OpderImages;
+my $factory = Qt::DesignerMimeSourceFactory_OpderImages;
 Qt::MimeSourceFactory::defaultFactory()->addFactory($factory);
 $factories{'DesignerMimeSourceFactory_OpderImages'} = $factory;
 

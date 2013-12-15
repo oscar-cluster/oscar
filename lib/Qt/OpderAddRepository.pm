@@ -12,7 +12,7 @@ use strict;
 use utf8;
 
 
-package OpderAddRepository;
+package Qt::OpderAddRepository;
 use Qt;
 use Qt::isa qw(Qt::Dialog);
 use Qt::slots
