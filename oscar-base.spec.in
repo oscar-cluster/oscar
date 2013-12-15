@@ -129,7 +129,7 @@ Requires: %{name}-base-lib == %{version}-%{release}
 Requires: %{name}-base == %{version}-%{release}
 Requires: iproute
 Requires: syslinux
-Requires: perl-Net-IPv4Addr
+#Requires: perl-Net-IPv4Addr
 
 %description -n oscar-base-scripts
 Scripts for OSCAR clustering base package.
