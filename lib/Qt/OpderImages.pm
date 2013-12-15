@@ -1,3 +1,4 @@
+package OSCAR::OpderImages;
 # Image collection for project 'OpderImages'.
 #
 # Generated from reading image files: 
