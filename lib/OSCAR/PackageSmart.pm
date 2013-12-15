@@ -222,9 +222,9 @@ sub generate_pool_checksum ($) {
         print "Pool type: $pool_type\n";
         require OSCAR::PackMan;
         if ($pool_type eq "rpm") {
-            $pm = PackMan::RPM->new;
+            $pm = OSCAR::PackMan::RPM->new;
         } elsif ($pool_type eq "deb") {
-            $pm = PackMan::DEB->new;
+            $pm = OSCAR::PackMan::DEB->new;
         } else {
             carp "ERROR: Unknown pool type\n";
             return -1;
@@ -262,9 +262,9 @@ sub prepare_pool ($$) {
     my $pm;
     require OSCAR::PackMan;
     if ($format eq "rpm") {
-        $pm = PackMan::RPM->new;
+        $pm = OSCAR::PackMan::RPM->new;
     } elsif ($format eq "deb") {
-        $pm = PackMan::DEB->new;
+        $pm = OSCAR::PackMan::DEB->new;
     } else {
         carp "ERROR: Impossible to detect the pool format ($pool)\n";
         return undef;

@@ -1512,7 +1512,7 @@ sub uninstall_rpms_patch
 		}
 
 		#handle image
-		#$pm = PackMan::RPM->new;
+		#$pm = OSCAR::PackMan::RPM->new;
 		#$pm->chroot("/var/lib/systemimager/images/oscarimage");
 		#if($pm->remove( @rpm_list ))
 		#{
@@ -1538,7 +1538,7 @@ sub uninstall_rpms_patch
 	}
 	elsif($type =~ "oscar_server")
 	{
-		#$pm = PackMan::RPM->new;
+		#$pm = OSCAR::PackMan::RPM->new;
 		#$pm->chroot(undef);
 		#if($pm->remove( @rpm_list ))
 		#{
