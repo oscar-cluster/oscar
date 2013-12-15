@@ -121,6 +121,8 @@ Libraries for OSCAR clustering base package.
 %files -n oscar-base-lib
 %defattr(-,root,root)
 %{perl_vendorlib}/*
+%exclude %{perl_vendorlib}/OSCAR/osm.pm
+%exclude %{perl_vendorlib}/OSCAR/psm.pm
 
 %package -n oscar-base-scripts
 Group: Applications/System

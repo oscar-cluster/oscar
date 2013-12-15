@@ -599,7 +599,7 @@ sub run_server_install {
     }
 
     oscar_log_subsection('Update Wizard Env (as needed)');
-    @mod_env = WizardEnv::update_env();
+    @mod_env = OSCAR::WizardEnv::update_env();
 
     return 0;
 }
@@ -885,7 +885,7 @@ sub run_post_install {
     }
 
     oscar_log_subsection('Update Wizard Env (as needed)');
-    @mod_env = WizardEnv::update_env();
+    @mod_env = OSCAR::WizardEnv::update_env();
 
     my $cmd_vars = { 
 	cmd => $config->{'binaries_path'}."/post_install",
@@ -911,7 +911,7 @@ sub run_post_install {
     }
 
     oscar_log_subsection('Update Wizard Env (as needed)');
-    @mod_env = WizardEnv::update_env();
+    @mod_env = OSCAR::WizardEnv::update_env();
 }
 
 
