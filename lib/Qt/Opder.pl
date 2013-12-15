@@ -63,12 +63,12 @@ use Qt::attributes qw(
     exitMenuItem
 );
 
-use OpderDownloadPackage;
-use OpderAbout;
+use Qt::OpderDownloadPackage;
+use Qt::OpderAbout;
 use Qt::attributes qw( aboutForm downloadInfoForm downloadPackageForm addRepositoryForm );
-use OpderDownloadInfo;
+use Qt::OpderDownloadInfo;
 use Qt::OpderImages;
-use OpderAddRepository;
+use Qt::OpderAddRepository;
 
 sub uic_load_pixmap_Opder
 {
