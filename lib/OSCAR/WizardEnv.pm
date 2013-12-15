@@ -1,4 +1,4 @@
-package WizardEnv;
+package OSCAR::WizardEnv;
 
 # $Id$ 
 # 
