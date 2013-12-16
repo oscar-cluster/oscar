@@ -34,6 +34,7 @@ use Net::IPv4Addr;
 use OSCAR::Database;
 use OSCAR::Logger qw ( verbose );
 use OSCAR::Utils;
+use OSCAR::FileUtils;
 use POSIX;
 use Carp;
 use Data::Dumper;
