@@ -57,8 +57,11 @@ bootstrap using RPMs.
 %package -n oscar-base
 Group: Applications/System
 Summary: Base OSCAR package
-Requires: oscar-base-scripts == %{version}-%{release}
+#Requires: oscar-base-scripts == %{version}-%{release}
 Requires(post): %{name}-base-scripts == %{version}-%{release}
+# Requiring oscar virtual package let uninstal the whole oscar by removing oscar package.
+# all other oscar-base-* packages depends on oscar-base.
+Requires: %{name} == %{version}-%{release}
 # systeminstaller-oscar is handeled by prereqs, but this needs to be here
 # for rpm compliance (shouldn't be possible to install a package with missing deps)
 Requires: systeminstaller-oscar
@@ -89,6 +92,7 @@ those packages from an online package repository, either on or off site.
 %package -n oscar-base-client
 Group: Applications/System
 Summary: Libraries for OSCAR clustering package.
+Requires: %{name}-base == %{version}-%{release}
 
 %description -n oscar-base-client
 Requires: %{name}-base-scripts == %{version}-%{release}
@@ -100,6 +104,7 @@ Dummy package for oscar-base-client install.
 %package -n oscar-base-server
 Group: Applications/System
 Summary: Libraries for OSCAR clustering package.
+Requires: %{name}-base == %{version}-%{release}
 
 %description -n oscar-base-server
 Requires: %{name}-base == %{version}-%{release}
@@ -111,11 +116,12 @@ Dummy package for oscar-base-server install.
 %package -n oscar-base-lib
 Group: Applications/System
 Summary: Libraries for OSCAR clustering package.
-Requires:   perl-XML-Simple
-Requires:   perl-AppConfig
-Requires:   perl-Net-IPv4Addr
-Requires:   iproute
-Requires:   wget
+Requires: perl-XML-Simple
+Requires: perl-AppConfig
+Requires: perl-Net-IPv4Addr
+Requires: iproute
+Requires: wget
+Requires: %{name}-base == %{version}-%{release}
 
 %description -n oscar-base-lib
 Libraries for OSCAR clustering base package.
@@ -147,6 +153,7 @@ Scripts for OSCAR clustering base package.
 %package -n oscar-utils
 Group: Applications/System
 Summary: Utilities for OSCAR clustering package.
+Requires: %{name}-base == %{version}-%{release}
 Requires: %{name}-base-lib == %{version}-%{release}
 Requires: syslinux
 
