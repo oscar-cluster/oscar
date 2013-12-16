@@ -340,8 +340,8 @@ sub update_hosts ($) {
     my @aliases = qw(oscar_server nfs_oscar pbs_oscar);
 #    open(IN,"<$backup_file") 
 #        or (carp "ERROR: Impossible to open $backup_file", return -1);
-    open(IN,"</etc/hosts.oscarback") 
-        or (carp "ERROR: Impossible to open /etc/hosts.oscarback", return -1);
+    open(IN,"</etc/hosts.oscarbak") 
+        or (carp "ERROR: Impossible to open /etc/hosts.oscarbak", return -1);
     open(OUT,">/etc/hosts") 
         or (carp "ERROR: Impossible to open /etc/hosts", return -1);
     OSCAR::Logger::oscar_log_subsection("Adding required entries to /etc/hosts");

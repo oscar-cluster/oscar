@@ -82,7 +82,7 @@ sub backup_file_if_not_exist($) {
                 OSCAR::Logger::oscar_log_subsection("ERROR: Failed to backup $file. [$cmd => $!]");
                 return 0;
             } else {
-                OSCAR::Logger::oscar_log_subsection("[INFO] $file backed up as $file.oscarback.");
+                OSCAR::Logger::oscar_log_subsection("[INFO] $file backed up as $file.oscarbak.");
                 return 1;
             }
         }
