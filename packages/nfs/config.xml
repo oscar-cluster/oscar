@@ -55,6 +55,11 @@
   <apiDeps>
   </apiDeps>
   <changelog>
+    <versionEntry version="1.0.4-2">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-16T17:51:55+01:00">
+        <item>Typo fixes and set server-post-install to executable.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.4-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-12-04T14:11:39+01:00">
         <item>Fix mountpoints creation and fstab update.</item>
