@@ -58,6 +58,7 @@ bootstrap using RPMs.
 Group: Applications/System
 Summary: Base OSCAR package
 Requires: oscar-base-scripts == %{version}-%{release}
+Requires(post): %{name}-base-scripts == %{version}-%{release}
 # systeminstaller-oscar is handeled by prereqs, but this needs to be here
 # for rpm compliance (shouldn't be possible to install a package with missing deps)
 Requires: systeminstaller-oscar
