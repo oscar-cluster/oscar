@@ -22,7 +22,7 @@ use OSCAR::PackageSmart;
 use OSCAR::Configbox;
 use OSCAR::OCA::OS_Detect;
 use OSCAR::OCA::OS_Settings;
-use OSCAR::SystemServices
+use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
 use OSCAR::Env qw ( oscar_home_env);
 use OSCAR::Opkg;
