@@ -91,7 +91,7 @@ libcap
 libgcc
 libgcj
 libgcrypt
-libjpeg
+libjpeg-turbo
 libmng
 libobjc
 libpng
