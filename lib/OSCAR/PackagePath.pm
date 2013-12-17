@@ -1051,6 +1051,7 @@ sub generate_default_oscar_urlfile ($) {
 
     # TODO: we should validate the distro ID.
     my $compat_distro = get_compat_distro ($distro);
+    OSCAR::Logger::oscar_log_subsection "[INFO] Generating oscar url file $$compat_distro";
     if (!defined ($compat_distro)) {
         carp "ERROR: Impossible to get the compat distro for $distro";
         return -1;
@@ -1092,12 +1093,13 @@ sub generate_default_distro_urlfile ($) {
 
     if (!defined ($distro)) {
         carp "ERROR: Undefined distro, impossible to create the default ".
-             "distro URL file.";
+             "distro URL file /tftpboot/distro/<distroid>.url.";
         return -1;
     }
 
     # TODO: we should validate the distro ID.
     my $file = "/tftpboot/distro/$distro.url";
+    OSCAR::Logger::oscar_log_subsection "[INFO] Generating distro url file $file";
     if (-f $file) {
         warn "INFO: the $file file already exists, we do nothing";
         return 1;
