@@ -77,6 +77,7 @@ pxe_bootbin=pxelinux.0
 
 # Specifies a few directories
 http_configdir=/etc/httpd/conf.d/
+munge_configdir=/etc/munge/
 ntp_dir=/etc/ntp
 postgresql_datadir=/var/lib/pgsql/data
 postgresql_bindir=/usr/bin

@@ -10,6 +10,7 @@ portmap_package=rpcbind
 # Overwrite the name of few deamons
 
 # Overwrite the name of few services
+munge_service=munge
 
 # Overwrite the name of few configuration files
 dhcp_leases=/var/lib/dhcpd/dhcpd.leases
