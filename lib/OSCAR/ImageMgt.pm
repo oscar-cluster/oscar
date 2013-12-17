@@ -341,6 +341,10 @@ sub get_image_default_settings () {
 
     my $arch = $master_os->{arch};
     my $pkglist = get_binary_list_file($master_os);
+    if (!defined $pkglist) {
+        carp "ERROR: Unable to get the package list for this distro.\n".
+        return undef;
+    }
 
     my $distro_pool = OSCAR::PackagePath::distro_repo_url();
     $distro_pool =~ s/\ /,/g;
