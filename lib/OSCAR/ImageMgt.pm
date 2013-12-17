@@ -285,14 +285,23 @@ sub get_binary_list_file ($) {
     my $pkglist = "$oscarsamples_dir/$distro-$distro_ver-$arch.rpmlist";
     if (! -f $pkglist) {
         OSCAR::Logger::oscar_log_subsection ("$pkglist does not exist\n");
+        carp "ERROR: pkglist: $pkglist not found. trying with specific".
+             " version $compat_distro-$full_version-$arch.\n";
         $pkglist = "$oscarsamples_dir/$distro-$full_version-$arch.rpmlist";
         if (! -f $pkglist) {
             OSCAR::Logger::oscar_log_subsection ("$pkglist does not exist\n");
+            carp "ERROR: pkglist: $pkglist not found. trying with".
+                 " generic $compat_distro-$compat_distro_ver-$arch.\n";        
             $pkglist = "$oscarsamples_dir/".
                        "$compat_distro-$compat_distro_ver-$arch.rpmlist";
             if (! -f $pkglist) {
-                carp "ERROR: Impossible to detect the binary list file to ".
-                     "create the basic image";
+                OSCAR::Logger::oscar_log_subsection ("ERROR: No".
+                " $distro-$distro_ver-$arch suitable binary list file found".
+                " in $oscarsamples_dir/ to create the basic image\n".
+                "ERROR: Distro NOT SUPPORTED\n");
+                carp "ERROR: No $distro-$distro_ver-$arch suitable binary".
+                     " list file found in $oscarsamples_dir to create the".
+                     " basic image\n";
                 return undef;
             }
         }
