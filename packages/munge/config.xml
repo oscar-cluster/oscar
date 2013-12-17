@@ -25,6 +25,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.0.6-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-17T12:13:25+01:00">
+        <item>full post-install rewrite in perl to use service abstraction mechanisms</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.5-2">
       <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
         <item>Rebuild for FHS compliance</item>
