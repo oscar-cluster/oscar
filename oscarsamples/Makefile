@@ -20,7 +20,9 @@ FILES := debian-4-i386.rpmlist debian-4-x86_64.rpmlist \
 	rhel-3u2-i386.rpmlist rhel-3u2-ia64.rpmlist \
 	rhel-4-i386.rpmlist rhel-4-ia64.rpmlist rhel-4-x86_64.rpmlist \
 	rhel-5-i386.rpmlist rhel-5-x86_64.rpmlist \
+	rhel-6-i386.rpmlist rhel-6-x86_64.rpmlist \
 	redhat-el-5-i386.rpmlist redhat-el-5-x86_64.rpmlist \
+	redhat-el-6-i386.rpmlist redhat-el-6-x86_64.rpmlist \
 	centos-5-i386.rpmlist centos-5-x86_64.rpmlist \
 	centos-6-i386.rpmlist centos-6-x86_64.rpmlist \
 	scientific_linux-5-i386.rpmlist scientific_linux-5-x86_64.rpmlist \
