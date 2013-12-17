@@ -317,7 +317,7 @@ sub get_image_default_settings () {
     # work for grepping /dev/sd, further the check should also work when LVM
     # partitions. Replacing the previous "df" check.
     
-    my @df_lines = `fdisk -l 2> /tmp/error |grep Disk`;
+    my @df_lines = `LC_ALL=C fdisk -l 2> /tmp/error |grep Disk`;
     my $disk_type = "ide";
     $disk_type = "scsi" if (grep(/\/dev\/sd/,(@df_lines)));
 
