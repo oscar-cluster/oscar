@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/perl
 # $Id: $
 # Copyright (c) 2012, CEA² Commissariat à l'Énergie Atomique et Énergies Alternatives
 #		      All rights reserved.
@@ -23,18 +23,20 @@
 # Register and enable the munge service on the client image.
 
 
-# Registers the munge service in the client image
-if /sbin/chkconfig --add munge
-then
-	echo "MUNGE: client-post-install => registering the munge service in the client image"
-else
-	echo "ERROR: MUNGE: client-post-install: Unable to register the munge service in the client image"
-fi
+use Carp;
+use OSCAR::Opkg;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
 
-# Enable the service
-if /sbin/chkconfig --level 235 munge on
-then
-	echo "MUNGE: client-post-install => enabling the munge service in the client image"
-else
-	echo "ERROR: MUNGE: client-post-install: unabling the munge service failed in the client image"
-fi
+# Start the munge service.
+!system_service(MUNGE(),START())
+    or (carp "ERROR: Couldn't start munge service.\n", return -1);
+
+# If we could start it, then enable it (it doesn't makes sens to enable a broken service).
+!enable_system_services( (MUNGE()) )
+    or (carp "ERROR: Couldn't enable munge service.\n", return -1);
+
+# Succeffully configured munge.
+opkg_print("[INFO] successfully configured munge daemon on the server\n");
+
+exit 0;

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/perl
 # $Id: $
 # Copyright (c) 2012, CEA² Commissariat à l'Énergie Atomique et Énergies Alternatives
 #		      All rights reserved.
@@ -20,35 +20,32 @@
 # Authors: Olivier LAHAYE
 
 # Purpose: server-post-install for munge (run after STEP3)
-# Create the /etc/munge/munge.key for oscar_server.
+# 1. Create the /etc/munge/munge.key for oscar_server.
+# 2. Enable and start the service on head node.
 
-# Generate a secret key
-if test ! -f /etc/munge/munge.key
-then
-	echo "MUNGE: server-post-install => creating munge sercret key /etc/munge/munge.key"
-	/usr/sbin/create-munge-key
-fi
+use Carp;
+use OSCAR::Opkg;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
+use OSCAR::OCA::OS_Settings;
 
-# Config munge service to start
-if /sbin/chkconfig --add munge
-then
-	echo "MUNGE: server-post-install => registering the munge service"
-else
-	echo "ERROR: MUNGE: server-post-install => failed to register the munge service"
-fi
 
-# Enable the service
-if /sbin/chkconfig --level 235 munge on
-then
-        echo "MUNGE: server-post-install => enabling the munge service in the client image"
-else
-        echo "ERROR: MUNGE: client-post-install: unabling the munge service failed in the client image"
-fi
+my $munge_dir = OSCAR::OCA::OS_Settings::getitem(MUNGE."_configdir");
 
-# Start munge service
-if /sbin/service munge start
-then
-	echo "MUNGE: server-post-install => starting the munge service"
-else
-	echo "ERROR: MUNGE: server-post-install: Unable to start the munge service"
-fi
+if (! -f MUNGE."/munge.key") {
+    opkg_print("MUNGE: server-post-install => creating munge sercret key /etc/munge/munge.key\n");
+	!system("/usr/sbin/create-munge-key") or (carp "ERROR: Unable to create munge key ($!): $cmd", return -1);
+}
+
+# Start the munge service.
+!system_service(MUNGE(),START())
+    or (carp "ERROR: Couldn't start munge service.\n", return -1);
+
+# If we could start it, then enable it (it doesn't makes sens to enable a broken service).
+!enable_system_services( (MUNGE()) )
+    or (carp "ERROR: Couldn't enable munge service.\n", return -1);
+
+# Succeffully configured munge.
+opkg_print("[INFO] successfully configured munge daemon on the server\n");
+
+exit 0;
