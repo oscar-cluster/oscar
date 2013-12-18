@@ -305,7 +305,7 @@ sub get_list_of_supported_distros_id {
 # Return: hash which has the following format                                  #
 # {                                                                            #
 # 'default_distro_repos' => ['http://ftp.us.debian.org/debian/+etch+main'],     #
-# 'name' => ['debian-4-x86_64'],                                               #
+# 'name' => 'debian-4-x86_64',                                               #
 # 'default_oscar_repo' => ['http://oscar.gforge.inria.fr/debian/+stable+oscar']#
 # }                                                                            #
 ################################################################################
@@ -322,18 +322,25 @@ sub find_distro ($) {
     # we try to find a match
     my $repo_string = $supported_distros{$distro_name};
     chomp ($repo_string);
+    my @default_distro_repos;
+    my @default_oscar_repos;
     my @repos = split (" ", $repo_string);
     foreach my $r (@repos) {
         if ($r =~ /distro:(.*)/) {
-            $hash{'default_distro_repos'} .= "$1\n";
+            push(@default_distro_repos,$1);
+            #push(@{$hash{'default_distro_repos'}},$1);
+            #$hash{'default_distro_repos'} .= "$1\n";
         } elsif ($r =~ /oscar:(.*)/) {
-            $hash{'default_oscar_repo'} = $1;
+            push(@default_oscar_repos,$1);
+            #push(@{$hash{'default_oscar_repos'}},$1);
+            #$hash{'default_oscar_repo'} = $1;
         } else {
             carp "ERROR: Unknown repo type ($r)";
             return undef;
         }
     }
-        
+    $hash{'default_distro_repos'} = \@default_distro_repos;    
+    $hash{'default_oscar_repos'}  = \@default_oscar_repos;    
     return %hash;
 }
 

@@ -109,7 +109,8 @@ sub distro_detect_or_die ($) {
 
 
 #
-# Return list of repositories present in the URL file passed as argument.
+# Return an array of repositories present in the URL file passed as argument.
+# Empty local repos are ignored.
 #
 sub repos_list_urlfile ($) {
     my ($path) = @_;
@@ -146,8 +147,11 @@ sub repos_list_urlfile ($) {
 
 #
 # Add repositories to a .url file. Create file if it doesn't exist.
+# Input: $path: full path to url file
+#        @repos: array of repos
 #
 # Return: 0 if success, -1 else.
+#
 sub repos_add_urlfile ($@) {
     my ($path, @repos) = (@_);
     
@@ -157,37 +161,37 @@ sub repos_add_urlfile ($@) {
     }
 
     # make sure local paths have "file:" prefix
-    my @n;
-    for (@repos) {
-        s,^/,file:/,;
-        if (!m,^(oscar:file|oscar:http|oscar:ftp|oscar:https|oscar:mirror
+    my @repos_to_add;
+    for my $repo (@repos) {
+        $repo =~ s,^/,file:/,;
+        if ($repo  !~ m,^(oscar:file|oscar:http|oscar:ftp|oscar:https|oscar:mirror
                  |distro:file|distro:http|distro:ftp|distro:https|distro:mirror|
                  |file|http|ftp|https|mirror):,) {
             carp "ERROR: Repository must either be a URL or an absolute path\n";
             return -1;
         }
-        my $r = $_;
-        if (repo_local($r) == 0) {
-            OSCAR::Logger::oscar_log_subsection "Adding online repo ($r)";
-            push (@n, $r);
+        if (repo_local($repo) == 0) {
+            OSCAR::Logger::oscar_log_subsection "Adding online repo ($repo)";
+            push (@repos_to_add, $repo);
         }
-        if (repo_local($r) == 1) {
-            if (repo_empty ($r) == 0) {
-                OSCAR::Logger::oscar_log_subsection "Adding valid local repo ($r)";
-                push (@n, $r);
+        if (repo_local($repo) == 1) {
+            if (repo_empty ($repo) == 0) {
+                OSCAR::Logger::oscar_log_subsection "Adding valid local repo ($repo)";
+                push (@repos_to_add, $repo);
             } else {
-                OSCAR::Logger::oscar_log_subsection "Skipping empty local repo ($r)";
+                OSCAR::Logger::oscar_log_subsection "Skipping empty local repo ($repo)";
                 next;
             }
         }
     }
 
-    if (scalar (@n) == 0) {
+    if (scalar (@repos_to_add) == 0) {
         OSCAR::Logger::oscar_log_subsection "[INFO] No repository to be added";
     }
 
-    foreach my $repo (@n) {
+    foreach my $repo (@repos_to_add) {
         OSCAR::Logger::oscar_log_subsection ("Adding $repo in $path");
+        # Fixme: should check return code of function below
         OSCAR::FileUtils::add_line_to_file_without_duplication ("$repo\n", $path);
     }
     return 0;
@@ -209,12 +213,12 @@ sub repos_del_urlfile ($@) {
     # build hash of repos to be deleted
     my %rhash;
     for (@repos) {
-	s,^/,file:/,;
-	if (!m,^(file|http|ftp|https|mirror):,) {
-	    carp "ERROR: Repository must either be a URL or an absolute path\n";
-	    return -1;
-	}
-	$rhash{$_} = 1;
+	    s,^/,file:/,;
+	    if (!m,^(file|http|ftp|https|mirror):,) {
+	        carp "ERROR: Repository must either be a URL or an absolute path\n";
+	        return -1;
+	    }
+	    $rhash{$_} = 1;
     }
     local *IN;
     open IN, "$path"
@@ -225,12 +229,12 @@ sub repos_del_urlfile ($@) {
     local *OUT;
     open OUT, "> $path" or croak("Could not open $path for writing. $!");
     for (@orepos) {
-	chomp;
-	if (!defined($rhash{$_})) {
-	    print OUT "$_\n";
-	} else {
-	    delete $rhash{$_};
-	}
+	    chomp;
+	    if (!defined($rhash{$_})) {
+	        print OUT "$_\n";
+	    } else {
+	        delete $rhash{$_};
+	    }
     }
     close OUT;
     if (scalar(keys(%rhash))) {
@@ -256,6 +260,29 @@ sub query_os ($$) {
 	    $os = distro_detect_or_die($img);
     }
     return $os;
+}
+
+#
+# Return distro .url file path for selected image or distro
+# given the url_type (distro: or oscar:)
+#
+# Return: the file path, undef if error.
+sub get_urlfile ($%) {
+    my $url_type = shift;
+    my $os = &query_os(@_);
+    if (!defined($os) || ref($os) ne "HASH") {
+        carp "ERROR: impossible to query the OS\n";
+        return undef;
+    }
+    my $distro;
+    if( "$url_type" eq "distro" ) {
+        $distro    = $os->{distro};
+    } else {
+        $distro   = $os->{compat_distro};
+    }
+    my $distrover = $os->{distro_version};
+    my $arch      = $os->{arch};
+    return "/tftpboot/$url_type/$distro-$distrover-$arch.url";
 }
 
 #
@@ -305,7 +332,18 @@ sub oscar_urlfile (%) {
 # repository (yum or apt) into the file
 # /tftpboot/distro/$distro-$version-$arch.url
 #
-# Return: undef if error.
+# Usage:
+#    $path = oscar_repo_url();         # detect distro of master ("/")
+#    $path = oscar_repo_url($image);   # detect distro of image
+#    $path = oscar_repo_url(os => $os);  # use given $os structure
+#
+# Usage logic:
+# If a .url file exists, use the URLs listed inside.
+# Otherwise expect local repositories to exist in the standard place. If the
+# local repositories don't exist, create their directories.
+#
+# Return: comma separated string of repos added to url file.
+#         undef if error.
 sub distro_repo_url (%) {
     my %arg = @_;
 
@@ -477,11 +515,11 @@ sub pkg_extension ($) {
     my $os = distro_detect_or_die($img);
     my $pkg = $os->{pkg};
     if ($pkg =~ /^rpm$/) {
-	return ".rpm";
+        return ".rpm";
     } elsif ($pkg =~ /^deb$/) {
-	return ".deb";
+        return ".deb";
     } else {
-	return undef;
+        return undef;
     }
 }
 
@@ -493,11 +531,11 @@ sub pkg_separator ($) {
     my $os = distro_detect_or_die($img);
     my $pkg = $os->{pkg};
     if ($pkg =~ /^rpm$/) {
-	return "-";
+        return "-";
     } elsif ($pkg =~ /^deb$/) {
-	return "_";
+        return "_";
     } else {
-	return undef;
+        return undef;
     }
 }
 
@@ -747,15 +785,17 @@ sub mirror_repo ($$$) {
 ################################################################################
 sub use_default_distro_repo ($) {
     my ($distro) = @_;
-    my $distro_repo_url = get_default_distro_repo ($distro);
+    my @distro_repo_urls = get_default_distro_repo ($distro);
     if (!OSCAR::Utils::is_a_valid_string ($distro)) {
         carp "ERROR: undefined default distro repo for ($distro)";
         return -1;
     }
-    OSCAR::Logger::oscar_log_subsection ("Using the distro repo ".
-        "$distro_repo_url for $distro");
-    if (use_distro_repo ($distro, $distro_repo_url)) {
-        carp "ERROR: Impossible to set the distro repo";
+    # FIXME: test @distro_repo_urls
+    OSCAR::Logger::oscar_log_subsection ("Using the following distro repo $distro for:\n");
+    OSCAR::Utils::print_array (@distro_repo_urls);
+
+    if (use_distro_repo ($distro, @distro_repo_urls)) {
+        carp "ERROR: Impossible to set the distro repo\n";
         return -1;
     }
     return 0;
@@ -772,16 +812,18 @@ sub use_default_distro_repo ($) {
 ################################################################################
 sub use_default_oscar_repo ($) {
     my ($distro) = @_;
-    my $url = get_default_oscar_repo ($distro);
+    my @distro_oscar_urls = get_default_oscar_repo ($distro);
 
-    if (!defined $url) {
-        carp "ERROR: Impossible to get default OSCAR repository";
+    if (!OSCAR::Utils::is_a_valid_string ($distro)) {
+        carp "ERROR: undefined oscar distro repo for ($distro)";
         return -1;
     }
-    OSCAR::Logger::oscar_log_subsection ("... using default repo: $url");
-    if (use_oscar_repo ($distro, $url)) {
-        carp "ERROR: Impossible to set the OSCAR repo ".
-             "($distro, $url)";
+    # FIXME: test @distro_oscar_urls
+    OSCAR::Logger::oscar_log_subsection ("Using the following oscar repo $distro for:\n");
+    OSCAR::Utils::print_array (@distro_oscar_urls);
+
+    if (use_oscar_repo ($distro, @distro_oscar_urls)) {
+        carp "ERROR: Impossible to set the OSCAR repos\n";
         return -1;
     }
     return 0;
@@ -850,16 +892,18 @@ sub get_common_pool_id ($) {
 #                                                                              #
 # Input: distro, the Linux distribution ID we want to deal with (OS_Detect     #
 #                syntax, e.g., rhel-5-x86_64.                                  #
+#        @repos, the array containing the repos to add.
 # Return: -1 if error, 0 else.                                                 #
 ################################################################################
 sub use_distro_repo ($$) {
-    my ($distro, $repo) = @_;
+    my ($distro, @repos) = @_;
 
-    if (!OSCAR::Utils::is_a_valid_string ($distro) 
-        || !OSCAR::Utils::is_a_valid_string ($repo)) {
-        carp "ERROR: the distro or the repo URL are invalid ($distro, $repo)";
+    if (!OSCAR::Utils::is_a_valid_string ($distro)) {
+        carp "ERROR: the distro is invalid ($distro)";
         return -1;
     }
+
+    # FIXME: need to loop on @repos testing they are valid strings.
 
     my $path = $tftpdir . "distro";
     if (! -d $path) {
@@ -869,8 +913,9 @@ sub use_distro_repo ($$) {
                 return -1);
     }
 
-    OSCAR::Logger::oscar_log_subsection "Adding $repo in $path/$distro.url";
-    if (OSCAR::PackagePath::repos_add_urlfile ("$path/$distro.url", $repo)) {
+    OSCAR::Logger::oscar_log_subsection "Adding the following repos in $path/$distro.url";
+    OSCAR::Utils::print_array (@repos);
+    if (OSCAR::PackagePath::repos_add_urlfile ("$path/$distro.url", @repos)) {
         carp "ERROR: Impossible to create file $path.url";
         return -1;
     }
@@ -885,24 +930,22 @@ sub use_distro_repo ($$) {
 # Return: 0 if success, -1 else.                                               #
 ################################################################################
 sub use_oscar_repo ($$) {
-    my ($distro, $repo) = @_;
+    my ($distro, @repos) = @_;
 
-    if (!OSCAR::Utils::is_a_valid_string ($distro) 
-        || !OSCAR::Utils::is_a_valid_string ($repo)) {
-        carp "ERROR: the distro or the repo URL are invalid ($distro, $repo)";
+    if (!OSCAR::Utils::is_a_valid_string ($distro)) {
+        # FIXME: need to loop on @repos testing they are valid strings.
+        carp "ERROR: the distro or the repo URL are invalid ($distro)";
         return -1;
     }
 
-    my @pools;
-    push (@pools, $repo);
     my $compat = get_compat_distro ($distro);
     my $path = "/tftpboot/oscar/$compat";
     my $repo_file = "/tftpboot/oscar/".$compat.".url";
-    push (@pools, $path) if (repo_empty ($path) == 0);
+    push (@repos, $path) if (repo_empty ($path) == 0);
     $path = get_common_pool_id ($distro);
-    push (@pools, $path) if (repo_empty ($path) == 0);
-    if (scalar (@pools)) {
-        if (repos_add_urlfile ($repo_file, @pools)) {
+    push (@repos, $path) if (repo_empty ($path) == 0);
+    if (scalar (@repos)) {
+        if (repos_add_urlfile ($repo_file, @repos)) {
             carp "ERROR: Impossible to add repos in $repo_file";
             return -1;
         }
@@ -984,7 +1027,7 @@ sub get_list_setup_distros {
 # Return the default repository for a given distribution.                      #
 #                                                                              #
 # Input: the distro ID (with the OS_Detect syntax).                            #
-# Return: the default distro repository (string), empty string if no default   #
+# Return: the default distro repository (array), empty array if no default     #
 #         repo is defined, undef if error.                                     #
 ################################################################################
 sub get_default_distro_repo ($) {
@@ -998,19 +1041,14 @@ sub get_default_distro_repo ($) {
     my %d = OSCAR::Distro::find_distro ($distro);
 
     my $t = $d{'default_distro_repos'};
-    # if we do not have a default repo, we return an empty string
-    if (ref($t) eq "HASH") {
-        return "";
-    } else {
-        return $t;
-    }
+    return @$t;
 }
 
 ################################################################################
 # Return the default OSCAR repository for a given distribution.                #
 #                                                                              #
 # Input: the distro ID (with the OS_Detect syntax).                            #
-# Return: the default OSCAR repository (string), empty string if no default    #
+# Return: the default OSCAR repository (array), empty array if no default      #
 #         repo is defined, undef if error.                                     #
 ################################################################################
 sub get_default_oscar_repo ($) {
@@ -1023,13 +1061,8 @@ sub get_default_oscar_repo ($) {
     require OSCAR::Distro;
     my %d = OSCAR::Distro::find_distro ($distro);
 
-    my $t = $d{'default_oscar_repo'};
-    # if we do not have a default repo, we return an empty string
-    if (ref($t) eq "HASH") {
-        return "";
-    } else {
-        return $t;
-    }
+    my $t = $d{'default_oscar_repos'};
+    return @$t;
 }
 
 ################################################################################
