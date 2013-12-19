@@ -271,7 +271,7 @@ sub get_list_of_supported_distros {
     }
 
     # we try to find a match
-    my %supported_distros = OSCAR::ConfigFile::get_all_values ("/etc/oscar/supported_distros.txt", "$version");
+    my %supported_distros = OSCAR::ConfigFile::get_all_values ("$supported_distro_file", "$version");
 
     foreach my $key ( keys %supported_distros ) {
         unshift (@list, $key);
@@ -317,10 +317,14 @@ sub find_distro ($) {
     # we get the OSCAR version
     my $version = OSCAR::Utils::get_oscar_version();
 
-    my %supported_distros = OSCAR::ConfigFile::get_all_values ("/etc/oscar/supported_distros.txt", "$version");
+    my %supported_distros = OSCAR::ConfigFile::get_all_values ("$supported_distro_file", "$version");
 
     # we try to find a match
     my $repo_string = $supported_distros{$distro_name};
+    if( ! defined($repo_string)) {
+        print "ERROR: Unsupported distro: ($distro_name).\nSee $supported_distro_file\n";
+        return undef;
+    }
     chomp ($repo_string);
     my @default_distro_repos;
     my @default_oscar_repos;

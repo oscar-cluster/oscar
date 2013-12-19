@@ -1039,9 +1039,14 @@ sub get_default_distro_repo ($) {
     }
     require OSCAR::Distro;
     my %d = OSCAR::Distro::find_distro ($distro);
+    # Returns empty hash if not supported distro
 
     my $t = $d{'default_distro_repos'};
-    return @$t;
+    if(! defined $t) {
+        return undef;
+    } else {
+        return @$t;
+    }
 }
 
 ################################################################################
@@ -1060,9 +1065,14 @@ sub get_default_oscar_repo ($) {
     }
     require OSCAR::Distro;
     my %d = OSCAR::Distro::find_distro ($distro);
+    # Returns empty hash if not supported distro
 
     my $t = $d{'default_oscar_repos'};
-    return @$t;
+    if(! defined $t) {
+        return undef;
+    } else {
+        return @$t;
+    }
 }
 
 ################################################################################
