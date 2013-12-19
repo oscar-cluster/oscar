@@ -1097,45 +1097,45 @@ sub get_default_oscar_repo ($) {
 #                configuration files.                                          #
 # Return: -1 if error, 0 if success, 1 if the file already exists.
 ################################################################################
-sub generate_default_oscar_urlfile ($) {
-    my $distro = shift;
-
-    if (!defined ($distro)) {
-        carp "ERROR: Undefined distro, impossible to create the default OSCAR ".
-             "URL file.";
-        return -1;
-    }
-
-    # TODO: we should validate the distro ID.
-    my $compat_distro = get_compat_distro ($distro);
-    OSCAR::Logger::oscar_log_subsection "[INFO] Generating oscar url file $$compat_distro";
-    if (!defined ($compat_distro)) {
-        carp "ERROR: Impossible to get the compat distro for $distro";
-        return -1;
-    }
-    my $file = "/tftpboot/oscar/$compat_distro.url";
-    if (-f $file) {
-        warn "INFO: the $file already exists, we do nothing";
-        return 1;
-    }
-
-    my $repo = get_default_oscar_repo ($distro);
-    if (!defined ($repo)) {
-        carp "ERROR: Impossible to get the default repository for $distro";
-        return -1;
-    }
-    if ($repo eq "") {
-        warn "No default distro repository for $distro";
-        return 0;
-    }
-    if (OSCAR::FileUtils::add_line_to_file_without_duplication ("$repo\n",
-                                                                $file)) {
-        carp "ERROR: Impossible to add $repo in $file";
-        return -1;
-    }
-
-    return 0;
-}
+#sub generate_default_oscar_urlfile ($) {
+#    my $distro = shift;
+#
+#    if (!defined ($distro)) {
+#        carp "ERROR: Undefined distro, impossible to create the default OSCAR ".
+#             "URL file.";
+#        return -1;
+#    }
+#
+#    # TODO: we should validate the distro ID.
+#    my $compat_distro = get_compat_distro ($distro);
+#    OSCAR::Logger::oscar_log_subsection "[INFO] Generating oscar url file $$compat_distro";
+#    if (!defined ($compat_distro)) {
+#        carp "ERROR: Impossible to get the compat distro for $distro";
+#        return -1;
+#    }
+#    my $file = "/tftpboot/oscar/$compat_distro.url";
+#    if (-f $file) {
+#        warn "INFO: the $file already exists, we do nothing";
+#        return 1;
+#    }
+#
+#    my $repo = get_default_oscar_repo ($distro);
+#    if (!defined ($repo)) {
+#        carp "ERROR: Impossible to get the default repository for $distro";
+#        return -1;
+#    }
+#    if ($repo eq "") {
+#        warn "No default distro repository for $distro";
+#        return 0;
+#    }
+#    if (OSCAR::FileUtils::add_line_to_file_without_duplication ("$repo\n",
+#                                                                $file)) {
+#        carp "ERROR: Impossible to add $repo in $file";
+#        return -1;
+#    }
+#
+#    return 0;
+#}
 
 ################################################################################
 # Generate the default distro configuration file in /tftpboot for a given      #
@@ -1145,40 +1145,40 @@ sub generate_default_oscar_urlfile ($) {
 #                configuration files.                                          #
 # Return: -1 if error, 0 if success, 1 if the file already exists.
 ################################################################################
-sub generate_default_distro_urlfile ($) {
-    my $distro = shift;
-
-    if (!defined ($distro)) {
-        carp "ERROR: Undefined distro, impossible to create the default ".
-             "distro URL file /tftpboot/distro/<distroid>.url.";
-        return -1;
-    }
-
-    # TODO: we should validate the distro ID.
-    my $file = "/tftpboot/distro/$distro.url";
-    OSCAR::Logger::oscar_log_subsection "[INFO] Generating distro url file $file";
-    if (-f $file) {
-        warn "INFO: the $file file already exists, we do nothing";
-        return 1;
-    }
-
-    my $repo = get_default_distro_repo ($distro);
-    if (!defined ($repo)) {
-        carp "ERROR: Impossible to get the default repository for $distro";
-        return -1;
-    }
-    if ($repo eq "") {
-        warn "No default distro repository for $distro";
-        return 0;
-    }
-    if (OSCAR::FileUtils::add_line_to_file_without_duplication ("$repo\n",
-                                                                $file)) {
-        carp "ERROR: Impossible to add $repo in $file";
-        return -1;
-    }
-
-    return 0;
-}
+#sub generate_default_distro_urlfile ($) {
+#    my $distro = shift;
+#
+#    if (!defined ($distro)) {
+#        carp "ERROR: Undefined distro, impossible to create the default ".
+#             "distro URL file /tftpboot/distro/<distroid>.url.";
+#        return -1;
+#    }
+#
+#    # TODO: we should validate the distro ID.
+#    my $file = "/tftpboot/distro/$distro.url";
+#    OSCAR::Logger::oscar_log_subsection "[INFO] Generating distro url file $file";
+#    if (-f $file) {
+#        warn "INFO: the $file file already exists, we do nothing";
+#        return 1;
+#    }
+#
+#    my $repo = get_default_distro_repo ($distro);
+#    if (!defined ($repo)) {
+#        carp "ERROR: Impossible to get the default repository for $distro";
+#        return -1;
+#    }
+#    if ($repo eq "") {
+#        warn "No default distro repository for $distro";
+#        return 0;
+#    }
+#    if (OSCAR::FileUtils::add_line_to_file_without_duplication ("$repo\n",
+#                                                                $file)) {
+#        carp "ERROR: Impossible to add $repo in $file";
+#        return -1;
+#    }
+#
+#    return 0;
+#}
 
 ################################################################################
 # Generate the default configuration files in /tftpboot. For that, we use      #
@@ -1197,13 +1197,16 @@ sub generate_default_urlfiles ($) {
         carp "ERROR: Undefined distro";
         return -1;
     }
-    if (generate_default_oscar_urlfile ($distro) == -1) {
+
+     if (use_default_distro_repo ($distro) == -1 ) {
+#    if (generate_default_oscar_urlfile ($distro) == -1) {
         carp "ERROR: Impossible to generate the default OSCAR url file ".
              "($distro)";
         return -1;
     }
 
-    if (generate_default_distro_urlfile ($distro) == -1) {
+     if (use_default_oscar_repo ($distro) == -1 ) {
+#    if (generate_default_distro_urlfile ($distro) == -1) {
         carp "ERROR: Impossible to generate the default distro url file ".
              "($distro)";
         return -1;
