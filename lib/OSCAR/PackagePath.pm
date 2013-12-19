@@ -792,8 +792,11 @@ sub use_default_distro_repo ($) {
         return -1;
     }
     if (@distro_repo_urls and $#distro_repo_urls >= 0 and defined $distro_repo_urls[0]) {
-        OSCAR::Logger::oscar_log_subsection ("Using the following distro repo $distro for:\n");
-        OSCAR::Utils::print_array (@distro_repo_urls);
+        my $message = "Using the following distro repo $distro for:\n";
+        for my $i (@distro_repo_urls) {
+            $message .= "  $distro_repo_urls[$i]\n";
+        }
+        OSCAR::Logger::oscar_log_subsection ($message);
 
         if (use_distro_repo ($distro, @distro_repo_urls)) {
             carp "ERROR: Impossible to set the distro repo\n";
@@ -821,12 +824,15 @@ sub use_default_oscar_repo ($) {
     @distro_oscar_urls = get_default_oscar_repo ($distro);
 
     if (!OSCAR::Utils::is_a_valid_string ($distro)) {
-        carp "ERROR: undefined oscar distro repo for ($distro)";
+        carp "ERROR: undefined oscar OSCAR repo for ($distro)";
         return -1;
     }
     if (@distro_oscar_urls and $#distro_oscar_urls >= 0 and defined $distro_oscar_urls[0]) {
-        OSCAR::Logger::oscar_log_subsection ("Using the following oscar repo $distro for:\n");
-        OSCAR::Utils::print_array (@distro_oscar_urls);
+        my $message = "Using the following oscar repo $distro for:\n";
+        for my $i (@distro_oscar_urls) {
+            $message .= "  $distro_oscar_urls[$i]\n";
+        }
+        OSCAR::Logger::oscar_log_subsection ($message);
 
         if (use_oscar_repo ($distro, @distro_oscar_urls)) {
             carp "ERROR: Impossible to set the OSCAR repos\n";
@@ -923,8 +929,6 @@ sub use_distro_repo ($$) {
                 return -1);
     }
 
-    OSCAR::Logger::oscar_log_subsection "Adding the following repos in $path/$distro.url";
-    OSCAR::Utils::print_array (@repos);
     if (OSCAR::PackagePath::repos_add_urlfile ("$path/$distro.url", @repos)) {
         carp "ERROR: Impossible to create file $path.url";
         return -1;
