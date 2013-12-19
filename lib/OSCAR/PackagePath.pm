@@ -791,7 +791,7 @@ sub use_default_distro_repo ($) {
         carp "ERROR: undefined default distro repo for ($distro)";
         return -1;
     }
-    if (@distro_repo_urls and $#distro_repo_urls > 0 and defined $distro_repo_urls[0]) {
+    if (@distro_repo_urls and $#distro_repo_urls >= 0 and defined $distro_repo_urls[0]) {
         OSCAR::Logger::oscar_log_subsection ("Using the following distro repo $distro for:\n");
         OSCAR::Utils::print_array (@distro_repo_urls);
 
@@ -824,7 +824,7 @@ sub use_default_oscar_repo ($) {
         carp "ERROR: undefined oscar distro repo for ($distro)";
         return -1;
     }
-    if (@distro_oscar_urls and $#distro_oscar_urls > 0 and defined $distro_oscar_urls[0]) {
+    if (@distro_oscar_urls and $#distro_oscar_urls >= 0 and defined $distro_oscar_urls[0]) {
         OSCAR::Logger::oscar_log_subsection ("Using the following oscar repo $distro for:\n");
         OSCAR::Utils::print_array (@distro_oscar_urls);
 
