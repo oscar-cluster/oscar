@@ -225,8 +225,8 @@ if ($startover) {
 }
 
 if ($distro_repo) {
-    require OSCAR::PackagePath;
     require OSCAR::Distro;
+    require OSCAR::PackagePath;
     # We display the distro repos that are used with the distro
     my @repos_urls = ();
     @repos_urls = OSCAR::PackagePath::get_default_distro_repo ($distro_repo);
@@ -244,9 +244,10 @@ if ($oscar_repo) {
     require OSCAR::Distro;
     require OSCAR::PackagePath;
     # We display the OSCAR repos that are used with the distro
-    my @repos_urls =  OSCAR::PackagePath::get_default_oscar_repo ($oscar_repo);
+    my @repos_urls = ();
+    @repos_urls =  OSCAR::PackagePath::get_default_oscar_repo ($oscar_repo);
     # If unsupported distros, @repos_urls will be undef.
-    if(defined $repos_urls[0]) {
+    if(@repos_urls and $#repos_urls >= 0 and defined $repos_urls[0]) {
         print "$oscar_repo OSCAR repositories:\n";
         foreach my $i (@repos_urls) {
             print "  $i\n";
