@@ -785,20 +785,25 @@ sub mirror_repo ($$$) {
 ################################################################################
 sub use_default_distro_repo ($) {
     my ($distro) = @_;
-    my @distro_repo_urls = get_default_distro_repo ($distro);
+    my @distro_repo_urls = ();
+    @distro_repo_urls = get_default_distro_repo ($distro);
     if (!OSCAR::Utils::is_a_valid_string ($distro)) {
         carp "ERROR: undefined default distro repo for ($distro)";
         return -1;
     }
-    # FIXME: test @distro_repo_urls
-    OSCAR::Logger::oscar_log_subsection ("Using the following distro repo $distro for:\n");
-    OSCAR::Utils::print_array (@distro_repo_urls);
+    if (@distro_repo_urls and $#distro_repo_urls > 0 and defined $distro_repo_urls[0]) {
+        OSCAR::Logger::oscar_log_subsection ("Using the following distro repo $distro for:\n");
+        OSCAR::Utils::print_array (@distro_repo_urls);
 
-    if (use_distro_repo ($distro, @distro_repo_urls)) {
-        carp "ERROR: Impossible to set the distro repo\n";
+        if (use_distro_repo ($distro, @distro_repo_urls)) {
+            carp "ERROR: Impossible to set the distro repo\n";
+            return -1;
+        }
+        return 0;
+    } else {
+        carp "ERROR: undefined default distro repo for ($distro)";
         return -1;
     }
-    return 0;
 }
 
 ################################################################################
@@ -812,21 +817,26 @@ sub use_default_distro_repo ($) {
 ################################################################################
 sub use_default_oscar_repo ($) {
     my ($distro) = @_;
-    my @distro_oscar_urls = get_default_oscar_repo ($distro);
+    my @distro_oscar_urls = ();
+    @distro_oscar_urls = get_default_oscar_repo ($distro);
 
     if (!OSCAR::Utils::is_a_valid_string ($distro)) {
         carp "ERROR: undefined oscar distro repo for ($distro)";
         return -1;
     }
-    # FIXME: test @distro_oscar_urls
-    OSCAR::Logger::oscar_log_subsection ("Using the following oscar repo $distro for:\n");
-    OSCAR::Utils::print_array (@distro_oscar_urls);
+    if (@distro_oscar_urls and $#distro_oscar_urls > 0 and defined $distro_oscar_urls[0]) {
+        OSCAR::Logger::oscar_log_subsection ("Using the following oscar repo $distro for:\n");
+        OSCAR::Utils::print_array (@distro_oscar_urls);
 
-    if (use_oscar_repo ($distro, @distro_oscar_urls)) {
-        carp "ERROR: Impossible to set the OSCAR repos\n";
+        if (use_oscar_repo ($distro, @distro_oscar_urls)) {
+            carp "ERROR: Impossible to set the OSCAR repos\n";
+            return -1;
+        }
+        return 0;
+    } else {
+        carp "ERROR: undefined oscar distro repo for ($distro)";
         return -1;
     }
-    return 0;
 }
 
 ################################################################################
