@@ -19,19 +19,24 @@
 
 # Authors: Olivier LAHAYE
 
-# Purpose: client-post-install for munge (run after image created in cherooted env)
-# Register and enable the munge service on the client image.
+# Purpose: api-post-deploy for munge (run during step 7)
+# Start the munge service on nodes.
 
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
 
 use Carp;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
 
-# Enable munge service in image.
-!enable_system_services( (MUNGE) )
-    or (carp "ERROR: Couldn't enable munge service.\n", return -1);
+# Start the munge service.
+!remote_system_service(MUNGE,START,"/usr/bin/cexec")
+    or die "ERROR: Couldn't restart gmondi on all nodes.";
 
 # Succeffully configured munge.
-print("[INFO] successfully enabled munge daemon in the image\n");
+print("[INFO] successfully started munge daemon on all nodes\n");
 
 exit 0;
