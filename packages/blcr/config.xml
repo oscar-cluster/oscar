@@ -43,6 +43,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.1.0-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-21T23:21:34+01:00">
+        <item>Major update. Added server-post-install and api-post-deploy.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.2-2">
       <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
         <item>Rebuild for FHS compliance</item>

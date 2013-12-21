@@ -14,7 +14,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-# This script makes sure that the service is enabled
+# This script starts the blcr service so modules are loaded on server.
+# (before tests at stepo 8)
 # (C)opyright Olivier LAHAYE <olivier.lahaye@cea.fr>
 
 use lib "$ENV{OSCAR_HOME}/lib";
@@ -23,8 +24,8 @@ use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
 use Carp;
 
-opkg_print("enabling blcr service at boot time in image\n");
-!enable_system_services( (BLCR) )
-    or (carp "ERROR: Couldn't enable blcr service in image.\n", exit 1);
+opkg_print("starting blcr service\n");
+!system_service(BLCR,START)
+    or die "ERROR: Couldn't start blcr service on server.";
 
 exit(0);
