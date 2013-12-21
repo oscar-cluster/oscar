@@ -19,7 +19,7 @@
 
 # Authors: Olivier LAHAYE
 
-# Purpose: client-post-install for munge (run after image created in cherooted env)
+# Purpose: client-post-install for munge (run after image created in chrooted env)
 # Register and enable the munge service on the client image.
 
 
