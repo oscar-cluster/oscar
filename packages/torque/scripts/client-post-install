@@ -17,7 +17,7 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#   post_clients_rpm_install for torque 
+#   client-post-install for torque. Enables pbs_mom in image
 
 use strict;
 use Carp;
@@ -26,9 +26,7 @@ use OSCAR::SystemServicesDefs;
 
 
 # Config Torque mom service to start
-!enable_system_services( (PBS_MOM()) )
-    or carp "ERROR: Couldn't enable pbs_mom.\n";
+!enable_system_services( (PBS_MOM) )
+    or carp "ERROR: Couldn't enable pbs_mom in image.\n";
 
-# Start pbs_mom service.
-!system_service(PBS_MOM(),START())
-    or carp "ERROR: Couldn't start pbs_mom.\n";
+exit 0;

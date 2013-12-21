@@ -23,7 +23,6 @@
 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
-use lib "/usr/lib/systeminstaller";
 use OSCAR::Opkg;
 use OSCAR::Package;
 use OSCAR::SystemServices;
@@ -31,6 +30,7 @@ use OSCAR::SystemServicesDefs;
 use Carp;
 use Data::Dumper;
 use SystemInstaller::Machine;
+use OSCAR::Configurator_backend;
 use Getopt::Long;  # Used to get command line option
 my $default;       # Did we type --default on the command line?
 
@@ -86,8 +86,30 @@ sub parseCommandLine
 #########################################################################
 sub startPBSserver
 {
-  !system_service(PBS_SERVER(),START())
-      or carp "ERROR: Couldn't start pbs service.\n";
+  # 1st: Start the auth daemon.
+  !system_service(PBS_TRQAUTHD,START)
+      or carp "ERROR: Couldn't start pbs trqauthd service.\n";
+
+  # 2nd: Start the pbs server.
+  !system_service(PBS_SERVER,START)
+      or carp "ERROR: Couldn't start pbs service on head.\n";
+
+  # 3rd: Start the scheduler.
+
+  # Make sure only one scheduler is active.
+  # Config Torque sched service not to start if we use Maui
+  # In order to prevent a conflict when Maui is to be used,
+  # 'pbs_sched' is disabled, then.
+
+  my @pkgs = OSCAR::Database::list_selected_packages();
+  if ( 'maui' ~~ @pkgs ) {
+      # Using MAUI: need to disable pbs_sched
+      !system_service(PBS_SCHED,STOP)
+          or carp "ERROR: Couldn't stop pbs scheduler service.\n";
+  } else {
+      !system_service(PBS_SCHED,START)
+          or carp "ERROR: Couldn't start pbs scheduler service.\n";
+  }
 
   # Trying to find the qstat binary. if alternatives is used, it can be named qstat-torque
   # So we check for qstat and qstat-torque in $torque_home/bin
@@ -371,18 +393,18 @@ if(isWorkqDefined()) {
     }
 }
 
-!system_service(MAUI(),RESTART())
-    or carp "ERROR: Couldn't restart MAUI service.\n";
+!system_service(MAUI,RESTART)
+    or carp "ERROR: Couldn't restart MAUI servicei on head.\n";
 
 # Set server's mom to configured state
 if ($compute_on_head eq "YES") {
-  !enable_system_services( (PBS_MOM()) )
-      or carp "ERROR: Couldn't enable pbs_mom.\n";
-  !system_service(PBS_MOM(),START())
-      or carp "ERROR: Couldn't start pbs_mom service.\n";
+  !enable_system_services( (PBS_MOM) )
+      or carp "ERROR: Couldn't enable pbs_mom on head (compute on head enabled).\n";
+  !system_service(PBS_MOM,START)
+      or carp "ERROR: Couldn't start pbs_mom service on head.\n";
 } else {
-  !disable_system_services( (PBS_MOM()) )
-      or carp "ERROR: Couldn't disable pbs_mom.\n";
-  !system_service(PBS_MOM(),STOP())
-      or carp "ERROR: Couldn't stop pbs_mom service.\n";
+  !disable_system_services( (PBS_MOM) )
+      or carp "ERROR: Couldn't disable pbs_mom on head (compute on head disabled).\n";
+  !system_service(PBS_MOM,STOP)
+      or carp "ERROR: Couldn't stop pbs_mom service on head.\n";
 }

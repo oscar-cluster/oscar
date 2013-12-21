@@ -27,49 +27,68 @@ BEGIN {
 
 use strict;
 use Carp;
+use OSCAR::Opkg;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
-use lib '/usr/lib/systeminstaller';
 use SystemInstaller::Machine;
-
-use OSCAR::Opkg;
-
-#######################################################
-#  Start up 'Torque Server' by restarting the daemon  #
-#######################################################
-sub startPBSserver
-{
-  !system_service(PBS_TRQAUTHD(),START())
-      or carp "ERROR: Couldn't start pbs trqauthd service.\n";
-  # OL: FIXME: The following 2 lines are not compatible with systemd.
-  if(!-f '/var/lib/torque/server_priv/serverdb' && !-f '/var/spool/pbs/server_priv/serverdb') {
-    system('/etc/init.d/pbs_server create'); # no config file: need to initialise config.
-  }
-  !system_service(PBS_SERVER(),START())
-      or carp "ERROR: Couldn't start pbs server service.\n";
-}
-
+use OSCAR::Database;
 
 ########################
 #  BEGIN MAIN PROGRAM  #
 ########################
 
-startPBSserver();
+# Init torque DB if needed.
+if(!-f '/var/lib/torque/server_priv/serverdb' && !-f '/var/spool/pbs/server_priv/serverdb') {
+    # Find server_priv directory.
+    my $pbs_home="/var/lib/torque";
+    $pbs_home="/var/spool/pbs" if(-d '/var/spool/pbs');
 
+    # Find pbs_server executable.
+    my $pbs_server_daemon="/usr/sbin/pbs_server";
+    $pbs_server_daemon="/opt/pbs/sbin/pbs_server" if(-x '/opt/pbs/sbin/pbs_server');
+
+    !system("$pbs_server_daemon -d $pbs_home -f -t create")
+        or carp("ERROR: Cant init pbs_server db. Failed command: $pbs_server_daemon -t create");
+
+    if( -f "/etc/torque/nodes") {
+        system("ln -sf /etc/torque/nodes $pbs_home/server_priv/nodes");
+    }
+    # system('/etc/init.d/pbs_server create'); # no config file: need to initialise config.
+}
+
+# Enable auth daemon and pbs_server
+!enable_system_services( (PBS_TRQAUTHD, PBS_SERVER) )
+    or carp "ERROR: Couldn't enable pbs_trqauthd and pbs_server on head.\n";
+
+# Make sure only one scheduler is active.
 # Config Torque sched service not to start if we use Maui
 # In order to prevent a conflict when Maui is to be used,
 # 'pbs_sched' is disabled, then.
 
-if ( system_service_status(PBS_SCHED()) == SERVICE_ENABLED() ) {
-    if ( system_service_status(MAUI()) == SERVICE_ENABLED() ) {
-        !disable_system_services( (PBS_SCHED()) )
-            or carp "ERROR: MAUI scheduler enabled, but couldn't disable pbs scheduler.\n";
-    }
-}
+my @pkgs = OSCAR::Database::list_selected_packages();
 
-# Config Torque server service to start
-!enable_system_services( (PBS_SERVER()) )
-    or carp "ERROR: Couldn't enable pbs server.\n";
+if ( 'maui' ~~ @pkgs ) {
+    # Using MAUI: need to disable pbs_sched
+    if ( system_service_status(PBS_SCHED) == SERVICE_ENABLED ) {
+        print("[INFO] Using MAUI: Disabpling pbs_sched\n");
+        !disable_system_services( (PBS_SCHED) )
+            or carp "ERROR: MAUI scheduler enabled, but couldn't disable pbs scheduler.\n";
+        !system_service(PBS_SCHED,STOP)
+            or carp "ERROR: Couldn't stop pbs scheduler service.\n";
+    }
+    # We could enable maui here, but it's better to let maui post-scripts do that.
+} else {
+    # Using PBS_SCHED: need to disable maui
+    if ( system_service_status(MAUI) == SERVICE_ENABLED ) {
+        print("[INFO] Using PBS_SCHED: Disabpling maui\n");
+        !disable_system_services( (MAUI) )
+            or carp "ERROR: PBS_SCHED scheduler enabled, but couldn't disable maui scheduler.\n";
+        !system_service(PBS_SCHED,STOP)
+            or carp "ERROR: Couldn't stop maui scheduler service.\n";
+    }
+    !enable_system_services( (PBS_SCHED) )
+        or carp "ERROR: PBS_SCHED scheduler enabled, but couldn't unable it.\n";
+}
 
 opkg_print("...updating xpbsmonrc file\n");
 my $arch = `uname -i`;
