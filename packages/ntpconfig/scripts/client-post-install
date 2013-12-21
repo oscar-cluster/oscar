@@ -22,18 +22,11 @@
 # oscar_server
 
 use Carp;
-use OSCAR::Opkg;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
 use OSCAR::OCA::OS_Settings;
 
-my $ntpBuffer = "";
-my $ntp_conf = OSCAR::OS_Settings::getitem(NTP()."_configfile");
-my $ntp_dir = OSCAR::OS_Settings::getitem(NTP()."_dir");
-my $step_tickers = "$ntp_dir/step-tickers";
-my $ntpserver = "oscar_server";
-
-# OL: Moved /etc/ntp.conf configuration to api-post-image. (more easy and only run once instead of each node)
+# OL: Moved /etc/ntp.conf configuration to api-post-image. (more easy to run non chrooted)
 # SUSE Linux's xntp package does not create /etc/ntp, create it here
 # !system("mkdir $ntp_dir") or croak("Failed to mkdir $ntp_dir") if !(-d $ntp_dir);
 # 
@@ -63,20 +56,8 @@ my $ntpserver = "oscar_server";
 # close (STEP);
 
 # Enable ntp service
-opkg_print("enabling ntp service at boot time\n");
-!enable_system_services( (NTP()) )
+print("[INFO] enabling ntp service at boot time in image\n");
+!enable_system_services( (NTP) )
     or (carp "ERROR: Couldn't enable ntp service.\n", exit 1);
-
-# 1st time date sync (in case ntp startup script doesn't make use
-# of /etc/ntp/step-tickers to run a ntpdate from the server before
-# starting the service.
-opkg_print("1st time date sync with server\n");
-!system("ntpdate $ntpserver")
-    or (carp "ERROR: Failed to issue a ntpdate $ntpserver\n", exit 1);
-
-# Start ntp service.
-opkg_print("starting ntp service\n");
-!system_service(NTP(),START())
-    or (carp "ERROR: Couldn't start NTP service.\n", exit 1);
 
 exit(0);

@@ -97,12 +97,12 @@ open(CONF, ">$ntp_conf") or croak("Failed to open $ntp_conf");
 print CONF $ntpBuffer;
 close(CONF);
 
-opkg_print("enabling ntp service at boot time\n");
-!enable_system_services( (NTP()) )
+opkg_print("enabling ntp service at boot time on server\n");
+!enable_system_services( (NTP) )
     or (carp "ERROR: Couldn't enable ntp service.\n", exit 1);
 
 opkg_print("restarting ntp service\n");
-!system_service(NTP(),RESTART())
-    or die "ERROR: Couldn't restart ntp service.";
+!system_service(NTP,RESTART)
+    or die "ERROR: Couldn't restart ntp service on server.";
 
 exit(0);

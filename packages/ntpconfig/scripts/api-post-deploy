@@ -12,10 +12,19 @@ use OSCAR::Opkg;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
 
-opkg_print("restarting ntp service\n");
-!system_service(NTP(),RESTART())
-    or croak "ERROR: Couldn't restart ntp service.";
+opkg_print("stopping ntp service on all nodes so we can init the date/time\n");
+!remote_system_service(NTP,STOP,"/usr/bin/cexec")
+    or croak "ERROR: Couldn't stop ntp service on all nodes.";
 
-opkg_print("restarting ntp service on all nodes\n");
-!remote_system_service(NTP(),RESTART(),"/usr/bin/cexec")
-    or croak "ERROR: Couldn't restart ntp service on all nodes.";
+# 1st time date sync (in case ntp startup script doesn't make use
+# of /etc/ntp/step-tickers to run a ntpdate from the server before
+# starting the service.
+print("1st time date sync with server for all nodes\n");
+!system("/usr/bin/cexec ntpdate $ntpserver")
+    or (carp "ERROR: Failed to issue a ntpdate $ntpserver on all nodes\n", exit 1);
+
+opkg_print("starting ntp service on all nodes\n");
+!remote_system_service(NTP,START(),"/usr/bin/cexec")
+    or croak "ERROR: Couldn't start ntp service on all nodes.";
+
+exit 0;
