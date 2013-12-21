@@ -140,7 +140,7 @@ sub run_pkg_script ($$$$) {
 
 # Return: 1 if success, undef else.
 sub run_pkg_script_chroot ($$) {
-    my ($pkg, $dir) = @_;
+    my ($pkg, $imagedir) = @_;
     my $phase = "post_rpm_install";
     my $scripts = $PHASES{$phase};
     if (!$scripts) {
@@ -154,29 +154,31 @@ sub run_pkg_script_chroot ($$) {
     return 1 unless ((defined $pkgdir) && (-d $pkgdir));
     foreach my $scriptname (@$scripts) {
         my $script = "$pkgdir/$scriptname";
-        if (-e $script) {
-            chmod 0755, $script;
-            oscar_log_subsection("About to run $script for $pkg");
-            run_in_chroot ($dir,$script)
-                or (carp ("ERROR: Script $script failed"), return undef);
+        if (-e "$imagedir/$script") {
+            chmod 0755, "$imagedir/$script"; # Should be useless.
+            oscar_log_subsection("About to run $script for $pkg (chrooted)");
+            !system("chroot $imagedir $script") 
+                or (carp("ERROR: Couldn't run $script with rootdir=$imagedir"), return undef);
+#            run_in_chroot ($dir,$script)
+#                or (carp ("ERROR: Script $script failed"), return undef);
         }
     }
     return 1;
 }
 
 # Return: 1 if success, undef else.
-sub run_in_chroot ($$) {
-    my ($dir, $script) = @_;
-    my $base = basename($script);
-    my $nscript = "$dir/tmp/$base";
-    copy($script, $nscript) 
-        or (carp("ERROR: Couldn't copy $script to $nscript"), return undef);
-    chmod 0755, $nscript;
-    !system("chroot $dir /tmp/$base") 
-        or (carp("ERROR: Couldn't run /tmp/$script"), return undef);
-    unlink $nscript or (carp("ERROR: Couldn't remove $nscript"), return undef);
-    return 1;
-}
+#sub run_in_chroot ($$) {
+#    my ($dir, $script) = @_;
+#    my $base = basename($script);
+#    my $nscript = "$dir/tmp/$base";
+#    copy($script, $nscript) 
+#        or (carp("ERROR: Couldn't copy $script to $nscript"), return undef);
+#    chmod 0755, $nscript;
+#    !system("chroot $dir /tmp/$base") 
+#        or (carp("ERROR: Couldn't run /tmp/$script"), return undef);
+#    unlink $nscript or (carp("ERROR: Couldn't remove $nscript"), return undef);
+#    return 1;
+#}
 
 #
 # run_pkg_user_test - runs the package test script as a user
