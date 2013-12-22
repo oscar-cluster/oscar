@@ -1,7 +1,6 @@
 #!/bin/bash
 
-IMAGE=$1
-IMAGEDIR=$2
+IMAGEDIR=$1
 
 # FIXME: rewrite this in perl and use OS_Settings to get correct ntp.conf file.
 # Note: image can be for another OS: be carefull.
@@ -24,3 +23,5 @@ cat >> ${IMAGEDIR}/etc/ntp.conf <<EOF
 server oscar_server
 restrict oscar_server mask 255.255.255.255
 EOF
+
+exit 0
