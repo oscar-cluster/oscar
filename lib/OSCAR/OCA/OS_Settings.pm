@@ -78,7 +78,7 @@ sub getitem ($) {
     my $request = shift;
     my $config = getconf();
     if ($verbose) { print "Called getitem with " . $request . " and returning " . $config->{$request} . "\n" };
-    if ($verbose) { print Dumper($config) };
+    #if ($verbose) { print Dumper($config) };
     if ( $config->{$request} ) {
         return $config->{$request};
         } else {
