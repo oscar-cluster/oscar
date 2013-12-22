@@ -22,7 +22,7 @@ use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
 use Carp;
 
-opkg_print("enabling blcr service at boot time in image\n");
+print("[INFO] Enabling blcr service at boot time in image\n");
 !enable_system_services( (BLCR) )
     or (carp "ERROR: Couldn't enable blcr service in image.\n", exit 1);
 
