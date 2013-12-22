@@ -45,8 +45,15 @@ if (system ($cmd)) {
     die "ERROR: Impossible to execute $cmd";
 }
 
+!system_service(GANGLIA_GMETAD,START)
+    or die "ERROR: Couldn't restart gmetad on head.";
+
+# OL: Should we start gmond on head?
+!system_service(GANGLIA_GMOND,START)
+    or die "ERROR: Couldn't start gmond on head.";
+
 # Restart gmond on nodes.
-!remote_system_service(GANGLIA_GMOND(),RESTART(),"/usr/bin/cexec")
-    or die "ERROR: Couldn't restart gmondi on all nodes.";
+!remote_system_service(GANGLIA_GMOND,RESTART,"/usr/bin/cexec")
+    or die "ERROR: Couldn't restart gmond on all nodes.";
 
 exit 0;

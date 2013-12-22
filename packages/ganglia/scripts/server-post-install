@@ -38,7 +38,7 @@ use OSCAR::SystemServicesDefs;
 
 
 # Note that we do not care if "stop" does not work, we just want to be sure the service is stopped.
-system_service(OSCAR::SystemServicesDefs::GANGLIA_GMOND(),OSCAR::SystemServicesDefs::STOP());
+system_service(GANGLIA_GMOND,STOP);
 
 my $pkgdir = OSCAR::Package::get_scripts_dir("ganglia", "post_server_install");
 

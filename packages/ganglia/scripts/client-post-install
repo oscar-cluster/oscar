@@ -1,0 +1,37 @@
+#!/usr/bin/perl
+# $Id: $
+# Copyright (c) 2012, CEA² Commissariat à l'Énergie Atomique et Énergies Alternatives
+#		      All rights reserved.
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+# Authors: Olivier LAHAYE
+
+# Purpose: client-post-install for ganglia (run after image created in chrooted env)
+# Register and enable the ganglia gmond service on the client image.
+
+
+use Carp;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
+
+# Enable munge service in image.
+!enable_system_services( (GANGLIA_GMOND) )
+    or (carp "ERROR: Couldn't enable gmond service in the image.\n", return -1);
+
+# Succeffully configured munge.
+print("[INFO] successfully enabled munge daemon in the image\n");
+
+exit 0;

@@ -46,7 +46,6 @@ use OSCAR::Configbox;
 use OSCAR::Configurator_backend;
 use OSCAR::Database;
 use OSCAR::Package;
-use lib '/usr/lib/systeminstaller';
 use SIS::DB;
 use SIS::Image;
 
