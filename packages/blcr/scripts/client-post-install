@@ -18,7 +18,6 @@
 # (C)opyright Olivier LAHAYE <olivier.lahaye@cea.fr>
 
 use lib "$ENV{OSCAR_HOME}/lib";
-use OSCAR::Opkg;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
 use Carp;
