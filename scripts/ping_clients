@@ -22,7 +22,6 @@ eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
 # $Id$
 
 use strict;
-use lib "/usr/lib/systeminstaller";
 use SIS::Image;
 use SIS::Client;
 use SIS::NewDB;

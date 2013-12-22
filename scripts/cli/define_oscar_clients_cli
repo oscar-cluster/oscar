@@ -16,7 +16,6 @@ BEGIN {
     }
 }
 use strict;
-use lib "/usr/lib/systeminstaller";
 use OSCAR::Logger;
 use OSCAR::Network;
 use OSCAR::Database;

@@ -32,7 +32,6 @@ BEGIN {
 }
 
 use strict;
-use lib "/usr/lib/systeminstaller";
 use SIS::Client;
 use SIS::Image;
 use SIS::NewDB;

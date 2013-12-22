@@ -20,7 +20,6 @@
 # (c) Erich Focht, NEC HPCE, Stuttgart, 21.01.2004
 
 
-use lib "/usr/lib/systeminstaller", "/usr/lib/systemimager/perl";
 use SIS::NewDB;
 use SIS::Image;
 use SIS::Client;

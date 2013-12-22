@@ -21,7 +21,6 @@
 #
 # Author: Neil Gorsuch
 
-use lib '/usr/lib/systeminstaller';
 use SystemInstaller::Machine;
 
 $IPCHAINS = "/etc/sysconfig/ipchains";

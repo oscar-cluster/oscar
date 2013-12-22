@@ -24,7 +24,6 @@ BEGIN {
 }
 
 use strict;
-use lib "/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
 use OSCAR::Logger;
 use OSCAR::CLI_MAC;
 use OSCAR::WizardEnv;

@@ -40,7 +40,6 @@ BEGIN {
 use strict;
 use Switch;
 use vars qw($config);
-use lib "/usr/lib/systeminstaller";
 use lib "/usr/lib/systemconfig";
 use SystemInstaller::Env;
 use SystemInstaller::Log qw(start_verbose stop_verbose verbose);

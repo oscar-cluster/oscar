@@ -46,7 +46,6 @@ BEGIN {
 use strict;
 use Tk;
 use Tk::ROText;
-use lib "/usr/lib/systemconfig","/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
 use POSIX;
 use OSCAR::AddNode;
 use OSCAR::ClientMgt;

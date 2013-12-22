@@ -26,7 +26,6 @@
 # Copyright (c) 2004 Erich Focht, efocht@hpce.nec.com
 
 use strict;
-use lib "/usr/lib/systeminstaller";
 use SIS::Client;
 use SIS::Adapter;
 use SIS::Image;

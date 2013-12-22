@@ -31,7 +31,6 @@ BEGIN {
 }
 
 use strict;
-use lib '/usr/lib/systeminstaller';
 use Carp;
 use File::Copy;
 use File::Path;
