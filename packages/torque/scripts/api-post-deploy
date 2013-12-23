@@ -87,10 +87,12 @@ sub parseCommandLine
 sub startPBSserver
 {
   # 1st: Start the auth daemon.
+  opkg_print("Starting pbs auth daemon\n");
   !system_service(PBS_TRQAUTHD,START)
       or carp "ERROR: Couldn't start pbs trqauthd service.\n";
 
   # 2nd: Start the pbs server.
+  opkg_print("Starting pbs server daemon\n");
   !system_service(PBS_SERVER,START)
       or carp "ERROR: Couldn't start pbs service on head.\n";
 
@@ -104,12 +106,17 @@ sub startPBSserver
   my @pkgs = OSCAR::Database::list_selected_packages();
   if ( 'maui' ~~ @pkgs ) {
       # Using MAUI: need to disable pbs_sched
+      opkg_print("Stopping pbs scheduler daemon (we're using MAUI)\n");
       !system_service(PBS_SCHED,STOP)
           or carp "ERROR: Couldn't stop pbs scheduler service.\n";
   } else {
+      opkg_print("Starting pbs scheduler daemon (we're not using alternative scheduler)\n");
       !system_service(PBS_SCHED,START)
           or carp "ERROR: Couldn't start pbs scheduler service.\n";
   }
+
+  # NOTE: If we're using MAUI, the maui scheduler will be started by maui's api-post-deploy scripts
+  # We don't need it at the moment.
 
   # Trying to find the qstat binary. if alternatives is used, it can be named qstat-torque
   # So we check for qstat and qstat-torque in $torque_home/bin
@@ -142,12 +149,15 @@ sub startPBSserver
 ######################################################################
 sub isWorkqDefined
 {
+  opkg_print("Checking if workq is defined... : ");
   open(CMD,$torque_home."/bin/qmgr -c 'l q workq' |");
   my $result = <CMD>;
   close(CMD);
   if($result =~ /^Queue workq/) {
+    print "yes\n";
     return 1;
   } else {
+    print "no\n";
     return 0;
   }
 }
@@ -393,16 +403,15 @@ if(isWorkqDefined()) {
     }
 }
 
-!system_service(MAUI,RESTART)
-    or carp "ERROR: Couldn't restart MAUI servicei on head.\n";
-
 # Set server's mom to configured state
 if ($compute_on_head eq "YES") {
+  opkg_print("Compute on head enabled: enabling pbs_mom on head\n");
   !enable_system_services( (PBS_MOM) )
       or carp "ERROR: Couldn't enable pbs_mom on head (compute on head enabled).\n";
   !system_service(PBS_MOM,START)
       or carp "ERROR: Couldn't start pbs_mom service on head.\n";
 } else {
+  opkg_print("Compute on head disabled: disabling pbs_mom on head\n");
   !disable_system_services( (PBS_MOM) )
       or carp "ERROR: Couldn't disable pbs_mom on head (compute on head disabled).\n";
   !system_service(PBS_MOM,STOP)
