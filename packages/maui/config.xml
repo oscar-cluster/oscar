@@ -29,6 +29,11 @@ OSCAR cluster software system.</description>
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="3.3.2-2">
+      <changelogEntry authorName="Olivier Lahaye" date="2013-12-23T14:30:40+01:00">
+        <item>Full scripts update (not run at the correct stage)</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="3.3.1-2">
       <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
         <item>Rebuild for FHS compliance</item>
