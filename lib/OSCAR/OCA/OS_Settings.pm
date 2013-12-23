@@ -33,7 +33,7 @@ sub readfile ($$) {
         $path = OSCAR::Utils::get_path_perl_modules();
         $path .= "/OSCAR/OCA/OS_Settings/$file";
     }
-    print "Opening file $path\n" if $verbose;
+    #print "Opening file $path\n" if $verbose;
     open(CONFIG,"$path") or return $config;
     while (<CONFIG>) {
         chomp;
