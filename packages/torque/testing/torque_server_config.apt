@@ -16,8 +16,8 @@
   #   along with this program; if not, write to the Free Software
   #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   #
-  #   Copyright (c) 2013 CEA - Commissariat à l'énergie atomique et
-  #                            aux énergies alternatives
+  #   Copyright (c) 2013 CEA - Commissariat a l'Energie Atomique et
+  #                            aux Energies Alternatives
   #                      All rights reserved.
   #   Copyright (C) 2013 Olivier LAHAYE <olivier.lahaye@cea.fr>
   #                      All rights reserved.
@@ -29,22 +29,23 @@
 <testDef>
 
   <info>
-This script tests that the workq is defined
+This script tests that torque server_name is correctly set
 
 Desired result : PASS
 </info>
 
-  <shortDescription>Tests workq existence</shortDescription>
+  <shortDescription>server_name correctly set?</shortDescription>
 
   <test type="script">
   
     <command interpreter="/bin/bash" wdir="/tmp" uname="root">
-if test -x /opt/pbs/bin/qmgr
+HOSTNAME=$(hostname -s)
+TORQUE_SERVER_NAME=/var/lib/torque/server_name
+if test -f /etc/torque/server_name
 then
-   /opt/pbs/bin/qmgr -c 'l q workq'
-else
-   /usr/bin/qmgr -c 'l q workq'
+   TORQUE_SERVER_NAME=/etc/torque/server_name
 fi
+egrep "pbs_oscar|${HOSTNAME}" ${TORQUE_SERVER_NAME}
     </command>
 
     <output name="stdout" format="regexp">.*</output>
