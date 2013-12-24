@@ -47,6 +47,7 @@ use OSCAR::Package;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
 use Data::Dumper;
+use File::Copy;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
