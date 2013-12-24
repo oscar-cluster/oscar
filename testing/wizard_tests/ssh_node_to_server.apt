@@ -42,11 +42,18 @@ Desired result : PASS
 SOME_NODES_FAILED_SSH=0
 for node in $(/usr/lib/oscar/testing/wizard_tests/helpers/oscar_nodes.sh)
 do
-    if ! ssh $node "ssh -o 'StrictHostKeyChecking no' oscar_server hostname > /dev/null 2>&amp;1"
-    then
-        SOME_NODES_FAILED=1
-        echo "failed to ssh from $node to oscar_server"
-    fi
+    # Need to do that for all server aliases so torque don't fail.
+    for server_alias in $(hostname -a)
+    do
+        if ! [[ $i =~ localhost.* ]]
+        then
+            if ! ssh $node "ssh -o 'StrictHostKeyChecking no' ${server_alias} hostname > /dev/null 2>&amp;1"
+            then
+                SOME_NODES_FAILED=1
+                echo "failed to ssh from $node to oscar_server"
+            fi
+        fi
+    done
 done
 exit $SOME_NODES_FAILED_SSH
     </command>
