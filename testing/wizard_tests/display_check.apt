@@ -33,12 +33,12 @@
 <testDef>
 
   <info>
-This script tests that [Describe what test does here]
+This script tests that the DISPLAAY env variable is defined
 
 Desired result : PASS
 </info>
 
-  <shortDescription>Are all nodes up?</shortDescription>
+  <shortDescription>Are we root?</shortDescription>
 
   <test type="script">
   
@@ -53,21 +53,26 @@ BEGIN {
 
 use warnings;
 use English '-no_match_vars';
+use POSIX;
 
 # NOTE: Use the predefined constants for consistency!
 use OSCAR::SystemSanity;
-use OSCAR::FileUtils;
 
 my $rc = SUCCESS;
 
-my $l = "# These entries are managed by SIS, please don't modify them.";
-if (OSCAR::FileUtils::line_in_file ($l, "/etc/hosts") != -1) {
-    print " ----------------------------------------------\n";
-    print "  $0 \n";
-    print " Your /etc/hosts file has references to OSCAR compute node\n";
-    print " from a deprecated version of OSCAR. Please remove these entries,\n";
-    print " they are right after:\n \"$l\"\n";
+# No need to check DISPLAY env variable if we're not using the GUI
+if (!defined$ENV{OSCAR_UI} || $ENV{OSCAR_UI} ne "gui") {
+    exit ($rc);
+}
 
+if ( not defined $ENV{DISPLAY} ) {
+    print " ------------------------------------------------------------\n";
+    print " ERROR: Your \"DISPLAY\" environment variable is not set,\n";
+    print " probably indicating that you are not running in an X windows\n";
+    print " environment.\n";
+    print " OSCAR requires that you run the installer in an X windows\n";
+    print " environment.\n";
+    print " ------------------------------------------------------------\n";
     $rc = FAILURE;
 }
 

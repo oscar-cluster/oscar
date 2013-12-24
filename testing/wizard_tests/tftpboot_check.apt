@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <!--
+  #############################################################################
+  #
+  #   This program is free software; you can redistribute it and/or modify
+  #   it under the terms of the GNU General Public License as published by
+  #   the Free Software Foundation; either version 2 of the License, or
+  #   (at your option) any later version.
+  #
+  #   This program is distributed in the hope that it will be useful,
+  #   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  #   GNU General Public License for more details.
+  #
+  #   You should have received a copy of the GNU General Public License
+  #   along with this program; if not, write to the Free Software
+  #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  #
+  #   Copyright (c) 2006 Oak Ridge National Laboratory.
+  #                      All rights reserved.
+  #   Copyright (c) 2006 Geoffroy Vallee
+  #                      All rights reserved.
+  #   Copyright (c) 2013 CEA - Commissariat a l'Energie Atomique et
+  #                            aux Energies Alternatives
+  #                      All rights reserved.
+  #   Copyright (c) 2013 Olivier LAHAYE <olivier.lahaye@cea.fr>
+  #                      All rights reserved.
+  #
+  # $Id: $
+  #
+  #############################################################################
+  -->
+<testDef>
+
+  <info>
+This script tests /tftpboot repos
+
+Desired result : PASS
+</info>
+
+  <shortDescription>Tests that /tftpboot is ok</shortDescription>
+
+  <test type="script">
+  
+    <command interpreter="perl" wdir="/tmp" uname="root">
+#!/usr/bin/perl -w
+
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
+use warnings;
+use English '-no_match_vars';
+use OSCAR::OCA::OS_Detect;
+use warnings "all";
+
+# NOTE: Use the predefined constants for consistency!
+use OSCAR::SystemSanity;
+
+my $rc = FAILURE;
+
+my $os = OSCAR::OCA::OS_Detect::open();
+if (!defined ($os)) {
+    die "ERROR: unsupported Linux distribution\n";
+}
+my $distro_id = $os->{distro} . "-" . $os->{distro_version} . "-" . 
+                $os->{arch};
+
+# Step 1: we do some very basic tests
+if ( ! -d "/tftpboot" &amp;&amp; 
+     ! -d "/tftpboot/distro") {
+     print " --------------------------------------------\n";
+     print " ERROR: Directories for tftpboot do not exist\n";
+     print " --------------------------------------------\n";
+     exit ($rc);
+}
+ 
+# Step 2: we check if /tftpboot have all we need for the local distro
+# Two cases: we use a local pool or an online pool
+my $file = "/tftpboot/distro/" . $distro_id . ".url";
+my $dir = "/tftpboot/distro/" . $distro_id;
+if ( ! -f $file &amp;&amp; ! -d $dir ) {
+    print " ---------------------------------------------------------\n";
+    print " ERROR: Impossible to find a local or online repository in\n";
+    print " /tftpboot for the distro $distro_id\n";
+    print " ---------------------------------------------------------\n";
+    exit ($rc);
+}
+
+# Step 3: we check if there are empty local pools
+$dir = "/tftpboot/distro/";
+opendir(DIR, "$dir") or die "Error: $! - \'$dir\'";
+my @subdirs = readdir (DIR);
+closedir(DIR);
+    
+foreach my $subdir (@subdirs) {
+    if ($subdir eq "." || $subdir eq "..") {
+        next;
+    }
+    $subdir = $dir . $subdir;
+    # We skip local files
+    if (-f "$subdir") {
+        next;
+    }
+    # Do we have rpms in that directory?
+    my @files = glob("$subdir/*.rpm");
+    if (scalar(@files) == 0) {
+        # If no do we have debian packages?
+        @files = glob("$subdir/*.deb");
+        if (scalar(@files) == 0) {
+            print " -------------------------------------------------------\n";
+            print " ERROR: it seems you have empty local repositories, \n";
+            print " i.e., a local repository does not have any binary \n";
+            print " package. The empty local repository is: $subdir.\n";
+            print " Please populate the local pool or delete the directory.\n";
+            print " -------------------------------------------------------\n";
+            exit ($rc);
+        }
+    }
+}
+
+$rc = SUCCESS;
+exit ($rc);
+</command>
+
+    <output name="stdout" />
+    <output name="stderr" />
+    <output name="status" format="literal">0</output>
+
+  </test>
+
+</testDef>
+
+<!-- EOF -->

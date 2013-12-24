@@ -26,37 +26,13 @@
   #
   #############################################################################
   -->
-<testDef>
 
+<testBatch>
   <info>
-This script tests that user can ssh to all nodes from oscar_server
+    Check that everything is ok before we enter wizard step 9.
+    In fact, checks everything is ok after step 8 (production)
+  </info>
 
-Desired result : PASS
-</info>
+  <test name="true.apt"/>
 
-  <shortDescription>Can user ssh to all nodes from head</shortDescription>
-
-  <test type="script">
-  
-    <command interpreter="/bin/bash" wdir="/tmp" uname="oscartst">
-SOME_NODES_FAILED_SSH=0
-for node in $(/usr/lib/oscar/testing/wizard_tests/helpers/oscar_nodes.sh)
-do
-    if ! ssh -o 'StrictHostKeyChecking no' $node hostname > /dev/null 2>&amp;1
-    then
-        SOME_NODES_FAILED=1
-        echo "failed to ssh to $node"
-    fi
-done
-exit $SOME_NODES_FAILED_SSH
-    </command>
-
-    <output name="stdout" format="literal"></output>
-    <output name="stderr" format="literal"></output>
-    <output name="status" format="literal">0</output>
-
-  </test>
-
-</testDef>
-
-<!-- EOF -->
+</testBatch>

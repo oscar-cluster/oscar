@@ -33,12 +33,12 @@
 <testDef>
 
   <info>
-This script tests that [Describe what test does here]
+This script tests that we run as root.
 
 Desired result : PASS
 </info>
 
-  <shortDescription>Are all nodes up?</shortDescription>
+  <shortDescription>Are we root?</shortDescription>
 
   <test type="script">
   
@@ -56,22 +56,23 @@ use English '-no_match_vars';
 
 # NOTE: Use the predefined constants for consistency!
 use OSCAR::SystemSanity;
-use OSCAR::FileUtils;
 
-my $rc = SUCCESS;
+my $rc = FAILURE;
 
-my $l = "# These entries are managed by SIS, please don't modify them.";
-if (OSCAR::FileUtils::line_in_file ($l, "/etc/hosts") != -1) {
-    print " ----------------------------------------------\n";
-    print "  $0 \n";
-    print " Your /etc/hosts file has references to OSCAR compute node\n";
-    print " from a deprecated version of OSCAR. Please remove these entries,\n";
-    print " they are right after:\n \"$l\"\n";
+if ( ($UID == 0) and ($ENV{USER} eq "root") ) {
+	$rc = SUCCESS;
 
-    $rc = FAILURE;
+} else {
+	print " ----------------------------------------------\n";
+	print "  $0 \n";
+	print "   UID=(" . $UID       . ") \t should be \'0\'\n";
+	print "  USER=(" . $ENV{USER} . ") \t should be \'root\'\n";
+	print " ----------------------------------------------\n";
+
+	$rc = FAILURE;  
 }
 
-exit ($rc);
+exit($rc);
     </command>
 
     <output name="stdout" />

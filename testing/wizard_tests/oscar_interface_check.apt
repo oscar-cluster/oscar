@@ -73,7 +73,7 @@ $oscar_if = $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}
 my %nics;
 open IN, "netstat -nr | awk \'/\\./{print \$NF}\' | uniq |"
     || die "ERROR: Unable to query NICs\n";
-while( <IN> ) {
+while( &lt;IN> ) {
     next if /^\s/ || /^lo\W/;
     chomp;
     s/\s.*$//;
@@ -83,7 +83,7 @@ close IN;
 
 if (! ($oscar_if and exists $nics{$oscar_if}) ) {
     if (!defined($oscar_if) || $oscar_if eq "") {
-        $oscar_if = "<None>";
+        $oscar_if = "&lt;None>";
     }
     print " ------------------------------------------------------\n";
     print " WARNING: A valid NIC must be specified for the cluster\n";
