@@ -46,8 +46,9 @@ use OSCAR::Network;
 use OSCAR::Package;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
+use OSCAR::OCA::OS_Settings;
 use Data::Dumper;
-use File::Copy;
+#use File::Copy;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
@@ -325,6 +326,7 @@ sub delete_clients (@) {
     }
 
     OSCAR::Logger::oscar_log_subsection "Re-starting server services";
+    # FIXME: Need to fix this (use system_service)
     foreach my $services_ref (@server_services) {
         my $server_service = $$services_ref{service};
         $cmd = "/etc/init.d/$server_service restart";
@@ -353,7 +355,8 @@ sub delete_clients (@) {
             return -1;
         }
     }
-                                                                            
+
+    # FIXME: Need to fix this (use remote_system_service)
     OSCAR::Logger::oscar_log_subsection "Re-starting client services on ".
                                         "remaining nodes";
     foreach my $services_ref (@generic_services) {
@@ -371,18 +374,17 @@ sub delete_clients (@) {
 
     OSCAR::Logger::oscar_log_subsection "Running mkdhcpconf";
     # We make sure the DHCP server is running otherwise mkdhcpconf will fail
-    OSCAR::SystemServices::system_service (OSCAR::SystemServicesDefs::DHCP(),
-            OSCAR::SystemServicesDefs::START());
+    OSCAR::SystemServices::system_service (DHCP , START);
     my ($ip, $broadcast, $netmask) = OSCAR::Network::interface2ip($interface);
-    my $dhcpd_configfile = "/etc/dhcpd.conf";
-    # Under RHEL6 like, the dhcpd config file is in /etc/dhcp
-    $dhcpd_configfile = "/etc/dhcp/dhcpd.conf" if -x "/etc/dhcp";
-    # Under Debian the dhcpd config file is in /etc/dhcp3
-    $dhcpd_configfile = "/etc/dhcp3/dhcpd.conf" if -x "/etc/dhcp3";
-    if(-e $dhcpd_configfile) {
-        copy($dhcpd_configfile, $dhcpd_configfile.".oscarbak")
+    my $dhcpd_configfile = OSCAR::OCA::OS_Settings::getitem(DHCP."_configfile");
+    backup_file_if_not_exist($dhcpd_configfile)
             or (carp "ERROR: Couldn't backup dhcpd.conf file", return -1);
-    }
+
+    #if(-e $dhcpd_configfile) {
+    #    copy($dhcpd_configfile, $dhcpd_configfile.".oscarbak")
+    #        or (carp "ERROR: Couldn't backup dhcpd.conf file", return -1);
+    #}
+
     $cmd = "mkdhcpconf -o $dhcpd_configfile --interface=$interface ".
            "--gateway=$ip";
     if ($install_mode eq "systemimager-multicast") {
@@ -393,8 +395,7 @@ sub delete_clients (@) {
         return -1;
     }
 
-    my $rc = OSCAR::SystemServices::system_service
-        (OSCAR::SystemServicesDefs::DHCP(), OSCAR::SystemServicesDefs::STOP());
+    my $rc = OSCAR::SystemServices::system_service (DHCP , STOP);
     if ($rc) {
         print "[WARN] Impossible to restart DHCPD";
     }
