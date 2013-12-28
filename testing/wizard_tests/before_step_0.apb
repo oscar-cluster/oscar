@@ -32,8 +32,6 @@
     Check that everything is ok before we enter wizard step 0.
   </info>
 
-  <test name="SELinux_disabled.apt"/>
-  <test name="IPV6_disabled.apt"/>
-  <test name="hostfile_check.apt"/>
+  <test name="system-sanity.apb"/>
 
 </testBatch>
