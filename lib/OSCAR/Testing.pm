@@ -84,24 +84,28 @@ sub run_apitest {
     }
 
     # Run the test and collect the output if any.
-    if(open CMD, "$cmd |") {
+    if(! open CMD, "$cmd |") {
         # Problem: can't run the command.
         $rc = $!;
-        $test_output = "ERROR: Can't run $cmd";
+        $test_output = "ERROR: Can't run $cmd ($rc)";
         display_apitest_results($window, $test_name, $test_output);
         return($rc);
     }
+    my $quoted_test_name = quotemeta $test_name;
     while (my $line = <CMD>) {
         chomp($line);
+        my $pattern = ".*FAIL.*".$quoted_test_name."\$";
+        my $reqgexp = qr/$pattern/;
+        $rc = 1 if ( $line =~ $reqgexp );
         $test_output .= "$line\n";
     }
     close CMD; # to get the exit code.
-    $rc = $?;
+    $rc += $?;
     # if $rc is not 0, we need to display the result tests.
     if ($rc != 0) {
         display_apitest_results($window, $test_name, $test_output);
     }
-    exit($rc);
+    return($rc);
 }
 
 1;
