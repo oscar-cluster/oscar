@@ -32,6 +32,7 @@
     Check blcr configuration (modules, services, ...)
   </info>
 
+  <shortDescription>BLCR: Check blcr configuration.</shortDescription>
   <test name="blcr_service.apt"/>
 
 </testBatch>

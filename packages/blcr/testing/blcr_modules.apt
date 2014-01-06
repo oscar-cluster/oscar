@@ -34,7 +34,7 @@ This script tests that the blcr modules are loaded
 Desired result : PASS
 </info>
 
-  <shortDescription>blcr modules loaded?</shortDescription>
+  <shortDescription>BLCR: Modules loaded?</shortDescription>
 
   <test type="script">
   

@@ -34,7 +34,7 @@ This script tests that the blcr service is enabled
 Desired result : PASS
 </info>
 
-  <shortDescription>Is blcr service enabled?</shortDescription>
+  <shortDescription>BLCR: Is blcr service enabled?</shortDescription>
 
   <test type="script">
   

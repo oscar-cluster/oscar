@@ -34,7 +34,7 @@ This script runs all the testsuite tests
 Desired result : PASS
 </info>
 
-  <shortDescription>testsuite tests</shortDescription>
+  <shortDescription>BLCR: Runs testsuite tests</shortDescription>
 
   <test type="script">
   

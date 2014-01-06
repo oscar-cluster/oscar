@@ -32,6 +32,7 @@
     Check that blcr is functionnal
   </info>
 
+  <shortDescription>BLCR: Validate blcr component.</shortDescription>
   <dep parent="blcr_config.apb" child="blcr_testsuite.apt"/>
   <dep parent="blcr_modules.apt" child="blcr_testsuite.apt"/>
 
