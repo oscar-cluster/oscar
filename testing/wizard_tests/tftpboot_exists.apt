@@ -38,7 +38,7 @@ This script tests that /tftpboot exists
 Desired result : PASS
 </info>
 
-  <shortDescription>Tests that /tftpboot exists</shortDescription>
+  <shortDescription>TFTPBOOT: Tests that /tftpboot exists</shortDescription>
 
   <test type="script">
   

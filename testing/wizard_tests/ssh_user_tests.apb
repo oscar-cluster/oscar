@@ -32,6 +32,7 @@
    Check that SSH works in both directions between head and nodes.
   </info>
 
+  <shortDescription>SSH: server&lt;-&gt;nodes ok?</shortDescription>
   <dep parent="all_nodes_up.apt" child="ssh_node_to_server.apt"/>
   <dep parent="all_nodes_up.apt" child="ssh_server_to_node.apt"/>
 

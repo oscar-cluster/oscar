@@ -34,7 +34,7 @@ This script tests nothing (dummy test)
 Desired result : PASS
 </info>
 
-  <shortDescription>Always true (dummy test)</shortDescription>
+  <shortDescription>FAKE: Always true (dummy test)</shortDescription>
 
   <test type="script">
   

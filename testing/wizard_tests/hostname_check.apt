@@ -40,7 +40,7 @@ loopback interface or not.
 Desired result : PASS
 </info>
 
-  <shortDescription>Is /etc/hosts files correctly configured?</shortDescription>
+  <shortDescription>System-Sanity: Is /etc/hosts files correctly configured?</shortDescription>
 
   <test type="script">
   

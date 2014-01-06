@@ -29,9 +29,10 @@
 
 <testBatch>
   <info>
-    Check that [Describe here what all thoses tests are fore]
+    Check that [Describe here what all thoses tests are for]
   </info>
 
+  <shortDescription>COMPONENT: short description.</shortDescription>
   <test name="example_test.apt"/>
   <test name="example_batch.apb"/>
 

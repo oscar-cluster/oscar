@@ -29,10 +29,10 @@
 
 <testBatch>
   <info>
-    Check that everything is ok before we enter wizard step 9.
-    In fact, checks everything is ok after step 8 (production)
+    Check that the cluster is functionnal (core system components)
   </info>
 
+  <shortDescription>CORE: Validate OSCAR system components.</shortDescription>
   <test name="true.apt"/>
 
 </testBatch>

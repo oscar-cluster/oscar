@@ -34,7 +34,7 @@ this script tests that all nodes have a properly mounted /home
 Desired result : PASS
 </info>
 
-  <shortDescription>Are all nodes up?</shortDescription>
+  <shortDescription>CORE: Are all nodes up?</shortDescription>
 
   <test type="script">
   

@@ -34,7 +34,7 @@ This script tests that the OSCAR database is up
 Desired result : PASS
 </info>
 
-  <shortDescription>Is OSCAR db up?</shortDescription>
+  <shortDescription>CORE: Is OSCAR db up?</shortDescription>
 
   <test type="script">
   

@@ -34,7 +34,7 @@ This script tests that SELinux is not enforced
 Desired result : PASS
 </info>
 
-  <shortDescription>Is SELinux disabled?</shortDescription>
+  <shortDescription>System-Sanity: Is SELinux disabled?</shortDescription>
 
   <test type="script">
   

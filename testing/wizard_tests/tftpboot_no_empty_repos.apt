@@ -33,12 +33,12 @@
 <testDef>
 
   <info>
-This script tests /tftpboot repos
+This script tests /tftpboot repos are not empty
 
 Desired result : PASS
 </info>
 
-  <shortDescription>Tests that /tftpboot is ok</shortDescription>
+  <shortDescription>TFTPBOOT: No empty repos in /tftpboot?</shortDescription>
 
   <test type="script">
   

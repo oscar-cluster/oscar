@@ -33,12 +33,12 @@
 <testDef>
 
   <info>
-This script tests that the DISPLAAY env variable is defined
+This script tests that the DISPLAY env variable is defined.
 
 Desired result : PASS
 </info>
 
-  <shortDescription>Are we root?</shortDescription>
+  <shortDescription>System-Sanity: Is X display available?</shortDescription>
 
   <test type="script">
   

@@ -32,6 +32,7 @@
     Check that everything is ok before we enter wizard step 2.
   </info>
 
+  <shortDescription>Before STEP 2: Can we enter step 2?</shortDescription>
   <test name="config_not_changed before_last_install.apt"/>
 
 </testBatch>

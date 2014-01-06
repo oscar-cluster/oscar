@@ -32,6 +32,7 @@
     Check that everything is ok before we enter wizard step 1.
   </info>
 
+  <shortDescription>Before STEP 1: Can we enter step 1.</shortDescription>
   <test name="repos_initialized.apt"/>
 
 </testBatch>

@@ -33,6 +33,7 @@
 requirements.
   </info>
 
+  <shortDescription>System-Sanity: Check head network config.</shortDescription>
   <test name="hostname_check.apt"/>
   <test name="oscar_interface_check.apt"/>
 

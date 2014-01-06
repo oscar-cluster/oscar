@@ -38,7 +38,7 @@ This script tests that ssh server is correctly configured.
 Desired result : PASS
 </info>
 
-  <shortDescription>Doss ssh server config comply with OSCAR requirements?</shortDescription>
+  <shortDescription>SSH: Does ssh server config comply with OSCAR requirements?</shortDescription>
 
   <test type="script">
   

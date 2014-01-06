@@ -39,7 +39,7 @@ requirements.
 Desired result : PASS
 </info>
 
-  <shortDescription>Does network config satisfies OSCAR requirements?</shortDescription>
+  <shortDescription>System-Sanity: Does network config satisfies OSCAR requirements?</shortDescription>
 
   <test type="script">
   

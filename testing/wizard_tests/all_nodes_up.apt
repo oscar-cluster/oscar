@@ -34,7 +34,7 @@ This scripts tests that all nodes defined in oscar database are up (ping)
 Desired result : PASS
 </info>
 
-  <shortDescription>Are all nodes up?</shortDescription>
+  <shortDescription>CORE: Are all nodes up?</shortDescription>
 
   <test type="script">
   

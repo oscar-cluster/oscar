@@ -34,7 +34,7 @@ This script tests that user can ssh from all nodes to oscar_server
 Desired result : PASS
 </info>
 
-  <shortDescription>Can user ssh to head from all nodes</shortDescription>
+  <shortDescription>SSH: Can user ssh to head from all nodes</shortDescription>
 
   <test type="script">
   

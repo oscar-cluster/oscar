@@ -32,6 +32,7 @@
     Check that everything is ok before we enter wizard step 8.
   </info>
 
+  <shortDescription>Before STEP 8: Can we enter step 8?</shortDescription>
   <test name="true.apt"/>
 
 </testBatch>

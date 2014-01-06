@@ -38,7 +38,7 @@ This script tests that we run as root.
 Desired result : PASS
 </info>
 
-  <shortDescription>Are we root?</shortDescription>
+  <shortDescription>System-Sanity: Are we root?</shortDescription>
 
   <test type="script">
   

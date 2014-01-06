@@ -34,7 +34,7 @@ This script tests that [Describe what test does here]
 Desired result : PASS
 </info>
 
-  <shortDescription>Short description</shortDescription>
+  <shortDescription>COMPONENT: Short description.</shortDescription>
 
   <test type="script">
   

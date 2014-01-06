@@ -32,6 +32,7 @@
    Checks that /tftpboot meets OSCAR requirements.
   </info>
 
+  <shortDescription>TFTPBOOT: Check tftpboot directory.</shortDescription>
   <test name="tftpboot_no_empty_repos.apt" mustPass="false"/>
   <dep parent="tftpboot_exists.apt" child="tftpboot_url_setup.apt"/>
   <dep parent="tftpboot_url_setup.apt" child="tftpboot_no_empty_repos.apt"/>

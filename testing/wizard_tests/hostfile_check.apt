@@ -38,7 +38,7 @@ This script tests that [Describe what test does here]
 Desired result : PASS
 </info>
 
-  <shortDescription>Are all nodes up?</shortDescription>
+  <shortDescription>System-Sanity: Are all nodes up?</shortDescription>
 
   <test type="script">
   
