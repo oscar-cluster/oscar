@@ -330,6 +330,7 @@ if ( $mode eq "install" ) {
 my $step_status = OSCAR::Database::get_wizard_status(\%options,\@errors);
 my $manage_status = get_manage_status(\%options,\@errors);
 
+# STEP 0: Manage OSCAR Repositories...
 oscar_button($window, $step_string,
              "Manage OSCAR Repositories...",
              [sub { my $olddir = Cwd::cwd();
@@ -341,6 +342,7 @@ oscar_button($window, $step_string,
 		}],
 	     'download_packages');
 
+# STEP 1: Select OSCAR Packages To Install...
 if ( $mode eq "install" ) {
    # Select packages for installation
    $step_number++;
@@ -361,21 +363,21 @@ if ( $mode eq "install" ) {
                }], 
 	        'select_packages');
 
-   # Configure selected packages
+   # STEP 2: Configure Selected OSCAR Packages...
    $step_number++;
    oscar_button($window, "Step $step_number:", 
 	        "Configure Selected OSCAR Packages...", 
 	        [\&displayPackageConfigurator, $window, $step_number],
 	        'configure_packages');
 
-   # Install OSCAR server packages
+   # STEP 3: Install OSCAR Server Packages
    $step_number++;
    oscar_button($window, "Step $step_number:", "Install OSCAR Server Packages",
 	        [\&run_server_install, $window, $step_number,
 	         {interface => $interface} ], 'install_server');
 }
 
-# Build OSCAR Client Image
+# STEP 4: Build OSCAR Client Image
 if ( $mode eq "install" ) {
    $step_number++;
    $step_string = "Step $step_number:";
