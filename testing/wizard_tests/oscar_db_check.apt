@@ -16,23 +16,55 @@
   #   along with this program; if not, write to the Free Software
   #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   #
-  #   Copyright (c) 2013 CEA - Commissariat à l'énergie atomique et
-  #                            aux énergies alternatives
+  #   Copyright (c) 2013 CEA - Commissariat a l'Energie Atomique et
+  #                            aux Energies Alternatives
   #                      All rights reserved.
-  #   Copyright (C) 2013 Olivier LAHAYE <olivier.lahaye@cea.fr>
+  #   Copyright (c) 2013 Olivier LAHAYE <olivier.lahaye@cea.fr>
   #                      All rights reserved.
   #
   # $Id: $
   #
   #############################################################################
   -->
+<testDef>
 
-<testBatch>
   <info>
-    Check that everything is ok before we enter wizard step 0.
-  </info>
+This script tests that the OSCAR database is up
 
-  <test name="system-sanity.apb"/>
-  <test name="oscar_db_check.apt"/>
+Desired result : PASS
+</info>
 
-</testBatch>
+  <shortDescription>Is OSCAR db up?</shortDescription>
+
+  <test type="script">
+  
+    <command interpreter="perl" wdir="/tmp" uname="root">
+#!/usr/bin/perl -w
+
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
+use warnings;
+use English '-no_match_vars';
+
+
+!system("mysql -u root -e \"SHOW VARIABLES LIKE 'version'\"")
+    or die "MySQL db engine not running!";
+
+!system("mysql -u root -e \"SHOW VARIABLES LIKE 'version'\" oscar")
+    or die "OSCAR db not set up!";
+
+    </command>
+
+    <output name="stdout" format="regexp">.*</output>
+    <output name="stderr" />
+    <output name="status" format="literal">0</output>
+
+  </test>
+
+</testDef>
+
+<!-- EOF -->
