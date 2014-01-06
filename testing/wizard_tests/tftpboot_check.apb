@@ -29,17 +29,11 @@
 
 <testBatch>
   <info>
-    System sanity tests.
+   Checks that /tftpboot meets OSCAR requirements.
   </info>
 
-  <test name="repos_check.apt"/>
-  <test name="network-check.apb"/>
-  <test name="SELinux_disabled.apt"/>
-  <test name="IPV6_disabled.apt"/>
-  <test name="ssh_config.apt"/>
-  <test name="su_check.apt"/>
-  <test name="tftpboot_check.apb"/>
-  <!-- <test name="pkg_install_check.apt"/> -->
-  <test name="display_check.apt"/>
+  <test name="tftpboot_no_empty_repos.apt" mustPass="false"/>
+  <dep parent="tftpboot_exists.apt" child="tftpboot_url_setup.apt"/>
+  <dep parent="tftpboot_url_setup.apt" child="tftpboot_no_empty_repos.apt"/>
 
 </testBatch>
