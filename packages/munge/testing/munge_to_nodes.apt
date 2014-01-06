@@ -34,7 +34,7 @@ This script tests that munge to nodes works
 Desired result : PASS
 </info>
 
-  <shortDescription>Does munges works across all nodes?</shortDescription>
+  <shortDescription>MUNGE: Does munges works across all nodes?</shortDescription>
 
   <test type="script">
   

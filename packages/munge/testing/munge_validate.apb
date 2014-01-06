@@ -29,8 +29,9 @@
 
 <testBatch>
   <info>
-    Checks that munge is functionnal
+    Checks that munge is functionnal.
   </info>
+  <shortDescription>MUNGE: Validate munge system.</shortDescription>
   <dep parent="munge_local.apt" child="munge_to_nodes.apt"/>
   <dep parent="ssh_user_tests.apb" child="munge_to_nodes.apt"/>
   <dep parent="munge_remunge.apt" child="munge_local.apt"/>

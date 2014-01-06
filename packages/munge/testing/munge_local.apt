@@ -34,7 +34,7 @@ This script tests that munge works localy: munge -n | unmunge
 Desired result : PASS
 </info>
 
-  <shortDescription>Local munge / unmunge test</shortDescription>
+  <shortDescription>MUNGE: Local munge / unmunge test</shortDescription>
 
   <test type="script">
   

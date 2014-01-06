@@ -34,7 +34,7 @@ This script tests that munge files have the mandatory permissions
 Desired result : PASS
 </info>
 
-  <shortDescription>Are all nodes up?</shortDescription>
+  <shortDescription>MUNGE: check munge files permissions.</shortDescription>
 
   <test type="script">
   

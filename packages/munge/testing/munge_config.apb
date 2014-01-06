@@ -32,6 +32,7 @@
     Check the whole munge configuration and permissions
   </info>
 
+  <shortDescription>MUNGE: check munge configuration.</shortDescription>
   <test name="munge_perms.apt"/>
 
 </testBatch>

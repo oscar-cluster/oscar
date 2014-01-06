@@ -34,7 +34,7 @@ This script runs the remunge benchmark
 Desired result : PASS
 </info>
 
-  <shortDescription>Runs the remunge benchmark</shortDescription>
+  <shortDescription>MUNGE: Runs the remunge benchmark</shortDescription>
 
   <test type="script">
   
