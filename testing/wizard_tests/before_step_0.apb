@@ -32,7 +32,9 @@
     Check that everything is ok before we enter wizard step 0.
   </info>
 
+  <shortDescription>Before STEP 0: Can we enter step 0.</shortDescription>
   <test name="system-sanity.apb"/>
+  <test name="distro_setup.apt"/>
   <test name="oscar_db_check.apt"/>
 
 </testBatch>
