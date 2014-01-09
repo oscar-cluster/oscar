@@ -33,6 +33,7 @@
   </info>
 
   <shortDescription>CORE: Validate OSCAR system components.</shortDescription>
-  <test name="true.apt"/>
+  <test name="system-sanity.apb"/>
+  <dep parent="ssh_user_tests.apb" child="home_mounts_ok.apt"/>
 
 </testBatch>
