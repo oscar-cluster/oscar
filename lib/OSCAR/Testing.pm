@@ -28,11 +28,15 @@ BEGIN {
 use strict;
 use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
+#use Tk::TextANSIColor;
+use Tk::ROTextANSIColor;
 use OSCAR::Tk;
 use OSCAR::Package;
+use OSCAR::Database;
 
 @EXPORT = qw(
                 display_apitest_results
+                display_ANSI_results
                 run_apitest
                 run_multiple_tests
                 test_cluster
@@ -100,6 +104,53 @@ sub display_apitest_results($$$) {
     OSCAR::Tk::center_window( $apitestwin );
 }
 
+=cut
+################################################################################
+=item display_ANSI_results($window, $test_name, $test_results)
+
+Open a window with the apitests results. (Honoring color ANSI codes)
+
+ Input: $window : main window
+        $title : Test short description.
+        $test_results : text output of the test.
+Return: none
+
+Exported: YES
+
+=cut
+################################################################################
+sub display_ANSI_results($$$) {
+    my ($window, $title, $test_results) = @_;
+    my $apitestwin = $window->Toplevel();
+    $apitestwin->withdraw;
+    $apitestwin->title("Testing: $title");
+    my $apitestp = $apitestwin->ROTextANSIColor(-width=>80,-height=>25);
+    $apitestp->grid(-sticky=>"nsew");
+    my $cl_b = $apitestwin->Button(-text=>"Close",
+                                -command=> sub {$apitestwin->destroy},-pady=>"8");
+    $apitestwin->bind("<Escape>",sub {$cl_b->invoke()});
+    $cl_b->grid(-sticky=>"nsew",-ipady=>"4");
+    $apitestp->delete("1.0","end");
+
+    # Display tests results.
+    # We need to keep TextANSIColor quiet. (it whine about unknown ANSI codes)
+    # Thus we redirect stdout (after keeping track of it)
+    open OLDOUT, '>&STDOUT';
+    {
+        local *STDOUT;
+        open STDOUT, '>/dev/null' or warn "Can't open /dev/null: $!";
+        $apitestp->insert("end",$test_results);
+        $apitestp->update;
+        close STDOUT;
+    }
+    # Restore stdout.
+    open STDOUT, '>&OLDOUT' or die "Can't restore stdout: $!";
+    # Avoid leaks by closing the independent copies.
+    close OLDOUT or die "Can't close OLDOUT: $!";
+
+    OSCAR::Tk::center_window( $apitestwin );
+}
+
 ## FIXME: use OSCAR::Tk for that.
 sub display_cluster_test_succed($) {
     print "Cluster test SUCCESS"
@@ -118,9 +169,9 @@ Exported: YES
 =cut
 ################################################################################
 sub run_apitest($) {
-    my $test_name = $_;
+    my $test_name = shift;
     my $apitests_path="/usr/lib/oscar/testing/wizard_tests";
-    my $cmd = "LC_ALL=C /usr/bin/apitest -T -v -f $apitests_path/$test_name";
+    my $cmd = "cd $apitests_path; LC_ALL=C /usr/bin/apitest -T -v -f $test_name";
     my $test_output = "";
     my $rc = 0 ; # SUCCESS
 
@@ -167,7 +218,7 @@ Exported: YES
 =cut
 ################################################################################
 sub run_multiple_tests(@) {
-    my (@apitests_to_run) = @_;
+    my @apitests_to_run = @_;
     my $test_output;
     my $rc;
     my $all_output = "";
@@ -197,9 +248,9 @@ Return: 0: upon success (displays a success dialog box)
 =cut
 ################################################################################
 sub test_cluster($) {
-    my $window = $_;
+    my $window = shift;
     my $apitests_path="/usr/lib/oscar/testing/wizard_tests";
-    my @tests_to_run = ( 'core_validate.apb' );
+    my @tests_to_run = ( 'base_system_validate.apb' );
     my @pkgs_hash = list_selected_packages();
     my $output = "";
     my $rc = 0;
@@ -219,11 +270,11 @@ sub test_cluster($) {
     # Run all the tests.
     ($output,$rc) = run_multiple_tests(@tests_to_run);
     if( $rc > 0) {
-        display_apitest_results($window, "Cluster validation", $output);
+        display_ANSI_results($window, "Cluster validation", $output);
     } else {
         display_cluster_test_succed($window);
     }
-    exit ($rc);
+    return ($rc);
 }
 
 ################################################################################
@@ -237,13 +288,13 @@ Return: 0: upon success
 
 =cut
 ################################################################################
-sub step_test($) {
+sub step_test($$) {
     my ($window, $test_name) = @_;
     my $output= "";
     my $rc=0;
     ($output,$rc) = run_multiple_tests($test_name);
     if( $rc > 0) {
-        display_apitest_results($window, $test_name, $output);
+        display_ANSI_results($window, $test_name, $output);
     }
     # FIXME: print message if $verbose.
     return ($rc);
