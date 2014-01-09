@@ -119,6 +119,7 @@ Summary: Libraries for OSCAR clustering package.
 Requires: perl-XML-Simple
 Requires: perl-AppConfig
 Requires: perl-Net-IPv4Addr
+Requires: perl-Tk-TextANSIColor
 Requires: iproute
 Requires: wget
 Requires: %{name}-base == %{version}-%{release}

@@ -64,6 +64,7 @@ use OSCAR::PackagePath;
 use OSCAR::PackageInUn;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
+use OSCAR::Testing;
 use OSCAR::Tk;
 use OSCAR::WizardEnv;
 use AppConfig;
@@ -922,7 +923,7 @@ sub run_tests {
     my ($window, $step_number) = @_;
     $window->Busy(-recurse => 1);
 
-    my $title = "OSCAR Test Cluster Setup";
+#    my $title = "OSCAR Test Cluster Setup";
 
     if ($mode eq "install") {
        oscar_log_section("Running step $step_number of the OSCAR wizard: Test cluster setup");
@@ -930,13 +931,13 @@ sub run_tests {
        oscar_log_section("OSCAR Management Wizard: Test cluster setup");
     }
 
-    my $test_dir;
-    if (defined $ENV{OSCAR_HOME}) {
-        $test_dir = "$ENV{OSCAR_HOME}/testing";
-    } else {
-        $test_dir = "/usr/lib/oscar/testing/";
-    }
-    my $cmd = "cd $test_dir && xterm -T '$title' -n '$title' -geometry 80x47 -sl 500 -e ./test_cluster --wait";
+#    my $test_dir;
+#    if (defined $ENV{OSCAR_HOME}) {
+#        $test_dir = "$ENV{OSCAR_HOME}/testing";
+#    } else {
+#        $test_dir = "/usr/lib/oscar/testing/";
+#    }
+#    my $cmd = "cd $test_dir && xterm -T '$title' -n '$title' -geometry 80x47 -sl 500 -e ./test_cluster --wait";
     my $string = "";
 
     if ($mode eq "install") {
@@ -945,12 +946,13 @@ sub run_tests {
         $string = "Running tests";
     }
 
-    if ($debug) {
-        $string .= ": $cmd";
-    }
+#    if ($debug) {
+#        $string .= ": $cmd";
+#    }
 
     oscar_log_subsection("$string");
-    !system("$cmd &") or (carp($!), $window->Unbusy(), return undef);
+#    !system("$cmd &") or (carp($!), $window->Unbusy(), return undef);
+    !test_cluster($window) or (carp($!), $window->Unbusy(), return undef);
   
     if ($mode eq "install") {
        oscar_log_subsection("Step $step_number: Not waiting for completion");
