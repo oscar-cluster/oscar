@@ -29,11 +29,10 @@
 
 <testBatch>
   <info>
-    Check that everything is ok before we enter wizard step 7.
+    Check that everything is ok before we try to browse ganglia web interface
   </info>
 
-  <shortDescription>Before STEP 7: Can we enter step 7?</shortDescription>
-  <test name="before_step_0.apb"/>
-  <dep parent="ssh_user_tests.apb" child="home_mounts_ok.apt"/>
+  <shortDescription>Before ganglia: Can we browse ganglia?</shortDescription>
+  <test name="true.apt"/>
 
 </testBatch>

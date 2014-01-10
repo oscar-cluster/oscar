@@ -29,10 +29,11 @@
 
 <testBatch>
   <info>
-    Check that everything is ok before we enter wizard step 5.
+    Check that everything is ok before we try to start netbootmgr
   </info>
 
-  <shortDescription>Before STEP 5: Can we enter step 5?</shortDescription>
-  <test name="client_nodes_defined.apt"/>
+  <shortDescription>Before Network Boot Manager: Can we run netbootmgr?</shortDescription>
+  <test name="false.apt"/>
+  <!-- netbootmgr is currently broken (based on obsolete perl-Qt3) -->
 
 </testBatch>

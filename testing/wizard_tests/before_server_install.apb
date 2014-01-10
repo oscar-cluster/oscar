@@ -29,10 +29,10 @@
 
 <testBatch>
   <info>
-    Check that everything is ok before we enter wizard step 2.
+    Check that everything is ok before we enter wizard "Install server packages" (step 3).
   </info>
 
-  <shortDescription>Before STEP 2: Can we enter step 2?</shortDescription>
-  <test name="config_not_changed before_last_install.apt"/>
+  <shortDescription>Before STEP 3: Can we install server packages?</shortDescription>
+  <test name="true.apt"/>
 
 </testBatch>

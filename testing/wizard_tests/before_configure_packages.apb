@@ -29,10 +29,10 @@
 
 <testBatch>
   <info>
-    Check that everything is ok before we enter wizard step 6.
+    Check that everything is ok before we enter wizard "configure selected OSCAR Packages" (step 2).
   </info>
 
-  <shortDescription>Before STEP 5: Can we enter step 5?</shortDescription>
+  <shortDescription>Before STEP 2: Can we configure OSCAR packages?</shortDescription>
   <test name="true.apt"/>
 
 </testBatch>

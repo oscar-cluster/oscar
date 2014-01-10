@@ -29,10 +29,11 @@
 
 <testBatch>
   <info>
-    Check that everything is ok before we enter wizard step 1.
+    Check that everything is ok before we enter wizard "Select OSCAR PAckages to install" (step 1).
   </info>
 
-  <shortDescription>Before STEP 1: Can we enter step 1.</shortDescription>
-  <test name="repos_initialized.apt"/>
+  <shortDescription>Before STEP 1: Can we select OSCAR packages to install.</shortDescription>
+  <!-- <test name="repos_initialized.apt"/> -->
+  <test name="true.apt"/>
 
 </testBatch>

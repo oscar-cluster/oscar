@@ -29,10 +29,11 @@
 
 <testBatch>
   <info>
-    Check that everything is ok before we enter wizard step 3.
+    Check that everything is ok before we try to complete the cluster installation
   </info>
 
-  <shortDescription>Before STEP 3: Can we enter step 3?</shortDescription>
-  <test name="true.apt"/>
+  <shortDescription>Before Complete Cluster Install: Are condition met for cluster post install?</shortDescription>
+  <test name="system-sanity.apb"/>
+  <dep parent="ssh_user_tests.apb" child="home_mounts_ok.apt"/>
 
 </testBatch>

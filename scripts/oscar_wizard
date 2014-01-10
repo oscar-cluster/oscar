@@ -202,6 +202,19 @@ open(LOCKFILE, ">$lockfile");
 print LOCKFILE $$;
 close(LOCKFILE);
 
+# Checking system sanity before going further.
+my $sys_sanity_output="";
+my $sys_sanity_rc=0;
+
+print "[INFO] checking system-sanity...\n";
+($sys_sanity_output,$sys_sanity_rc) = run_apitest("system-sanity.apb");
+if($sys_sanity_rc > 0) {
+    print "ERROR:\n$sys_sanity_output\nPlease fix error(s) before retrying\n";
+    exit 1;
+} else {
+    print "[INFO] system-sanity OK.\n";
+}
+
 require OSCAR::ConfigManager;
 my $path = "/etc/oscar/oscar.conf";
 my $oscar_cfg = OSCAR::ConfigManager->new(config_file => "$path");
@@ -334,22 +347,24 @@ my $manage_status = get_manage_status(\%options,\@errors);
 # STEP 0: Manage OSCAR Repositories...
 oscar_button($window, $step_string,
              "Manage OSCAR Repositories...",
-             [sub { my $olddir = Cwd::cwd();
-		    chdir($ENV{OSCAR_HOME} . '/lib/Qt');
-		    system('/usr/bin/perl Opder.pl');
-		    chdir($ENV{OSCAR_HOME} . '/scripts');
-		    system("./prep_oscar_repos --add --include /usr/lib/oscar/packages");
-		    chdir($olddir);
-		}],
-	     'download_packages');
+             [sub { return if (step_test($window,"manage_repos"));
+                  my $olddir = Cwd::cwd();
+                  chdir($ENV{OSCAR_HOME} . '/lib/Qt');
+                  system('/usr/bin/perl Opder.pl');
+                  chdir($ENV{OSCAR_HOME} . '/scripts');
+                  system("./prep_oscar_repos --add --include /usr/lib/oscar/packages");
+                  chdir($olddir);
+                  }],
+             'download_packages');
 
 # STEP 1: Select OSCAR Packages To Install...
 if ( $mode eq "install" ) {
    # Select packages for installation
    $step_number++;
    oscar_button($window, "Step $step_number:", 
-	        "Select OSCAR Packages To Install...", 
-	        [sub { my $olddir = Cwd::cwd();
+                "Select OSCAR Packages To Install...", 
+                [sub { return if (step_test($window,"packages_select"));
+                my $olddir = Cwd::cwd();
                 my $path;
                 if (defined ($ENV{OSCAR_HOME})) {
                     $path = $ENV{OSCAR_HOME} . "/lib";
@@ -361,21 +376,25 @@ if ( $mode eq "install" ) {
                 chdir ($path);
                 system('/usr/bin/perl Selector.pl');
                 chdir($olddir);
-               }], 
-	        'select_packages');
+                }], 
+                'select_packages');
 
    # STEP 2: Configure Selected OSCAR Packages...
    $step_number++;
    oscar_button($window, "Step $step_number:", 
-	        "Configure Selected OSCAR Packages...", 
-	        [\&displayPackageConfigurator, $window, $step_number],
-	        'configure_packages');
+                "Configure Selected OSCAR Packages...", 
+                [sub { return if (step_test($window,"configure_packages"));
+                displayPackageConfigurator($window, $step_number);
+                }],
+                'configure_packages');
 
    # STEP 3: Install OSCAR Server Packages
    $step_number++;
    oscar_button($window, "Step $step_number:", "Install OSCAR Server Packages",
-	        [\&run_server_install, $window, $step_number,
-	         {interface => $interface} ], 'install_server');
+                [sub { return if (step_test($window,"server_install"));
+                run_server_install($window, $step_number, {interface => $interface});
+                }],
+                'install_server');
 }
 
 # STEP 4: Build OSCAR Client Image
@@ -388,46 +407,69 @@ if ( $mode eq "install" ) {
 }
 
 oscar_button($window, $step_string, "Build OSCAR Client Image...", 
-      [\&build_oscar_image, $window, $step_number], 'build_image');
+             [sub { return if (step_test($window,"build_image"));
+             build_oscar_image($window, $step_number);
+             }],
+             'build_image');
 
 if ( $mode eq "manage" ) {
    oscar_button($window, "", "Add OSCAR Clients...",
-                [\&addnode_window, $window, $interface], 'add_nodes');
+                [sub { return if (step_test($window,"add_del_node"));
+                addnode_window($window, $interface);
+                }],
+                'add_nodes');
    oscar_button($window, "", "Delete OSCAR Clients...",
-                [\&delnode_window, $window], 'delete_nodes');
+                [sub { return if (step_test($window,"add_del_node"));
+                delnode_window($window);
+                }],
+               'delete_nodes');
+
+   # FIXME: no step_test for test below... Need to add one.
    oscar_button($window, "",
                 "Install/Uninstall OSCAR Packages...",
-          [\&install_uninstall_packages, $window], 'install_uninstall_packages');
+                [sub { return if (step_test($window,"install_uninstall_packages"));
+                install_uninstall_packages($window);
+                }],
+               'install_uninstall_packages');
 }
 
 if ( $mode eq "install" ) {
    # Add Clients to OSCAR Image
    $step_number++;
    oscar_button($window, "Step $step_number:", "Define OSCAR Clients...", 
-	        [\&build_oscar_clients, $window, $step_number, $interface], 
-	        'addclients');
+                [sub { return if (step_test($window,"add_del_node"));
+                build_oscar_clients($window, $step_number, $interface);
+                }],
+               'addclients');
 
    # Setup Network Booting
    $step_number++;
    oscar_button($window, "Step $step_number:", "Setup Networking...", 
-	        [\&setup_network, $window, $step_number,
-	         $interface], 'netboot');
+                [sub { return if (step_test($window,"netboot_setup"));
+                setup_network($window, $step_number, $interface);
+                }],
+               'netboot');
 
    # Delete Clients returns due to popular demand!
     my $delete_client_button = oscar_button($window,
                                            "",
                                            "Delete OSCAR Clients...",
-                                           [\&delnode_window, $window],
+                                           [sub { return if (step_test($window,"add_del_node"));
+                                           delnode_window($window);
+                                           }],
                                            'delete_nodes');
     # The delete clients is always active.
     $delete_client_button->configure(-state=> "normal");
 
    # Monitor Cluster Deployment
    our $monitor_button = oscar_button($window, "", "Monitor Cluster Deployment",
-                [\&monitor_deployment, $window], 'monitor_deployment');
+                                      [sub { return if (step_test($window,"monitor_deployment"));
+                                      monitor_deployment($window);
+                                      }],
+                                      'monitor_deployment');
 
    my $boot=$window->Label (-text => 
-   			    "Before continuing, network boot all of your nodes.
+       "Before continuing, network boot all of your nodes.
    Once they have completed installation, reboot them from 
    the hard drive. Once all the machines and their ethernet
    adaptors are up, move on to the next step.",-relief=>"groove");
@@ -436,7 +478,10 @@ if ( $mode eq "install" ) {
    # OSCAR post install script
    $step_number++;
    oscar_button($window, "Step $step_number:", "Complete Cluster Setup", 
-	        [\&run_post_install, $window, $step_number], 'post_install');
+                [sub { return if (step_test($window,"complete_cluster_setup"));
+                run_post_install($window, $step_number);
+                }],
+                'post_install');
 }
 
 # Test script
@@ -448,12 +493,21 @@ if ( $mode eq "install" ) {
    $step_string = "";
 }
 
+# NOTE: no step_test for this button as it is itself a full test.
 oscar_button($window, $step_string, "Test Cluster Setup", 
-	     [\&run_tests, $window, $step_number], 'test_install');
+            [\&run_tests, $window, $step_number], 'test_install');
 
 if ( $mode eq "manage" ) {
-   oscar_button($window, "", "Network Boot Manager", [\&netbootmgr, $window], 'netbootmgr') if OSCAR::Database::is_installed_on_node("netbootmgr", undef, undef, undef, undef, undef);
-   oscar_button($window, "", "Ganglia Monitoring System", [\&ganglia, $window], 'ganglia') if OSCAR::Database::is_installed_on_node("ganglia", undef, undef, undef, undef, undef);
+   oscar_button($window, "", "Network Boot Manager",
+                [sub { return if (step_test($window,"netbootmgr"));
+                netbootmgr($window);
+                }],
+               'netbootmgr') if OSCAR::Database::is_installed_on_node("netbootmgr", undef, undef, undef, undef, undef);
+   oscar_button($window, "", "Ganglia Monitoring System",
+                [sub { return if (step_test($window,"ganglia"));
+                ganglia($window);
+                }],
+               'ganglia') if OSCAR::Database::is_installed_on_node("ganglia", undef, undef, undef, undef, undef);
 }
 
 #
@@ -923,21 +977,12 @@ sub run_tests {
     my ($window, $step_number) = @_;
     $window->Busy(-recurse => 1);
 
-#    my $title = "OSCAR Test Cluster Setup";
-
     if ($mode eq "install") {
        oscar_log_section("Running step $step_number of the OSCAR wizard: Test cluster setup");
     } else {
        oscar_log_section("OSCAR Management Wizard: Test cluster setup");
     }
 
-#    my $test_dir;
-#    if (defined $ENV{OSCAR_HOME}) {
-#        $test_dir = "$ENV{OSCAR_HOME}/testing";
-#    } else {
-#        $test_dir = "/usr/lib/oscar/testing/";
-#    }
-#    my $cmd = "cd $test_dir && xterm -T '$title' -n '$title' -geometry 80x47 -sl 500 -e ./test_cluster --wait";
     my $string = "";
 
     if ($mode eq "install") {
@@ -946,12 +991,8 @@ sub run_tests {
         $string = "Running tests";
     }
 
-#    if ($debug) {
-#        $string .= ": $cmd";
-#    }
-
     oscar_log_subsection("$string");
-#    !system("$cmd &") or (carp($!), $window->Unbusy(), return undef);
+
     !test_cluster($window) or (carp($!), $window->Unbusy(), return undef);
   
     if ($mode eq "install") {
