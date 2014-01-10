@@ -26,14 +26,31 @@
   #
   #############################################################################
   -->
+<testDef>
 
-<testBatch>
   <info>
-    Check that everything is ok before we try to start netbootmgr
-  </info>
+This script always fails (enabled for things that are broken or unsupported
+in order to prevent more problem).
 
-  <shortDescription>Before Network Boot Manager: Can we run netbootmgr?</shortDescription>
-  <test name="unsupported.apt"/>
-  <!-- netbootmgr is currently broken (based on obsolete perl-Qt3) -->
+Desired result : FAIL
+</info>
 
-</testBatch>
+  <shortDescription>FAKE: Always false (dummy test)</shortDescription>
+
+  <test type="script">
+  
+    <command interpreter="/bin/bash" wdir="/tmp" uname="oscartst">
+
+echo "ERROR: this is unsupported"
+exit 1
+    </command>
+
+    <output name="stdout" />
+    <output name="stderr" />
+    <output name="status" format="literal">0</output>
+
+  </test>
+
+</testDef>
+
+<!-- EOF -->

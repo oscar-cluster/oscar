@@ -34,6 +34,6 @@
 
   <shortDescription>Before Managing package: Are we ready to Add or Remove a package?</shortDescription>
   <!-- Always false as it is not supported anymore since oscar5 -->
-  <test name="false.apt"/>
+  <test name="unsupported.apt"/>
 
 </testBatch>
