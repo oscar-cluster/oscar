@@ -84,7 +84,7 @@ $rc = SUCCESS;
 exit ($rc);
 </command>
 
-    <output name="stdout" />
+    <output name="stdout" format="regexp">.*</output>
     <output name="stderr" />
     <output name="status" format="literal">0</output>
 
