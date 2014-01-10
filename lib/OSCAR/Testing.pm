@@ -174,7 +174,7 @@ sub run_apitest($) {
     my $apitests_path="/usr/lib/oscar/testing/wizard_tests";
     my $apitest_options = "";
     if($ENV{OSCAR_VERBOSE} > 5) { # debug option
-        $apitest_options = "-o /tmp -v";
+        $apitest_options = "-o /var/log/oscar -v";
     } elsif ($ENV{OSCAR_VERBOSE} > 0) { # verbose option
         $apitest_options = "-T -v";
     }   
