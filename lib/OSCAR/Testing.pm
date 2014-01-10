@@ -43,6 +43,7 @@ use OSCAR::Database;
                 step_test
             );
 
+
 $VERSION = sprintf("r%d", q$Revision: 7332 $ =~ /(\d+)/);
 
 =encoding utf8
@@ -171,19 +172,26 @@ Exported: YES
 sub run_apitest($) {
     my $test_name = shift;
     my $apitests_path="/usr/lib/oscar/testing/wizard_tests";
-    my $cmd = "cd $apitests_path; LC_ALL=C /usr/bin/apitest -T -v -f $test_name";
+    my $apitest_options = "";
+    if($ENV{OSCAR_VERBOSE} > 5) { # debug option
+        $apitest_options = "-o /tmp -v";
+    } elsif ($ENV{OSCAR_VERBOSE} > 0) { # verbose option
+        $apitest_options = "-T -v";
+    }   
+    my $cmd = "cd $apitests_path; LC_ALL=C /usr/bin/apitest $apitest_options -f $test_name";
     my $test_output = "";
     my $rc = 0 ; # SUCCESS
 
-    # FIXME: print "running test...." if $verbose
     # Test that test file exists.
     if ( ! -f "$apitests_path/$test_name" ) {
         $rc = 255; # File not found.
         $test_output = "ERROR: Test $apitests_path/$test_name not found";
+        print "ERROR: $test_output\n" if($ENV{OSCAR_VERBOSE}>0);
         return($test_output, $rc);
     }
 
     # Run the test and collect the output if any.
+    print "Running: $cmd\n" if($ENV{OSCAR_VERBOSE}>0);
     if(! open CMD, "$cmd |") {
         # Problem: can't run the command.
         $rc = $!;
@@ -200,7 +208,9 @@ sub run_apitest($) {
     }
     close CMD; # to get the exit code.
     $rc += $?;
-    # FIXME: print "test results...." if $verbose
+
+    print "     ==> Return code: $rc\n" if($ENV{OSCAR_VERBOSE}>0);
+
     return($test_output, $rc);
 }
 
@@ -225,12 +235,12 @@ sub run_multiple_tests(@) {
     my $all_rc = 0;
     for my $test_to_run ( @apitests_to_run ) {
         ($test_output, $rc) = run_apitest($test_to_run);
-        $all_output .= "===> $test_to_run:\n================================================================================\n";
-        if($rc >= 0) {
-            $all_output .= "FAILED TEST:\n$test_output\n\n";
+        $all_output .= "Processing test: $test_to_run\n================================================================================\n";
+        if($rc > 0) {
+            $all_output .= "=> FAILED!\n$test_output\n\n";
             $all_rc = 1; # Keep track that at least one test failed.
         } else {
-            $all_output .= "TEST SUCCESS\n\n";
+            $all_output .= "=> PASSED\n\n";
         }
     }
     # FIXME: print message if $verbose.
@@ -289,10 +299,12 @@ Return: 0: upon success
 =cut
 ################################################################################
 sub step_test($$) {
-    my ($window, $test_name) = @_;
+    my ($window, $step_name ) = @_;
+    my $test_name="before_".$step_name.".apb";
     my $output= "";
     my $rc=0;
     ($output,$rc) = run_multiple_tests($test_name);
+    $output = "Requirements for step '$step_name' are not met.\nPlease fix problems before retrying.\n\n".$output;
     if( $rc > 0) {
         display_ANSI_results($window, $test_name, $output);
     }
