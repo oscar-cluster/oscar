@@ -34,6 +34,7 @@
 
   <shortDescription>Before Complete Cluster Install: Are condition met for cluster post install?</shortDescription>
   <test name="system-sanity.apb"/>
+  <test name="oscar_db_check.apt.apb"/>
   <dep parent="ssh_user_tests.apb" child="home_mounts_ok.apt"/>
 
 </testBatch>

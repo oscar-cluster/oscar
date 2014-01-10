@@ -33,6 +33,6 @@
   </info>
 
   <shortDescription>Before STEP 3: Can we install server packages?</shortDescription>
-  <test name="true.apt"/>
+  <test name="oscar_db_check.apt"/>
 
 </testBatch>

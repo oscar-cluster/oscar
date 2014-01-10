@@ -33,6 +33,6 @@
   </info>
 
   <shortDescription>Before STEP 2: Can we configure OSCAR packages?</shortDescription>
-  <test name="true.apt"/>
+  <test name="oscar_db_check.apt"/>
 
 </testBatch>

@@ -34,6 +34,6 @@
 
   <shortDescription>Before STEP 1: Can we select OSCAR packages to install.</shortDescription>
   <!-- <test name="repos_initialized.apt"/> -->
-  <test name="true.apt"/>
+  <test name="oscar_db_check.apt"/>
 
 </testBatch>

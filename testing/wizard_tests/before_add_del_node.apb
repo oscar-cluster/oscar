@@ -33,6 +33,6 @@
   </info>
 
   <shortDescription>Before STEP 5: Can we manage nodes (add/del)?</shortDescription>
-  <test name="client_nodes_defined.apt"/>
+  <test name="oscar_db_check.apt"/>
 
 </testBatch>
