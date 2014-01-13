@@ -27,7 +27,16 @@ use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
 use OSCAR::Env;
 
-@EXPORT = qw(oscar_log_section oscar_log_subsection verbose vprint init_log_file update_log_file);
+@EXPORT = qw(
+             oscar_log_section
+             oscar_log_subsection
+             oscar_log_message
+             oscar_log_error
+             verbose
+             vprint
+             init_log_file
+             update_log_file
+            );
 
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
@@ -46,7 +55,7 @@ sub oscar_log_section ($) {
 == $title
 =============================================================================
 
-";
+" if ( OSCAR::Env:oscar_verbose >= 2 );
 }
 
 
@@ -58,12 +67,38 @@ sub oscar_log_section ($) {
 ################################################################################
 sub oscar_log_subsection ($) {
     my $title = shift;
-
-    if ($OSCAR::Env::oscar_verbose) {
-        print "--> $title\n";
-    }
+    oscar_log_message(3,"--> $title\n");
 }
 
+################################################################################
+## Exported function to print a messsage if verbosity is higher than min        #
+##                                                                              #
+## Inputs:  $verbose  min verbosity required to have the message displayed      #
+##          $message  The message itself                                        #
+##                                                                              #
+## Outputs: none                                                                #
+#################################################################################
+sub oscar_log_message ($$) {
+    my($verbose, $message) = @_;
+    print "$message" if($verbose >= $OSCAR::Env::oscar_verbose);
+}
+
+################################################################################
+## Exported function to print a messsage if verbosity is higher than min        #
+##                                                                              #
+## Inputs:  $verbose  min verbosity required to have the message displayed      #
+##          $message  The message itself                                        #
+##                                                                              #
+## Outputs: none                                                                #
+#################################################################################
+sub oscar_log_error ($$) {
+    my($verbose, $message) = @_;
+    if ($OSCAR::Env::oscar_verbose >= 10) {
+        carp "$message"; # in --debug, we use carp to display the message.
+    } else {
+        print "$message" if($verbose >= $OSCAR::Env::oscar_verbose);
+    }
+}
 
 sub verbose {
     print join " ", @_;
