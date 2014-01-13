@@ -53,6 +53,7 @@ use OSCAR::Configurator;
 use OSCAR::Database;
 use OSCAR::DelNode;
 use OSCAR::Distro;
+use OSCAR::Env;
 use OSCAR::GUI_MAC;
 use OSCAR::Help;
 use OSCAR::ImageMgt;
@@ -124,13 +125,17 @@ $initial_verbose_value = $ENV{OSCAR_VERBOSE} if (defined $ENV{OSCAR_VERBOSE});
 
 if (defined $ENV{DEBUG_OSCAR_WIZARD}) {
     $debug = 1;
+    $OSCAR::Env::oscar_debug=1;
 }
 if ($debug) {
     $ENV{OSCAR_VERBOSE} = 10;
+    $OSCAR::Env::oscar_debug=1;
+    $OSCAR::Env::oscar_verbose=1;
 }
 
 if ($verbose) {
     $ENV{OSCAR_VERBOSE} = 5;
+    $OSCAR::Env::oscar_verbose=1;
 }
 
 my %buttons = ();
