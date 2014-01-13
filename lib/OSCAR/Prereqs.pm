@@ -19,6 +19,7 @@ package OSCAR::Prereqs;
 use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
+use OSCAR::Env;
 use OSCAR::PackagePath;
 use OSCAR::PrereqsDefs;
 use warnings "all";
@@ -32,8 +33,6 @@ use Carp;
             get_prereqs_status
             get_rawlist_prereqs
             );
-
-my $verbose = $ENV{OSCAR_VERBOSE};
 
 ################################################################################
 # Prerequisites config file. This is called prereq.cfg and should be located
@@ -90,7 +89,7 @@ sub get_config ($$$$) {
             $match = 0;
             if ($str =~ m/^$mstr$/) {
                 $match = 1;
-                print("found matching block [$d:$v:$a]\n") if ($verbose);
+                print("found matching block [$d:$v:$a]\n") if ($OSCAR::Env::oscar_verbose);
                 last;
             }
         }

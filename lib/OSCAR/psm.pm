@@ -23,7 +23,7 @@ use strict;
 
 use vars qw(@EXPORT);
 use base qw(Exporter);
-use lib ".", "$ENV{OSCAR_HOME}/lib";
+#use lib ".", "$ENV{OSCAR_HOME}/lib";
 our @EXPORT = qw(
                 select_set
                 select_opkg

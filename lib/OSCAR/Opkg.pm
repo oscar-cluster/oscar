@@ -42,6 +42,7 @@ use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use File::Basename;
+use OSCAR::Env;
 use OSCAR::Database;
 use OSCAR::PackagePath;
 use OSCAR::Logger;
@@ -58,7 +59,6 @@ use Carp;
             write_pgroup_files
             );
 
-my $verbose = $ENV{OSCAR_VERBOSE};
 
 # name of OSCAR Package
 my $opkg = basename($ENV{OSCAR_PACKAGE_HOME}) if defined ($ENV{OSCAR_PACKAGE_HOME});
@@ -297,8 +297,8 @@ sub get_list_core_opkgs () {
         unshift (@core_opkgs, $p);
     }
     close (DAT);
-    print "Available core packages: " if $verbose;
-    OSCAR::Utils::print_array (@core_opkgs) if $verbose;
+    print "Available core packages: " if $OSCAR::Env::oscar_verbose;
+    OSCAR::Utils::print_array (@core_opkgs) if $OSCAR::Env::oscar_verbose;
     if (scalar (@core_opkgs) == 0) {
         return undef;
     } else {

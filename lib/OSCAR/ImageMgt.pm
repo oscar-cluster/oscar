@@ -37,6 +37,7 @@ use OSCAR::Logger;
 use OSCAR::PackagePath;
 use OSCAR::Database;
 use OSCAR::Utils;
+use OSCAR::Env;
 use OSCAR::ConfigManager;
 # use SystemImager::Server;
 use OSCAR::Opkg;
@@ -68,7 +69,6 @@ use warnings "all";
             );
 
 our $images_path = "/var/lib/systemimager/images";
-my $verbose = $ENV{OSCAR_VERBOSE};
 
 ################################################################################
 # Set the image in the Database.                                               #
@@ -337,7 +337,7 @@ sub get_image_default_settings () {
         return undef;
     }
 
-    OSCAR::Utils::print_hash ("", "", $master_os) if ($verbose);
+    OSCAR::Utils::print_hash ("", "", $master_os) if ($OSCAR::Env::oscar_verbose);
 
     my $arch = $master_os->{arch};
     my $pkglist = get_binary_list_file($master_os);
@@ -783,10 +783,9 @@ sub create_image ($%) {
     # create a basic image for servers since the server may already be deployed.
     # We currently use the script 'build_oscar_image_cli'. This is a limitation
     # because it only creates an image based on the local Linux distribution.
-    oscar_log_section "Creating the basic golden image..." if $verbose;
+    oscar_log_section "Creating the basic golden image..." if $OSCAR::Env::oscar_verbose;
 
     $vars{imgname} = "$image";
-    $verbose = 1;
 
     my $image_path = "$vars{imgpath}/$vars{imgname}";
     my $cmd = "mksiimage -A --name $vars{imgname} " .
@@ -799,7 +798,7 @@ sub create_image ($%) {
     }
     $cmd .= " $vars{extraflags} --verbose";
 
-    oscar_log_subsection "Executing command: $cmd" if $verbose;
+    oscar_log_subsection "Executing command: $cmd" if $OSCAR::Env::oscar_verbose;
     if (system ($cmd)) {
         carp "ERROR: Impossible to create the image ($cmd)\n";
         cleanup_sis_configfile ($image);
@@ -1193,7 +1192,7 @@ sub install_opkgs_into_image ($@) {
     # need to install the api part.
     foreach my $opkg (@opkgs) {
         oscar_log_subsection "\tInstalling $opkg using opkg-$opkg-client"
-            if $verbose;
+            if $OSCAR::Env::oscar_verbose;
         # Once we have the packman object, it is fairly simple to install opkgs.
         my ($ret, @out) = $rm->install_pkg($image_path, "opkg-$opkg-client");
         if ($ret) {
@@ -1239,17 +1238,17 @@ sub export_image ($$) {
     }
 
     if (image_exists ($partition) == 1) {
-        oscar_log_subsection "INFO: The image already exists" if $verbose;
+        oscar_log_subsection "INFO: The image already exists" if $OSCAR::Env::oscar_verbose;
 
         # the image already exists we just need to create the tarball
         my $cmd = "cd $images_path/$partition; tar czf $tarball *";
-        oscar_log_subsection "Executing: $cmd" if $verbose;
+        oscar_log_subsection "Executing: $cmd" if $OSCAR::Env::oscar_verbose;
         if (system ($cmd)) {
             carp "ERROR: impossible to create the tarball";
             return -1;
         }
     } else {
-        oscar_log_subsection "INFO: the image does not exist" if $verbose;
+        oscar_log_subsection "INFO: the image does not exist" if $OSCAR::Env::oscar_verbose;
         if (-d $temp_dir) {
             rmtree ($temp_dir);
         }
@@ -1270,7 +1269,7 @@ sub export_image ($$) {
 
         # the image is ready to be tared!
         my $cmd = "cd $temp_dir; tar czf $tarball *";
-        oscar_log_subsection "Executing: $cmd" if $verbose;
+        oscar_log_subsection "Executing: $cmd" if $OSCAR::Env::oscar_verbose;
         if (system ($cmd)) {
             carp "ERROR: impossible to create the tarball";
             rmtree ($temp_dir);

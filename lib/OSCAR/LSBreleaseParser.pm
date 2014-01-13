@@ -35,10 +35,9 @@ use strict;
 #use OSCAR::ConfigFile;
 use OSCAR::Logger;
 use OSCAR::Utils;
+use OSCAR::Env;
 use Carp;
 use warnings "all";
-
-my $verbose = $ENV{OSCAR_VERBOSE};
 
 my $lsbrelease_file = "etc/lsb-release";
 
@@ -70,7 +69,7 @@ sub parse_lsbrelease ($) {
     close (FILE);
 
     if (scalar (@data) == 1) {
-        print "This suspects to be an RPM based system\n" if $verbose;
+        print "This suspects to be an RPM based system\n" if $OSCAR::Env::oscar_verbose;
         return undef;
     }
     if (scalar (@data) < 4) {

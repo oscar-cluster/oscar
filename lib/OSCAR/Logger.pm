@@ -25,12 +25,12 @@ use strict;
 use Carp;
 use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
+use OSCAR::Env;
 
 @EXPORT = qw(oscar_log_section oscar_log_subsection verbose vprint init_log_file update_log_file);
 
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
-my $verbose = $ENV{OSCAR_VERBOSE};
 
 ################################################################################
 # Simple routine to output a "section" title to stdout.                        #
@@ -59,7 +59,7 @@ sub oscar_log_section ($) {
 sub oscar_log_subsection ($) {
     my $title = shift;
 
-    if ($ENV{OSCAR_VERBOSE}) {
+    if ($OSCAR::Env::oscar_verbose) {
         print "--> $title\n";
     }
 }
@@ -71,7 +71,7 @@ sub verbose {
 }
 
 sub vprint {
-    print @_ if ($verbose || $ENV{OSCAR_VERBOSE});
+    print @_ if ($OSCAR::Env::oscar_verbose);
 }
 
 ################################################################################

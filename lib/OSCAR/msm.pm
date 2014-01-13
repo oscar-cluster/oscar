@@ -28,6 +28,7 @@ use base qw(Exporter);
 use lib ".", "$ENV{OSCAR_HOME}/lib";
 use XML::Simple;	# Read the XML package set files
 use Data::Dumper;
+use OSCAR::Env;
 use OSCAR::Utils qw ( 
                     print_array
                     is_element_in_array 
@@ -51,7 +52,7 @@ our @EXPORT = qw(
 our $xml = new XML::Simple;  # XML parser object
 our %list;
 
-my $verbose = 0;
+#my $verbose = 0;
 
 use_file("defaultms.xml");
 
@@ -100,11 +101,11 @@ sub list_servers_in_group ($) {
     my @group_servers = ();
 
     my @machines = list_machines_in_group ($group);
-    print "List of machines in set $group: " if $verbose;
-    print_array (@machines) if $verbose;
+    print "List of machines in set $group: " if $OSCAR::Env::oscar_verbose;
+    print_array (@machines) if $OSCAR::Env::oscar_verbose;
     my @servers = list_servers ();
-    print "List of servers: " if $verbose;
-    print_array (@servers) if $verbose;
+    print "List of servers: " if $OSCAR::Env::oscar_verbose;
+    print_array (@servers) if $OSCAR::Env::oscar_verbose;
     foreach my $node (@machines) {
         if (is_element_in_array ($node, @servers)) {
             push (@group_servers, $node);
@@ -129,11 +130,11 @@ sub list_clients_in_group {
     my @group_clients = ();
 
     my @machines = list_machines_in_group ($group);
-    print "List of machines in set $group: " if $verbose;
-    print_array (@machines) if $verbose;
+    print "List of machines in set $group: " if $OSCAR::Env::oscar_verbose;
+    print_array (@machines) if $OSCAR::Env::oscar_verbose;
     my @clients = list_clients ();
-    print "List of clients: " if $verbose;
-    print_array (@clients) if $verbose;
+    print "List of clients: " if $OSCAR::Env::oscar_verbose;
+    print_array (@clients) if $OSCAR::Env::oscar_verbose;
     foreach my $node (@machines) {
         if (is_element_in_array ($node, @clients)) {
             push (@group_clients, $node);
@@ -311,7 +312,7 @@ sub parse_machine_set ($) {
     my $xml_file_path = shift;
 
     # Step 1: We use OSM to parse the XML file
-    print "Parsing the machine set...\n" if $verbose;
+    print "Parsing the machine set...\n" if $OSCAR::Env::oscar_verbose;
     my $res = OSCAR::msm::use_file ($xml_file_path);
     die $res if defined $res;
 
@@ -326,13 +327,13 @@ sub parse_machine_set ($) {
     foreach my $group (@list_sets) {
         # We get the list of servers for the current group of nodes
         my @group_servers = list_servers_in_group ($group);
-        print "List of servers in group $group: " if $verbose;
-        print_array (@group_servers) if $verbose;
+        print "List of servers in group $group: " if $OSCAR::Env::oscar_verbose;
+        print_array (@group_servers) if $OSCAR::Env::oscar_verbose;
 
         # We get the list of clients for the current group of nodes
         my @group_clients = list_clients_in_group ($group);
-        print "List of clients in group $group: " if $verbose;
-        print_array (@group_clients) if $verbose;
+        print "List of clients in group $group: " if $OSCAR::Env::oscar_verbose;
+        print_array (@group_clients) if $OSCAR::Env::oscar_verbose;
 
         # Now we populate the database: each machine group is a partition.
         my @partition_config = ( @group_servers, @group_clients );

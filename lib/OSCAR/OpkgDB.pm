@@ -28,6 +28,7 @@ package OSCAR::OpkgDB;
 use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
+use OSCAR::Env;
 use OSCAR::OCA::OS_Detect;
 use OSCAR::PackagePath;
 use Data::Dumper;
@@ -43,8 +44,7 @@ use Carp;
          oscar_repostring
 	     );
 
-my $verbose = $ENV{OSCAR_VERBOSE};
-$verbose = 1;
+#$verbose = 1;
 
 ####
 # List all opkgs which are available in the accessible repositories.
@@ -79,9 +79,9 @@ sub opkg_list_available {
     my $pkg = $os->{pkg};
     if ($pkg eq "rpm") {
 	my $verbose_switch="";
-	$verbose_switch="--verbose" if $verbose;
+	$verbose_switch="--verbose" if $OSCAR::Env::oscar_verbose;
     	my $cmd="/usr/bin/yume $repo $verbose_switch --repoquery --nevra opkg-*-server";
-	    print STDERR "Running $cmd" if $verbose;
+	    print STDERR "Running $cmd" if $OSCAR::Env::oscar_verbose;
     	open CMD, "$cmd |" or die "Error: $!";
 	    while (<CMD>) {
     	    if (m/^opkg-(.*)-server-(.*).noarch/) {
@@ -91,7 +91,7 @@ sub opkg_list_available {
 	    close CMD;
     } elsif ($pkg eq "deb") {
     	my $cmd="/usr/bin/rapt $repo --names-only search 'opkg-.*-server'";
-	    print "Running $cmd\n" if $verbose;
+	    print "Running $cmd\n" if $OSCAR::Env::oscar_verbose;
     	open CMD, "$cmd |" or die "Error: $!";
 	    while (<CMD>) {
 	        if (m/^opkg-(.*)-server/) {
@@ -156,12 +156,12 @@ sub opkg_hash_available {
 
     # filter class?
     my $class_filter;
-    print "opkg_hash_available: scope =\n".Dumper(%scope) if $verbose;
+    print "opkg_hash_available: scope =\n".Dumper(%scope) if $OSCAR::Env::oscar_verbose;
     if (defined($scope{class})) {
         $class_filter = $scope{class};
         delete $scope{class};
         print "opkg_hash_available: class_filter = $class_filter\n"
-            if $verbose;
+            if $OSCAR::Env::oscar_verbose;
     }
     my $os = $scope{os} if (defined($scope{os}));
 
@@ -186,7 +186,7 @@ sub opkg_hash_available {
     my $group;
     if ($pkg eq "rpm") {
         my $verbose_switch="";
-        $verbose_switch="--verbose" if $verbose;
+        $verbose_switch="--verbose" if $OSCAR::Env::oscar_verbose;
         my $cmd="/usr/bin/yume $repo $verbose_switch --repoquery --info opkg-*-server";
         %o = hash_from_cmd_rpm($cmd, $dist);
     } elsif ($pkg eq "deb") {
@@ -199,7 +199,7 @@ sub opkg_hash_available {
         }
         @opkgs = map { "opkg-$_" } @opkgs;
         my $cmd="/usr/bin/rapt $repo show ".join(" ", @opkgs);
-        print "Running $cmd\n" if $verbose;
+        print "Running $cmd\n" if $OSCAR::Env::oscar_verbose;
         open CMD, "$cmd |" or die "Error: $!";
         while (<CMD>) {
             chomp;
@@ -299,7 +299,7 @@ sub opkg_list_installed {
     if ($pkg eq "rpm") {
         chomp(my $rpm_cmd = `which rpm`);
 	my $cmd="$rpm_cmd -qa --qf='%{NAME} %{VERSION}-%{RELEASE}\n'";
-	print "Running $cmd" if $verbose;
+	print "Running $cmd" if $OSCAR::Env::oscar_verbose;
 	open CMD, "$cmd |" or die "Error: $!";
 	while (<CMD>) {
 	    chomp;
@@ -319,7 +319,7 @@ sub opkg_list_installed {
 	close CMD;
     } elsif ($pkg eq "deb") {
 	my $cmd="env COLUMNS=256 /usr/bin/dpkg -l \"opkg-*\"";
-	print "Running $cmd" if $verbose;
+	print "Running $cmd" if $OSCAR::Env::oscar_verbose;
 	open CMD, "$cmd |" or die "Error: $!";
 	while (<CMD>) {
 	    if (m/^\S+\s+opkg-(.*)\s+(\S+)\s/) {
@@ -403,15 +403,15 @@ sub opkg_hash_installed ($%) {
 
     # go through result and apply the class filter, if needed
     if ($class_filter) {
-        print "Filtering for class = \"$class_filter\"\n" if $verbose;
+        print "Filtering for class = \"$class_filter\"\n" if $OSCAR::Env::oscar_verbose;
         for my $p (keys(%opkgs)) {
             my %h = %{$opkgs{$p}};
-            print "$p -> class: $h{class}" if $verbose;
+            print "$p -> class: $h{class}" if $OSCAR::Env::oscar_verbose;
             if ($h{class} ne $class_filter) {
                 delete $opkgs{$p};
-                print " ... deleted" if $verbose;
+                print " ... deleted" if $OSCAR::Env::oscar_verbose;
             }
-            print "\n" if $verbose;
+            print "\n" if $OSCAR::Env::oscar_verbose;
         }
     }
     return %opkgs;
@@ -480,7 +480,7 @@ sub hash_from_cmd_rpm ($$) {
     my $isdesc = 1;
     my ($name, $rel, $ver, $packager, $summary, $desc, $class, $group);
     my ($conflicts);
-    print "Executing: $cmd\n" if $verbose;
+    print "Executing: $cmd\n" if $OSCAR::Env::oscar_verbose;
     open CMD, "$cmd |" or die "Error: $!";
     while (<CMD>) {
     chomp;

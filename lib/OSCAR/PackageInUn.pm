@@ -35,6 +35,7 @@ use Cwd;
 
 # use SIS::DB;
 
+use OSCAR::Env;
 use OSCAR::Package;
 use OSCAR::Database;
 use OSCAR::Logger;
@@ -44,7 +45,7 @@ use English;
 # use OSCAR::PackMan;
 # use OSCAR::WizardEnv;
 
-my $verbose = 1;
+#my $verbose = 1;
 
 #this doesn't seem to effect the namespace of the calling script
 use vars qw(@EXPORT);
@@ -116,7 +117,7 @@ sub update_opkg_status ($$) {
         # We need to install the package
         print "[PackageInUn] Updating Node_Package_Status to ".
               "should_be_installed ($opkg)\n"
-            if $verbose;
+            if $OSCAR::Env::oscar_verbose;
         my $success = OSCAR::Database::update_node_package_status(
                             \%options,
                             "oscar_server",
@@ -137,7 +138,7 @@ sub update_opkg_status ($$) {
         # We need to remove the package
         print "[PackageInUn] Updating Node_Package_Status to ".
               "should_not_be_installed ($opkg)\n"
-            if $verbose;
+            if $OSCAR::Env::oscar_verbose;
         my $success = OSCAR::Database::update_node_package_status(
                             \%options,
                             "oscar_server",

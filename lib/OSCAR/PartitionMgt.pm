@@ -30,6 +30,7 @@ package OSCAR::PartitionMgt;
 use strict;
 use File::Path;
 use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Env;
 use OSCAR::Utils;
 use OSCAR::FileUtils;
 use OSCAR::Database_generic qw (
@@ -60,8 +61,6 @@ use warnings "all";
             oda_create_new_partition
             validate_partition_data
             );
-
-my $verbose = $ENV{OSCAR_VERBOSE};
 
 ################################################################################
 # Return the Linux distribution ID (OS_Detect syntax) associated to the        #
@@ -278,7 +277,7 @@ sub get_list_partitions ($) {
 sub oda_create_new_partition ($$$$$) {
     my ($cluster_name, $partition_name, $distro, $servers, $clients) = @_;
 
-    if ($verbose) {
+    if ($OSCAR::Env::oscar_verbose) {
         oscar_log_section "ODA: Creating a new partition";
         oscar_log_subsection "Cluster: $cluster_name";
         oscar_log_subsection "Partition: $partition_name";
@@ -306,7 +305,7 @@ sub oda_create_new_partition ($$$$$) {
                         $distro,
                         $servers,
                         $clients);
-    oscar_log_section "ODA: New partition created" if $verbose;
+    oscar_log_section "ODA: New partition created" if $OSCAR::Env::oscar_verbose;
 
     return 0;
 }
@@ -433,12 +432,12 @@ sub set_partition_info {
         # We get the ODA id for servers (need in order to populate the database)
         $sql = "SELECT id FROM Groups WHERE name='oscar_server'";
         my $server_id = oda_query_single_result ($sql, "id");
-        print "ODA Server Id: $server_id\n" if $verbose;
+        print "ODA Server Id: $server_id\n" if $OSCAR::Env::oscar_verbose;
 
         # We get the ODA id for clients (need in order to populate the database)
         $sql = "SELECT id FROM Groups WHERE name='oscar_clients'";
         my $client_id = oda_query_single_result ($sql, "id");
-        print "ODA client Id: $client_id\n" if $verbose;
+        print "ODA client Id: $client_id\n" if $OSCAR::Env::oscar_verbose;
     } elsif ($config->{oda_type} eq "file") {
         my $basedir = $config->{oda_files_path};
         if ( ! -d "$basedir") {
@@ -536,7 +535,7 @@ sub set_node_to_partition ($$$$) {
     }
     my $config = $oscar_configurator->get_config();
 
-    if ($verbose) {
+    if ($OSCAR::Env::oscar_verbose) {
         oscar_log_section "Adding a node to a partition";
         oscar_log_subsection "Cluster name: $cluster_name";
         oscar_log_subsection "Partition name: $partition_name";
@@ -551,7 +550,7 @@ sub set_node_to_partition ($$$$) {
         my @node_ids = simple_oda_query ($sql, "id");
         my $node_id;
         if ( !scalar(@node_ids) ) {
-            print "The node is not in the database, we add it...\n" if $verbose;
+            print "The node is not in the database, we add it...\n" if $OSCAR::Env::oscar_verbose;
             my %node_info = ('name' => $node_name, 'type' => $node_type);
             my @list_nodes = ();
             push (@list_nodes, \%node_info);
@@ -606,10 +605,10 @@ sub set_node_to_partition ($$$$) {
 sub oda_add_node (@) {
     my @node_list = @_;
 
-    oscar_log_section "Adding nodes to the database" if $verbose;
+    oscar_log_section "Adding nodes to the database" if $OSCAR::Env::oscar_verbose;
     foreach my $node (@node_list) {
-        oscar_log_subsection "\tNode name: $node->{'name'}" if $verbose;
-        oscar_log_subsection "\tNode type: $node->{'type'}" if $verbose;
+        oscar_log_subsection "\tNode name: $node->{'name'}" if $OSCAR::Env::oscar_verbose;
+        oscar_log_subsection "\tNode type: $node->{'type'}" if $OSCAR::Env::oscar_verbose;
         # We need at list the name of the node and its type
         if (!defined ($node->{'name'}) || !defined ($node->{'type'})) {
             carp "ERROR: Impossible to get enough information about the node. ".
@@ -627,7 +626,7 @@ sub oda_add_node (@) {
                              \@error_string,
                              "oscar");
     }
-    oscar_log_section "Nodes added to the database" if $verbose;
+    oscar_log_section "Nodes added to the database" if $OSCAR::Env::oscar_verbose;
 }
 
 ################################################################################
@@ -771,7 +770,7 @@ sub deploy_partition ($$) {
         my $partition_config = $config_obj->get_config();
         my $opkgs = $partition_config->{'opkgs'};
         require OSCAR::Utils;
-        OSCAR::Utils::print_array (@$opkgs) if $verbose;
+        OSCAR::Utils::print_array (@$opkgs) if $OSCAR::Env::oscar_verbose;
 
         if (OSCAR::ImageMgt::install_opkgs_into_image ($partition, @$opkgs)) {
             carp "ERROR: Impossible to install OPKGs into the basic image\n";
@@ -871,7 +870,7 @@ sub assign_client_to_partition ($$) {
         print "INFO: No nodes to assign.\n";
         return 0;
     }
-    OSCAR::Utils::print_array (@nodes) if $verbose;
+    OSCAR::Utils::print_array (@nodes) if $OSCAR::Env::oscar_verbose;
     my $cmd;
     foreach my $node (@nodes) {
         require OSCAR::NodeMgt;

@@ -32,6 +32,7 @@ use strict;
 use Switch;
 use OSCAR::Defs;
 use OSCAR::Logger;
+use OSCAR::Env;
 use File::Basename;
 use File::Path;
 use vars qw(@EXPORT);
@@ -56,8 +57,6 @@ use Carp;
             remove_from_annoted_block
             replace_block_in_file
             );
-
-our $verbose = $ENV{OSCAR_VERBOSE};
 
 ################################################################################
 # Crate a backup of a file with .oscarbak extention in the same directory if   #
@@ -139,7 +138,7 @@ sub download_file ($$$$) {
         $cmd = "cd $dest; wget ";
         $cmd .= "-nc " if ($overwrite eq OSCAR::Defs::NO_OVERWRITE());
         $cmd .= "$source";
-        $cmd .= " 1>/dev/null 2>/dev/null" if (!$verbose);
+        $cmd .= " 1>/dev/null 2>/dev/null" if (!$OSCAR::Env::oscar_verbose);
         my $rc = system ($cmd);
         # It seems that the wget return code for errors is 1. Note that other 
         # values > 0 are returned in some specific case which are not 
@@ -165,7 +164,7 @@ sub extract_file ($$) {
     my $cmd="";
     switch (file_type($file)) {
         case OSCAR::Defs::TARBALL() {
-            $verbose_switch="v" if ($verbose > 0);
+            $verbose_switch="v" if ($OSCAR::Env::oscar_verbose > 0);
             switch ($file) {
                 case /\.gz|\.tgz/ { $compression_switch = "z"; }
                 case /\.bz2|\.tbz/ { $compression_switch = "j"; }

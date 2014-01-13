@@ -30,7 +30,18 @@ use Carp;
 
 @EXPORT = qw(
             oscar_home_env
+            $oscar_verbose
+            $oscar_debug
             );
+
+# Set initial values for oscar_verbose and oscar_debug
+our $oscar_verbose = 0;
+our $oscar_debug = 0;
+
+if (defined $ENV{OSCAR_VERBOSE}) {
+    $oscar_debug = 1 if ($ENV{OSCAR_VERBOSE} >= 10);
+    $oscar_verbose = 1 if ($ENV{OSCAR_VERBOSE} >= 5);
+}
 
 #
 # Check for OSCAR_HOME environment variable and its correctness

@@ -12,12 +12,12 @@
 package OSCAR::OCA::OS_Settings;
 
 use strict;
+use OSCAR::Env;
 use OSCAR::OCA::OS_Detect;
 use vars qw(@EXPORT $LOCAL_NODE_OS);
 use base qw(Exporter);
 use Data::Dumper;
 
-my $verbose = $ENV{OSCAR_VERBOSE};
 
 # readfile() does the "heavy lifting" of reading the configuration files
 #
@@ -33,7 +33,7 @@ sub readfile ($$) {
         $path = OSCAR::Utils::get_path_perl_modules();
         $path .= "/OSCAR/OCA/OS_Settings/$file";
     }
-    #print "Opening file $path\n" if $verbose;
+    #print "Opening file $path\n" if $OSCAR::Env::oscar_verbose;
     open(CONFIG,"$path") or return $config;
     while (<CONFIG>) {
         chomp;
@@ -77,13 +77,13 @@ sub getconf () {
 sub getitem ($) {
     my $request = shift;
     my $config = getconf();
-    if ($verbose) { print "Called getitem with " . $request . " and returning " . $config->{$request} . "\n" };
-    #if ($verbose) { print Dumper($config) };
+    if ($OSCAR::Env::oscar_verbose) { print "Called getitem with " . $request . " and returning " . $config->{$request} . "\n" };
+    #if ($OSCAR::Env::oscar_verbose) { print Dumper($config) };
     if ( $config->{$request} ) {
         return $config->{$request};
         } else {
         # Unclear if we should die, or return undef here..
-        if ($verbose) { print "We did not find a config option for " . $request . " please check the configuration files in lib/OSCAR/OCA/OS_Settings\n" };
+        if ($OSCAR::Env::oscar_verbose) { print "We did not find a config option for " . $request . " please check the configuration files in lib/OSCAR/OCA/OS_Settings\n" };
         return undef;
         }
     }

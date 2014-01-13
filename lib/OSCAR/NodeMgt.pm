@@ -38,6 +38,7 @@ BEGIN {
 }
 
 use strict;
+use OSCAR::Env;
 use OSCAR::ConfigManager;
 use OSCAR::FileUtils;
 use OSCAR::Database;
@@ -65,7 +66,6 @@ use warnings "all";
             update_list_alive_nodes
             );
 
-my $verbose = $ENV{OSCAR_VERBOSE};
 # Where the configuration files are.
 our $basedir = "/etc/oscar/clusters";
 
@@ -557,7 +557,7 @@ sub get_node_config ($$$) {
 sub set_node_config ($$$$) {
     my ($cluster, $partition, $node_name, $node_config) = @_;
 
-    if ($verbose) {
+    if ($OSCAR::Env::oscar_verbose) {
         oscar_log_section "Saving node configuration...";
         oscar_log_subsection "Cluster: $cluster";
         oscar_log_subsection "Partition: $partition";
@@ -632,7 +632,7 @@ sub get_list_of_down_nodes {
     my @c3out = `/usr/bin/cexec -p echo ALIVE`;
     my @alive = grep /ALIVE/,@c3out;
 
-    if ($verbose) {
+    if ($OSCAR::Env::oscar_verbose) {
         print "=== c3_hosts_up():\n";
         print "c3out:\n";
         print @c3out;
@@ -650,7 +650,7 @@ sub get_list_of_down_nodes {
         }
     }
 
-    if ($verbose) {
+    if ($OSCAR::Env::oscar_verbose) {
         print "Down nodes:\n";
     	OSCAR::Utils::print_array (@down_nodes);
     }
@@ -664,7 +664,7 @@ sub get_list_of_down_nodes {
 sub c3_hosts_up () {
     my @c3out = `/usr/bin/cexec -p echo ALIVE`;
     my @alive = grep /ALIVE/,@c3out;
-    if ($verbose) {
+    if ($OSCAR::Env::oscar_verbose) {
         print "=== c3_hosts_up():\n";
         print "c3out:\n";
         print @c3out;
@@ -691,7 +691,7 @@ sub update_list_alive_nodes () {
             carp "ERROR: Impossible to find an entry for $node in /etc/c3.conf";
             return -1;
         }
-        if ($verbose) {
+        if ($OSCAR::Env::oscar_verbose) {
             print "WARNING: disabling node ".$node." in /etc/c3.conf as it seems down.\n";
         }
         OSCAR::FileUtils::replace_line_in_file ("/etc/c3.conf", $pos, "\tdead $node"); 

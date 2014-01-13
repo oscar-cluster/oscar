@@ -21,6 +21,7 @@ package OSCAR::pxegrub;
 use strict;
 use vars qw($VERSION @EXPORT);
 use File::Basename;
+use OSCAR::Env;
 use OSCAR::Defs;
 use OSCAR::Utils;
 use OSCAR::Logger;
@@ -32,7 +33,7 @@ use Carp;
             setup_pxegrub
             );
 
-my $verbose = 1;
+#my $verbose = 1;
 
 ################################################################################
 # Check whether a given NIC is supported or not.                               #
@@ -54,7 +55,7 @@ sub is_a_valid_nic ($) {
 
     my $nics_file = $config->{nics_deffile};
     print "Path of the file giving the list of supported NICs: $nics_file\n"
-        if $verbose;
+        if $OSCAR::Env::oscar_verbose;
 
     # We read the file with the list of supported NICs. The result is in an 
     # array.
@@ -78,7 +79,7 @@ sub load_supported_nics ($) {
     my @supported_nics;
     my $line;
 
-    print "Opening file: $file\n" if $verbose;
+    print "Opening file: $file\n" if $OSCAR::Env::oscar_verbose;
     open(DAT, $file);
     while ($line = <DAT>) {
         my ($id, $desc) = split (" | ", $line);
@@ -86,7 +87,7 @@ sub load_supported_nics ($) {
     }
     close (DAT);
 
-    OSCAR::Utils::print_array(@supported_nics) if $verbose;
+    OSCAR::Utils::print_array(@supported_nics) if $OSCAR::Env::oscar_verbose;
 
     return @supported_nics;
 }
@@ -115,7 +116,7 @@ sub setup_pxegrub ($) {
 
     # Untar it
     $cmd = "cd $dest; tar xzf $file";
-    oscar_log_subsection "Executing: $cmd" if $verbose;
+    oscar_log_subsection "Executing: $cmd" if $OSCAR::Env::oscar_verbose;
     if (system ($cmd)) {
         carp "ERROR: Impossible to untar the file ($file)";
         return undef;
@@ -128,7 +129,7 @@ sub setup_pxegrub ($) {
 
     # Set it up
     $cmd = "cd $dest/$dir; ./configure --enable-$nic_id --enable-diskless";
-    oscar_log_subsection "Executing: $cmd" if $verbose;
+    oscar_log_subsection "Executing: $cmd" if $OSCAR::Env::oscar_verbose;
     if (system ($cmd)) {
         carp "ERROR: Impossible to setup grub ($cmd)";
         return undef;
@@ -136,7 +137,7 @@ sub setup_pxegrub ($) {
 
     # Compile it
     $cmd = "cd $dest/$dir; make";
-    oscar_log_subsection "Executing: $cmd" if $verbose;
+    oscar_log_subsection "Executing: $cmd" if $OSCAR::Env::oscar_verbose;
     if (system ($cmd)) {
         carp "ERROR: Impossible to compile grub ($cmd)";
         return undef;
@@ -182,7 +183,7 @@ sub install_pxegrub ($) {
     }
 
     my $cmd = "cd $path; cp stage2/nbgrub /tftpboot";
-    oscar_log_subsection "Executing: $cmd" if $verbose;
+    oscar_log_subsection "Executing: $cmd" if $OSCAR::Env::oscar_verbose;
     if (system($cmd)) {
         carp "ERROR: Impossible to install Grub ($cmd)";
         return -1;

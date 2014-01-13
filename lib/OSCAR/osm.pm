@@ -23,7 +23,7 @@ use strict;
 
 use vars qw(@EXPORT);
 use base qw(Exporter);
-use lib ".", "$ENV{OSCAR_HOME}/lib";
+#use lib ".", "$ENV{OSCAR_HOME}/lib";
 our @EXPORT = qw(
                 add_set
                 add_opkg
@@ -33,6 +33,7 @@ our @EXPORT = qw(
                 result
                 );
 
+use OSCAR::Env;
 use OSCAR::psm;
 use OSCAR::msm;
 use OSCAR::Database qw (
@@ -43,8 +44,6 @@ use OSCAR::Utils qw (print_array);
 use Data::Dumper;
 
 our %data;
-
-my $verbose = $ENV{OSCAR_VERBOSE};
 
 #########################################################################
 # Subroutine : add_set                                                  #
@@ -76,7 +75,7 @@ sub add_set {
 		push(@{$data{$machine}{sets}}, $pkgset);
 	}
 	
-    if ($verbose) {
+    if ($OSCAR::Env::oscar_verbose) {
         print "Number of elements in the hash: " . scalar (%data) . "\n";
         Dump (%data);
     }
@@ -278,7 +277,7 @@ sub update_image_data {
 sub osm_update_oda {
     my ($table_id, %data) = @_;
 
-    if ($verbose) {
+    if ($OSCAR::Env::oscar_verbose) {
         print "Data to update: \n";
         while ((my $key, my $value) = each(%data)) {
             print $key.", ".$value."\n";

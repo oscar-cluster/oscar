@@ -31,6 +31,7 @@ package OSCAR::PackagePath;
 use strict;
 use vars qw(@EXPORT @PKG_SOURCE_LOCATIONS $PGROUP_PATH);
 use base qw(Exporter);
+use OSCAR::Env;
 use OSCAR::OCA::OS_Detect;
 use OSCAR::Logger;
 use OSCAR::Utils;
@@ -74,8 +75,6 @@ use Carp;
 	     );
 
 my $tftpdir = "/tftpboot/";
-
-my $verbose = $ENV{OSCAR_VERBOSE};
 
 # The possible places where packages may live.  
 @PKG_SOURCE_LOCATIONS = ("/usr/lib/oscar/packages");
@@ -155,7 +154,7 @@ sub repos_list_urlfile ($) {
 sub repos_add_urlfile ($@) {
     my ($path, @repos) = (@_);
     
-    if ($ENV{OSCAR_VERBOSE}) {
+    if ($OSCAR::Env::oscar_verbose) {
         print "Adding the repositories: ";
         OSCAR::Utils::print_array (@repos);
     }
@@ -639,7 +638,7 @@ sub mirror_yum_repo ($$$) {
 
     # Now we generate the metadata of the new repo
     OSCAR::Logger::oscar_log_subsection "Generating the mirror meta-data...";
-    my $pm = OSCAR::PackageSmart::prepare_pool ($ENV{OSCAR_VERBOSE},
+    my $pm = OSCAR::PackageSmart::prepare_pool ($OSCAR::Env::oscar_verbose,
                                                 $path);
     if (!defined $pm) {
         carp "ERROR: impossible to generate the metadata of the mirror";
@@ -725,7 +724,7 @@ sub mirror_apt_repo ($$$) {
                             return -1);
 
     oscar_log_subsection "Generating the mirror meta-data...";
-    my $pm = OSCAR::PackageSmart::prepare_pool ($ENV{OSCAR_VERBOSE},
+    my $pm = OSCAR::PackageSmart::prepare_pool ($OSCAR::Env::oscar_verbose,
                                                 $dest_dir);
     if (!defined $pm) {
         carp "ERROR: impossible to generate the metadata of the mirror";

@@ -57,8 +57,6 @@ use Carp;
             rtrim
             );
 
-my $verbose = $ENV{OSCAR_VERBOSE};
-
 ################################################################################
 # Check if an element is in an array.                                          #
 #                                                                              #

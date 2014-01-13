@@ -28,11 +28,11 @@ BEGIN {
 use strict;
 use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
-#use Tk::TextANSIColor;
 use Tk::ROTextANSIColor;
 use OSCAR::Tk;
 use OSCAR::Package;
 use OSCAR::Database;
+use OSCAR::Env;
 
 @EXPORT = qw(
                 display_apitest_results
@@ -173,9 +173,9 @@ sub run_apitest($) {
     my $test_name = shift;
     my $apitests_path="/usr/lib/oscar/testing/wizard_tests";
     my $apitest_options = "";
-    if($ENV{OSCAR_VERBOSE} > 5) { # debug option
+    if($OSCAR::Env::oscar_debug) { # debug option
         $apitest_options = "-o /var/log/oscar -v";
-    } elsif ($ENV{OSCAR_VERBOSE} > 0) { # verbose option
+    } elsif ($OSCAR::Env::oscar_verbose) { # verbose option
         $apitest_options = "-T -v";
     }   
     my $cmd = "cd $apitests_path; LC_ALL=C /usr/bin/apitest $apitest_options -f $test_name";
@@ -186,12 +186,12 @@ sub run_apitest($) {
     if ( ! -f "$apitests_path/$test_name" ) {
         $rc = 255; # File not found.
         $test_output = "ERROR: Test $apitests_path/$test_name not found";
-        print "ERROR: $test_output\n" if($ENV{OSCAR_VERBOSE}>0);
+        print "ERROR: $test_output\n" if($OSCAR::Env::oscar_verbose);
         return($test_output, $rc);
     }
 
     # Run the test and collect the output if any.
-    print "Running: $cmd\n" if($ENV{OSCAR_VERBOSE}>0);
+    print "Running: $cmd\n" if($OSCAR::Env::oscar_verbose);
     if(! open CMD, "$cmd |") {
         # Problem: can't run the command.
         $rc = $!;
@@ -209,7 +209,7 @@ sub run_apitest($) {
     close CMD; # to get the exit code.
     $rc += $?;
 
-    print "     ==> Return code: $rc\n" if($ENV{OSCAR_VERBOSE}>0);
+    print "     ==> Return code: $rc\n" if($OSCAR::Env::oscar_verbose);
 
     return($test_output, $rc);
 }

@@ -36,6 +36,7 @@ use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use File::Basename;
+use OSCAR::Env;
 use Carp;
 
 use OSCAR::Logger;
@@ -60,8 +61,6 @@ our $iscmd;
 our $prereq_path;
 
 my $configfile_path = "/etc/oscar/oscar.conf";
-
-my $verbose = $ENV{OSCAR_VERBOSE};
 
 
 ################################################################################
@@ -320,7 +319,7 @@ sub init_server ($) {
         carp "ERROR: No core packages found";
         return -1;
     }
-    OSCAR::Utils::print_array (@core_opkgs) if $verbose;
+    OSCAR::Utils::print_array (@core_opkgs) if $OSCAR::Env::oscar_verbose;
 
     # We install one OPKG at a time so if the installation of one OPKG fails,
     # we can track it in details.
