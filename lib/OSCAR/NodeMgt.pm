@@ -98,7 +98,7 @@ sub is_headnode () {
 sub add_clients ($) {
     my $client_refobj = shift;
 
-    $ENV{OSCAR_VERBOSE} = 5;
+#    $ENV{OSCAR_VERBOSE} = 5;
 
     OSCAR::Logger::oscar_log_subsection "Adding clients...";
     print Dumper $client_refobj;

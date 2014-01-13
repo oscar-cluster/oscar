@@ -31,13 +31,13 @@ BEGIN {
     }
 }
 
-#use lib "/usr/lib/systeminstaller";
 use strict;
 use File::Copy;
 use SIS::Adapter;
 use SIS::Client;
 use SIS::NewDB;
 use SIS::Image;
+use OSCAR::Env;
 use OSCAR::Network;
 use OSCAR::FileUtils;
 
@@ -505,7 +505,7 @@ sub generate_uyok {
         }
     }
     my $cmd = "si_prepareclient --server $hostname --yes";
-    $cmd = "$cmd --quiet" unless $ENV{OSCAR_VERBOSE};
+    $cmd = "$cmd --quiet" unless $OSCAR::Env::oscar_verbose;
 
     if (system($cmd)) {
         carp ("ERROR: Failed to run: $cmd");
@@ -665,7 +665,7 @@ sub __run_setup_pxe ($) {
     my $bin_path = $config->{'binaries_path'};
 
     my $cmd = "$bin_path/setup_pxe";
-    if ($ENV{OSCAR_VERBOSE}) {
+    if ($OSCAR::Env::oscar_verbose) {
         $cmd = "$cmd -v";
     }
 

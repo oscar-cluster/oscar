@@ -278,7 +278,7 @@ sub init_server ($) {
         $cmd = $oscar_cfg->{'binaries_path'}."/set_global_oscar_values ".
                "--interface $interface";
     }
-    if ($ENV{OSCAR_VERBOSE} >= 5) {
+    if ($OSCAR::Env::oscar_debug) {
         $cmd .= "  --debug";
     }
     $exit_status = system($cmd)/256;

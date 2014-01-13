@@ -31,6 +31,7 @@ use strict;
 use vars qw($VERSION @EXPORT);
 use File::Copy;
 use Net::IPv4Addr;
+use OSCAR::Env;
 use OSCAR::Database;
 use OSCAR::Logger qw ( verbose );
 use OSCAR::Utils;
@@ -526,10 +527,10 @@ sub update_head_nic () {
                                                       undef,
                                                       "OSCAR_SCRIPTS_PATH");
     $cmd = "$binaries_path/set_node_nics --networks";
-    if ($ENV{OSCAR_VERBOSE} >= 5 && $ENV{OSCAR_VERBOSE} < 10) {
-        $cmd .= " --verbose";
-    } elsif ($ENV{OSCAR_VERBOSE} >= 10) {
+    if ($OSCAR::Env::oscar_debug) {
         $cmd .= " --debug";
+    } elsif ($OSCAR::Env::oscar_verbose) {
+        $cmd .= " --verbose";
     }
     if (system ($cmd)) {
         carp "ERROR: Impossible to successfully execute \"$cmd\"";
