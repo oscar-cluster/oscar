@@ -1,9 +1,10 @@
 package OSCAR::LoggerDefs;
 
 #
-# Copyright (c) 2008-2009 Geoffroy Vallee <valleegr@ornl.gov>
-#                         Oak Ridge National Laboratory
-#                         All rights reserved.
+# Copyright (c) 2014 Olivier Lahaye <olivier.lahaye@cea.fr>
+#                    CEA Commissariat a l'Energie Atomique
+#                    et aux Energies Alternatives.
+#                    All rights reserved.
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -19,12 +20,11 @@ package OSCAR::LoggerDefs;
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# This package provides a set of functions for the management of system
-# services.
+# This package provides constant variables to use with OSCAR::Logger functions.
 #
 
 #
-# $Id: LoggerDefs.pm ol222822 $
+# $Id: $
 #
 
 use strict;
