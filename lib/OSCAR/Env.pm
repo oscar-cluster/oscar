@@ -23,27 +23,21 @@ use strict;
 use Cwd qw(chdir cwd);
 
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use File::Basename;
 use vars qw(@EXPORT);
 use base qw(Exporter);
-use Carp;
 
 @EXPORT = qw(
             oscar_home_env
-            $oscar_verbosity
             $oscar_verbose
-            $oscar_debug
             );
 
-# Set initial values for oscar_verbose and oscar_debug
-our $oscar_verbosity = 0;
-our $oscar_verbose = 0;
-our $oscar_debug = 0;
+# Set initial values for oscar_verbose (default to 1)
+our $oscar_verbose = 1;
 
 if (defined $ENV{OSCAR_VERBOSE}) {
-    $oscar_debug = 1 if ($ENV{OSCAR_VERBOSE} >= 10);
-    $oscar_verbose = 1 if ($ENV{OSCAR_VERBOSE} >= 5);
-    $oscar_verbosity = $ENV{OSCAR_VERBOSE};
+    $oscar_verbose = $ENV{OSCAR_VERBOSE};
 }
 
 #
@@ -53,7 +47,7 @@ if (defined $ENV{OSCAR_VERBOSE}) {
 sub oscar_home_env {
     my $ohome = &cwd();
     if (dirname($0) ne ".") {
-    carp("You MUST execute the program from within the OSCAR top level directory!\n");
+        oscar_log(1, ERROR, "You MUST execute the program from within the OSCAR top level directory!");
     }
 
     # Two situations now: we are using an RPM based distro therefore we need to update /etc/profile.d/, or we are using a Debian-like distro and therefore, we do not have a /etc/profile.d/ folder (see Debian policies for more information), and we update /root/.bashrc
@@ -74,36 +68,36 @@ sub oscar_home_env {
         # do profile.d files already exist?
         my ($dir_csh, $dir_sh) = &profiled_files_read();
         if ($dir_csh ne $dir_sh) {
-            print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
-            print "The /etc/profile.d/oscar_home.{csh,sh} files point to\n";
-            print "different \$OSCAR_HOME environment variables!\n";
-            print "Fix or delete them and rerun this program!\n";
-            print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+            oscar_log(1, ERROR, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" .
+                                "The /etc/profile.d/oscar_home.{csh,sh} files point to\n" .
+                                "different \$OSCAR_HOME environment variables!\n" .
+                                "Fix or delete them and rerun this program!\n" .
+                                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
             exit 1;
         }
         # is there another OSCAR installation around?
         if ($dir_sh && ($dir_sh ne $ohome)) {
-            print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
-            print "The /etc/profile.d/oscar_home.{csh,sh} files already \n";
-            print "exist and point to a different OSCAR installation!\n";
-            print "If you want to DELETE the other OSCAR installation (!!!)\n";
-            print "you should do:\n";
-            print "   cd $dir_sh\n";
-            print "   scripts/start_over\n";
-            print "Then rerun this script.\n";
-            print "ATTENTION: The steps described above will remove all OSCAR\n";
-            print "packages and delete all defined cluster nodes!\n";
-            print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+            oscar_log(1, ERROR, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" .
+                                "The /etc/profile.d/oscar_home.{csh,sh} files already \n" .
+                                "exist and point to a different OSCAR installation!\n" .
+                                "If you want to DELETE the other OSCAR installation (!!!)\n" .
+                                "you should do:\n" .
+                                "   cd $dir_sh\n" .
+                                "   scripts/start_over\n" .
+                                "Then rerun this script.\n" .
+                                "ATTENTION: The steps described above will remove all OSCAR\n" .
+                                "packages and delete all defined cluster nodes!\n" .
+                                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
             exit 1;
         }
         # set environment variable OSCAR_HOME
         if ($ENV{OSCAR_HOME} ne $ohome) {
-            oscar_log_subsection("Setting env variable OSCAR_HOME to $ohome");
+            oscar_log(5, ACTION, "Setting env variable OSCAR_HOME to $ohome");
             $ENV{OSCAR_HOME} = $ohome;
         }
         # write profile.d files
         if (!$dir_sh || !$dir_csh) {
-            oscar_log_subsection("Generating ".
+            oscar_log(5, ACTION, "Generating ".
                                  "/etc/profile.d/oscar_home.{sh,csh} files.");
             &profiled_files_write("OSCAR_HOME", $ohome);
             &profiled_files_write("OSCAR_PACKAGE", "/usr/lib/oscar/packages");
@@ -117,25 +111,29 @@ sub profiled_files_read {
     local *IN;
     my $file = "/etc/profile.d/oscar_home.csh";
     if (-f $file) {
-    open IN, "$file" or
-        carp("Could not open $file: $!");
-    while (<IN>) {
-        if (/^setenv OSCAR_HOME (\S+)$/) {
-        $dir_csh = $1;
+        open IN, "$file" or
+            oscar_log(5, ERROR, "Could not open $file: $!");
+        while (<IN>) {
+            if (/^setenv OSCAR_HOME (\S+)$/) {
+                $dir_csh = $1;
+            }
         }
-    }
-    close IN;
+        close IN;
+    } else {
+         oscar_log(5, ERROR, "File ($file) not found!");
     }
     $file = "/etc/profile.d/oscar_home.sh";
     if (-f $file) {
-    open IN, "$file" or
-        carp("Could not open $file: $!");
-    while (<IN>) {
-        if (/^OSCAR_HOME=(\S+)$/) {
-        $dir_sh = $1;
+        open IN, "$file" or
+            oscar_log(5, ERROR, "Could not open $file: $!");
+        while (<IN>) {
+            if (/^OSCAR_HOME=(\S+)$/) {
+                $dir_sh = $1;
+            }
         }
-    }
-    close IN;
+        close IN;
+    } else {
+         oscar_log(5, ERROR, "File ($file) not found!");
     }
     return ($dir_csh, $dir_sh);
 }
@@ -148,7 +146,7 @@ sub profiled_files_write ($$) {
         return if @check;
     }
     open OUT, "> $file" or
-        carp("Could not write file $file: $!");
+        oscar_log(5, ERROR, "Could not write file $file: $!");
     print OUT "setenv $env_var $dir\n";
     close OUT;
     chmod 0755, $file;
@@ -158,7 +156,7 @@ sub profiled_files_write ($$) {
         return if @check;
     }
     open OUT, "> $file" or
-        carp("Could not write file $file: $!");
+        oscar_log(5, ERROR, "Could not write file $file: $!");
     print OUT "$env_var=$dir\n";
     print OUT "export $env_var\n";
     close OUT;

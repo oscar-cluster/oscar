@@ -26,12 +26,14 @@ use Carp;
 use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
 use OSCAR::Env;
+use OSCAR::LoggerDefs;
 
-@EXPORT = qw(
+our @EXPORT = qw(
              oscar_log_section
              oscar_log_subsection
              oscar_log_message
              oscar_log_error
+             oscar_log
              verbose
              vprint
              init_log_file
@@ -55,7 +57,7 @@ sub oscar_log_section ($) {
 == $title
 =============================================================================
 
-" if ( OSCAR::Env:oscar_verbose >= 2 );
+" if ( $OSCAR::Env::oscar_verbose >= 2 );
 }
 
 
@@ -63,7 +65,7 @@ sub oscar_log_section ($) {
 # Simple routine to output a "subsection" title to stdout.                     #
 #                                                                              #
 # Input: the string to display.                                                #
-# Return: None.
+# Return: None.                                                                #
 ################################################################################
 sub oscar_log_subsection ($) {
     my $title = shift;
@@ -71,30 +73,59 @@ sub oscar_log_subsection ($) {
 }
 
 ################################################################################
-## Exported function to print a messsage if verbosity is higher than min        #
-##                                                                              #
-## Inputs:  $verbose  min verbosity required to have the message displayed      #
-##          $message  The message itself                                        #
-##                                                                              #
-## Outputs: none                                                                #
-#################################################################################
+## Exported function to print a messsage if verbosity is higher than min       #
+##                                                                             #
+## Inputs:  $verbose  min verbosity required to have the message displayed     #
+##          $message  The message itself                                       #
+##                                                                             #
+## Outputs: none                                                               #
+################################################################################
 sub oscar_log_message ($$) {
     my($verbose, $message) = @_;
     print "$message" if($verbose >= $OSCAR::Env::oscar_verbose);
 }
 
 ################################################################################
-## Exported function to print a messsage if verbosity is higher than min        #
-##                                                                              #
-## Inputs:  $verbose  min verbosity required to have the message displayed      #
-##          $message  The message itself                                        #
-##                                                                              #
-## Outputs: none                                                                #
-#################################################################################
+## Exported function to print a messsage if verbosity is higher than min       #
+##                                                                             #
+## Inputs:  $verbose  min verbosity required to have the message displayed     #
+##          $message  The message itself                                       #
+##                                                                             #
+## Outputs: none                                                               #
+################################################################################
 sub oscar_log_error ($$) {
     my($verbose, $message) = @_;
     if ($OSCAR::Env::oscar_verbose >= 10) {
         carp "$message"; # in --debug, we use carp to display the message.
+    } else {
+        print "$message" if($verbose >= $OSCAR::Env::oscar_verbose);
+    }
+}
+
+################################################################################
+## Exported function to print all kind of msg if verbosity is higher than min  #
+##                                                                             #
+## Inputs:  $verbose  min verbosity required to have the message displayed     #
+##          $type     the type of messages (ERROR, INFO, ...)                  #
+##                    NONE is used for no prefix                               #
+##          $message  The message itself                                       #
+##                                                                             #
+## Outputs: none                                                               #
+################################################################################
+sub oscar_log ($$$) {
+    my($verbose, $type, $message) = @_;
+
+    $message = "\n================================================================================\n" . 
+               "== " . $message .
+               "================================================================================\n"
+        if ($type eq SECTION);
+
+    $message = "\n". $message .
+               "--------------------------------------------------------------------------------\n"
+        if ($type eq SUBSECTION);
+    $message = "[$type] $message\n";
+    if ($OSCAR::Env::oscar_verbose >= 10) {
+        carp "$message" if ($type eq ERROR); # in --debug (log level 10), we use carp to display errors.
     } else {
         print "$message" if($verbose >= $OSCAR::Env::oscar_verbose);
     }
@@ -122,7 +153,7 @@ sub init_log_file ($) {
     require File::Basename;
     my $oscar_log_dir = File::Basename::dirname ($log_file);
     if (! -d $oscar_log_dir ) {
-        print "$oscar_log_dir does not exist, we create it\n";
+        oscar_log_message(6, "$oscar_log_dir does not exist, we create it\n");
         mkdir ($oscar_log_dir);
     }
 
@@ -141,19 +172,20 @@ sub init_log_file ($) {
             $indx = $ologs[$#ologs] + 1;
         }
         !system("mv $log_file $log_file"."_$indx")
-        or (carp "Could not rename $log_file : $!", return -1);
+        or (oscar_log_error(5, "Could not rename $log_file : $!\n"), return -1);
     }
 
     if (!open (STDOUT,"| tee $log_file") || !open(STDERR,">&STDOUT")) {
-        (carp("ERROR: Cannot tee stdout/stderr into the OSCAR logfile: ".
+        (oscar_log_error(5, "ERROR: Cannot tee stdout/stderr into the OSCAR logfile: ".
         "$log_file\n\nAborting the install.\n\n"), return -1);
     }
 
-    if (defined ($ENV{OSCAR_VERBOSE})) {
-        print ("Verbosity: $ENV{OSCAR_VERBOSE}\n");
-    } else {
-        print ("Verbosity: 0\n");
-    }
+    oscar_log_message(1, "[INFO] Verbosity: ". $OSCAR::Env::oscar_verbose."\n");
+#    if (defined ($ENV{OSCAR_VERBOSE})) {
+#        print ("Verbosity: $ENV{OSCAR_VERBOSE}\n");
+#    } else {
+#        print ("Verbosity: 0\n");
+#    }
 
     return 0;
 }
@@ -169,27 +201,32 @@ sub init_log_file ($) {
 sub update_log_file ($) {
     my $log_file = shift;
 
+    oscar_log_message(5, "[INFO] Updating log file ($log_file).\n");
     # Setup to capture all stdout/stderr
     require File::Basename;
     my $oscar_log_dir = File::Basename::dirname ($log_file);
     if (! -d $oscar_log_dir ) {
-        print "$oscar_log_dir does not exist, we create it\n";
+        oscar_log_message(6, "[INFO] $oscar_log_dir does not exist.\n");
+        oscar_log_message(6, "[ACTION] Creating $oscar_log_dir directory.\n");
         mkdir ($oscar_log_dir);
     }
 
     if (!open (STDOUT,"| tee -a $log_file") || !open(STDERR,">&STDOUT")) {
-        (carp("ERROR: Cannot tee stdout/stderr into the OSCAR logfile: ".
+        (oscar_log_error(5, "ERROR: Cannot tee stdout/stderr into the OSCAR logfile: ".
         "$log_file\n\nAborting the install.\n\n"), return -1);
     }
 
     my $timestamp = `date +\"%Y-%m-%d-%k-%M-%m\"`;
-    print ">> $timestamp";
-    if (defined ($ENV{OSCAR_VERBOSE})) {
-        print ("Verbosity: $ENV{OSCAR_VERBOSE}\n");
-    } else {
-        print ("Verbosity: 0\n");
-    }
+#    print ">> $timestamp";
+    oscar_log_message(1, "[INFO] Timestamp: $timestamp\n");
+    oscar_log_message(1, "[INFO] Verbosity: ". $OSCAR::Env::oscar_verbose."\n");
+#    if (defined ($ENV{OSCAR_VERBOSE})) {
+#        print ("Verbosity: $ENV{OSCAR_VERBOSE}\n");
+#    } else {
+#        print ("Verbosity: 0\n");
+#    }
 
+    oscar_log_message(5, "[INFO] successfully updated log file ($log_file).\n");
     return 0;
 }
 
