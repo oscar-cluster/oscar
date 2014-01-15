@@ -28,11 +28,14 @@ BEGIN {
 use strict;
 use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
-use Tk::ROTextANSIColor;
+use OSCAR::Env;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::Tk;
 use OSCAR::Package;
 use OSCAR::Database;
-use OSCAR::Env;
+use Tk::ROTextANSIColor;
+
 
 @EXPORT = qw(
                 display_apitest_results
@@ -75,8 +78,8 @@ machines.
 
 Open a window with the apitests results.
 
- Input: $window : main window
-        $title : Test short description.
+ Input:       $window : Main window
+               $title : Test short description.
         $test_results : text output of the test.
 Return: none
 
@@ -105,14 +108,13 @@ sub display_apitest_results($$$) {
     OSCAR::Tk::center_window( $apitestwin );
 }
 
-=cut
 ################################################################################
 =item display_ANSI_results($window, $test_name, $test_results)
 
 Open a window with the apitests results. (Honoring color ANSI codes)
 
- Input: $window : main window
-        $title : Test short description.
+ Input:       $window : main window
+               $title : Test short description.
         $test_results : text output of the test.
 Return: none
 
@@ -154,7 +156,7 @@ sub display_ANSI_results($$$) {
 
 ## FIXME: use OSCAR::Tk for that.
 sub display_cluster_test_succed($) {
-    print "Cluster test SUCCESS"
+    oscar_log(1, INFO, "Cluster test SUCCESS");
 }
 
 ################################################################################
@@ -172,12 +174,12 @@ Exported: YES
 sub run_apitest($) {
     my $test_name = shift;
     my $apitests_path="/usr/lib/oscar/testing/wizard_tests";
-    my $apitest_options = "";
-    if($OSCAR::Env::oscar_debug) { # debug option
+    my $apitest_options = "-T";
+    if($OSCAR::Env::oscar_verbose >= 10) { # debug option
         $apitest_options = "-o /var/log/oscar -v";
-    } elsif ($OSCAR::Env::oscar_verbose) { # verbose option
+    } elsif ($OSCAR::Env::oscar_verbose >= 5) { # verbose option
         $apitest_options = "-T -v";
-    }   
+    }
     my $cmd = "cd $apitests_path; LC_ALL=C /usr/bin/apitest $apitest_options -f $test_name";
     my $test_output = "";
     my $rc = 0 ; # SUCCESS
@@ -185,17 +187,17 @@ sub run_apitest($) {
     # Test that test file exists.
     if ( ! -f "$apitests_path/$test_name" ) {
         $rc = 255; # File not found.
-        $test_output = "ERROR: Test $apitests_path/$test_name not found";
-        print "ERROR: $test_output\n" if($OSCAR::Env::oscar_verbose);
+        $test_output = "Test $apitests_path/$test_name not found";
         return($test_output, $rc);
     }
 
     # Run the test and collect the output if any.
-    print "Running: $cmd\n" if($OSCAR::Env::oscar_verbose);
+    oscar_log(7, ACTION, "About to run: $cmd");
     if(! open CMD, "$cmd |") {
         # Problem: can't run the command.
         $rc = $!;
-        $test_output = "ERROR: Can't run $cmd ($rc)";
+        $test_output = "Can't run $cmd ($rc)";
+        oscar_log(5, ERROR, "Failed to run: $cmd");
         return($test_output, $rc);
     }
     my $quoted_test_name = quotemeta $test_name;
@@ -203,13 +205,22 @@ sub run_apitest($) {
         chomp($line);
         my $pattern = ".*FAIL.*".$quoted_test_name."\$";
         my $reqgexp = qr/$pattern/;
-        $rc = 1 if ( $line =~ $reqgexp );
+        if ( $line =~ $reqgexp ) {
+            $rc = 1;
+        }
         $test_output .= "$line\n";
     }
     close CMD; # to get the exit code.
-    $rc += $?;
+    my $cmd_rc = $?/256;
+    oscar_log(5,ERROR, "Bad exit ($cmd_rc) from $cmd") if ($cmd_rc > 0);
 
-    print "     ==> Return code: $rc\n" if($OSCAR::Env::oscar_verbose);
+    if ($rc > 0) {
+        oscar_log(5, ERROR, "Test $test_name failed.");
+        oscar_log(6, ERROR, "apitest result was:\n$test_output") if ($rc > 0);
+    } else {
+        oscar_log(5, INFO, "Test $test_name succeeded.");
+    }
+    $rc += $cmd_rc;
 
     return($test_output, $rc);
 }
@@ -239,11 +250,14 @@ sub run_multiple_tests(@) {
         if($rc > 0) {
             $all_output .= "=> FAILED!\n$test_output\n\n";
             $all_rc = 1; # Keep track that at least one test failed.
+#            oscar_log(5, ERROR, $all_output);
         } else {
             $all_output .= "=> PASSED\n\n";
         }
     }
-    # FIXME: print message if $verbose.
+#    if ($all_rc == 0) {
+#        oscar_log(5, INFO, "Successfully passed the following tests: ".join(" ",@apitests_to_run));
+#    }
     return($all_output, $all_rc);
 }
 
@@ -291,7 +305,7 @@ sub test_cluster($) {
 =item step_test()
 
 
- Input: $window: The parent window to attach to.
+ Input:    $window: The parent window to attach to.
         $test_name: The name of the test to be run.
 Return: 0: upon success
         1: upon error and displays test results in a dialog box.
@@ -304,11 +318,13 @@ sub step_test($$) {
     my $output= "";
     my $rc=0;
     ($output,$rc) = run_multiple_tests($test_name);
-    $output = "Requirements for step '$step_name' are not met.\nPlease fix problems before retrying.\n\n".$output;
     if( $rc > 0) {
+        $output = "Requirements for step '$step_name' are not met.\nPlease fix problems before retrying.\n\n".$output;
         display_ANSI_results($window, $test_name, $output);
+        oscar_log(1,INFO,"Refusing to enter step \"$step_name\" (Requirements not met).");
+    } else {
+        oscar_log(5,INFO,"Ready to enter step \"$step_name\"");
     }
-    # FIXME: print message if $verbose.
     return ($rc);
 }
 
@@ -317,19 +333,23 @@ sub step_test($$) {
 =head1 TO DO
 
  * Add color support in output (display window)
- * Add HTML or XML browser for diagnostics instead of launching a web browser. (maybe we can brow xml output directly and avoid using apitest httpd).
+ * Add HTML or XML browser for diagnostics instead of launching a web browser.
+   (Directly browsing xml output, thus avoid using apitest httpd,
+    could be a good improvement).
 
 =head1 SEE ALSO
 
 L<OSCAR::Packages>
 
 =head1 AUTHORS
+
 Written and documented by:
     (c) 2014      Olivier Lahaye C<< <olivier.lahaye@cea.fr> >>
                   CEA (Commissariat à l'Énergie Atomique)
                   All rights reserved
 
 =head1 LICENSE
+
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -337,7 +357,7 @@ the Free Software Foundation; either version 2 of the License, or
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
