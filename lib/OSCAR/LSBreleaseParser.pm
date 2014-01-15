@@ -34,6 +34,7 @@ BEGIN {
 use strict;
 #use OSCAR::ConfigFile;
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::Utils;
 use OSCAR::Env;
 use Carp;
@@ -54,26 +55,26 @@ sub parse_lsbrelease ($) {
 
     $lsbrelease_file = $root . $lsbrelease_file;
     if ( ! -f $lsbrelease_file ) {
-        oscar_log_subsection "INFO: no $lsbrelease_file file\n";
+        oscar_log(5, INFO, "No $lsbrelease_file file");
         return "";
-    }else{
+    } else {
 
          # This function may called during bootstrapping, we have to do almost
          # everything manually.
     
          open (FILE, $lsbrelease_file)
-            or (carp ("ERROR: Could not open file ($lsbrelease_file)."), 
+            or (oscar_log (5, ERROR, "Could not open file ($lsbrelease_file)."),
                return undef);
     }
     my @data = <FILE>;
     close (FILE);
 
     if (scalar (@data) == 1) {
-        print "This suspects to be an RPM based system\n" if $OSCAR::Env::oscar_verbose;
+        oscar_log (6, INFO, "This suspects to be an RPM based system.");
         return undef;
     }
     if (scalar (@data) < 4) {
-        carp "ERROR: the $lsbrelease_file file cannot be parsed";
+        oscar_log(5, ERROR, "The $lsbrelease_file file cannot be parsed.");
         return undef;
     }
     my $distro = $data[0];
