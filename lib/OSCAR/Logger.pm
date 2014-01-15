@@ -82,7 +82,7 @@ sub oscar_log_subsection ($) {
 ################################################################################
 sub oscar_log_message ($$) {
     my($verbose, $message) = @_;
-    print "$message" if($verbose >= $OSCAR::Env::oscar_verbose);
+    print "$message" if($verbose <= $OSCAR::Env::oscar_verbose);
 }
 
 ################################################################################
@@ -98,7 +98,7 @@ sub oscar_log_error ($$) {
     if ($OSCAR::Env::oscar_verbose >= 10) {
         carp "$message"; # in --debug, we use carp to display the message.
     } else {
-        print "$message" if($verbose >= $OSCAR::Env::oscar_verbose);
+        print "$message" if($verbose <= $OSCAR::Env::oscar_verbose);
     }
 }
 
@@ -124,10 +124,15 @@ sub oscar_log ($$$) {
                "--------------------------------------------------------------------------------\n"
         if ($type eq SUBSECTION);
     $message = "[$type] $message\n";
+
     if ($OSCAR::Env::oscar_verbose >= 10) {
-        carp "$message" if ($type eq ERROR); # in --debug (log level 10), we use carp to display errors.
+        if ($type eq ERROR) {
+            carp "$message"; # in --debug (log level 10), we use carp to display errors.
+        } else {
+            print "$message";
+        }
     } else {
-        print "$message" if($verbose >= $OSCAR::Env::oscar_verbose);
+        print "$message" if($verbose <= $OSCAR::Env::oscar_verbose);
     }
 }
 
@@ -153,7 +158,7 @@ sub init_log_file ($) {
     require File::Basename;
     my $oscar_log_dir = File::Basename::dirname ($log_file);
     if (! -d $oscar_log_dir ) {
-        oscar_log_message(6, "$oscar_log_dir does not exist, we create it\n");
+        oscar_log(6, ACTION, "$oscar_log_dir does not exist, we create it\n");
         mkdir ($oscar_log_dir);
     }
 
@@ -172,15 +177,15 @@ sub init_log_file ($) {
             $indx = $ologs[$#ologs] + 1;
         }
         !system("mv $log_file $log_file"."_$indx")
-        or (oscar_log_error(5, "Could not rename $log_file : $!\n"), return -1);
+        or (oscar_log(5, ERROR, "Could not rename $log_file : $!"), return -1);
     }
 
     if (!open (STDOUT,"| tee $log_file") || !open(STDERR,">&STDOUT")) {
-        (oscar_log_error(5, "ERROR: Cannot tee stdout/stderr into the OSCAR logfile: ".
-        "$log_file\n\nAborting the install.\n\n"), return -1);
+        (oscar_log(5, ERROR, "Cannot tee stdout/stderr into the OSCAR logfile: ".
+        "$log_file\n\nAborting the install.\n"), return -1);
     }
 
-    oscar_log_message(1, "[INFO] Verbosity: ". $OSCAR::Env::oscar_verbose."\n");
+    oscar_log(1, INFO, "Verbosity: ". $OSCAR::Env::oscar_verbose);
 #    if (defined ($ENV{OSCAR_VERBOSE})) {
 #        print ("Verbosity: $ENV{OSCAR_VERBOSE}\n");
 #    } else {
@@ -201,32 +206,32 @@ sub init_log_file ($) {
 sub update_log_file ($) {
     my $log_file = shift;
 
-    oscar_log_message(5, "[INFO] Updating log file ($log_file).\n");
+    oscar_log(5, INFO, "Updating log file ($log_file).");
     # Setup to capture all stdout/stderr
     require File::Basename;
     my $oscar_log_dir = File::Basename::dirname ($log_file);
     if (! -d $oscar_log_dir ) {
-        oscar_log_message(6, "[INFO] $oscar_log_dir does not exist.\n");
-        oscar_log_message(6, "[ACTION] Creating $oscar_log_dir directory.\n");
+        oscar_log(6, INFO, "$oscar_log_dir does not exist.");
+        oscar_log(6, ACTION, "Creating $oscar_log_dir directory.");
         mkdir ($oscar_log_dir);
     }
 
     if (!open (STDOUT,"| tee -a $log_file") || !open(STDERR,">&STDOUT")) {
-        (oscar_log_error(5, "ERROR: Cannot tee stdout/stderr into the OSCAR logfile: ".
-        "$log_file\n\nAborting the install.\n\n"), return -1);
+        (oscar_log(5, ERROR, "Cannot tee stdout/stderr into the OSCAR logfile: ".
+        "$log_file\n\nAborting the install.\n"), return -1);
     }
 
     my $timestamp = `date +\"%Y-%m-%d-%k-%M-%m\"`;
 #    print ">> $timestamp";
-    oscar_log_message(1, "[INFO] Timestamp: $timestamp\n");
-    oscar_log_message(1, "[INFO] Verbosity: ". $OSCAR::Env::oscar_verbose."\n");
+    oscar_log(1, INFO, "Timestamp: $timestamp\n");
+    oscar_log(1, INFO, "Verbosity: ". $OSCAR::Env::oscar_verbose);
 #    if (defined ($ENV{OSCAR_VERBOSE})) {
 #        print ("Verbosity: $ENV{OSCAR_VERBOSE}\n");
 #    } else {
 #        print ("Verbosity: 0\n");
 #    }
 
-    oscar_log_message(5, "[INFO] successfully updated log file ($log_file).\n");
+    oscar_log(5, INFO, "Successfully updated log file ($log_file).");
     return 0;
 }
 
