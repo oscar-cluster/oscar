@@ -27,6 +27,7 @@ use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
 use OSCAR::Env;
 use OSCAR::LoggerDefs;
+use Switch 'Perl5', 'Perl6';
 
 our @EXPORT = qw(
              oscar_log_section
@@ -115,16 +116,28 @@ sub oscar_log_error ($$) {
 sub oscar_log ($$$) {
     my($verbose, $type, $message) = @_;
 
-    $message = "\n================================================================================\n" . 
-               "== " . $message .
-               "================================================================================\n"
-        if ($type eq SECTION);
+    # 1st: Doing formatting given the type of message.
+    given ($type) {
+        when (SECTION) {
+            $message = "\n================================================================================\n" . 
+                         "== $message\n" .
+                         "================================================================================\n";
+        }
+        when (SUBSECTION) {
+            my $length = length $message;
+            my $prepend_count = int((80-$length)/2) -1;
+            my $append_count = 80-$prepend_count-$length-2;
+            $message = "-" x $prepend_count . " $message " . "-" x $append_count . "\n";
+        }
+        when (NONE) {
+            $message = "$message\n";
+        }
+        default {
+            $message = "[$type] $message\n";
+        }
+    }
 
-    $message = "\n". $message .
-               "--------------------------------------------------------------------------------\n"
-        if ($type eq SUBSECTION);
-    $message = "[$type] $message\n";
-
+    # Now printing the message if conditions are met.
     if ($OSCAR::Env::oscar_verbose >= 10) {
         if ($type eq ERROR) {
             carp "$message"; # in --debug (log level 10), we use carp to display errors.
