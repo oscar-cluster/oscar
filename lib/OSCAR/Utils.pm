@@ -97,8 +97,9 @@ sub oscar_system($) {
     my $rc;
     oscar_log(7, ACTION, "About to run: $cmd");
     $rc = system($cmd);
+    my $realrc = $rc >> 8;
     if($rc) {
-        oscar_log(5, ERROR, "Failed to run: $cmd");
+        oscar_log(5, ERROR, "Failed to run: $cmd (rc=$realrc)");
     }
     return $rc;
 }
