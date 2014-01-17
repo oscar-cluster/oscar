@@ -36,11 +36,13 @@ use base qw(Exporter);
 use Config;
 use OSCAR::OCA::OS_Detect;
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use File::Basename;
 use POSIX;
 use Carp;
 
 @EXPORT = qw(
+            oscar_system
             compactSpaces
             get_oscar_version
             get_local_arch
@@ -57,8 +59,52 @@ use Carp;
             rtrim
             );
 
+=encoding utf8
+
+=head1 NAME
+
+OSCAR::Testing - Set of functions to avoid code duplication
+
+=head1 SYNOPSIS
+
+use OSCAR::Utils;
+
+=head1 DESCRIPTION
+
+This module provides a set of usefull functions. Only there to avoid code
+duplication
+
+=head2 Functions
+
+=over 4
+
+=cut
 ################################################################################
-# Check if an element is in an array.                                          #
+=item oscar_system($cmd)
+
+Same as perl system() call except it adds logging (what is run,
+and reports failures.
+
+ Input:  $cmd : The command to run
+          $rc : the return code from system() call.
+
+Exported: YES
+
+=cut
+################################################################################
+sub oscar_system($) {
+    my $cmd = shift;
+    my $rc;
+    oscar_log(7, ACTION, "About to run: $cmd");
+    $rc = system($cmd);
+    if($rc) {
+        oscar_log(5, ERROR, "Failed to run: $cmd");
+    }
+    return $rc;
+}
+
+################################################################################
+# Check if an element is in an array.                                         #
 #                                                                              #
 # Parameter: element, the element to look for                                  #
 #            array, an array                                                   #
