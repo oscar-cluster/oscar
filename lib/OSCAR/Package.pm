@@ -37,6 +37,7 @@ use OSCAR::PackagePath;
 use OSCAR::OpkgDB;
 use OSCAR::Logger;
 use OSCAR::LoggerDefs;
+use OSCAR::Utils;
 use File::Basename;
 use File::Copy;
 use XML::Simple;
