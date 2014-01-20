@@ -67,6 +67,7 @@ use OSCAR::PackageInUn;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
 use OSCAR::Testing;
+use OSCAR::Utils;
 use OSCAR::Tk;
 use OSCAR::WizardEnv;
 use AppConfig;
