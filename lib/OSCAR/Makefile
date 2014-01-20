@@ -6,9 +6,9 @@ include $(TOPDIR)/Config.mk
 SUBDIRS := OCA
 
 FILES := AddNode.pm Help.pm Prereqs.pm Bootstrap.pm ImageMgt.pm \
-         OpkgDB.pm psm.pm Logger.pm Opkg.pm ClientMgt.pm LSBreleaseParser.pm \
-         PxegrubConfigManager.pm CLI_MAC.pm osm.pm pxegrub.pm \
-         CmpVersions.pm MAC.pm PackageBest.pm SISBuildSetup.pm \
+         OpkgDB.pm psm.pm Logger.pm LoggerDefs.pm Opkg.pm ClientMgt.pm
+         LSBreleaseParser.pm PxegrubConfigManager.pm CLI_MAC.pm osm.pm
+         pxegrub.pm CmpVersions.pm MAC.pm PackageBest.pm SISBuildSetup.pm \
          PackageInUn.pm ConfigFile.pm PackagePath.pm SwitcherAPI.pm \
          ConfigManager.pm msm.pm SystemSanity.pm Package.pm Tk.pm \
          Network.pm Utils.pm DelNode.pm \
