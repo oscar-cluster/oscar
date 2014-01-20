@@ -158,17 +158,21 @@ sub detect_pool_format ($) {
 #        oscar_log_subsection "Testing remote repository type by using ".
 #                             "command: $cmd... ";
         my @tokens = split (/\+/, $pool);
-        if (!oscar_system($cmd)) {
+        my $rc = oscar_system($cmd);
+        if(scalar (@tokens) > 1) {
+            oscar_log(5, INFO, "Plus sign in pool, assuming this is a deb repo.");
+            $format = "deb";
+        } elsif ($rc == 0) {
             oscar_log(5, INFO, "Identified yum repo.");
             $format = "rpm";
-        } elsif (scalar (@tokens) > 1) {
-            # if the repository is not a yum repository, we assume this is
-            # a Debian repo. Therefore we assume that all specified repo
-            # are valid.
-            oscar_log(5, INFO, "Not a yum repo, assuming this is a deb repo.");
-            $format = "deb";
+        } elsif ($rc == 4) {
+            # Not a deb repo (tested above) , but failed to connect.
+            # Assuming pool is correct and is an yum repo (better than noting)
+            oscar_log(5, WARNING, "Unable to get $url (cnx failed), can't test if it's a yum repo.\n".
+                                  "As we are sure it's not a apt repo, we default to yum\n".
+                                  "(Better than nothing)");
         } else {
-            oscar_log(5, ERROR, "Failed to detect the format of the online ".
+            oscar_log(5, ERROR, "Malformed or non-existent url.\n\t Failed to detect the format of the online ".
                  "repository ($pool)");
             return undef;
         }
