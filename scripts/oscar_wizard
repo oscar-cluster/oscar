@@ -58,6 +58,7 @@ use OSCAR::GUI_MAC;
 use OSCAR::Help;
 use OSCAR::ImageMgt;
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::Network;
 use OSCAR::Opkg;
 use OSCAR::Package;
@@ -97,9 +98,9 @@ if(!$ENV{OSCAR_HOME} && !-f "/usr/bin/oscar_wizard") {
 }
 
 sub help () {
-    print "Usage: oscar_wizard [install|manage]\n\n";
-    print "       install brings up the wizard in installation mode\n";
-    print "       manage brings up the wizard in management mode (default)\n";
+    oscar_log(1, NONE, "Usage: oscar_wizard [install|manage]\n");
+    oscar_log(1, NONE, "       install brings up the wizard in installation mode");
+    oscar_log(1, NONE, "       manage brings up the wizard in management mode (default)");
     exit 1;
 }
 
@@ -108,8 +109,10 @@ help () if (!defined $ARGV[0]);
 my $mode = "manage"; # default mode is manage
 if ( $ARGV[0] eq "manage" ) {
     $mode = "manage";
+    oscar_log(5, INFO, "Running MANAGE mode");
 } elsif ( $ARGV[0] eq "install" ) {
     $mode = "install";
+    oscar_log(5, INFO, "Running INSTALL mode");
 } else {
     help ();
 }
@@ -125,17 +128,14 @@ $initial_verbose_value = $ENV{OSCAR_VERBOSE} if (defined $ENV{OSCAR_VERBOSE});
 
 if (defined $ENV{DEBUG_OSCAR_WIZARD}) {
     $debug = 1;
-    $OSCAR::Env::oscar_debug=1;
-}
-if ($debug) {
-    $ENV{OSCAR_VERBOSE} = 10;
-    $OSCAR::Env::oscar_debug=1;
-    $OSCAR::Env::oscar_verbose=1;
 }
 
-if ($verbose) {
+if ($debug) {
+    $ENV{OSCAR_VERBOSE} = 10;
+    $OSCAR::Env::oscar_verbose=10;
+} elsif ($verbose) {
     $ENV{OSCAR_VERBOSE} = 5;
-    $OSCAR::Env::oscar_verbose=1;
+    $OSCAR::Env::oscar_verbose=5;
 }
 
 my %buttons = ();
@@ -151,7 +151,7 @@ if (defined $ENV{OSCAR_HOME}) {
 
 my $log_file = "/var/log/oscar/oscar_wizard.log";
 if (OSCAR::Logger::init_log_file ($log_file)) {
-    warn "[WARNING] Impossible to setup the log $log_file";
+    oscar_log(1, WARNING, "Impossible to setup the log $log_file");
 }
 
 # This environment variable is used to know the OSCAR execution context (e.g.,
@@ -171,10 +171,10 @@ my $log_prefix = "oscar_wizard:";
 # cease to exist.
 END {
     unlink $lockfile if $lockfile && -f $lockfile;
-    oscar_log_section ("oscar_wizard: Exit");
+    oscar_log(1, SECTION, "$log_prefix Exit.");
 }
 
-oscar_log_section ("$log_prefix Starting...");
+oscar_log(1, SECTION, "$log_prefix Starting...");
 
 # Check for the lockfile (this is certainly not foolproof -- it's just
 # "good enough")
@@ -184,19 +184,19 @@ if (-f $lockfile) {
     my $pid = <LOCKFILE>;
     close(LOCKFILE);
     chomp $pid;
-    oscar_log_subsection ("$log_prefix There is an OSCAR Wizard lockfile ".
+    oscar_log(2, WARNING, "$log_prefix There is an OSCAR Wizard lockfile ".
         "that says a process is still running with process id $pid. Checking ".
         "if that is true...");
     if( kill 0, $pid ) {
-        oscar_log_subsection ("$log_prefix There is a process running with ".
+        oscar_log(2, ERROR, "$log_prefix There is a process running with ".
             "that process id. If this is not an OSCAR Wizard process, ".
             "remove the following file and run $0 again: $lockfile");
         undef $lockfile; # Prevent END processing from deleting lockfile.
         exit(1);
     } else {
-        oscar_log_subsection ("$log_prefix There is no process running with ".
+        oscar_log(2, INFO, "$log_prefix There is no process running with ".
             "process id $pid.");
-        oscar_log_subsection ("$log_prefix Removing lockfile $lockfile and continuing.");
+        oscar_log(2, INFO, "$log_prefix Removing lockfile $lockfile and continuing.");
         unlink $lockfile;
     }
 }
@@ -211,20 +211,22 @@ close(LOCKFILE);
 my $sys_sanity_output="";
 my $sys_sanity_rc=0;
 
-print "[INFO] checking system-sanity...\n";
+oscar_log(5, INFO, "Checking system-sanity...");
 ($sys_sanity_output,$sys_sanity_rc) = run_apitest("system-sanity.apb");
 if($sys_sanity_rc > 0) {
-    print "ERROR:\n$sys_sanity_output\nPlease fix error(s) before retrying\n";
+    oscar_log(1, ERROR, "Failed sanity tests.\n$sys_sanity_output");
+    oscar_log(1, SUBSECTION, "Please fix error(s) before retrying.");
     exit 1;
 } else {
-    print "[INFO] system-sanity OK.\n";
+    oscar_log(2, INFO, "system-sanity OK.");
 }
 
 require OSCAR::ConfigManager;
 my $path = "/etc/oscar/oscar.conf";
 my $oscar_cfg = OSCAR::ConfigManager->new(config_file => "$path");
 if (!defined $oscar_cfg) {
-    die "ERROR: Impossible to parse $path";
+    oscar_log(1, ERROR, "Failed to load $path");
+    exit 1;
 }
 my $config = $oscar_cfg->get_config();
 
@@ -236,23 +238,22 @@ my $interface = OSCAR::Database::get_headnode_iface(undef, undef);
 # We check basic configuration points
 my $distro_id = get_distro();
 if (!OSCAR::Utils::is_a_valid_string ($distro_id)) {
-    die "ERROR: Impossible to detect the local distro ID";
+    oscar_log(1, ERROR, "Failed to detect the local distro ID");
+    exit 1;
 }
-if ($debug) {
-    print "Detected distro: $distro_id\n";
-}
+
+oscar_log(5, INFO, "Detected distro: $distro_id");
+
 my @setup_distros = OSCAR::PackagePath::get_list_setup_distros ();
 if (scalar (@setup_distros) == 0 ||
     !OSCAR::Utils::is_element_in_array ($distro_id, @setup_distros)) {
-    die "ERROR: The local distro is not setup, please run \"oscar-config ".
+    oscar_log(1, ERROR, "The local distro is not setup, please run \"oscar-config ".
         "--setup-distro <distro_id>\" first (see man oscar-config for more ".
-        "details";
+        "details");
+    exit 1;
 }
 
-if( $debug ) {
-    print "Setup Distros: ";
-    OSCAR::Utils::print_array (@setup_distros);
-}
+oscar_log(5, INFO, "Setup Distros: ". join(", ", @setup_distros));
 
 # Create the main window...
 my $window = MainWindow->new();
@@ -276,19 +277,17 @@ if (defined $ENV{OSCAR_HOME}) {
 if ( -e "$oscar_version_file" ) {
     my $cmd = "$oscar_version_script $oscar_version_file --full";
 
-    open(CMD, "$cmd|") or die "ERROR: failed to get oscar version '$cmd' - $!";
+    open(CMD, "$cmd|") or (oscar_log(1, ERROR, "Unable to get oscar version '$cmd' - $! - aborting!"), exit 1);
     $oscar_version = <CMD>;
     chomp($oscar_version);
 
     close(CMD);
 }
 else {
-    die("ERROR: OSCAR VERSION file missing '$oscar_version_file' - aborting!");
+    oscar_log(1, ERROR, "OSCAR VERSION file missing '$oscar_version_file' - aborting!");
 }
 
-if ($debug) {
-    print "Oscar version: $oscar_version\n";
-}
+oscar_log(5, INFO, "Oscar version: $oscar_version");
 
 # Define the main buttons
 
@@ -302,7 +301,7 @@ if (defined $ENV{OSCAR_HOME}) {
 } elsif (-f "/usr/share/oscar/images/oscar.gif") {
     $image = "/usr/share/oscar/images/oscar.gif";
 } else {
-    die "ERROR: Impossible to find oscar.gif";
+    oscar_log(1, ERROR, "Unable to find oscar.gif; check your installation.");
 }
 
 my $GIF_t=$window->Label(-image=> $window->Photo(-file=>$image),
@@ -316,7 +315,7 @@ if ( $mode eq "install" ) {
 } else {
    $wizard_text .= "- MANAGE MODE -";
 }
-$wizard_text .= "\n\n[DEBUG ON]" if ($debug);
+$wizard_text .= "\n\n[DEBUG ON]" if ($OSCAR::Env::oscar_verbose >= 10);
 my $Title_l=$window->Label(-text=>"$wizard_text",
 			   -background=>"white");
 $GIF_t->grid($Title_l,"-",-sticky=>"nsew");
@@ -332,7 +331,7 @@ if ( !($browser = `which firefox 2> /dev/null`) ) {
 # Bring up OSCAR Website when OSCAR Logo is clicked
 if ($browser ne "") {
   chomp($browser);
-  $GIF_t->bind( "<Button-1>" => sub { system("$browser $url > /dev/null 2>&1 &") } );
+  $GIF_t->bind( "<Button-1>" => sub { oscar_system("$browser $url > /dev/null 2>&1 &") } );
 }
 
 my $step_string = "";
@@ -355,9 +354,9 @@ oscar_button($window, $step_string,
              [sub { return if (step_test($window,"manage_repos"));
                   my $olddir = Cwd::cwd();
                   chdir($ENV{OSCAR_HOME} . '/lib/Qt');
-                  system('/usr/bin/perl Opder.pl');
+                  oscar_system('/usr/bin/perl Opder.pl');
                   chdir($ENV{OSCAR_HOME} . '/scripts');
-                  system("./prep_oscar_repos --add --include /usr/lib/oscar/packages");
+                  oscar_system("./prep_oscar_repos --add --include /usr/lib/oscar/packages");
                   chdir($olddir);
                   }],
              'download_packages');
@@ -379,7 +378,7 @@ if ( $mode eq "install" ) {
                 $path .= "/Qt";
                 oscar_log_section ("$log_prefix Change directory: $path");
                 chdir ($path);
-                system('/usr/bin/perl Selector.pl');
+                oscar_system('/usr/bin/perl Selector.pl');
                 chdir($olddir);
                 }], 
                 'select_packages');
@@ -586,12 +585,12 @@ sub run_command {
     my $window_func;
 
     if ($mode eq "install") {
-       oscar_log_subsection("Step $step_number: Running: $$vars{cmd}");
+       oscar_log(2, SUBSECTION, "Step $step_number: Running: $$vars{cmd}");
     } else {
-       oscar_log_subsection("OSCAR Manage Wizard: Running: $$vars{cmd}");
+       oscar_log(2, SUBSECTION, "OSCAR Manage Wizard: Running: $$vars{cmd}");
     } 
 
-    if (system($$vars{cmd})) {
+    if (oscar_system($$vars{cmd})) {
         $result = $$vars{failure};
         $window_func = \&OSCAR::Tk::error_window;
     } else {
@@ -600,9 +599,9 @@ sub run_command {
     }
 
     if ($mode eq "install") {
-       oscar_log_subsection("Step $step_number: " . $result->{message});
+       oscar_log(2, SUBSECTION, "Step $step_number: " . $result->{message});
     } else {
-       oscar_log_subsection($result->{message});
+       oscar_log(2, SUBSECTION, $result->{message});
     }
     if ($result->{unbusy}) {
         &$window_func($parent_window, $result->{message},
@@ -622,7 +621,7 @@ sub run_server_install {
     my @mod_env = ();
 
     if (!defined ($vars) && ref($vars) ne "HASH") {
-        carp "ERROR: Invalid parameters";
+        oscar_log(5, ERROR, "Invalid parameters");
         return undef;
     }
 
@@ -631,7 +630,7 @@ sub run_server_install {
 
     $window->Busy(-recurse => 1);
 
-    oscar_log_section("Running step $step_number of the OSCAR wizard: Install OSCAR server packages");
+    oscar_log(2, SECTION, "Running step $step_number of the OSCAR wizard: Install OSCAR server packages");
 
     my $cmd_vars = { 
         cmd => $config->{'binaries_path'} . "/install_server $$vars{interface}",
@@ -659,7 +658,7 @@ sub run_server_install {
         $next_step_button2->configure(-state=> "normal");
     }
 
-    oscar_log_subsection('Update Wizard Env (as needed)');
+    oscar_log(2, INFO, 'Update Wizard Env (as needed)');
     @mod_env = OSCAR::WizardEnv::update_env();
 
     return 0;
@@ -672,9 +671,9 @@ sub build_oscar_image {
     my ($window, $step_number) = @_;
 
     if ($mode eq "install") {
-       oscar_log_section("Running step $step_number of the OSCAR wizard: Build OSCAR client image");
+       oscar_log(2, SECTION, "Running step $step_number of the OSCAR wizard: Build OSCAR client image");
     } else {
-       oscar_log_section("OSCAR Manage Wizard: Build OSCAR client image");
+       oscar_log(2, SECTION, "OSCAR Manage Wizard: Build OSCAR client image");
     }
 
     my $step_string = "";
@@ -729,15 +728,15 @@ sub postimagebuild {
     my $step_number = $$vars{step_number};
     my $img = $$vars{imgname};
 
-    oscar_log_section ("$log_prefix Setting up image in the database\n");
+    oscar_log(3, INFO, "$log_prefix Setting up image in the database");
     OSCAR::ImageMgt::do_setimage ($img, \%options);
 
     my $cmd = "post_binary_package_install ($img, $interface)";
     my $step_string = "";
     $step_string ="Step $step_number: " if $mode eq "install";
-    oscar_log_subsection("$step_string"."Running: $cmd");
+    oscar_log(4, SUBSECTION, "$step_string"."Running: $cmd");
     if (!OSCAR::ImageMgt::do_post_binary_package_install ($img, $interface)) {
-        carp ("ERROR: Impossible to run post_binary_package_install ($img)\n");
+        oscar_log(5, ERROR, "Failed to run post_binary_package_install ($img)");
         return 0;
     }
 
@@ -756,7 +755,7 @@ sub postimagebuild {
     }
 
 
-    oscar_log_subsection("$step_string"."Completed successfully");
+    oscar_log(3, SUBSECTION, "$step_string"."Completed successfully");
 
     return 1;
 }
@@ -775,10 +774,10 @@ sub build_oscar_clients ($$$) {
     my $startip = $network_config[3];
 
     if ($mode eq "install") {
-       oscar_log_section("Running step $step_number of the OSCAR wizard: ".
+       oscar_log(2, SECTION, "Running step $step_number of the OSCAR wizard: ".
                          "Define OSCAR clients");
     } else {
-       oscar_log_section("OSCAR Management Wizard: Define OSCAR clients");
+       oscar_log(2, SECTION, "OSCAR Management Wizard: Define OSCAR clients");
     }
 
     OSCAR::ClientMgt::cleanup_clients ();
@@ -838,8 +837,8 @@ sub postaddclients {
     }
     $cmd .= "/post_clients";
 
-    oscar_log_subsection("Running: $cmd");
-    !system($cmd) or (carp($!), return undef);
+    oscar_log(5, INFO, "Running: post_clients");
+    !oscar_system($cmd) or (carp($!), return undef);
     &populate_client_group_nodes;
 
     # Set the following next buttons available
@@ -862,8 +861,8 @@ sub postaddclients {
         }
     }
 
-    oscar_log_subsection("$step_string"."Successfully ran: $cmd");
-    oscar_log_subsection("$step_string"."Completed successfully");
+    oscar_log(3, INFO, "$step_string"."Successfully ran: $cmd");
+    oscar_log(3, INFO, "$step_string"."Completed successfully");
     return 1;
 }
 
@@ -884,12 +883,12 @@ sub postaddclients {
 #    e.g) add_config_opkgs [$configurations_id] [$package_id]
 #
 
-sub do_it_or_die {
-    my ( $command, $results_ref, $error ) = @_;
-    return if OSCAR::Database::dec_already_locked($command, $results_ref);
-    OSCAR::Database::database_disconnect(undef, undef);
-    die "$0: $error";
-}
+#sub do_it_or_die {
+#    my ( $command, $results_ref, $error ) = @_;
+#    return if OSCAR::Database::dec_already_locked($command, $results_ref);
+#    OSCAR::Database::database_disconnect(undef, undef);
+#    die "$0: $error";
+#}
 
 sub populate_client_group_nodes {
     my @pkgs = list_selected_packages();
@@ -940,12 +939,12 @@ sub run_post_install {
     $window->Busy(-recurse => 1);
 
     if ($mode eq "install") {
-       oscar_log_section("Running step $step_number of the OSCAR wizard: Complete cluster setup");
+       oscar_log(2, SECTION, "Running step $step_number of the OSCAR wizard: Complete cluster setup");
     } else {
-       oscar_log_section("OSCAR Management Wizard: Complete cluster setup");
+       oscar_log(2, SECTION, "OSCAR Management Wizard: Complete cluster setup");
     }
 
-    oscar_log_subsection('Update Wizard Env (as needed)');
+    oscar_log(5, INFO, 'Update Wizard Env (as needed)');
     @mod_env = OSCAR::WizardEnv::update_env();
 
     my $cmd_vars = { 
@@ -971,8 +970,10 @@ sub run_post_install {
         set_wizard_status("test_install",\%options,\@errors);
     }
 
-    oscar_log_subsection('Update Wizard Env (as needed)');
+    oscar_log(5, INFO, 'Update Wizard Env (as needed)');
     @mod_env = OSCAR::WizardEnv::update_env();
+
+    oscar_log(2, SUBSECTION, "Successfully completed cluster setup");
 }
 
 
@@ -980,12 +981,14 @@ sub run_post_install {
 
 sub run_tests {
     my ($window, $step_number) = @_;
+    # Make the top-level OSCAR wizard window busy so that the user
+    # can't click in another step while this one is running.
     $window->Busy(-recurse => 1);
 
     if ($mode eq "install") {
-       oscar_log_section("Running step $step_number of the OSCAR wizard: Test cluster setup");
+       oscar_log(2, SECTION, "Running step $step_number of the OSCAR wizard: Test cluster setup");
     } else {
-       oscar_log_section("OSCAR Management Wizard: Test cluster setup");
+       oscar_log(2, SECTION, "OSCAR Management Wizard: Test cluster setup");
     }
 
     my $string = "";
@@ -996,9 +999,9 @@ sub run_tests {
         $string = "Running tests";
     }
 
-    oscar_log_subsection("$string");
+    oscar_log(2, SUBSECTION, "$string");
 
-    !test_cluster($window) or (carp($!), $window->Unbusy(), return undef);
+    !test_cluster($window) or (oscar_log(5, ERROR, "$!"), return undef);
   
     if ($mode eq "install") {
        oscar_log_subsection("Step $step_number: Not waiting for completion");
@@ -1006,7 +1009,7 @@ sub run_tests {
        oscar_log_subsection("Not waiting for completion");
     }
  
-    $window->Unbusy();
+    #$window->Unbusy();
 
     # Set the following next buttons available for manage mode
     if ( $$manage_status{delete_nodes8} eq "disabled" ) {
@@ -1061,7 +1064,7 @@ sub stop_monitor_deployment {
 sub netbootmgr {
     my ($window, $pipe) = @_;
     my $cmd = "/usr/bin/netbootmgr";
-    system("$cmd &");
+    oscar_system("$cmd &");
 }
 
 # Brings up Ganglia main page using your favourite browser
@@ -1071,7 +1074,7 @@ sub ganglia {
 
     if ($browser ne "") {
       chomp($browser);
-      system("$browser $url > /dev/null 2>&1 &");
+      oscar_system("$browser $url > /dev/null 2>&1 &");
     }
 }
 
