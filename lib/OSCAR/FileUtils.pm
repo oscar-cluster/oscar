@@ -307,9 +307,11 @@ sub add_line_to_file_without_duplication ($$) {
         oscar_log(5, ERROR, "Invalid or undefined string; $file_path unmodified.");
         return undef;
     }
-    chomp($line);
 
-    oscar_log(5, INFO, "About to add \"$line\" to $file_path");
+    my $msg_line = $line;
+    chomp($msg_line);
+
+    oscar_log(5, INFO, "About to add \"$msg_line\" to $file_path");
 
     my $dirname = File::Basename::dirname ($file_path);
     if ( ! -d $dirname) {
@@ -328,7 +330,7 @@ sub add_line_to_file_without_duplication ($$) {
                 return -1);
     }
     if (line_in_file($line, $file_path) == -1) {
-        oscar_log(6, ACTION, "Adding \"$line\" to $file_path");
+        oscar_log(6, ACTION, "Adding \"$msg_line\" to $file_path");
         print DAT "$line" 
             or (oscar_log(5, ERROR, "Impossible to write in $file_path\n"), return -1);
     } else {

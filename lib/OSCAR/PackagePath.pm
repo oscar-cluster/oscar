@@ -155,8 +155,8 @@ sub repos_list_urlfile ($) {
 sub repos_add_urlfile ($@) {
     my ($path, @repos) = (@_);
     
-    oscar_log(5, INFO, "Adding the repositories:");
-    OSCAR::Utils::print_array (@repos) if ($OSCAR::Env::oscar_verbose >= 5);
+    oscar_log(5, INFO, "Adding the repositories:" . join("\n - ", @repos));
+#    OSCAR::Utils::print_array (@repos) if ($OSCAR::Env::oscar_verbose >= 5);
 
     # make sure local paths have "file:" prefix
     my @repos_to_add;
@@ -165,7 +165,7 @@ sub repos_add_urlfile ($@) {
         if ($repo  !~ m,^(oscar:file|oscar:http|oscar:ftp|oscar:https|oscar:mirror
                  |distro:file|distro:http|distro:ftp|distro:https|distro:mirror|
                  |file|http|ftp|https|mirror):,) {
-            carp "ERROR: Repository must either be a URL or an absolute path\n";
+            oscar_log(5, ERROR,"Repository must either be a URL or an absolute path");
             return -1;
         }
         if (repo_local($repo) == 0) {
