@@ -584,7 +584,8 @@ sub remote_system_service($$$) {
         oscar_log(5, INFO, "Performing $action on $service service.");
         $remote_cmd = "";
     } else {
-        oscar_log(5, INFO, "Using $remote_cmd to perfome $action on $service service.");
+        $remote_cmd = "LC_ALL=C $remote_cmd"; 
+        oscar_log(5, INFO, "Using '$remote_cmd' to perfome '$action' on '$service' service.");
     }
 
     my $os = OSCAR::OCA::OS_Detect::open();
@@ -642,7 +643,7 @@ sub remote_system_service($$$) {
     # command not found: 127
     # unknown service: 1
 
-    my $ret_code = oscar_system ("LC_ALL=C $remote_cmd $cmd");
+    my $ret_code = oscar_system ("$remote_cmd $cmd");
     $ret_code = $ret_code/256 if ($ret_code > 255);
     oscar_log (7, INFO, "Return code: $ret_code") if($ret_code > 0);
 
