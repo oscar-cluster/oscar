@@ -47,7 +47,6 @@ use OSCAR::MAC qw(save_to_file
                   run_cmd
                   generate_uyok
                   __setup_dhcpd
-                  __end_collect_mac
                   __load_macs
                   __build_autoinstall_cd
                   __run_setup_pxe
@@ -63,6 +62,7 @@ use OSCAR::MAC qw(save_to_file
 
 use Carp;
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::Database;
 use OSCAR::Network;
 use vars qw($VERSION @EXPORT);
@@ -86,7 +86,7 @@ sub mac_cli {
     # init this only once as we don't add network cards during this process
     @SERVERMACS = set_servermacs();
 
-    oscar_log_section("Running step $step_number of the OSCAR wizard: Setup networking");
+    oscar_log(2, SECTION, "Running step $step_number of the OSCAR wizard: Setup networking");
 
     #Retrive the installation mode from ODA
     my $orig_install_mode = OSCAR::Database::get_install_mode(undef, undef);
@@ -211,11 +211,11 @@ log for writing.\n";}
         }
         elsif($response eq "3") {
             $install_mode = cli_installmode();
-            oscar_log_subsection("Install mode: $install_mode");
+            oscar_log(2, INFO, "Install mode: $install_mode");
         }
         elsif($response eq "4") {
             if (OSCAR::MAC::__enable_install_mode()) {
-                carp "ERROR: Impossible to enable install mode";
+                oscar_log(5, ERROR, "Impossible to enable install mode");
                 return -1;
             }
             $dhcpbtn = 1;
@@ -236,14 +236,14 @@ log for writing.\n";}
          }
         elsif($response eq "8") {
             my ($ip, $broadcast, $netmask) = interface2ip($$vars{interface});
-            __build_autoinstall_cd($ip);
+            __build_autoinstall_cd($ip, $uyok);
         }
         elsif($response eq "9") {
             __run_setup_pxe($uyok);
         }
         elsif($response eq "10") {
             $done = 1;
-            oscar_log_subsection("Step $step_number: Completed successfully");
+            oscar_log(2, INFO, "Step $step_number: Completed successfully");
         }
     }
 
@@ -298,7 +298,7 @@ sub assign_macs_cli {
                 my $adapter = list_adapter(\%h);
                 # Assign only if client has no assignment
                 if (!$adapter->mac && !$MAC{$mac}->{client}) {
-                    oscar_log_subsection("Assigning MAC: $mac to client: " .
+                    oscar_log(5, INFO, "Assigning MAC: $mac to client: " .
                         $client->name);
                     $adapter->mac($mac);
                     set_adapter($adapter);
@@ -351,13 +351,13 @@ sub assign_macs_cli {
                             last;
                         }
                     }
-                    oscar_log_subsection("Assigning MAC: $mac_selection to client: " . $client_selection);
+                    oscar_log(5, INFO, "Assigning MAC: $mac_selection to client: " . $client_selection);
                     my %h = (client=>$client_selection,devname=>"eth0");
                     my $adapter = list_adapter(\%h);
                     # If client selection has a MAC address assigned, bump it back out to the
                     # global hash
                     if ($adapter->mac) {
-                        add_mac_to_hash($adapter->mac);
+                        add_mac_to_hash($adapter->mac, $client_selection);
                     }
                     $adapter->mac($mac_selection);
                     set_adapter($adapter);

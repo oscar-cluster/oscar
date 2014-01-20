@@ -38,6 +38,8 @@ package OSCAR::Distro;
 use strict;
 use vars qw($VERSION @EXPORT);
 use Carp;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::ConfigFile;
 use OSCAR::Utils;
 use OSCAR::PackagePath;
@@ -266,11 +268,12 @@ sub get_list_of_supported_distros {
     # we get the OSCAR version
     my $version = OSCAR::Utils::get_oscar_version();
     if (!defined $version) {
-        carp "ERROR: Impossible to get the OSCAR version";
+        oscar_log(6, ERROR, "Impossible to get the OSCAR version");
         return undef;
     }
 
     # we try to find a match
+    # FIXME: Error are not handeled.....
     my %supported_distros = OSCAR::ConfigFile::get_all_values ("$supported_distro_file", "$version");
 
     foreach my $key ( keys %supported_distros ) {
@@ -322,7 +325,7 @@ sub find_distro ($) {
     # we try to find a match
     my $repo_string = $supported_distros{$distro_name};
     if( ! defined($repo_string)) {
-        print "ERROR: Unsupported distro: ($distro_name).\nSee $supported_distro_file\n";
+        oscar_log(5, ERROR, "Unsupported distro: ($distro_name).\nSee $supported_distro_file");
         return undef;
     }
     chomp ($repo_string);
@@ -339,7 +342,7 @@ sub find_distro ($) {
             #push(@{$hash{'default_oscar_repos'}},$1);
             #$hash{'default_oscar_repo'} = $1;
         } else {
-            carp "ERROR: Unknown repo type ($r)";
+            oscar_log(6, ERROR, "Unknown repo type ($r)");
             return undef;
         }
     }

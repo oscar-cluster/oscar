@@ -46,6 +46,7 @@ use OSCAR::Env;
 use OSCAR::Database;
 use OSCAR::PackagePath;
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use Carp;
 
 @EXPORT = qw(
@@ -78,15 +79,20 @@ sub opkg_print {
 ###############################################################################
 # Get the list of OPKG available in $(OSCAR_HOME)/packages                    #
 # Parameter: None.                                                            #
-# Return:    Array of OPKG names.                                             #
+# Return:    Array of OPKG names. (Empty Array if problem)                    #
 ###############################################################################
 sub get_list_opkg_dirs {
     my @opkgs = ();
-    die ("ERROR: The OPKG directory does not exist ".
-        "($opkg_dir)") if ( ! -d $opkg_dir );
+    oscar_log(5, ERROR, "The OPKG directory does not exist ".
+        "($opkg_dir).") if ( ! -d $opkg_dir );
+    if ( ! -d $opkg_dir ) {
+        oscar_log(5, ERROR, "The OPKG directory does not exist ($opkg_dir).");
+        return (@opkgs);
+    }
 
     opendir (DIRHANDLER, "$opkg_dir")
-        or die ("ERROR: Impossible to open $opkg_dir");
+        or (oscar_log(5, ERROR, "Impossible to open $opkg_dir"), return(@opkgs));
+
     foreach my $dir (sort readdir(DIRHANDLER)) {
         if ($dir ne "." && $dir ne ".." && $dir ne ".svn" 
             && $dir ne "package.dtd") {
@@ -101,7 +107,7 @@ sub opkgs_remove ($@) {
     my ($type, @opkgs) = (@_);
 
     if (!scalar(@opkgs)) {
-        carp ("ERROR: No opkgs passed!");
+        oscar_log(5, ERROR, "No opkgs passed!");
         return -1;
     }
 
@@ -115,15 +121,14 @@ sub opkgs_remove ($@) {
     } elsif ($type =~ /^(client|server)$/) {
         @olist = map { "opkg-".$_."-$type" } @opkgs;
     } else {
-        carp ("ERROR: Unsupported opkg type: $type");
+        oscar_log(5, ERROR, "Unsupported opkg type: $type");
         return -1;
     }
-    print ("Need to remove the following packages: " . join (", ", @olist));
-    print "\n";
+    oscar_log(3, INFO, "Need to remove the following packages: " . join (", ", @olist));
     my ($err, @out) = $rm->remove_pkg("/", @olist);
     if ($err) {
-        carp "Error occured during smart_remove ($err):\n";
-        print join("\n",@out)."\n";
+        oscar_log(5, ERROR, "Problem occured during smart_remove ($err):");
+        print join("\n",@out)."\n" if($OSCAR::Env::oscar_verbose >= 6);
         return -1;
     }
 
@@ -141,7 +146,7 @@ sub opkgs_install ($@) {
     my ($type, @opkgs) = (@_);
 
     if (!scalar(@opkgs)) {
-        carp ("ERROR: No opkgs passed!");
+        oscar_log(5, ERROR, "No opkgs passed!");
         return -1;
     }
 
@@ -155,15 +160,14 @@ sub opkgs_install ($@) {
     } elsif ($type =~ /^(client|server)$/) {
         @olist = map { "opkg-".$_."-$type" } @opkgs;
     } else {
-        carp ("ERROR: Unsupported opkg type: $type");
+        oscar_log(5, ERROR, "Unsupported opkg type: $type");
         return -1;
     }
-    print ("Need to install the following packages: " . join (", ", @olist));
-    print "\n";
+    oscar_log(3, INFO, "Need to install the following packages: " . join (", ", @olist));
     my ($err, @out) = $rm->install_pkg("/", @olist);
     if ($err) {
-        carp "Error occured during smart_install ($err):\n";
-        print join("\n",@out)."\n";
+        oscar_log(5, ERROR, "Problem occured during smart_install ($err):");
+        print join("\n",@out)."\n" if($OSCAR::Env::oscar_verbose >= 6);
         return -1;
     }
     return 0;
@@ -175,19 +179,21 @@ sub opkgs_install ($@) {
 # This is used for the creation of a temporary file when we build a new       #
 # image.                                                                      #
 # Input: file where the list has to be written.                               #
-# Return: none.                                                               #
+# Return: 0: Ok, -1: Failure.
 ###############################################################################
 sub create_list_selected_opkgs ($) {
     my $outfile = shift;
 
     my @opkgs = list_selected_packages();
-    open(OUTFILE, ">$outfile") or croak("Could not open $outfile");
+    open(OUTFILE, ">$outfile")
+        or (oscar_log(5, ERROR, "Could not open $outfile"), return -1);
     foreach my $opkg_ref (@opkgs) {
         my $opkg = $$opkg_ref{package};
         my $pkg = "opkg-".$opkg."-client";
         print OUTFILE "$pkg\n";
     }
     close(OUTFILE);
+    return 0;
 }
 
 #
@@ -198,20 +204,21 @@ sub write_pgroup_files {
     my (@pgroups, @groups_list, @errors);
     OSCAR::Database::get_groups_for_packages(\@groups_list, {}, \@errors, undef);
     foreach my $groups_ref (@groups_list){
-	push @pgroups, $$groups_ref{group_name};
+	    push @pgroups, $$groups_ref{group_name};
     }
     foreach my $pset (@pgroups) {
-	my (@res, @errs);
-	&get_group_packages($pset, \@res, {}, \@errs);
-	my $file = $OSCAR::PackagePath::PGROUP_PATH."/$pset.pgroup";
-	print "Writing package group file for client installation: $file\n";
-	local *OUT;
-	open OUT, "> $file" or die "Could not write $file : $!";
-	for my $p (@res) {
-	    print OUT "opkg-".$p->{package}."-client\n";
-	}
+	    my (@res, @errs);
+	    &get_group_packages($pset, \@res, {}, \@errs);
+	    my $file = $OSCAR::PackagePath::PGROUP_PATH."/$pset.pgroup";
+	    oscar_log(5, INFO, "Writing package group file for client installation: $file");
+	    local *OUT;
+	    open OUT, "> $file" or (oscar_log(5, ERROR, "Could not write $file : $!"), return -1);
+	    for my $p (@res) {
+	       print OUT "opkg-".$p->{package}."-client\n";
+    }
 	close OUT;
     }
+    return 0;
 }
 
 ################################################################################
@@ -228,7 +235,7 @@ sub get_opkg_version_from_configxml ($) {
     require OSCAR::FileUtils;
     my $ref = OSCAR::FileUtils::parse_xmlfile ($configxml);
     if (!defined $ref) {
-        carp "ERROR: Impossible to parse XML file ($configxml)";
+        oscar_log(5, ERROR, "Impossible to parse XML file ($configxml)");
         return undef;
     }
 
@@ -265,7 +272,7 @@ sub get_data_from_configxml ($$) {
     require OSCAR::FileUtils;
     my $ref = OSCAR::FileUtils::parse_xmlfile ($configxml);
     if (!defined $ref) {
-        carp "ERROR: Impossible to parse XML file ($configxml)";
+        oscar_log(5, ERROR, "Impossible to parse XML file ($configxml)");
         return undef;
     }
 
@@ -285,20 +292,20 @@ sub get_data_from_configxml ($$) {
 sub get_list_core_opkgs () {
     my $path = "/etc/oscar/opkgs/core.conf";
     if (! -f $path) {
-        carp "ERROR: config file for core OPKGs not available ($path)\n";
+        oscar_log(5, ERROR, "Config file for core OPKGs not available ($path)");
         return undef;
     }
     my @core_opkgs = ();
     my $p;
     open(DAT, $path) 
-        or (carp ("ERROR: Could not open file ($path)."), return undef);
+        or (oscar_log(5, ERROR, "Could not open file ($path)."), return undef);
     while ($p = <DAT>) {
         chomp($p);
         unshift (@core_opkgs, $p);
     }
     close (DAT);
-    print "Available core packages: " if $OSCAR::Env::oscar_verbose;
-    OSCAR::Utils::print_array (@core_opkgs) if $OSCAR::Env::oscar_verbose;
+    oscar_log(5, INFO, "Available core packages: ");
+    OSCAR::Utils::print_array (@core_opkgs) if($OSCAR::Env::oscar_verbose >= 5);
     if (scalar (@core_opkgs) == 0) {
         return undef;
     } else {

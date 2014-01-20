@@ -43,6 +43,7 @@ use OSCAR::ConfigManager;
 use OSCAR::FileUtils;
 use OSCAR::Database;
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::Network;
 use OSCAR::Package;
 use OSCAR::SystemServices;
@@ -75,11 +76,14 @@ our $basedir = "/etc/oscar/clusters";
 sub is_nis_env () {
     my $cmd = "LC_ALL=C domainname";
 
+    oscar_log(7, ACTION, "About to run: $cmd"); 
     my $output = `$cmd`;
     chomp ($output);
     if ($output eq "(none)") {
+        oscar_log(5, INFO, "Not a NIS environment");
         return 0;
     } else {
+        oscar_log(5, INFO, "Detected NIS environment (nis domain = $output)");
         return 1;
     }
 }
@@ -89,8 +93,10 @@ sub is_nis_env () {
 # Return: 1 if this is the headnode, 0 if this is a compute node, -1 if error.
 sub is_headnode () {
     if (OSCAR::Database::database_connect (undef, undef) > 0) {
+        oscar_log(6, INFO, "We are running on headnode.");
         return 1;
     } else {
+        oscar_log(6, INFO, "We are NOT running on headnode.");
         return 0;
     }
 }
@@ -100,17 +106,17 @@ sub add_clients ($) {
 
 #    $ENV{OSCAR_VERBOSE} = 5;
 
-    OSCAR::Logger::oscar_log_subsection "Adding clients...";
-    print Dumper $client_refobj;
+    oscar_log(2, SUBSECTION, "Adding clients");
+    print Dumper $client_refobj if($OSCAR::Env::oscar_verbose >= 5);
 
-    OSCAR::Logger::oscar_log_subsection "Populating the OSCAR database...";
+    oscar_log(4, INFO, "Populating the OSCAR database...");
     if (OSCAR::Database::set_node_with_group (
             $client_refobj->{'name'},
             "oscar_clients",
             undef,
             undef,
             "oscar") != 1) {
-        carp "ERROR: Impossible to add the clients into the OSCAR database";
+        oscar_log(5, ERROR, "Failed to add clients into the OSCAR database");
         return -1;
     }
 
@@ -121,29 +127,32 @@ sub add_clients ($) {
             undef,
             undef);
     if (scalar (@res) != 1) {
-        carp "ERROR: The image ".$client_refobj->{'imagename'}." is not in ".
-             "the database";
+        oscar_log(5, ERROR, "The image ".$client_refobj->{'imagename'}." is not in ".
+             "the database");
         return -1;
     }
-    print Dumper (@res);
+    oscar_log(9, INFO, "Image characteristics:");
+    print Dumper (@res) if($OSCAR::Env::oscar_verbose >= 9);
+
     my %data =  (
                 image_id    => $res[0]->{id},
                 );
+    oscar_log(8, DB, "Assigning image $client_refobj->{'imagename'} to node $client_refobj->{'name'} in the database.");
     if (OSCAR::Database::update_node (
             $client_refobj->{'name'},
             \%data,
             undef,
             undef) != 1) {
-        carp "ERROR: Impossible to update node information";
+        oscar_log(5, ERROR, "Failed to update node information");
         return -1;
     }
 
-    OSCAR::Logger::oscar_log_subsection "Populating the SIS database...";
+    oscar_log(4, INFO, "Populating the SIS database...");
     my $cmd = "/usr/sbin/si_addclients --hosts " . $client_refobj->{'name'} . 
               " --script " . $client_refobj->{'imagename'};
-    print "-> [INFO] Executing: $cmd\n";
+    oscar_log(7, ACTION, "About to run: $cmd"); 
     if (system ($cmd)) {
-        carp "ERROR: Impossible to execute $cmd";
+        oscar_log(5, ERROR, "Failed to execute $cmd");
         return -1;
     }
 
@@ -161,7 +170,7 @@ sub del_ip_node ($) {
     my ($node) = @_;
 
     if (!OSCAR::Utils::is_a_valid_string ($node)) {
-        carp "ERROR: Invalid node name";
+        oscar_log(5, ERROR, "Invalid node name");
         return -1;
     }
 
@@ -170,24 +179,25 @@ sub del_ip_node ($) {
     my %h = (devname=>"eth0",client=>$node);
     my $adapter = SIS::NewDB::list_adapter(\%h);
     if (!defined ($adapter) && scalar (@$adapter) != 1) {
-        carp "ERROR: Impossible to retrieve valid data for $node";
+        oscar_log(5, ERROR, "Impossible to retrieve valid data for $node");
         return -1;
     }
-    print "Data for node deletion\n";
+    oscar_log(6, INFO, "Preparing data for node deletion");
     my $ip = @$adapter[0]->{ip};
     if (!defined ($ip)) {
-        carp "ERROR: Impossible to retrieve node IP";
+        oscar_log(5, ERROR, "Failed to retrieve node IP");
         return -1;
     }
     my $hex = ip_to_hex($ip);
     if (!OSCAR::Utils::is_a_valid_string ($hex)) {
-        carp "ERROR: Impossible to convert the IP ($ip)";
+        oscar_log(5, ERROR, "Impossible to convert the IP ($ip)");
         return -1;
     }
 
     # delete ELILO and PXE config files
     for my $file ("/tftpboot/".$hex.".conf", 
                   "/tftpboot/pxelinux.cfg/$hex") {
+        oscar_log(6, INFO, "Removing file $file");
         unlink($file) if (-l $file || -f $file);
     }
 
@@ -198,14 +208,15 @@ sub del_ip_node ($) {
 sub delete_clients (@) {
     my @clients = @_;
 
+    oscar_log(2, SECTION, "Delete nodes");
     if (scalar (@clients) == 0) {
-        print "--> [INFO] No client to delete\n";
+        oscar_log(6, INFO,"No client to delete");
         return 0;
     }
 
     my $clientstring = join(",",@clients);
     if (!OSCAR::Utils::is_a_valid_string ($clientstring)) {
-        OSCAR::Logger::oscar_log_subsection ("No clients to delete");
+        oscar_log(6, INFO, "No clients to delete");
         return 0;
     }
 
@@ -230,32 +241,35 @@ sub delete_clients (@) {
     #            Need to check that the content of the table matches service names
     #            as defined in OSCAR::SystemServicesDefs
     #            (avoid stopping dhcpd when service name is isc-dhcpd for example)
-    print ">> Turning off generic services\n";
+    oscar_log(3, SUBSECTION, "Turning off generic services");
     foreach my $services_ref (@generic_services) {
         my $generic_service = $$services_ref{service};
+        oscar_log(4, INFO, "Disabling $generic_service for oscar_server");
         $cmd = "/etc/init.d/$generic_service stop";
+        oscar_log(7, ACTION, "About to run: $cmd");
         if (system($cmd)) {
-            carp("ERROR: Impossible to execute $cmd");
+            oscar_log(5, ERROR, "Failed to execute $cmd");
             $fail++;
         }
         foreach my $client (@clients) {
-            OSCAR::Logger::oscar_log_subsection "[$client]";
+            oscar_log(4, INFO, "Disabling $generic_service for $client");
             $cmd = "/usr/bin/ssh $client /etc/init.d/$generic_service stop";
+            oscar_log(7, ACTION, "About to run: $cmd");
             if (system($cmd)) {
-                carp("ERROR: Impossible to execute $cmd");
+                oscar_log(5, ERROR, "Failed to execute $cmd");
                 $fail++;
             }
         }
     }
     if ($fail) {
-        carp "ERROR: Impossible to turn off some generic services";
+        oscar_log(5, ERROR, "Impossible to turn off some generic services");
         return -1;
     }
 
     # delete node PXE/ELILO configs
-    print ">> delete node PXE/ELILO configs\n";
+    oscar_log(3, SUBSECTION, "deleting node PXE/ELILO configs.");
     foreach my $client (@clients) {
-        print "... $client\n";
+        oscar_log(4, INFO, "Deleting $client");
         if (del_ip_node($client)) {
             carp "ERROR: Impossible to delete IP node ($client)";
             return -1;
@@ -273,112 +287,118 @@ sub delete_clients (@) {
 #        carp("ERROR: Impossible to execute $cmd");
 #        $fail++;
 #    }
+    oscar_log(3, SUBSECTION, "deleting node from SIS.");
     foreach my $client (@clients) {
         $sql = "DELETE FROM Nodes WHERE name='$client'";
-        print ">> Effectively deleting node $client ($sql)\n";
+        oscar_log(8, DB, "Deleting node $client from DB: $sql;"); 
         if (!OSCAR::Database_generic::do_update ($sql, "Nodes", undef, undef)) {
-            carp "ERROR: Impossible to remove $client from ODA";
+            oscar_log(5, ERROR, "Failed to remove $client from ODA");;
             $fail++;
         }
     }
     if ($fail) {
-        carp "ERROR: Impossible to remove some nodes from ODA";
+        oscar_log(5, ERROR, "Failed to remove some nodes from ODA");
         return -1;
     }
 
     # We get the configuration from the OSCAR configuration file.
-    print ">> Clients deleted, running few scripts...\n";
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration";
         return -1;
     }
     my $config = $oscar_configurator->get_config();
 
-    OSCAR::Logger::oscar_log_subsection "Executing post_clients phase";
+    oscar_log(3, SUBSECTION, "Executing post_clients phase.");
     $cmd = "$config->{binaries_path}/post_clients";
+    oscar_log(7, ACTION, "About to run: $cmd"); 
     if (system($cmd)) {
-      carp("ERROR: Impossible to execute $cmd");
-      return -1;
+        oscar_log(5, ERROR, "Failed to execute $cmd");
+        return -1;
     }
     
-    OSCAR::Logger::oscar_log_subsection "Executing post_install phase";
+    oscar_log(3, SUBSECTION, "Executing post_install phase.");
     # We do not check the return code since we may not have connectivity with
     # compute nodes and therefore the script may fail.
     $cmd = "$config->{binaries_path}/post_install --force";
+    oscar_log(7, ACTION, "About to run: $cmd"); 
     if (system($cmd)) {
-        carp "ERROR: Impossible to execute $cmd";
+        oscar_log(5, ERROR, "Failed to execute $cmd");
         return -1;
     }
 
-    print ">> Re-starting generic services\n";
+    oscar_log(3, SUBSECTION, "Re-starting generic services.");
     foreach my $services_ref (@generic_services) {
         my $generic_service = $$services_ref{service};
         $cmd = "/etc/init.d/$generic_service restart";
+        oscar_log(7, ACTION, "About to run: $cmd"); 
         if (system($cmd)) {
-            carp("ERROR: Impossible to execute $cmd");
+            oscar_log(5, ERROR, "Failed to execute $cmd");
             $fail++;
         }
     }
     if ($fail) {
-        carp "ERROR: Impossible to restart some generic services";
+        oscar_log(5, ERROR, "Impossible to restart some generic services");
         return -1;
     }
 
-    OSCAR::Logger::oscar_log_subsection "Re-starting server services";
+    oscar_log(3, SUBSECTION, "Re-starting server services.");
     # FIXME: Need to fix this (use system_service)
     foreach my $services_ref (@server_services) {
         my $server_service = $$services_ref{service};
         $cmd = "/etc/init.d/$server_service restart";
+        oscar_log(7, ACTION, "About to run: $cmd"); 
         if (system($cmd)) {
-            carp("ERROR: Impossible to execute $cmd");
+            oscar_log(5, ERROR, "Failed to execute $cmd");
             $fail++;
         }
     }
     if ($fail) {
-        carp "ERROR: Impossible to restart server services";
+        oscar_log(5, ERROR, "Failed to restart all server services");
         return -1;
     }
     
-    OSCAR::Logger::oscar_log_subsection "Updating C3 configuration file";
+    oscar_log(3, SUBSECTION, "Updating C3 configuration file.");
     if (!OSCAR::Package::run_pkg_script("c3", "post_clients", 1, "")) {
-        carp("ERROR: C3 configuration file update phase failed.");
+        oscar_log(5, ERROR, "C3 configuration file update phase failed.");
         return -1;
     }
 
-    OSCAR::Logger::oscar_log_subsection "Updating the ssh known_hosts file";
+    oscar_log(3, SUBSECTION, "Updating the ssh known_hosts file.");
     $cmd = "/usr/bin/ssh-keygen -R";
     foreach my $client (@clients) {
         my $sub_cmd = "$cmd $client";
+        oscar_log(7, ACTION, "About to run: $sub_cmd"); 
         if (system ($sub_cmd)) {
-            carp "ERROR: Impossible to execute $sub_cmd";
+            oscar_log(5, ERROR, "Failed to execute $sub_cmd");
             return -1;
         }
     }
 
     # FIXME: Need to fix this (use remote_system_service)
-    OSCAR::Logger::oscar_log_subsection "Re-starting client services on ".
-                                        "remaining nodes";
+    oscar_log (3, SUBSECTION, "Re-starting client services on ".
+                                        "remaining nodes");
     foreach my $services_ref (@generic_services) {
         my $generic_service = $$services_ref{service};
         my $cmd = "$config->{binaries_path}/cexec ".
                   "/etc/init.d/$generic_service restart";
+        oscar_log(7, ACTION, "About to run: $cmd"); 
         if (system($cmd)) {
-                carp("ERROR: Impossible to execute $cmd");
+                oscar_log(5, ERROR, "Failed to execute $cmd");
                 $fail++;
         }
     }
     if ($fail) {
-        print "[WARN] Impossible to restart services on remote compute nodes";
+        oscar_log(5, WARNING, "Failed to restart some services on remote compute nodes");
     }
 
-    OSCAR::Logger::oscar_log_subsection "Running mkdhcpconf";
+    oscar_log(3, SUBSECTION, "Running mkdhcpconf.");
     # We make sure the DHCP server is running otherwise mkdhcpconf will fail
-    OSCAR::SystemServices::system_service (DHCP , START);
+    !system_service (DHCP , START)
+        or (oscar_log(5, ERROR, "Failed to start DHCP service."), return -1);
     my ($ip, $broadcast, $netmask) = OSCAR::Network::interface2ip($interface);
     my $dhcpd_configfile = OSCAR::OCA::OS_Settings::getitem(DHCP."_configfile");
     backup_file_if_not_exist($dhcpd_configfile)
-            or (carp "ERROR: Couldn't backup dhcpd.conf file", return -1);
+            or (oscar_log(5, ERROR, "Couldn't backup dhcpd.conf file"), return -1);
 
     #if(-e $dhcpd_configfile) {
     #    copy($dhcpd_configfile, $dhcpd_configfile.".oscarbak")
@@ -390,15 +410,16 @@ sub delete_clients (@) {
     if ($install_mode eq "systemimager-multicast") {
        $cmd = $cmd . " --multicast=yes";
     }
+    oscar_log(7, ACTION, "About to run: $cmd"); 
     if (system($cmd)) {
-        carp ("ERROR: Impossible to execute $cmd");
+        oscar_log(5, ERROR, "ERROR: Failed to execute $cmd");
         return -1;
     }
 
-    my $rc = OSCAR::SystemServices::system_service (DHCP , STOP);
-    if ($rc) {
-        print "[WARN] Impossible to restart DHCPD";
-    }
+    !system_service (DHCP , START)
+        or (oscar_log(5, ERROR, "Failed to start DHCP service."), return -1);
+
+    oscar_log(2, INFO, "Successfully Deleted nodes");
 
     return 0;
 }
@@ -417,10 +438,10 @@ sub display_node_config ($$$) {
     my ($cluster_name, $partition_name, $node_name) = @_;
     my $node_config;
 
+    oscar_log(2, SUBSECTION, "Node $node_name configuration");
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration.\n";
         return -1;
     }
     my $config = $oscar_configurator->get_config();
@@ -431,7 +452,7 @@ sub display_node_config ($$$) {
                     $partition_name,
                     $node_name);
         if ( !defined ($path) || ! -d $path ) {
-            carp "ERROR: Undefined node.\n";
+            oscar_log(5, ERROR, "Undefined node.");
             return -1;
         }
         require OSCAR::NodeConfigManager;
@@ -442,17 +463,17 @@ sub display_node_config ($$$) {
             # an error.
             return -1;
         }
-        oscar_log_subsection("Parsing node configuration file: $config_file");
+        oscar_log(3, INFO, "Parsing node configuration file: $config_file");
         my $config_obj = OSCAR::NodeConfigManager->new(
             config_file => "$config_file");
         if ( ! defined ($config_obj) ) {
-            carp "ERROR: Impossible to create an object in order to handle ".
-                 "the node configuration file.\n";
+            oscar_log(5, ERROR, "Impossible to create an object in order to handle ".
+                 "the node configuration file.");
             return -1;
         }
         $node_config = $config_obj->get_config();
         if (!defined ($node_config)) {
-            carp "ERROR: Impossible to load the node configuration file\n";
+            oscar_log(5, ERROR, "ERROR: Impossible to load the node configuration file");
             return -1;
         } else {
             $config_obj->print_config();
@@ -462,18 +483,18 @@ sub display_node_config ($$$) {
                 my $vm_config_obj = OSCAR::VMConfigManager->new(
                     config_file => "$vm_config_file");
                 if ( ! defined ($config_obj) ) {
-                    carp "ERROR: Impossible to create an object in order to ".
-                         "handle the node configuration file.\n";
+                    oscar_log(5, ERROR, "Impossible to create an object in order to ".
+                         "handle the node configuration file.");
                     return -1;
                 }
                 $vm_config_obj->print_config();
             }
         }
     } elsif ($config->{oda_type} eq "db") {
-        carp "Real db are not yet supported\n";
+        oscar_log(5, ERROR, "Real db are not yet supported");
         return -1;
     } else {
-        carp "ERROR: Unknow ODA type ($config->{oda_type})\n";
+        oscar_log(5, ERROR, "Unknow ODA type ($config->{oda_type})");
         return -1;
     }
     return 0;
@@ -497,7 +518,6 @@ sub get_node_config ($$$) {
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration.\n";
         return undef;
     }
     my $config = $oscar_configurator->get_config();
@@ -508,7 +528,7 @@ sub get_node_config ($$$) {
                     $partition_name,
                     $node_name);
         if ( !defined ($path) || ! -d $path ) {
-            carp "ERROR: Undefined node.\n";
+            oscar_log(5, ERROR, "Undefined node.");
             return undef;
         }
         require OSCAR::NodeConfigManager;
@@ -519,24 +539,24 @@ sub get_node_config ($$$) {
             # an error.
             return undef;
         }
-        oscar_log_subsection("Parsing node configuration file: $config_file");
+        oscar_log(4, INFO, "Parsing node configuration file: $config_file");
         my $config_obj = OSCAR::NodeConfigManager->new(
             config_file => "$config_file");
         if ( ! defined ($config_obj) ) {
-            carp "ERROR: Impossible to create an object in order to handle ".
-                 "the node configuration file.\n";
+            oscar_log(5, ERROR, "Impossible to create an object in order to handle ".
+                 "the node configuration file.");
             return undef;
         }
         $node_config = $config_obj->get_config();
         if (!defined ($node_config)) {
-            carp "ERROR: Impossible to load the node configuration file\n";
+            oscar_log(5, ERROR, "Failed to load the node configuration file");
             return undef;
         } 
     } elsif ($config->{oda_type} eq "db") {
-        carp "Real db are not yet supported\n";
+        oscar_log(5, ERROR, "Real db are not yet supported");
         return undef;
     } else {
-        carp "ERROR: Unknow ODA type ($config->{oda_type})\n";
+        oscar_log(5, ERROR, "Unknow ODA type ($config->{oda_type})");
         return undef;
     }
     return $node_config;
@@ -558,23 +578,22 @@ sub set_node_config ($$$$) {
     my ($cluster, $partition, $node_name, $node_config) = @_;
 
     if ($OSCAR::Env::oscar_verbose) {
-        oscar_log_section "Saving node configuration...";
-        oscar_log_subsection "Cluster: $cluster";
-        oscar_log_subsection "Partition: $partition";
-        oscar_log_subsection "Node: $node_name";
+        oscar_log(2, SECTION, "Saving node configuration...");
+        oscar_log(3, INFO, "Cluster: $cluster");
+        oscar_log(3, INFO, "Partition: $partition");
+        oscar_log(3, INFO, "Node: $node_name");
     }
 
     # Few asserts to be everything is fine.
     if (!defined ($cluster) || $cluster eq "" ||
         !defined ($partition) || $partition eq "" ||
         !defined ($node_config) || $node_config eq "") {
-        carp "ERROR: missing data, impossible to set node configuration\n";
+        oscar_log(5, ERROR, "Missing data, impossible to set node configuration");
         return -1;
     }
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration\n";
         return -1;
     }
     my $config = $oscar_configurator->get_config();
@@ -585,7 +604,7 @@ sub set_node_config ($$$$) {
                     $partition,
                     $node_name);
         if ( ! -d $path ) {
-            carp "ERROR: Undefined node\n";
+            oscar_log(5, ERROR, "Undefined node");
             return -1;
         }
         require OSCAR::NodeConfigManager;
@@ -593,16 +612,16 @@ sub set_node_config ($$$$) {
         my $config_obj = OSCAR::NodeConfigManager->new(
             config_file => "$config_file");
         if ( ! defined ($config_obj) ) {
-            carp "ERROR: Impossible to create an object in order to handle ".
-                 "the node configuration file.\n";
+            oscar_log(5, ERROR, "Impossible to create an object in order to handle ".
+                 "the node configuration file.");
             return -1;
         }
         $config_obj->set_config($node_config);
     } elsif ($config->{oda_type} eq "db") {
-        carp "Real db are not yet supported\n";
+        oscar_log(5, ERROR, "Real db are not yet supported");
         return -1;
     } else {
-        carp "ERROR: Unknow ODA type ($config->{oda_type})\n";
+        oscar_log(5, ERROR, "Unknow ODA type ($config->{oda_type})");
         return -1;
     }
     return 0;
@@ -632,8 +651,8 @@ sub get_list_of_down_nodes {
     my @c3out = `/usr/bin/cexec -p echo ALIVE`;
     my @alive = grep /ALIVE/,@c3out;
 
-    if ($OSCAR::Env::oscar_verbose) {
-        print "=== c3_hosts_up():\n";
+    oscar_log(6, INFO, "c3_hosts_up():");
+    if ($OSCAR::Env::oscar_verbose >= 6) {
         print "c3out:\n";
         print @c3out;
         print "alive:\n";
@@ -650,8 +669,8 @@ sub get_list_of_down_nodes {
         }
     }
 
-    if ($OSCAR::Env::oscar_verbose) {
-        print "Down nodes:\n";
+    oscar_log(6, INFO, "Down nodes:");
+    if ($OSCAR::Env::oscar_verbose >= 6) {
     	OSCAR::Utils::print_array (@down_nodes);
     }
 
@@ -664,8 +683,8 @@ sub get_list_of_down_nodes {
 sub c3_hosts_up () {
     my @c3out = `/usr/bin/cexec -p echo ALIVE`;
     my @alive = grep /ALIVE/,@c3out;
-    if ($OSCAR::Env::oscar_verbose) {
-        print "=== c3_hosts_up():\n";
+    oscar_log(6, INFO, "c3_hosts_up():");
+    if ($OSCAR::Env::oscar_verbose >= 6) {
         print "c3out:\n";
         print @c3out;
         print "alive:\n";
@@ -688,12 +707,10 @@ sub update_list_alive_nodes () {
         # TODO: c3_conf_manager should support that
         $pos = OSCAR::FileUtils::line_in_file ("\t$node", "/etc/c3.conf");
         if ($pos == -1) {
-            carp "ERROR: Impossible to find an entry for $node in /etc/c3.conf";
+            oscar_log(5, ERROR, "Impossible to find an entry for $node in /etc/c3.conf");
             return -1;
         }
-        if ($OSCAR::Env::oscar_verbose) {
-            print "WARNING: disabling node ".$node." in /etc/c3.conf as it seems down.\n";
-        }
+        oscar_log(5, WARNING, "Disabling node $node in /etc/c3.conf as it seems down.");
         OSCAR::FileUtils::replace_line_in_file ("/etc/c3.conf", $pos, "\tdead $node"); 
     }
 

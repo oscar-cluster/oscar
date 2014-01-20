@@ -31,6 +31,7 @@ use OSCAR::Env;
 use OSCAR::OCA::OS_Detect;
 use OSCAR::Distro;
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::Utils;
 use File::Basename;
 use Switch;
@@ -66,22 +67,22 @@ sub detect_oscar_pool_format ($) {
     my $binaries = "rpm|deb";
     my $format;
     my ($compat_distro, $arch, $version);
-    print "Detecting the OSCAR pool $pool_id\n" if $OSCAR::Env::oscar_verbose;
+    oscar_log(5, INFO, "Detecting the OSCAR pool $pool_id");
     # Pools for common rpms and debs are fairly simple to deal with
     if ( ($pool_id =~ /common\-($binaries)s$/) ) {
         $format = $1;
-        print "Pool format: $format\n" if $OSCAR::Env::oscar_verbose;
+        oscar_log(5, INFO, "Pool format: $format");
     } else {
         # Other pools are more difficult to deal with, OS_Detect cannot be 
         # with compat query for specific distros
         ($compat_distro, $version, $arch) =
             OSCAR::PackagePath::decompose_distro_id($pool_id);
-        print "Distro id (OS_Detect syntax distro-version-arch: ".
-              "$compat_distro-$version-$arch)\n" if $OSCAR::Env::oscar_verbose;
+        oscar_log(5, INFO, "Distro id (OS_Detect syntax distro-version-arch: ".
+              "$compat_distro-$version-$arch)");
         my $os = OSCAR::OCA::OS_Detect::open(oscar_pool=>"$compat_distro-$version-$arch");
         if (!defined($os) || (ref($os) ne "HASH")) {
-            carp "ERROR: OSCAR does not support the OSCAR pool ".
-                 $pool_id." ($compat_distro, $arch, $version)\n";
+            oscar_log(5, ERROR, "OSCAR does not support the OSCAR pool ".
+                 $pool_id." ($compat_distro, $arch, $version)");
             return undef;
         }
         $format = $os->{pkg};
@@ -97,7 +98,7 @@ sub detect_distro_pool_format ($) {
     my $pool_id = shift;
     my $format;
 
-    print "Detecting the distro pool $pool_id\n" if $OSCAR::Env::oscar_verbose;
+    oscar_log(5, INFO, "Detecting the distro pool $pool_id");
     # TODO: we should have a unique function that allows us to validate
     # a distro ID.
     my ($distro, $arch, $version);
@@ -111,19 +112,19 @@ sub detect_distro_pool_format ($) {
     # Note that directories in /tftpboot/dist and /tftpboot/oscar do not
     # follow the same naming rules. In /tftpboot/dist the distro name is
     # used, in /tftpboot/oscar the compat distro name is used.
-    print "Distro id (OS_Detect syntax distro-version-arch: ".
-            "$distro-$version-$arch\n" if $OSCAR::Env::oscar_verbose;
+    oscar_log(5, INFO, "Distro id (OS_Detect syntax distro-version-arch: ".
+            "$distro-$version-$arch");
     my $os = OSCAR::OCA::OS_Detect::open(fake=>{distro=>$distro,
                         distro_version=>$version,
                         arch=>$arch, }
                         );
     if (!defined($os) || (ref($os) ne "HASH")) {
-        carp "ERROR: OSCAR does not support the distro for the pool ".
-             $pool_id." ($distro, $arch, $version)\n";
+        oscar_log(5, INFO, "ERROR: OSCAR does not support the distro for the pool ".
+             $pool_id." ($distro, $arch, $version)");
         return undef;
     }
     $format = $os->{pkg};
-    print "Pool format: $format\n\n\n" if $OSCAR::Env::oscar_verbose;
+    oscar_log(5, INFO, "Pool format: $format");
     return $format;
 }
 
@@ -141,11 +142,12 @@ sub detect_pool_format ($) {
     my $pool = shift;
     my $format = "";
     my $binaries = "rpm|deb";
-    OSCAR::Logger::oscar_log_subsection "Analysing $pool";
+    oscar_log(5, INFO, "Analysing $pool");
     # Online repo
     require OSCAR::PackagePath;
     if (OSCAR::PackagePath::repo_local ($pool) == 0) {
 #        OSCAR::Logger::oscar_log_subsection "This is an online repository ($pool)";
+        oscar_log(5, INFO, "Not a local repo. Assuming this is an online repo");
         my $url;
         if ( $pool =~ /\/$/ ) {
             $url = $pool . "repodata/repomd.xml";
@@ -156,43 +158,43 @@ sub detect_pool_format ($) {
 #        oscar_log_subsection "Testing remote repository type by using ".
 #                             "command: $cmd... ";
         my @tokens = split (/\+/, $pool);
-        if (!system($cmd)) {
-            print "[yum]\n" if $OSCAR::Env::oscar_verbose;
+        if (!oscar_system($cmd)) {
+            oscar_log(5, INFO, "Identified yum repo.");
             $format = "rpm";
         } elsif (scalar (@tokens) > 1) {
             # if the repository is not a yum repository, we assume this is
             # a Debian repo. Therefore we assume that all specified repo
             # are valid.
-            print "[deb]\n" if $OSCAR::Env::oscar_verbose;
+            oscar_log(5, INFO, "Not a yum repo, assuming this is a deb repo.");
             $format = "deb";
         } else {
-            carp "ERROR: Impossible to detect the format of the online ".
-                 "repository ($pool)";
+            oscar_log(5, ERROR, "Failed to detect the format of the online ".
+                 "repository ($pool)");
             return undef;
         }
     } elsif (index($pool, "/tftpboot/distro", 0) == 0 
             || index($pool, "file:/tftpboot/distro", 0) == 0) {
         # Local pools for distros
         my $pool_id = basename ($pool);
-        print "Pool id: $pool_id.\n" if $OSCAR::Env::oscar_verbose;
+        oscar_log(5, INFO, "Found local pool id: $pool_id.");
         $format = detect_distro_pool_format ($pool_id);
     } elsif (index($pool, "/tftpboot/oscar", 0) == 0 
             || index($pool, "file:/tftpboot/oscar", 0) == 0) {
         my $pool_id = basename ($pool);
-        print "Pool id: $pool_id.\n" if $OSCAR::Env::oscar_verbose;
+        oscar_log(5, INFO, "Found local pool id: $pool_id.");
         $format = detect_oscar_pool_format ($pool_id);
     } else {
         # If we try to analyse a local repo that is not in /tftpboot, we try to
         # see if it is not a repo for OSCAR (such as a weborm repo).
         my $pool_id = basename ($pool);
-        print "Pool id: $pool_id.\n" if $OSCAR::Env::oscar_verbose;
+        oscar_log(5, INFO, "Found pool id: $pool_id.");
         $format = detect_oscar_pool_format ($pool_id);
         if (!defined ($format)) {
-            carp "ERROR: Impossible to recognize pool $pool\n";
+            oscar_log(5, ERROR, "Fail to recognize pool $pool");
             return undef;
         }
     }
-    print "Detected format for pool $pool: $format\n" if $OSCAR::Env::oscar_verbose;
+    oscar_log(5, INFO, "Detected format for pool $pool: $format");
     return $format;
 }
 
@@ -206,11 +208,10 @@ sub generate_pool_checksum ($) {
     my $pool = shift;
     my $err;
 
-    print "--- checking md5sum for $pool" if $OSCAR::Env::oscar_verbose;
+    oscar_log(5, INFO, "Checking md5sum for $pool");
     if ($pool =~ /^(http|ftp|mirror)/) {
-        print " ... remote repo, no check needed.\n" if $OSCAR::Env::oscar_verbose;
+        oscar_log(5, INFO, " This is a remote repo, no check needed.");
     }
-    print "\n" if $OSCAR::Env::oscar_verbose;
 
     my $cfile = "$ENV{OSCAR_HOME}/tmp/pool_".basename(dirname($pool)).
                 "_".basename($pool).".md5";
@@ -218,14 +219,14 @@ sub generate_pool_checksum ($) {
     if ($md5) {
         my $pm;
         my $pool_type = detect_pool_format ($pool);
-        print "Pool type: $pool_type\n";
+        oscar_log(5, INFO, "Pool type: $pool_type");
         require OSCAR::PackMan;
         if ($pool_type eq "rpm") {
             $pm = OSCAR::PackMan::RPM->new;
         } elsif ($pool_type eq "deb") {
             $pm = OSCAR::PackMan::DEB->new;
         } else {
-            carp "ERROR: Unknown pool type\n";
+            oscar_log(5, ERROR, "Unknown pool type");
             return -1;
         }
         $err = &pool_gencache($pm,$pool);
@@ -249,13 +250,13 @@ sub prepare_pool ($$) {
     my ($verbose,$pool) = @_;
 
     # demultiplex pool arguments
-    OSCAR::Logger::oscar_log_section "Preparing pool: $pool";
+    oscar_log(2, SUBSECTION, "Preparing pool: $pool");
 
     # Before to prepare a pool, we try to detect the associated binary package
     # format.
     my $format = detect_pool_format ($pool);
-    OSCAR::Logger::oscar_log_subsection "Binary package format for the pool: ".
-        $format;
+    oscar_log(5, INFO, "Binary package format for the pool: ".
+        $format);
 
     # check if pool update is needed
     my $pm;
@@ -265,26 +266,26 @@ sub prepare_pool ($$) {
     } elsif ($format eq "deb") {
         $pm = OSCAR::PackMan::DEB->new;
     } else {
-        carp "ERROR: Impossible to detect the pool format ($pool)\n";
+        oscar_log(5, ERROR, "Impossible to detect the pool format ($pool)");
         return undef;
     }
     return undef if (!$pm);
 
     # follow output of smart installer
-    if ($verbose) {
+    if ($OSCAR::Env::oscar_verbos) {
         $pm->output_callback(\&print_output);
     }
 
     my $perr = generate_pool_checksum ($pool);
     if ($perr) {
         undefine $pm;
-        carp "ERROR: could not setup or generate package pool metadata\n";
+        oscar_log(5, ERROR, "Could not setup or generate package pool metadata");
         return undef;
     }
 
     # prepare for smart installs
     $pm->repo($pool);
-    OSCAR::Logger::oscar_log_subsection "Pool $pool ready";
+    oscar_log(2, SUBSECTION, "Pool: $pool ready");
     return $pm;
 }
 
@@ -297,7 +298,7 @@ sub detect_pools_format (@) {
         next if ($p eq "");
         my $type = OSCAR::PackageSmart::detect_pool_format ($p);
         if (!defined $type) {
-            carp "ERROR: Impossible to prepare pool $p, unknown format\n";
+            oscar_log(5, ERROR, "Impossible to prepare pool $p, unknown format");
             return undef;
         }
         if (!defined $format || $format eq "") {
@@ -306,8 +307,8 @@ sub detect_pools_format (@) {
             $format = $type;
         } else{
             if ($type ne $type) { # OL: There is a BUG here... Need to analyse
-                carp "ERROR: the two pools for the local distro are not of".
-                     "the same type ($format, $type)\n";
+                oscar_log(5, ERROR, "The two pools for the local distro are not of".
+                     "the same type ($format, $type)");
                 return undef;
             }
         }
@@ -329,26 +330,26 @@ sub detect_pools_format (@) {
 sub prepare_pools ($@) {
     my ($v, @pools) = @_;
 
-    print "Preparing pools: @pools\n";
+    oscar_log(2, SUBSECTION, "Preparing pools: @pools");
     if (scalar (@pools) == 0) {
-        warn "INFO: no repositories defined";
+        oscar_log(5, WARNING, "No repositories defined, nothing to do");
         return undef;
     }
 
     # First we check pools all support the same format (rpm vs. deb).
     my $format = detect_pools_format (@pools);
     if (!defined $format) {
-        carp "ERROR: Impossibe to detect the pools' format";
+        oscar_log(5, ERROR, "Impossibe to detect the pools' format");
         return undef;
     }
 
     # Then we actually prepare the pools
     my $pm;
     foreach my $p (@pools) {
-        print "Pool: $p\n";
+        oscar_log(6, INFO, "Pool: $p");
         $pm = prepare_pool($v, $p);
         if (!$pm) {
-            carp "\nERROR: Could not create PackMan instance!\n";
+            oscar_log(5, ERROR, "Could not create PackMan instance!");
             return undef;
         }
     }
@@ -387,7 +388,7 @@ sub prepare_distro_pools ($) {
         next if $repo eq "";
         push (@pools, $repo);
     }
-    print "Pools to prepare for distro $distro_id:\n";
+    oscar_log(5, INFO, "Pools to prepare for distro $distro_id:");
     OSCAR::Utils::print_array (@pools);
 
     my $pm = OSCAR::PackageSmart::prepare_pools ($OSCAR::Env::oscar_verbose, @pools);
@@ -410,24 +411,24 @@ sub pool_gencache ($$) {
     # yum 2.6.0+ creates a file called cachecookie in /var/cache/yum/<repo> and
     # inorder to refresh the yum cache, this file needs to be deleted
     if (-f $yum_cache_cookie) {
-         OSCAR::Logger::oscar_log_subsection "Deleting file $yum_cache_cookie";
+        oscar_log(5, INFO, "Deleting file $yum_cache_cookie");
         unlink($yum_cache_cookie) 
-            or (carp("ERROR: Failed to delete file $yum_cache_cookie"),
+            or (oscar_log(5, ERROR, "Failed to delete file $yum_cache_cookie"),
                 return 0);
     }
 
     $pm->repo($pool);
-    OSCAR::Logger::oscar_log_subsection "Calling gencache for $pool, this ".
-        "might take a minute...";
+    oscar_log(5, SUBSECTION, "Calling gencache for $pool, this ".
+        "might take a minute...");
 
     # The packman return code is defined in PackManDefs.pm
     my ($err, @out) = $pm->gencache;
     if (!$err) {
-        OSCAR::Logger::oscar_log_subsection " success";
+        oscar_log(5, INFO, "Cache successfully generated");
         return 0;
     } else {
-        OSCAR::Logger::oscar_log_subsection " error ($err). Output was:\n"
-            . join("\n",@out)."\n";
+        oscar_log(5, ERROR, "Failed to generate cache ($err). Output was:"
+            . join("\n",@out));
         return 1;
     }
 }
@@ -453,23 +454,24 @@ sub checksum_files {
     } else {
         $md5sum_cmd = "md5sum - ";
     }
-    print "Checksumming directory ".cwd()."\n" if ($OSCAR::Env::oscar_verbose);
+    oscar_log(5, INFO, "Checksumming directory ".cwd());
     @pattern = map { "-name '".$_."'" } @pattern;
     my $cmd = "find . -follow -type f \\( ".join(" -o ",@pattern).
-	" \\) -printf \"%p %s %u %g %m %t\\n\" | sort ";
-    if ($OSCAR::Env::oscar_verbose > 7) {
-	my $tee = $ENV{OSCAR_HOME}."/tmp/".basename($dir).".files";
-	$cmd .= "| tee $tee | $md5sum_cmd ";
+    " \\) -printf \"%p %s %u %g %m %t\\n\" | sort ";
+    if ($OSCAR::Env::oscar_verbose >= 7) {
+        my $tee = $ENV{OSCAR_HOME}."/tmp/".basename($dir).".files";
+        oscar_log(7, INFO, "Output of following ccommand will be stored in $tee");
+        $cmd .= "| tee $tee | $md5sum_cmd ";
     } else {
-	$cmd .= "| $md5sum_cmd ";
+        $cmd .= "| $md5sum_cmd ";
     }
-    print "Executing: $cmd\n" if ($OSCAR::Env::oscar_verbose);
+    oscar_log(7, ACTION, "About to run: $cmd");
     local *CMD;
-    open CMD, "$cmd |" or croak "Could not run md5sum: $!";
+    open CMD, "$cmd |" or (oscar_log(5, ERROR, "Could not run md5sum: $!"), return 0);
     my ($md5sum,$junk) = split(" ",<CMD>);
     close CMD;
     chdir($wd);
-    print "Checksum was: $md5sum\n" if ($OSCAR::Env::oscar_verbose);
+    oscar_log(5, INFO, "Checksum is: $md5sum");
     return $md5sum;
 }
 
@@ -485,7 +487,7 @@ sub checksum_write {
     open OUT, "> $file" or croak "Could not open $file: $!";
     print OUT "$checksum\n";
     close OUT;
-    print "Wrote checksum file $file: $checksum\n" if ($OSCAR::Env::oscar_verbose);
+    oscar_log(5, INFO, "Wrote checksum file $file: $checksum");
 }
 
 #
@@ -494,11 +496,11 @@ sub checksum_write {
 sub checksum_read {
     my ($file) = @_;
     local *IN;
-    open IN, "$file" or croak "Could not open $file: $!";
+    open IN, "$file" or (oscar_log(5, ERROR, "Could not open $file: $!"), return 0);
     my $in = <IN>;
     chomp $in;
     close IN;
-    print "Read checksum file $file: $in\n" if ($OSCAR::Env::oscar_verbose);
+    oscar_log(5, INFO, "Read checksum file $file: $in");
     return $in;
 }
 
@@ -512,32 +514,32 @@ sub checksum_needed {
     my ($dir, $cfile, @pattern) = @_;
 
     my $md5 = &checksum_files($dir,@pattern);
-    print "Current checksum ($cfile): $md5\n" if ($OSCAR::Env::oscar_verbose);
+    oscar_log(5, INFO, "Current checksum ($cfile): $md5");
     my $ifile = $dir . "/" . basename($cfile);
     if (-f $cfile) {
-	my $omd5 = &checksum_read($cfile);
-	print "Old checksum ($cfile): $omd5\n" if ($OSCAR::Env::oscar_verbose);
-	if ($md5 eq $omd5) {
-	    return 0;
-	} else {
-	    print "CHECKSUM: $cfile new:$md5 old:$omd5\n";
-	}
+         my $omd5 = &checksum_read($cfile);
+         oscar_log(5, INFO, "Old checksum ($cfile): $omd5");
+         if ($md5 eq $omd5) {
+             return 0;
+         } else {
+             oscar_log(5, INFO, "CHECKSUM: $cfile new:$md5 old:$omd5");
+         }
     } elsif (-f $ifile) {
-	#
-	# repo-internal checksum for repositories delivered as tarballs
-	# they should contain the metadata cache already, therefore
-	# simply copy the internal checksum to the expected checksum file
-	#
-	my $imd5 = &checksum_read($ifile);
-	print "Repo-internal checksum ($ifile): $imd5\n" if ($OSCAR::Env::oscar_verbose);
-	if ($md5 eq $imd5) {
-	    # [EF: is the failure handling appropriate?]
-	    !system("cp $ifile $cfile")
-		or carp("Could not copy internal checksum file to $cfile");
-	    return 0;
-	} else {
-	    print "CHECKSUM: $cfile new:$md5 internal:$imd5\n";
-	}
+    #
+    # repo-internal checksum for repositories delivered as tarballs
+    # they should contain the metadata cache already, therefore
+    # simply copy the internal checksum to the expected checksum file
+    #
+        my $imd5 = &checksum_read($ifile);
+        oscar_log(5, INFO, "Repo-internal checksum ($ifile): $imd5");
+        if ($md5 eq $imd5) {
+            # [EF: is the failure handling appropriate?]
+            !oscar_system("cp $ifile $cfile")
+                or oscar_log(5, ERROR,"Could not copy internal checksum file to $cfile");
+            return 0;
+        } else {
+            oscar_log(5, INFO, "CHECKSUM: $cfile new:$md5 internal:$imd5");
+        }
     }
     return $md5;
 }
@@ -545,7 +547,7 @@ sub checksum_needed {
 sub print_output {
     my ($line) = @_;
     $| = 1;
-    print "$line\n";
+    oscar_log(5, NONE, "$line");
 }
 
 1;

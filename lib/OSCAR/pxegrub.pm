@@ -21,10 +21,10 @@ package OSCAR::pxegrub;
 use strict;
 use vars qw($VERSION @EXPORT);
 use File::Basename;
-use OSCAR::Env;
 use OSCAR::Defs;
 use OSCAR::Utils;
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::PxegrubConfigManager;
 use Carp;
 
@@ -48,20 +48,19 @@ sub is_a_valid_nic ($) {
     # We get the configuration from the OSCAR configuration file.
     my $pxegrub_configurator = OSCAR::PxegrubConfigManager->new();
     if ( ! defined ($pxegrub_configurator) ) {
-        carp "ERROR: Impossible to get the pxegrub configuration\n";
+        oscar_log(5, ERROR, "Impossible to get the pxegrub configuration");
         return undef;
     }
     my $config = $pxegrub_configurator->get_config();
 
     my $nics_file = $config->{nics_deffile};
-    print "Path of the file giving the list of supported NICs: $nics_file\n"
-        if $OSCAR::Env::oscar_verbose;
+    oscar_log(5, INFO, "Path of the file giving the list of supported NICs: $nics_file");
 
     # We read the file with the list of supported NICs. The result is in an 
     # array.
     my @supported_nics = load_supported_nics ($nics_file);
     if (scalar(@supported_nics) <= 0) {
-        carp "ERROR: Impossible to load the supported NICs";
+        oscar_log(5, ERROR, "Failed to load the supported NICs");
         return -1;
     }
 
@@ -79,7 +78,7 @@ sub load_supported_nics ($) {
     my @supported_nics;
     my $line;
 
-    print "Opening file: $file\n" if $OSCAR::Env::oscar_verbose;
+    oscar_log(6, INFO, "Loading file: $file");
     open(DAT, $file);
     while ($line = <DAT>) {
         my ($id, $desc) = split (" | ", $line);
@@ -87,8 +86,7 @@ sub load_supported_nics ($) {
     }
     close (DAT);
 
-    OSCAR::Utils::print_array(@supported_nics) if $OSCAR::Env::oscar_verbose;
-
+    oscar_log(6, INFO, "Found the following supported NICS: " . join(", ", @supported_nics));
     return @supported_nics;
 }
 
@@ -98,27 +96,26 @@ sub setup_pxegrub ($) {
     my $dest = "/home/gvh/temp";
 
     if (!is_a_valid_nic ($nic_id)) {
-        carp "ERROR: Unsupported NIC";
+        oscar_log(5, ERROR, "Unsupported NIC");
         return undef;
     }
 
     # We get the configuration from the OSCAR configuration file.
     my $pxegrub_configurator = OSCAR::PxegrubConfigManager->new();
     if ( ! defined ($pxegrub_configurator) ) {
-        carp "ERROR: Impossible to get the pxegrub configuration\n";
+        oscar_log(5, ERROR, "Failed to get the pxegrub configuration");
         return undef;
     }
     my $config = $pxegrub_configurator->get_config();
     my $url = $config->{download_url};
 
     # Download the Grub source code.
+    oscar_log(5, INFO, "Downloading grub source code into $dest.");
     my $file = OSCAR::FileUtils::download_file ($url, $dest, "wget", OSCAR::Defs::NO_OVERWRITE());
 
     # Untar it
     $cmd = "cd $dest; tar xzf $file";
-    oscar_log_subsection "Executing: $cmd" if $OSCAR::Env::oscar_verbose;
-    if (system ($cmd)) {
-        carp "ERROR: Impossible to untar the file ($file)";
+    if (oscar_system ($cmd)) {
         return undef;
     }
 
@@ -129,17 +126,15 @@ sub setup_pxegrub ($) {
 
     # Set it up
     $cmd = "cd $dest/$dir; ./configure --enable-$nic_id --enable-diskless";
-    oscar_log_subsection "Executing: $cmd" if $OSCAR::Env::oscar_verbose;
-    if (system ($cmd)) {
-        carp "ERROR: Impossible to setup grub ($cmd)";
+    if (oscar_system ($cmd)) {
+        oscar_log(5, ERROR, "Failed to configure grub (prebuild).");
         return undef;
     }
 
     # Compile it
     $cmd = "cd $dest/$dir; make";
-    oscar_log_subsection "Executing: $cmd" if $OSCAR::Env::oscar_verbose;
-    if (system ($cmd)) {
-        carp "ERROR: Impossible to compile grub ($cmd)";
+    if (oscar_system ($cmd)) {
+        oscar_log(5, ERROR, "Failed to build grub.");
         return undef;
     }
 
@@ -167,7 +162,7 @@ sub patch_grub ($) {
 EOF";
 
     if (system ($cmd)) {
-        carp "ERROR: Impossible to patch grub ($cmd)";
+        oscar_log(5, ERROR, "Failed to patch grub.");
         return -1;
     }
     return 0;
@@ -178,14 +173,13 @@ sub install_pxegrub ($) {
 
     my $path = setup_pxegrub ($nic_id);
     if (!defined ($path)) {
-        carp "ERROR: Impossible to setup Grub for your configuration";
+        oscar_log(5, ERROR, "Failed to setup Grub for your configuration");
         return -1;
     }
 
     my $cmd = "cd $path; cp stage2/nbgrub /tftpboot";
-    oscar_log_subsection "Executing: $cmd" if $OSCAR::Env::oscar_verbose;
-    if (system($cmd)) {
-        carp "ERROR: Impossible to install Grub ($cmd)";
+    if (oscar_system($cmd)) {
+        oscar_log(5, ERROR, "Failed to install Grub.");
         return -1;
     }
 

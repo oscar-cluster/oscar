@@ -34,6 +34,7 @@ use Carp;
 use vars qw(@EXPORT $VERSION);
 use base qw(Exporter);
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::Database_generic;
 
 @EXPORT = qw(
@@ -94,8 +95,8 @@ sub get_switcher_data {
               "FROM Packages P, Packages_switcher S " .
               "WHERE P.package=S.package";
 
-    oscar_log_subsection "DB_DEBUG>$0:\n".
-                         "===> in Database::get_packages_switcher SQL : $sql\n"
+    oscar_log(8, DB, "DEBUG>$0:\n".
+                         "===> in Database::get_packages_switcher SQL : $sql")
         if $$options_ref{debug};
 
     my $ret = OSCAR::Database_generic::do_select($sql,
@@ -108,7 +109,7 @@ sub get_switcher_data {
     } elsif ($ret == 0) {
         return -1;
     } else {
-        carp "ERROR: Unknow do_select return code ($ret)\n";
+        oscar_log(5, ERROR, "Unknow do_select return code ($ret)");
         return -1;
     }
 }
@@ -124,18 +125,18 @@ sub store_opkgs_switcher_data (@) {
     my (@opkgs) = @_;
 
     if (scalar (@opkgs) == 0) {
-        oscar_log_subsection "INFO: we do not store any switcher data into ".
-                             "ODA, the list of OPKGs is empty";
+        oscar_log(5, INFO, "We do not store any switcher data into ".
+                             "ODA, the list of OPKGs is empty");
         return 0;
     }
 
-    oscar_log_subsection "Storing switcher data for packages: ". 
-        join(", ", @opkgs);
+    oscar_log(5, INFO, "Storing switcher data for packages: ". 
+        join(", ", @opkgs));
 
     foreach my $opkg (@opkgs) {
         my $xmlfile = "$configxml_path/$opkg/config.xml";
         if (! -f $xmlfile) {
-            carp "ERROR: Impossible to access the config.xml file for $opkg";
+            oscar_log(2, ERROR, "No config.xml file for $opkg");
             return -1;
         }
         else {
@@ -143,19 +144,19 @@ sub store_opkgs_switcher_data (@) {
             my $tag = 
                 OSCAR::Opkg::get_data_from_configxml ($xmlfile, "provide");
             if (!defined $tag) {
-                print "INFO: OPKG $opkg does no have switcher info\n";
+                oscar_log(5, INFO, "OPKG $opkg does no have switcher info");
                 return 0;
             }
 
             my $version =
                 OSCAR::Opkg::get_opkg_version_from_configxml($xmlfile);
             if (!defined $version) {
-                carp "ERROR: Impossible to get OPKG version from config XML ".
-                     "file ($opkg)";
+                oscar_log(5, ERROR, "Unable to get OPKG version from config XML ".
+                     "file ($opkg)");
                 return -1;
             }
             if (set_switcher_data ($opkg, "$opkg-$version", "$tag")) {
-                carp "ERROR: Impossible to save switcher data ($opkg)";
+                oscar_log(5, ERROR, "Unable to save switcher data ($opkg)");
                 return -1;
             }
         }

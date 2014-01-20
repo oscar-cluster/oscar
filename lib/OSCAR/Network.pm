@@ -33,7 +33,8 @@ use File::Copy;
 use Net::IPv4Addr;
 use OSCAR::Env;
 use OSCAR::Database;
-use OSCAR::Logger qw ( verbose );
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::Utils;
 use OSCAR::FileUtils;
 use POSIX;
@@ -81,8 +82,9 @@ sub set_network_adapter ($) {
         next if (!defined $h->{'_client'});
         next if (!defined $h->{'_ip'});
 
-        print "-> [INFO] Adding a new network adapter\n";
-        print Dumper $h;
+        oscar_log(5, INFO, "Adding a new network adapter for client $h->{'_client'})");
+        print Dumper $h if($OSCAR::Env::oscar_verbose >= 9);
+
         my %data =  (
                     ip      => $h->{'_ip'},
                     mac     => $h->{'_mac'},
@@ -95,7 +97,7 @@ sub set_network_adapter ($) {
             \%data,
             undef,
             undef) != 1) {
-            carp "ERROR: Impossible to set the NICs to the node";
+                oscar_log(5, ERROR, "Impossible to set the NICs to the node $h->{'_client'}");
             return -1;
         }
     }
@@ -115,14 +117,14 @@ sub interface2ip ($) {
 
     # Some sanity check
     if ( !defined ($interface) || $interface eq "" ) {
-        carp "ERROR: Invalid NIC id.";
+        oscar_log(5, ERROR, "Invalid NIC id.");
         return (undef, undef, undef);
     }
 
     my ($ip, $broadcast, $net);
     # open pipes are better for controlling output than backticks
     open(IP_ADDR_SHOW,"/sbin/ip addr show $interface |") 
-        or (carp("Couldn't run '/sbin/ip addr show $interface'"), return undef);
+        or (oscar_log(5, ERROR, "Couldn't run '/sbin/ip addr show $interface'"), return undef);
     while(<IP_ADDR_SHOW>) {
         if(/\s+inet ($ipregex)\/([0-9]{2}) brd ($ipregex) scope .*$/o) {
             ($ip, $net, $broadcast) = ($1,$2,$3);
@@ -152,15 +154,15 @@ sub get_network_adapter ($) {
         # We get the list of all the nodes names
         my $sql = "SELECT * FROM Nics";
         if (OSCAR::Database_generic::do_select ($sql, \@res, undef, undef) != 1) {
-            carp "ERROR: Impossible to execute SQL command ($sql)\n";
+            oscar_log(5, DB, "ERROR: Failed to execute SQL command ($sql)");
             return undef;
         }
         for (my $i = 0; $i < scalar(@res); $i++) {
-            print "Translating ".$res[$i]->{'node_id'}."...";
             $sql = "Select Nodes.name From Nodes Where Nodes.id='".
                     $res[$i]->{'node_id'}."'";
+            oscar_log(8, DB, "querying ODA: $sql");
             my $nodename = OSCAR::Database::oda_query_single_result ($sql, "name");
-            print "... $nodename\n";
+            oscar_log(8, DB, "Translated $res[$i]->{'node_id'} to $nodename");
             $res[$i]->{'client'} = $nodename;
             push (@t, $res[$i]);
         }
@@ -182,11 +184,11 @@ sub get_network_adapter ($) {
 sub get_network_base_ip ($$) {
     my ($ip , $netmask) = @_;
     if (is_a_valid_ip ($ip) == 0) {
-        carp "ERROR: invalid IP adress: ($ip)";
+        oscar_log(6, ERROR, "Invalid IP adress: ($ip)");
         return undef;
     }
     if (is_a_valid_ip ($netmask) == 0) {
-        carp "ERROR: Invalid netmask ($netmask)";
+        oscar_log(6, ERROR, "ERROR: Invalid netmask ($netmask)");
         return undef;
     }
 
@@ -224,15 +226,15 @@ sub get_network_config ($$$) {
     # Parse the IP address
     my ($ip, $broadcast, $netmask) = interface2ip($interface);
     if (is_a_valid_ip ($ip) == 0) {
-        carp "ERROR: IP of the NIC $interface is invalid";
+        oscar_log(5, ERROR, "IP of the NIC $interface is invalid");
         return undef;
     }
     if (is_a_valid_ip ($netmask) == 0) {
-        carp "ERROR: netmask is invalid";
+        oscar_log(5, ERROR, "Netmask is invalid");;
         return undef;
     }
     if (is_a_valid_ip ($broadcast) == 0) {
-        carp "ERROR: broadcast is invalid";
+        oscar_log(5, ERROR, "Broadcast is invalid");
         return undef;
     }
 
@@ -252,8 +254,8 @@ sub get_network_config ($$$) {
         }
         $startip = "$a.$b.$c.$d";
     } else {
-        carp "ERROR: Unable to compute network adress for ".
-             "$a, $b, $c, $d/$netmask";
+        oscar_log(5, ERROR, "Unable to compute network adress for ".
+             "$a, $b, $c, $d/$netmask");
         return undef;
     }
 
@@ -316,12 +318,12 @@ sub get_network_config ($$$) {
 sub update_hosts ($) {
     my $ip = shift;
     if( ! is_a_valid_ip($ip) ) {
-        carp ( "Cannot update hosts without a valid ip.\n" );
+        oscar_log(5, ERROR, "Cannot update hosts without a valid ip.");
         return -1;
     }
     # 1st backup /etc/hosts
     backup_file_if_not_exist("/etc/hosts")
-        or (carp "ERROR: Impossible to backup /etc/hosts", return -1);
+        or (oscar_log(5, ERROR, "Impossible to backup /etc/hosts"), return -1);
 #    OSCAR::Logger::oscar_log_subsection("Backing up /etc/hosts");
 #    my $timestamp = `date +\"%Y-%m-%d-%k-%M-%m\"`;
 #    chomp $timestamp;
@@ -339,13 +341,12 @@ sub update_hosts ($) {
         }
     }
     my @aliases = qw(oscar_server nfs_oscar pbs_oscar);
-#    open(IN,"<$backup_file") 
-#        or (carp "ERROR: Impossible to open $backup_file", return -1);
     open(IN,"</etc/hosts.oscarbak") 
-        or (carp "ERROR: Impossible to open /etc/hosts.oscarbak", return -1);
+        or (oscar_log(5, ERROR, "Impossible to open /etc/hosts.oscarbak"), return -1);
     open(OUT,">/etc/hosts") 
-        or (carp "ERROR: Impossible to open /etc/hosts", return -1);
-    OSCAR::Logger::oscar_log_subsection("Adding required entries to /etc/hosts");
+        or (oscar_log(5, ERROR, "Impossible to open /etc/hosts"), return -1);
+
+    oscar_log(3, SUBSECTION, "Adding required entries to /etc/hosts");
 
     # mjc - 11/12/01 - start
     # - If the ip is in there, add the oscar aliases if they
@@ -399,8 +400,8 @@ sub update_hosts ($) {
         my $cmd = "grep $alias /etc/hosts";
         my @res = `$cmd`;
         if (scalar @res > 1) {
-            print "!!!WARNING!!! Several entries in /etc/hosts include $alias,".
-                  " please update your /etc/hosts file.\n";
+            oscar_log(1, ERROR, "Several entries in /etc/hosts include $alias,".
+                  " please update your /etc/hosts file.");
         }
     }
 
@@ -421,7 +422,7 @@ sub get_host_ip ($) {
     my $my_ip;
     local *IN;
     open IN, "/etc/hosts"
-        or (carp "ERROR: impossible to open hosts file (/etc/hosts)\n",return -1);
+        or (oscar_log(5, ERROR, "Failed to read hosts file (/etc/hosts)"),return -1);
     while (<IN>) {
         chomp;
         next if /^\s*\#/; # We skip comments
@@ -464,13 +465,12 @@ sub is_head_nic_private () {
     require OSCAR::ConfigManager;
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration\n";
         return -1;
     }
     my $config = $oscar_configurator->get_config();
     my $headnic = $config->{'nioscar'};
     if (!OSCAR::Utils::is_a_valid_string ($headnic)) {
-        carp "ERROR: Impossible to get the headnode NIC";
+        oscar_log(1, ERROR, "Impossible to get the headnode NIC");
         return -1;
     }
 
@@ -478,16 +478,17 @@ sub is_head_nic_private () {
     my ($ip, $broadcast, $net) = interface2ip($headnic);
     my $network_base = get_network_base_ip($ip, $net);
     if (!OSCAR::Utils::is_a_valid_string ($network_base)) {
-        carp "ERROR: Impossible to get the network base IP";
+        oscar_log(5, ERROR, "Impossible to get the network base IP");
         return -1;
     }
     
     # 3. Get the rfc1918 data based in the subnet
-    my $sql = "SELECT rfc1918 FROM Networks where base_ip='$network_base';";
+    my $sql = "SELECT rfc1918 FROM Networks WHERE base_ip='$network_base';";
+    oscar_log(8, DB, "DB Query: $sql");
 
     # TODO: We should not use a SQl command here, but use a ODA info.
     if (OSCAR::Database_generic::do_select ($sql, \@res, undef, undef) != 1) {
-        carp "ERROR: Impossible to execute SQL command ($sql)\n";
+        oscar_log(5, ERROR, "Impossible to execute SQL command ($sql)");
         return -1;
     }
 
@@ -508,17 +509,18 @@ sub update_head_nic () {
                                                   "OSCAR_NETWORK_INTERFACE");
 
     if (!OSCAR::Utils::is_a_valid_string ($interface)) {
-        carp "ERROR: Impossible to get the NIC to use for deployment";
+        oscar_log(1, ERROR, "Impossible to get the NIC to use for deployment (/etc/oscar/oscar.conf)");
         return -1;
     }
 
     # First we save the new interface id into ODA
-    OSCAR::Logger::oscar_log_section ("Update NIC info ($interface)");
+    oscar_log(2, SUBSECTION, "Update NIC info ($interface)");
     my $sql = "UPDATE Clusters ".
               "SET Clusters.headnode_interface='$interface' ".
               "WHERE Clusters.name='oscar'";
+    oscar_log(8, DB, "DB Query: $sql");
     if (!OSCAR::Database_generic::do_update ($sql, "Clusters", undef, undef)) {
-        carp "ERROR: Impossible to update the headnode NIC ($sql)";
+        oscar_log(5, ERROR, "Impossible to update the headnode NIC in DB.");
         return -1;
     }
 
@@ -527,25 +529,27 @@ sub update_head_nic () {
                                                       undef,
                                                       "OSCAR_SCRIPTS_PATH");
     $cmd = "$binaries_path/set_node_nics --networks";
-    if ($OSCAR::Env::oscar_debug) {
+    if ($OSCAR::Env::oscar_verbose >= 10) {
         $cmd .= " --debug";
-    } elsif ($OSCAR::Env::oscar_verbose) {
+    } elsif ($OSCAR::Env::oscar_verbose >= 5) {
         $cmd .= " --verbose";
     }
+    oscar_log(7, ACTION, "About to run: $cmd");
     if (system ($cmd)) {
-        carp "ERROR: Impossible to successfully execute \"$cmd\"";
+        oscar_log(5, ERROR, "Failed to successfully execute \"$cmd\"");
         return -1;
     }
 
-    OSCAR::Logger::oscar_log_subsection ("Headnode NIC data stored");
+    oscar_log(2, SUBSECTION, "Headnode NIC data stored");
 
-    OSCAR::Logger::oscar_log_subsection ("Update /etc/hosts...");
+    oscar_log(2, SUBSECTION, "Update /etc/hosts...");
     my ($head_private_ip, $broadcast, $net) = interface2ip ($interface);
-    print "Head private IP: $head_private_ip\n";
+    oscar_log(5, INFO, "Head private IP: $head_private_ip");
     if (update_hosts ($head_private_ip)) {
-        carp "ERROR: Impossible to update the /etc/hosts file";
+        oscar_log(5, ERROR, "Failed to update the /etc/hosts file.");
         return -1;
     }
+    oscar_log(2, SUBSECTION, "/etc/hosts updated successfully.");
 
     return 0;
 }

@@ -36,6 +36,7 @@ use OSCAR::Database;
 use OSCAR::PackagePath;
 use OSCAR::OpkgDB;
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use File::Basename;
 use File::Copy;
 use XML::Simple;
@@ -110,28 +111,27 @@ sub get_scripts_dir ($$) {
 sub run_pkg_script ($$$$) {
     my ($pkg, $phase, $verbose, $args) = @_;
     my $scripts = $PHASES{$phase};
+    oscar_log(6, INFO, "run_pkg_script for $pkg ($phase)");
     if (!$scripts) {
-        carp("ERROR: No such phase '$phase' in OSCAR package API");
+        oscar_log(5, ERROR, "No such phase '$phase' in OSCAR package API");
         return 0;
     }
 
     my $pkgdir = get_scripts_dir ($pkg, $phase);
     # If the package does not provide any sripts, the directory won't exist,
     # we exit successfully (nothing to do and this is fine).
-    return 1 unless ((defined $pkgdir) && (-d $pkgdir));
+    (oscar_log(6, INFO, "No script dir for package $pkg"), return 1)
+        unless ((defined $pkgdir) && (-d $pkgdir));
+
     foreach my $scriptname (@$scripts) {
         my $script = "$pkgdir/$scriptname";
-        print "Looking for $script...\n";
+        oscar_log(6, INFO, "Looking for $script...");
         if (-e $script) {
             chmod 0755, $script; # Should be useless.
-            oscar_log_subsection("About to run $script for $pkg");
             $ENV{OSCAR_PACKAGE_HOME} = $pkgdir;
-            my $rc = system("$script $args");
-            oscar_log_subsection("Return code: $rc for $pkg:$script");
+            my $rc = oscar_system("$script $args");
             delete $ENV{OSCAR_PACKAGE_HOME};
             if ($rc) {
-                my $realrc = $rc >> 8;
-                carp("ERROR: $script exitted badly ($realrc)");
                 return 0;
             }
         }
@@ -144,26 +144,24 @@ sub run_pkg_script_chroot ($$) {
     my ($pkg, $imagedir) = @_;
     my $phase = "post_rpm_install";
     my $scripts = $PHASES{$phase};
+    oscar_log(6, INFO, "run_pkg_script_chroot for $pkg in image $imagedir ($phase)");
     if (!$scripts) {
-        carp("ERROR: No such phase 'post_rpm_install' in OSCAR package API");
+        oscar_log(5, ERROR, "No such phase 'post_rpm_install' in OSCAR package API");
         return undef;
     }
 
     my $pkgdir = get_scripts_dir ($pkg, $phase);
     # If the package does not provide any sripts, the directory won't exist,
     # we exit successfully (nothing to do and this is fine).
-    return 1 unless ((defined $pkgdir) && (-d $pkgdir));
+    (oscar_log(6, INFO, "No script dir for package $pkg"), return 1)
+        unless ((defined $pkgdir) && (-d $pkgdir));
     foreach my $scriptname (@$scripts) {
         my $script = "$pkgdir/$scriptname";
         if (-e "$imagedir/$script") {
             chmod 0755, "$imagedir/$script"; # Should be useless.
-            oscar_log_subsection("About to run $script for $pkg (chrooted)");
             $ENV{OSCAR_PACKAGE_HOME} = $pkgdir;
-            my $rc = system("chroot $imagedir $script");
-            oscar_log_subsection("Return code: $rc for $pkg:$script (chrroted in $imagedir)");
+            my $rc = oscar_system("chroot $imagedir $script");
             if ($rc) {
-                my $realrc = $rc >> 8;
-                carp("ERROR: $script exitted badly ($realrc) (rootdir=$imagedir)");
                 return undef;
             }
         }
@@ -179,25 +177,20 @@ sub run_pkg_user_test ($$$$) {
     my ($script, $user, $verbose, $args) = @_;
 
     if (-e $script) {
-            oscar_log_subsection("About to run $script") if $verbose;
-            print "\n================================================================================\n";
-            print "= Running $script\n";
-            print "================================================================================\n";
+            oscar_log(5, SUBSECTION, "About to run $script as $user");
             my $uid=getpwnam($user);
-        my $rc;
+            my $rc;
             if ($uid == $>) {
-                $rc = system("$script $args");
+                $rc = oscar_system("$script $args");
             } else {
                 if( defined($ENV{OSCAR_PACKAGE_TEST_HOME}) ) {
                      # TJN: this EnvVar is used by 'test_user' scripts. 
-                    $rc = system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_TESTPRINT} OSCAR_HOME=$ENV{OSCAR_HOME} OSCAR_PACKAGE_TEST_HOME=$ENV{OSCAR_PACKAGE_TEST_HOME} $script $args' - $user");
+                    $rc = oscar_system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_TESTPRINT} OSCAR_HOME=$ENV{OSCAR_HOME} OSCAR_PACKAGE_TEST_HOME=$ENV{OSCAR_PACKAGE_TEST_HOME} $script $args' - $user");
                 } else {
-                    $rc = system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_TESTPRINT} OSCAR_HOME=$ENV{OSCAR_HOME} $script $args' - $user");
+                    $rc = oscar_system("su --command='OSCAR_TESTPRINT=$ENV{OSCAR_TESTPRINT} OSCAR_HOME=$ENV{OSCAR_HOME} $script $args' - $user");
                 }
             }
             if($rc) {
-                my $realrc = $rc >> 8;
-                carp("Script $script exited badly with exit code '$realrc'") if $verbose;
                 return 0;
             }
     }
@@ -213,47 +206,44 @@ sub run_pkg_user_test ($$$$) {
 # Return: 1 if success, 0 else.
 # TODO Fix work arounds for current release of APItest v0.2.5-1
 sub run_pkg_apitest_test ($$$) {
-	use File::Spec;
+    use File::Spec;
 
-	my ($script, $user, $verbose) = @_;
-	my $apitest = "apitest";
-	my $rc = 0;
+    my ($script, $user, $verbose) = @_;
+    my $apitest = "apitest";
+    my $rc = 0;
 
 
-	if (-e $script) {
-		oscar_log_subsection("About to run APItest: $script") if $verbose;
+    if (-e $script) {
+        oscar_log(5, INFO, "About to run APItest: $script");
 
-		#FIXME: TJN: work around path problem of APItest that 
-		#       dies when called from other location than CWD of file.
-		#       So must do: (cd $cpath; apitest test_file)
+        #FIXME: TJN: work around path problem of APItest that 
+        #       dies when called from other location than CWD of file.
+        #       So must do: (cd $cpath; apitest test_file)
 
-		my ($vol,$path,$file) = File::Spec->splitpath( $script );
-		my $cpath = File::Spec->canonpath( $path );
+        my ($vol,$path,$file) = File::Spec->splitpath( $script );
+        my $cpath = File::Spec->canonpath( $path );
 
-		my $uid=getpwnam($user);
-		if ($uid == $>) {
-			#FIXME: work around path problem of APItest
-			#$rc = system("$apitest -T -f $script");
-			my $cmd = "(cd $cpath && $apitest -T -f $file)";
-			$rc = system($cmd);
-		} else {
-			#FIXME: work around path problem of APItest (cd $cpath; ...)
-			#$rc = system("su --command='OSCAR_HOME=$ENV{OSCAR_HOME} $apitest -T -f $script' - $user");
-			my $cmd = "su --command='OSCAR_HOME=$ENV{OSCAR_HOME} (cd $cpath && $apitest -T -f $file)' - $user";
-			$rc = system($cmd);
-		}
-	} else {
-		oscar_log_subsection("Warning: not exist '$script' ") if $verbose;
-	}
+        my $uid=getpwnam($user);
+        if ($uid == $>) {
+            #FIXME: work around path problem of APItest
+            #$rc = system("$apitest -T -f $script");
+            my $cmd = "(cd $cpath && $apitest -T -f $file)";
+            $rc = oscar_system($cmd);
+        } else {
+            #FIXME: work around path problem of APItest (cd $cpath; ...)
+            #$rc = system("su --command='OSCAR_HOME=$ENV{OSCAR_HOME} $apitest -T -f $script' - $user");
+            my $cmd = "su --command='OSCAR_HOME=$ENV{OSCAR_HOME} (cd $cpath && $apitest -T -f $file)' - $user";
+            $rc = oscar_system($cmd);
+        }
+    } else {
+        oscar_log_subsection("Warning: not exist '$script' ") if $verbose;
+    }
 
-	if($rc) {
-		my $realrc = $rc >> 8;
-		carp("Script APItest $script exited badly with exit code '$realrc'") 
-            if $verbose;
-		return 0;
-	}
+    if($rc) {
+        return 0;
+    }
 
-	return 1;
+    return 1;
 }
 
 
@@ -277,7 +267,7 @@ sub get_excluded_opkg () {
                 . $os->{arch} . ".txt";
     my @exclude_packages = qw();
     if ( -f $filename ) {
-        print "File exists, excluding packages...\n";
+        oscar_log(5, INFO, "File exists, excluding packages...");
         open (FILE, $filename);
         my $package;
         while ($package = <FILE>) {
@@ -343,8 +333,12 @@ sub getConfigurationValues ($) # ($package) -> $valueshashref
     my $filename;
 
 #    my $pkgdir = getOdaPackageDir($package);
-    my $oscar_configurator = OSCAR::ConfigManager->new(
-        config_file => "/etc/oscar/oscar.conf");
+#    my $oscar_configurator = OSCAR::ConfigManager->new(
+#        config_file => "/etc/oscar/oscar.conf");
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        return undef;
+    }
     my $config = $oscar_configurator->get_config();
     my $pkgdir = $config->{'opkgs_path'} . "/$package";
     if ((defined $pkgdir) && (-d $pkgdir)) {

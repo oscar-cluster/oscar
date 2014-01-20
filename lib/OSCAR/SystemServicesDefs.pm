@@ -47,11 +47,16 @@ use constant SYSLOG         => 'syslog';
 use constant XINETD         => 'xinetd';
 
 # List of actions related to system services
-use constant START      => 0;
-use constant STOP       => 1;
-use constant RESTART    => 2;
-use constant STATUS     => 3;
-use constant RELOAD     => 4;
+use constant START      => "start";
+use constant STOP       => "stop";
+use constant RESTART    => "restart";
+use constant STATUS     => "status";
+use constant RELOAD     => "reload";
+#use constant START      => 0;
+#use constant STOP       => 1;
+#use constant RESTART    => 2;
+#use constant STATUS     => 3;
+#use constant RELOAD     => 4;
 
 # List of service status
 use constant STARTED    => 0;

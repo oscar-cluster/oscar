@@ -41,6 +41,8 @@ use OSCAR::Database qw (
                         update_image_package_status
                        );
 use OSCAR::Utils qw (print_array);
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use Data::Dumper;
 
 our %data;
@@ -75,10 +77,9 @@ sub add_set {
 		push(@{$data{$machine}{sets}}, $pkgset);
 	}
 	
-    if ($OSCAR::Env::oscar_verbose) {
-        print "Number of elements in the hash: " . scalar (%data) . "\n";
-        Dump (%data);
-    }
+    oscar_log(9, INFO, "Number of elements in the hash: " . scalar (%data));
+    Dump (%data) if($OSCAR::Env::oscar_verbose >= 9);
+
 	return 'OK';
 }
 
@@ -197,16 +198,16 @@ sub convert_hash_to_oda {
 #    my %data = %{$_[0]};
     my %data = shift;
     my @opkg_to_install = OSCAR::psm::show_list();
-    print "The package sets includes: ";
-    print_array (@opkg_to_install);
+    oscar_log(9, INFO, "The package sets includes:");;
+    print_array (@opkg_to_install) if($OSCAR::Env::oscar_verbose >= 9);
 
     # Go through each node in the hash
     for my $nodename (keys(%data)) {
 
         # Go through each package for the node
          foreach my $package ($data{$nodename}{package}) {
-             print "Node name = $nodename\n";
-            print "Package name = $package\n";
+             oscar_log(5, INFO, "Node name = $nodename");
+             oscar_log(5, INFO, "Package name = $package");
  
              # Set the package's requested values to 'finished'
              my %options;
@@ -278,9 +279,11 @@ sub osm_update_oda {
     my ($table_id, %data) = @_;
 
     if ($OSCAR::Env::oscar_verbose) {
-        print "Data to update: \n";
-        while ((my $key, my $value) = each(%data)) {
-            print $key.", ".$value."\n";
+        oscar_log(5, INFO, "Data to update: ");
+        if($OSCAR::Env::oscar_verbose >= 5) {
+            while ((my $key, my $value) = each(%data)) {
+                print $key.", ".$value."\n";
+            }
         }
     }
 

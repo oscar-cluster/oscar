@@ -19,9 +19,10 @@ package OSCAR::Prereqs;
 use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
-use OSCAR::Env;
 use OSCAR::PackagePath;
 use OSCAR::PrereqsDefs;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use warnings "all";
 use Carp;
 
@@ -89,7 +90,7 @@ sub get_config ($$$$) {
             $match = 0;
             if ($str =~ m/^$mstr$/) {
                 $match = 1;
-                print("found matching block [$d:$v:$a]\n") if ($OSCAR::Env::oscar_verbose);
+                oscar_log(5, INFO, "found matching block [$d:$v:$a]");
                 last;
             }
         }
@@ -132,7 +133,7 @@ sub get_prereqs ($$$@) {
         # read in prereq.cfg file
         my $ref = OSCAR::Prereqs::get_config($path, $distro, $distrover, $arch);
         if (!$ref) {
-            print "Couldn't match any config block in $path/prereq.cfg\n";
+            oscar_log(5, ERROR, "Couldn't match any config block in $path/prereq.cfg");
             next;
         }
         for my $line (@{$ref}) {
@@ -183,7 +184,7 @@ sub get_rawlist_prereqs (@) {
         # read in prereq.cfg file
         my $ref = OSCAR::Prereqs::get_config($path, $distro, $distrover, $arch);
         if (!$ref) {
-            print "Couldn't match any config block in $path/prereq.cfg\n";
+            oscar_log(5, ERROR, "Couldn't match any config block in $path/prereq.cfg");
             next;
         }
         for my $line (@{$ref}) {
@@ -328,13 +329,13 @@ sub get_prereqs_status ($$$@) {
                                         $distver,
                                         $arch,
                                         @paths);
-    OSCAR::Logger::oscar_log_subsection "Prereqs status (".join(",", @paths)."):";
+    oscar_log(5, INFO, "Prereqs status (".join(",", @paths)."):");
     foreach my $p (@$installs) {
         if (!is_package_installed ($p)) {
-            OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\tis not installed";
+            oscar_log(5, INFO, "\t$p: \t\t\tis not installed");
             $to_install++;
         } else {
-            OSCAR::Logger::oscar_log_subsection "\t$p: \t\t\tis installed";
+            oscar_log(5, INFO, "\t$p: \t\t\tis installed");
         }
     }
     if ($to_install) {

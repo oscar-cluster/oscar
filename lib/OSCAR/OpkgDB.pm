@@ -29,6 +29,8 @@ use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use OSCAR::Env;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::OCA::OS_Detect;
 use OSCAR::PackagePath;
 use Data::Dumper;
@@ -81,7 +83,7 @@ sub opkg_list_available {
 	my $verbose_switch="";
 	$verbose_switch="--verbose" if $OSCAR::Env::oscar_verbose;
     	my $cmd="/usr/bin/yume $repo $verbose_switch --repoquery --nevra opkg-*-server";
-	    print STDERR "Running $cmd" if $OSCAR::Env::oscar_verbose;
+        oscar_log(7, ACTION, "About to run: $cmd");
     	open CMD, "$cmd |" or die "Error: $!";
 	    while (<CMD>) {
     	    if (m/^opkg-(.*)-server-(.*).noarch/) {
@@ -91,7 +93,7 @@ sub opkg_list_available {
 	    close CMD;
     } elsif ($pkg eq "deb") {
     	my $cmd="/usr/bin/rapt $repo --names-only search 'opkg-.*-server'";
-	    print "Running $cmd\n" if $OSCAR::Env::oscar_verbose;
+        oscar_log(7, ACTION, "About to run: $cmd");
     	open CMD, "$cmd |" or die "Error: $!";
 	    while (<CMD>) {
 	        if (m/^opkg-(.*)-server/) {
@@ -103,7 +105,7 @@ sub opkg_list_available {
 	    return undef;
     }
     if (keys(%opkgs) == 0) {
-        carp "ERROR: impossible to find any OSCAR package";
+        oscar_log(5, ERROR, "Impossible to find any OSCAR package");
         return undef;
     }
 
@@ -156,12 +158,12 @@ sub opkg_hash_available {
 
     # filter class?
     my $class_filter;
-    print "opkg_hash_available: scope =\n".Dumper(%scope) if $OSCAR::Env::oscar_verbose;
+    oscar_log(9, INFO, "opkg_hash_available: scope =");
+    print Dumper(%scope) if($OSCAR::Env::oscar_verbose >= 9);
     if (defined($scope{class})) {
         $class_filter = $scope{class};
         delete $scope{class};
-        print "opkg_hash_available: class_filter = $class_filter\n"
-            if $OSCAR::Env::oscar_verbose;
+        oscar_log(9, INFO, "opkg_hash_available: class_filter = $class_filter");
     }
     my $os = $scope{os} if (defined($scope{os}));
 
@@ -199,7 +201,7 @@ sub opkg_hash_available {
         }
         @opkgs = map { "opkg-$_" } @opkgs;
         my $cmd="/usr/bin/rapt $repo show ".join(" ", @opkgs);
-        print "Running $cmd\n" if $OSCAR::Env::oscar_verbose;
+        oscar_log(7, ACTION, "About to run: $cmd");
         open CMD, "$cmd |" or die "Error: $!";
         while (<CMD>) {
             chomp;
@@ -299,7 +301,7 @@ sub opkg_list_installed {
     if ($pkg eq "rpm") {
         chomp(my $rpm_cmd = `which rpm`);
 	my $cmd="$rpm_cmd -qa --qf='%{NAME} %{VERSION}-%{RELEASE}\n'";
-	print "Running $cmd" if $OSCAR::Env::oscar_verbose;
+    oscar_log(7, ACTION, "About to run: $cmd");
 	open CMD, "$cmd |" or die "Error: $!";
 	while (<CMD>) {
 	    chomp;
@@ -317,9 +319,10 @@ sub opkg_list_installed {
 	    }
 	}
 	close CMD;
+    # FIXME, should test return code.
     } elsif ($pkg eq "deb") {
 	my $cmd="env COLUMNS=256 /usr/bin/dpkg -l \"opkg-*\"";
-	print "Running $cmd" if $OSCAR::Env::oscar_verbose;
+    oscar_log(7, ACTION, "About to run: $cmd");
 	open CMD, "$cmd |" or die "Error: $!";
 	while (<CMD>) {
 	    if (m/^\S+\s+opkg-(.*)\s+(\S+)\s/) {
@@ -336,6 +339,7 @@ sub opkg_list_installed {
 	    }
 	}
 	close CMD;
+    # FIXME, should test return code.
     } else {
 	return undef;
     }
@@ -403,15 +407,14 @@ sub opkg_hash_installed ($%) {
 
     # go through result and apply the class filter, if needed
     if ($class_filter) {
-        print "Filtering for class = \"$class_filter\"\n" if $OSCAR::Env::oscar_verbose;
+        oscar_log(9, INFO, "Filtering for class = \"$class_filter\"");
         for my $p (keys(%opkgs)) {
             my %h = %{$opkgs{$p}};
-            print "$p -> class: $h{class}" if $OSCAR::Env::oscar_verbose;
+            oscar_log(9, NONE, "      $p -> class: $h{class}");
             if ($h{class} ne $class_filter) {
                 delete $opkgs{$p};
-                print " ... deleted" if $OSCAR::Env::oscar_verbose;
+                oscar_log(9, NONE, "      $p -> class: $h{class}i ... deleted");
             }
-            print "\n" if $OSCAR::Env::oscar_verbose;
         }
     }
     return %opkgs;
@@ -440,7 +443,7 @@ sub opkg_api_path ($) {
     } elsif ($os->{pkg} eq "deb") {
         chomp($path = `dpkg -L $p | grep config.xml`);
     } else {
-        carp "ERROR: Unsupported packaging type: $os->{pkg}\n";
+        oscar_log(5, ERROR, "ERROR: Unsupported packaging type: $os->{pkg}");
         return undef;
     }
     return dirname($path) if $path;
@@ -458,7 +461,7 @@ sub oscar_repostring {
     my $orepo = OSCAR::PackagePath::oscar_repo_url(os=>$os);
     my $repo;
     for my $r (split /,/, $orepo) {
-    $repo .= " --repo $r";
+        $repo .= " --repo $r";
     }
     $repo =~ s/^ //;
     return $repo;
@@ -480,7 +483,7 @@ sub hash_from_cmd_rpm ($$) {
     my $isdesc = 1;
     my ($name, $rel, $ver, $packager, $summary, $desc, $class, $group);
     my ($conflicts);
-    print "Executing: $cmd\n" if $OSCAR::Env::oscar_verbose;
+    oscar_log(7, ACTION, "About to run: $cmd");
     open CMD, "$cmd |" or die "Error: $!";
     while (<CMD>) {
     chomp;
@@ -502,7 +505,7 @@ sub hash_from_cmd_rpm ($$) {
         ($name_string =~ /^opkg-(.*)$/)) {
         $name = $1;
         } else {
-            carp("Unexpected package name: $name_string");
+            oscar_log(5, ERROR, "Unexpected package name: $name_string");
             return undef;
         }
         $isdesc = 0;

@@ -34,6 +34,7 @@ BEGIN {
 use strict;
 #use lib "/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::PackagePath;
 use OSCAR::Database;
 use OSCAR::Utils;
@@ -41,8 +42,8 @@ use OSCAR::Env;
 use OSCAR::ConfigManager;
 # use SystemImager::Server;
 use OSCAR::Opkg;
-use SystemInstaller::Utils;
 use OSCAR::PackMan;
+use SystemInstaller::Utils;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
@@ -84,7 +85,6 @@ sub do_setimage ($%) {
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration\n";
         return -1;
     }
     my $config = $oscar_configurator->get_config();
@@ -96,13 +96,19 @@ sub do_setimage ($%) {
         # Get the image path (typically
         # /var/lib/systemimager/images/<imagename>)
         my $config = SystemInstaller::Utils::init_si_config();
+        # FIXME: is $config always defined?
         my $imaged = $config->default_image_dir;
-        croak "default_image_dir not defined\n" unless $imaged;
-        croak "$imaged: not a directory\n" unless -d $imaged;
-        croak "$imaged: not accessible\n" unless -x $imaged;
+        (oscar_log(5, ERROR, "default_image_dir not defined."), return -1)
+            unless $imaged;
+        (oscar_log(5, ERROR, "$imaged: not a directory."), return -1)
+            unless -d $imaged;
+        (oscar_log(5, ERROR, "$imaged: not accessible."), return -1)
+            unless -x $imaged;
         my $imagepath = $imaged."/".$img;
-        croak "$imagepath: not a directory\n" unless -d $imagepath;
-        croak "$imagepath: not accessible\n" unless -x $imagepath;
+        (oscar_log(5, ERROR, "$imagepath: not an image directory."), return -1)
+            unless -d $imagepath;
+        (oscar_log(5, ERROR, "$imagepath: not accessible."), return -1)
+            unless -x $imagepath;
 
         #
         # Image info lines should be deleted once systeminstaller
@@ -120,7 +126,7 @@ sub do_setimage ($%) {
     } elsif ($config->{oda_type} eq "file") {
         return 0;
     } else {
-        carp "ERROR: Unknow ODA type ($config->{oda_type})\n";
+        oscar_log(5, ERROR, "Unknow ODA type ($config->{oda_type})");
         return -1;
     }
     return 0;
@@ -138,10 +144,15 @@ sub do_post_image_creation ($$) {
     my $interface = shift;
     my $cwd = `/bin/pwd`;
 
+    oscar_log(3, INFO, "Running post image creation scripts (post_rpm_install).");
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
+
+    ## FIXME: use a wrapper to run an oscar_script.
+    #         in the below situation, if configurator fail we even don't try
+    #         /usr/bin/post_rpm_install...
     if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        delete_image($img);
         return 0;
     }
     my $config = $oscar_configurator->get_config();
@@ -149,12 +160,13 @@ sub do_post_image_creation ($$) {
     chdir "$config->{binaries_path}";
     my $cmd = "$config->{binaries_path}/post_rpm_install $img $interface --verbose";
 
+    oscar_log(7, INFO, "About to run: $cmd");
     if (system($cmd)) {
-        carp "ERROR: Impossible to execute $cmd";
+        oscar_log(5, ERROR, "Failed to execute $cmd");
         delete_image($img);
         return 0;
     }
-    OSCAR::Logger::oscar_log_subsection("Successfully ran: $cmd");
+    oscar_log(7, INFO, "Successfully ran: $cmd");
 
     chdir "$cwd";
     return 1;
@@ -173,13 +185,11 @@ sub do_oda_post_install ($$) {
     # Have installed Client binary packages and did not croak, so mark
     # packages. <pkg>installed # true. (best effort for now)
 
-    oscar_log_subsection("Marking installed bit in ODA for client binary ".
-                         "packages");
+    oscar_log(6, INFO, "Marking installed bit in ODA for client binary packages");
 
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration\n";
         return -1;
     }
     my $config = $oscar_configurator->get_config();
@@ -188,7 +198,7 @@ sub do_oda_post_install ($$) {
         my @opkgs = list_selected_packages();
         foreach my $opkg (@opkgs)
         {
-            oscar_log_subsection("Set package: $opkg");
+            oscar_log(6, INFO, "Set package: $opkg");
             OSCAR::Database::set_image_packages($img,
                                                 $opkg,
                                                 $options,
@@ -197,22 +207,23 @@ sub do_oda_post_install ($$) {
     } elsif ($config->{oda_type} eq "db") {
         # Get the list of opkgs for the specific image.
     } else {
-        carp "ERROR: Unknow ODA type ($config->{oda_type})\n";
+        oscar_log(8, DB, "Unknow ODA type ($config->{oda_type})");
         return -1
     }
-    oscar_log_subsection("Done marking installed bits in ODA");
+    oscar_log(6, INFO, "Done marking installed bits in ODA");
 
     #/var/log/lastlog could be huge in some horked setup packages...
-    croak "Image name not defined\n" unless $img;
+    (oscar_log(1, ERROR, "Image name not defined"), return -1)
+        unless $img;
     my $lastlog = "/var/log/lastlog";
-    oscar_log_subsection("Truncating ".$img.":".$lastlog);
+    oscar_log(6, ACTION, "Truncating ".$img.":".$lastlog);
 
     my $sis_config = SystemInstaller::Utils::init_si_config();
     my $imaged = $sis_config->default_image_dir;
     my $imagepath = $imaged."/".$img;
     my $imagelog = $imagepath.$lastlog;
     truncate $imagelog, 0 if -s $imagelog;
-    oscar_log_subsection("Truncated ".$img.":".$lastlog);
+    oscar_log(6, INFO, "Truncated ".$img.":".$lastlog."\n");
 
     return 0;
 }
@@ -243,7 +254,7 @@ sub get_binary_list_file ($) {
     my $os = shift;
 
     if (!defined $os) {
-        carp "ERROR: Undefined os variable";
+        oscar_log(9, ERROR, "Undefined os variable");
         return undef;
     }
 
@@ -255,7 +266,7 @@ sub get_binary_list_file ($) {
     }
 
     if (! -d $oscarsamples_dir) {
-        carp "ERROR: $oscarsamples_dir does not exists";
+        oscar_log(1, ERROR, "$oscarsamples_dir does not exists");
         return undef;
     }
 
@@ -272,8 +283,8 @@ sub get_binary_list_file ($) {
         !OSCAR::Utils::is_a_valid_string ($compat_distro) ||
         !OSCAR::Utils::is_a_valid_string ($compat_distro_ver) ||
         !OSCAR::Utils::is_a_valid_string ($arch)) {
-        carp "ERROR: Impossible to extract distro information";
-        return undef;
+            oscar_log(6, ERROR, "Impossible to extract distro information");
+            return undef;
     }
 
     my $full_version;
@@ -284,30 +295,26 @@ sub get_binary_list_file ($) {
     }
     my $pkglist = "$oscarsamples_dir/$distro-$distro_ver-$arch.rpmlist";
     if (! -f $pkglist) {
-        OSCAR::Logger::oscar_log_subsection ("$pkglist does not exist\n");
-        carp "ERROR: pkglist: $pkglist not found. trying with specific".
-             " version $compat_distro-$full_version-$arch.\n";
+        oscar_log(5, WARNING, "pkglist: $pkglist not found. trying with specific".
+             " version $compat_distro-$full_version-$arch.\n");
         $pkglist = "$oscarsamples_dir/$distro-$full_version-$arch.rpmlist";
         if (! -f $pkglist) {
-            OSCAR::Logger::oscar_log_subsection ("$pkglist does not exist\n");
-            carp "ERROR: pkglist: $pkglist not found. trying with".
-                 " generic $compat_distro-$compat_distro_ver-$arch.\n";        
+            oscar_log(5, WARNING, "pkglist: $pkglist not found. trying with".
+                 " generic $compat_distro-$compat_distro_ver-$arch.\n");
             $pkglist = "$oscarsamples_dir/".
                        "$compat_distro-$compat_distro_ver-$arch.rpmlist";
             if (! -f $pkglist) {
-                OSCAR::Logger::oscar_log_subsection ("ERROR: No".
-                " $distro-$distro_ver-$arch suitable binary list file found".
-                " in $oscarsamples_dir/ to create the basic image\n".
-                "ERROR: Distro NOT SUPPORTED\n");
-                carp "ERROR: No $distro-$distro_ver-$arch suitable binary".
-                     " list file found in $oscarsamples_dir to create the".
-                     " basic image\n";
+                oscar_log(1, ERROR, "No".
+                    " $distro-$distro_ver-$arch suitable binary list file found".
+                    " in $oscarsamples_dir/ to create the basic image\n".
+                    "DISTRO NOT SUPPORTED");
                 return undef;
             }
         }
     }
 
-    oscar_log_subsection("Identified distro of clients: $distro $distro_ver");
+    oscar_log(6, INFO, "Identified distro of clients: $distro $distro_ver");
+    oscar_log(5, INFO, "Using $pkglist as package list");
 
     return $pkglist;
 }
@@ -333,16 +340,17 @@ sub get_image_default_settings () {
     #Get the distro list
     my $master_os = OSCAR::OCA::OS_Detect::open ("/");
     if (!defined $master_os) {
-        carp "ERROR: Impossible to detect the distro on the headnode";
+        oscar_log(1, ERROR, "Impossible to detect the distro on the headnode.");
         return undef;
     }
 
-    OSCAR::Utils::print_hash ("", "", $master_os) if ($OSCAR::Env::oscar_verbose);
+    oscar_log(9, INFO, "Detected OS:");
+    OSCAR::Utils::print_hash ("", "", $master_os) if ($OSCAR::Env::oscar_verbose >= 9);
 
     my $arch = $master_os->{arch};
     my $pkglist = get_binary_list_file($master_os);
     if (!defined $pkglist) {
-        carp "ERROR: Unable to get the package list for this distro.\n".
+        oscar_log(5, ERROR, "Unable to get the package list for this distro.");
         return undef;
     }
 
@@ -350,9 +358,9 @@ sub get_image_default_settings () {
     $distro_pool =~ s/\ /,/g;
     my $oscar_pool = OSCAR::PackagePath::oscar_repo_url();
 
-    oscar_log_subsection("Distro repo: $distro_pool");
-    oscar_log_subsection("OSCAR repo: $oscar_pool");
-    oscar_log_subsection("Using binary list: $pkglist");
+    oscar_log(9, INFO, "Distro repo: $distro_pool");
+    oscar_log(9, INFO, "OSCAR repo: $oscar_pool");
+    oscar_log(6, INFO, "Using binary list: $pkglist");
 
     # Get a list of client RPMs that we want to install.
     # Make a new file containing the names of all the RPMs to install
@@ -364,7 +372,7 @@ sub get_image_default_settings () {
 #     my $extraflags = "--filename=$outfile";
     # WARNING!! We deactivate the OPKG management via SystemInstaller
     my $extraflags = "";
-    if ($OSCAR::Env::oscar_verbose) {$extraflags .= " --verbose ";}
+    if ($OSCAR::Env::oscar_verbose >= 5) {$extraflags .= " --verbose ";}
 
     my $diskfile = get_disk_file($arch, $disk_type);
 
@@ -411,6 +419,8 @@ sub get_image_default_settings () {
 ###############################################################################
 sub get_systemimager_images () {
     my $sis_cmd = "/usr/bin/si_lsimage";
+
+    oscar_log(7, ACTION, "About to run: $sis_cmd");
     my @sis_images = `$sis_cmd`;
     my $i;
 
@@ -423,9 +433,11 @@ sub get_systemimager_images () {
     pop (@sis_images);
     # Then we remove the return code at the end of each array element
     # We also remove the 2 spaces before each element
+    oscar_log(9, INFO, "Got the following images:");
     foreach $i (@sis_images) {
         chomp $i;
         $i = substr ($i, 2, length ($i));
+        oscar_log(9, NONE, "        - $i");
     }
 
     return @sis_images;
@@ -437,8 +449,9 @@ sub delete_image_from_oda ($) {
     # We remove the image from ODA.
     my $sql = "DELETE FROM Images WHERE Images.name='$imgname'";
 
+    oscar_log(6, ACTION, "Removing image $imgname from ODA.\n");
     if (OSCAR::Database::do_update($sql,"Images", undef, undef) == 0) {
-        carp "ERROR: Impossible to execute the SQL command $sql";
+        oscar_log(5, DB, "Failed to execute the SQL command $sql");
         return -1;
     }
 
@@ -454,6 +467,7 @@ sub delete_image_from_oda ($) {
 sub delete_image ($) {
     my $imgname = shift;
 
+    oscar_log(5, ACTION, "Deleting image: $imgname.");
     # If the image exists at the SystemImager level, we delete it
     my @si_images = get_systemimager_images ();
     if (OSCAR::Utils::is_element_in_array ($imgname, @si_images) == 1) {
@@ -461,21 +475,26 @@ sub delete_image ($) {
         my $rsyncd_conf = $config->rsyncd_conf();
         my $rsync_stub_dir = $config->rsync_stub_dir();
 
+        oscar_log(6, ACTION, "Removing image $imgname from disk.");
         my $cmd = "/usr/bin/mksiimage -D --name $imgname --force";
+        oscar_log(7, ACTION, "About to run: $cmd.");
         if (system($cmd)) {
-            carp "ERROR: Impossible to execute $cmd";
+            oscar_log(5, ERROR, "Failed to execute $cmd");
             return -1;
         }
         require SystemImager::Server;
+        oscar_log(6, ACTION, "Removing image stub.");
         SystemImager::Server::remove_image_stub($rsync_stub_dir, $imgname);
+        oscar_log(6, ACTION, "Updating rsyncd config: $rsyncd_conf.");
         SystemImager::Server::gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
     }
 
     if (delete_image_from_oda ($imgname)) {
-        carp "ERROR: Impossible to remove $imgname from the database";
+        oscar_log(5, ERROR, "Impossible to remove $imgname from the database.");
         return -1;
     }
 
+    oscar_log(5, INFO, "Successfully deleted image: $imgname.");
     return 0;
 }
 
@@ -488,8 +507,7 @@ sub add_corrupted_image ($$) {
     # we could update.
     
     my $image_name = $entry_ref->{'name'};
-    OSCAR::Logger::oscar_log_subsection ("Adding/updating corruption data ".
-        "for $image_name");
+    oscar_log(6, INFO, "Adding/updating corruption data for $image_name");
 
     # We check whether an entry is already available or not.
     foreach my $e (@$res_ref) {
@@ -506,8 +524,7 @@ sub add_corrupted_image ($$) {
 
     # If we reach this point, no entry for the image is already in the hash
     push (@$res_ref, $entry_ref);
-    OSCAR::Logger::oscar_log_subsection ("Corrupted data for $image_name ".
-        "saved");
+    oscar_log (6, INFO, "Corrupted data for $image_name saved.");
 
     return 0;
 }
@@ -531,13 +548,14 @@ sub get_list_corrupted_images () {
     my $image_name;
 
     # The array is now clean, we can print it
-    print "List of images in the SIS database: ";
-    print_array (@sis_images);
+    oscar_log(6, INFO, "List of images in the SIS database:");
+    print_array (@sis_images) if($OSCAR::Env::oscar_verbose >= 6);
 
     my @tables = ("Images");
     my @oda_images = ();
     my @res = ();
     my $cmd = "SELECT Images.name FROM Images";
+    oscar_log(8, DB, "ODA query: $cmd;");
     if ( OSCAR::Database::single_dec_locked( $cmd,
                                              "READ",
                                              \@tables,
@@ -551,10 +569,10 @@ sub get_list_corrupted_images () {
                 push (@oda_images, $elt->{name});
             }
         }
-        print "List of images in ODA: ";
-        print_array (@oda_images);
+        oscar_log(6, INFO, "List of images in ODA:");
+        print_array (@oda_images) if($OSCAR::Env::oscar_verbose >= 6);
     } else {
-        carp ("ERROR: Cannot query ODA\n");
+        oscar_log(5, DB, "ERROR: Cannot query ODA    =>  $cmd;");
         return undef;
     }
 
@@ -562,12 +580,12 @@ sub get_list_corrupted_images () {
     my $sis_image_dir = "/var/lib/systemimager/images";
     my @fs_images = ();
     if ( ! -d $sis_image_dir ) {
-        carp ("ERROR: The image directory does not exist ".
+        oscar_log (5, ERROR, "The image directory does not exist ".
               "($sis_image_dir)");
         return undef;
     }
     opendir (DIRHANDLER, "$sis_image_dir")
-        or (carp ("ERROR: Impossible to open $sis_image_dir"), return undef);
+        or (oscar_log (5, ERROR, "Impossible to open $sis_image_dir"), return undef);
     foreach my $dir (sort readdir(DIRHANDLER)) {
         if ($dir ne "."
             && $dir ne ".."
@@ -578,8 +596,8 @@ sub get_list_corrupted_images () {
             push (@fs_images, $dir);
         }
     }
-    print "List of images in file system: ";
-    print_array (@fs_images);
+    oscar_log(6, INFO, "List of images in file system:");
+    print_array (@fs_images) if($OSCAR::Env::oscar_verbose >= 6);
 
     # We now compare the lists of images
     foreach $image_name (@sis_images) {
@@ -634,12 +652,13 @@ sub get_list_images () {
     my @tables = ("Images");
     my @res = ();
     my $sql = "SELECT * FROM Images";
+    oscar_log(8, DB, "ODA query: $sql;");
     if (!OSCAR::Database::single_dec_locked( $sql,
                                              "READ",
                                              \@tables,
                                              \@res,
                                              undef) ) {
-        carp "ERROR: Impossible to execute the SQL command $sql";
+        oscar_log(5, ERROR, "Failed to execute the SQL command:\n    => $sql");
         return undef;
     }
 
@@ -663,13 +682,14 @@ sub image_exists ($) {
     my $image_name = shift;
 
     if (!OSCAR::Utils::is_a_valid_string ($image_name)) {
-        carp "ERROR: Invalid image name";
+        oscar_log(6, ERROR, "Invalid image name.");
         return -1;
     }
 
     my @tables = ("Images");
     my @res = ();
     my $sql = "SELECT Images.name FROM Images WHERE Images.name='$image_name'";
+    oscar_log(8, DB, "ODA query: $sql;");
     if ( OSCAR::Database::single_dec_locked( $sql,
                                              "READ",
                                              \@tables,
@@ -680,11 +700,11 @@ sub image_exists ($) {
         } elsif (scalar (@res) == 0) {
             return 0;
         } else {
-            carp "ERROR: found ".scalar(@res)." images named $image_name";
+            oscar_log(5, ERROR, "Found ".scalar(@res)." images named $image_name");
             return -1;
         }
     }
-    carp "ERROR: Impossible to query ODA";
+    oscar_log(5, ERROR, "Failed to query ODA (image_exists)");
     return -1;
 }
 
@@ -699,6 +719,7 @@ sub umount_image_proc ($) {
     my $proc_status = 0; # tells if /proc is mounted or not (0 = not mounted,
                          # 1 = mounted)
     my $cmd = "/usr/sbin/chroot $image_path mount";
+    oscar_log(7, ACTION, "About to run: $cmd");
     my @lines = split ('\n', `$cmd`);
 
     foreach my $line (@lines) {
@@ -710,6 +731,7 @@ sub umount_image_proc ($) {
 
     if ($proc_status == 1) {
         $cmd = "/usr/sbin/chroot $image_path umount /proc";
+        oscar_log(7, ACTION, "About to run: $cmd");
         system ($cmd); # we do not check the return code because when creating
                        # the image, the status of /proc may not be coherent, so
                        # the command returns an error but this is just fine.
@@ -732,7 +754,7 @@ sub image_cleanup ($) {
 
     # Step 1: we make sure /proc is not mounted in the image
     if (umount_image_proc ($image_path)) {
-        carp "ERROR: Impossible to umount /proc ($image_path)";
+        oscar_log(6, ERROR, "Failed to umount /proc ($image_path)");
         return -1;
     }
 
@@ -751,20 +773,20 @@ sub cleanup_sis_configfile ($) {
     my $image = shift;
 
     if (!OSCAR::Utils::is_a_valid_string ($image)) {
-        carp "ERROR: Invalid argument";
+        oscar_log(6, ERROR, "Invalid image name.");
         return -1;
     }
 
-    print ("Cleaning up $image\n");
+    oscar_log(4, ACTION, "Cleaning up $image from flamethrower config.");
     my $flamethrower_conf = "/etc/systemimager/flamethrower.conf";
     require SystemImager::Common;
     SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, 
                                                         $image) or
-        (carp "ERROR: Impossible to update the flamethrower config file");
+        (oscar_log(5, ERROR, "Impossible to update the flamethrower config file."));
 
     SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, 
                                                         "override_$image") or
-        (carp "ERROR: Impossible to update the flamethrower config file");
+        (oscar_log(5, ERROR, "Impossible to update the flamethrower config file"));
 
     return 0;
 }
@@ -783,7 +805,7 @@ sub create_image ($%) {
     # create a basic image for servers since the server may already be deployed.
     # We currently use the script 'build_oscar_image_cli'. This is a limitation
     # because it only creates an image based on the local Linux distribution.
-    oscar_log_section "Creating the basic golden image..." if $OSCAR::Env::oscar_verbose;
+    oscar_log(3, ACTION, "Creating the basic golden image...");
 
     $vars{imgname} = "$image";
 
@@ -798,9 +820,9 @@ sub create_image ($%) {
     }
     $cmd .= " $vars{extraflags} --verbose";
 
-    oscar_log_subsection "Executing command: $cmd" if $OSCAR::Env::oscar_verbose;
+    oscar_log(7, ACTION, "About to run: $cmd");
     if (system ($cmd)) {
-        carp "ERROR: Impossible to create the image ($cmd)\n";
+        oscar_log(5, ERROR, "Impossible to create the image ($cmd)");
         cleanup_sis_configfile ($image);
         return -1;
     }
@@ -810,7 +832,7 @@ sub create_image ($%) {
                       "path" => "$vars{imgpath}/$vars{imgname}",
                       "architecture" => "$vars{arch}");
     if (OSCAR::Database::set_images (\%image_data, undef, undef) != 1) {
-        carp "ERROR: Impossible to store image data into ODA";
+        oscar_log(5, ERROR, "Impossible to store image data into ODA.");
         cleanup_sis_configfile ($image);
         return -1;
     }
@@ -819,16 +841,16 @@ sub create_image ($%) {
     my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs();
     my %selection_data
         = OSCAR::Database::get_opkgs_selection_data (undef);
-    print "[INFO] no selected OPKGs\n" if (keys %selection_data == 0);
+    oscar_log(5, INFO, "No selected OPKGs") if (keys %selection_data == 0);
     my $os = OSCAR::OCA::OS_Detect::open(chroot=>"$image_path");
     if (!defined $os) {
-        carp "ERROR: Impossible to detect the distro id for $image_path";
+        oscar_log(5, ERROR, "Impossible to detect the distro id for $image_path");
         cleanup_sis_configfile ($image);
         return -1;
     }
     my $distro_id = OSCAR::PackagePath::os_distro_string ($os);
     if (!OSCAR::Utils::is_a_valid_string ($distro_id)) {
-        carp "ERROR: Impossible to get the distro ID based on the detected os";
+        oscar_log(5, ERROR, "Impossible to get the distro ID based on the detected os.");
         cleanup_sis_configfile ($image);
         return -1;
     }
@@ -841,12 +863,12 @@ sub create_image ($%) {
     foreach my $opkg (keys %selection_data) {
         if (!OSCAR::Utils::is_element_in_array ($opkg, @core_opkgs)) {
             if ($selection_data{$opkg} eq OSCAR::ODA_Defs::SELECTED()) {
-                print "Installing opkg-$opkg-client into the image...\n";
+                oscar_log(4, ACTION, "Installing opkg-$opkg-client into the image...");
                 ($rc, @output) = $rm->install_pkg ($image_path,
                                                    "opkg-$opkg-client");
                 if ($rc) {
-                    carp "ERROR: Impossible to install opkg-$opkg-client in ".
-                         "$image_path (rc: $rc)";
+                    oscar_log(4, ERROR, "Impossible to install opkg-$opkg-client in ".
+                         "$image_path (rc: $rc)");
                     cleanup_sis_configfile ($image);
                     return -1;
                 }
@@ -856,27 +878,28 @@ sub create_image ($%) {
 
     # Deal with the harddrive configuration of the image
     $cmd = "mksidisk -A --name $vars{imgname} --file $vars{diskfile}";
+    oscar_log(7, ACTION, "About to run: $cmd");
     if( system($cmd) ) {
-        carp("ERROR: Couldn't run command $cmd");
+        oscar_log(5, ERROR, "Couldn't run command $cmd");
         cleanup_sis_configfile ($image);
         return -1;
     }
 
     # Now we execute the post image creation actions.
     if (postimagebuild (\%vars)) {
-        carp "ERROR: Impossible to run postimagebuild";
+        oscar_log(5, ERROR, "Failed to run postimagebuild.");
         cleanup_sis_configfile ($image);
         return -1;
     }
 
     # We make sure everything is fine with the image
     if (image_cleanup (\%vars)) {
-        carp "ERROR: Impossible to cleanup the image after creation";
+        oscar_log(5, ERROR, "Failed to cleanup the image after creation.");
         cleanup_sis_configfile ($image);
         return -1;
     }
 
-    oscar_log_subsection "OSCAR image successfully created";
+    oscar_log(3, INFO, "OSCAR image successfully created.");
 
     return 0;
 }
@@ -906,14 +929,16 @@ sub update_systemconfigurator_configfile ($) {
                                                      "LABEL");
 
     if (!defined ($default_boot) || !defined ($default_label)) {
-        carp "ERROR: The file $file exists but does not have a default boot ".
-             "or a default label";
+        oscar_log(5, ERROR, "The file $file exists but does not have a default boot ".
+             "or a default label.");
         return -1;
     }
 
     if ($default_boot ne $default_label) {
-        print STDERR "WARNING: the default boot kernel is not the kernel0 we ".
-                     "do not know how to deal with that situation";
+        oscar_log(1, WARNING, "[SystemConfigurator] the default boot kernel is not the kernel0 we ".
+                     "do not know how to deal with that situation.");
+#        print STDERR "WARNING: the default boot kernel is not the kernel0 we ".
+#                     "do not know how to deal with that situation";
         return 1;
     }
 
@@ -922,14 +947,14 @@ sub update_systemconfigurator_configfile ($) {
                                          "BOOT",
                                          "DEFAULTBOOT",
                                          "default_kernel")) {
-            carp "ERROR: Impossible to update the default boot kernel";
+            oscar_log(5, ERROR, "Impossible to update the default boot kernel.");
             return -1;
         }
         if (OSCAR::ConfigFile::set_value($file,
                                          "KERNEL0",
                                          "LABEL",
                                          "default_kernel")) {
-            carp "ERROR: Impossible to update the label of the default kernel";
+            oscar_log(5, ERROR, "Impossible to update the label of the default kernel.");
             return -1;
         }
     }
@@ -948,13 +973,13 @@ sub update_systemconfigurator_configfile ($) {
 sub update_kernel_append ($$) {
     my ($imgdir, $append_str) = @_;
 
-    oscar_log_subsection ("Adding boot parameter ($append_str) for image ".
+    oscar_log(3, SUBSECTION, "Adding boot parameter ($append_str) for image ".
                           "$imgdir");
     my $file = "$imgdir/etc/systemconfig/systemconfig.conf";
     require OSCAR::ConfigFile;
     if (OSCAR::ConfigFile::set_value ($file, "KERNEL0", "\tAPPEND",
                                       "\"$append_str\"")) {
-        carp "ERROR: Impossible to add $append_str as boot parameter in $file";
+        oscar_log(5, ERROR, "Impossible to add $append_str as boot parameter in $file");
         return -1;
     }
 
@@ -973,7 +998,7 @@ sub update_grub_config ($) {
 
     $path .= "/boot";
     if (!-d $path) {
-        carp "ERROR: $path does not exist";
+        oscar_log(5, ERROR, "[update_grub_config] $path does not exist.");
         return -1;
     }
 
@@ -985,8 +1010,9 @@ sub update_grub_config ($) {
     $path .= "/menu.lst";
     if (!-f $path) {
         my $cmd = "touch $path";
+        oscar_log(7, ACTION, "About to run: $cmd");
         if (system $cmd) {
-            carp "ERROR: Impossible to execute $cmd";
+            oscar_log(5, ERROR, "Failed to execute $cmd");
             return -1;
         }
     }
@@ -1005,7 +1031,7 @@ sub update_modprobe_config ($) {
     my $cmd;
 
     if (! -d $image_path) {
-        carp "ERROR: $image_path does not exist";
+        oscar_log(5, ERROR, "$image_path does not exist.");
         return -1;
     }
 
@@ -1014,7 +1040,7 @@ sub update_modprobe_config ($) {
     if (OSCAR::FileUtils::add_line_to_file_without_duplication (
             $content,
             $modprobe_conf)) {
-        carp "ERROR: Impossible to add $content into $modprobe_conf";
+        oscar_log(5, ERROR, "Impossible to add $content into $modprobe_conf");
         return -1;
     }
 
@@ -1026,6 +1052,7 @@ sub update_image_initrd ($) {
     my $imgpath = shift;
     my $cmd;
 
+    oscar_log(4, INFO, "Updating initrd for image($imgpath).");
     # First we create a "fake" fstab. The problem is the following: nowadays,
     # binary packages for kernels try to create the initrd on the fly, based
     # on configuration data. This is not compliant with the old systemimager
@@ -1036,38 +1063,44 @@ sub update_image_initrd ($) {
     # Currently the problem has been reported only for RPM based distros
     my $os = OSCAR::OCA::OS_Detect::open ($imgpath);
     if (!defined $os) {
-        carp "ERROR: Impossible to detect image distro ($imgpath)";
+        oscar_log(6, ERROR, "Impossible to detect image distro ($imgpath).");
+        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
         return -1;
     }
     return 0 if ($os->{pkg} ne "rpm");
 
     if (! -d $imgpath) {
-        carp "ERROR: Impossible to find the image ($imgpath)";
+        oscar_log(6, ERROR, "Impossible to find the image ($imgpath).");
+        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
         return -1;
     }
 
     # The /etc/systemconfig/systemconfig.conf should exist in the image.    
     my $systemconfig_file = "$imgpath/etc/systemconfig/systemconfig.conf";
     if (! -f $systemconfig_file) {
-        carp "ERROR: $systemconfig_file does not exist";
+        oscar_log(6, ERROR, "$systemconfig_file does not exist.");
+        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
         return -1;
     }
     use OSCAR::ConfigFile;
     my $root_device = OSCAR::ConfigFile::get_value ($systemconfig_file,
         "BOOT", "ROOTDEV");
     if (!OSCAR::Utils::is_a_valid_string ($root_device)) {
-        carp "ERROR: Impossible to get the default root device";
+        oscar_log(6, ERROR, "Impossible to get the default root device");
+        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
         return -1;
     }
     my $fake_fstab = "$imgpath/etc/fstab.fake";
     $cmd = "echo \"$root_device  /  ext3  defaults  1 1\" >> $fake_fstab";
-    print "[INFO] Running $cmd...\n";
+    oscar_log(7, ACTION, "About to run: $cmd");
     if (system ($cmd)) {
-        carp "ERROR: Impossible to execute $cmd";
+        oscar_log(6, ERROR, "Impossible to execute $cmd");
+        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
         return -1;
     }
     if (! -f $fake_fstab) {
-        carp "ERROR: $fake_fstab does not exist";
+        oscar_log(6, ERROR, "$fake_fstab does not exist");
+        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
         return -1;
     }
 
@@ -1078,18 +1111,21 @@ sub update_image_initrd ($) {
     my $version = OSCAR::ConfigFile::get_value ($systemconfig_file,
         "KERNEL0", "PATH");
     if (!OSCAR::Utils::is_a_valid_string ($version)) {
-        carp "ERROR: Impossible to detect the image kernel version ($imgpath)";
+        oscar_log(6, ERROR, "Impossible to detect the image kernel version ($imgpath).");
+        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
         return -1;
     }
     if ($version =~ /\/boot\/vmlinuz-(.*)/) {
         $version = $1;
     } else {
-        carp "ERROR: Impossible to get the version ($version)";
+        oscar_log(6, ERROR, "Impossible to get the version ($version)");
+        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
         return -1;
     }
     my $chroot_bin = "/usr/sbin/chroot";
     if (! -f $chroot_bin) {
-        carp "ERROR: the chroot binary ($chroot_bin) is not available";
+        oscar_log(6, ERROR, "The chroot binary ($chroot_bin) is not available");
+        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
         return -1;
     }
     # OL: Temporary fix to support dracut using mkinitrd alias. the alias is in /usr/bin, no /sbin, thus the fix.
@@ -1098,12 +1134,14 @@ sub update_image_initrd ($) {
     # OL: End of tmp fix. (should be replaced with OS_Settings::getitem).
     $cmd = "$chroot_bin $imgpath $mkinitrd_cmd -v -f --fstab=/etc/fstab.fake ".
            "--allow-missing $initrd $version";
-    print "[INFO] Running $cmd...\n";
+    oscar_log(7, ACTION, "About to run: $cmd");
     if (system ($cmd)) {
-        carp "ERROR: Impossible to execute $cmd";
+        oscar_log(6, ERROR, "Impossible to execute $cmd");
+        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
         return -1;
     }
 
+    oscar_log(4, INFO, "Successuflly updated initrd for image($imgpath).");
     return 0;
 }
 
@@ -1115,33 +1153,37 @@ sub postimagebuild {
     my %options;
 
     require OSCAR::ConfigFile;
+    oscar_log (3, INFO, "Doing postimagebuild actions.");
     $interface = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
                                                undef,
                                                "OSCAR_NETWORK_INTERFACE");
 
-    OSCAR::Logger::oscar_log_subsection ("Setting up image in the database");
+    oscar_log (4, INFO, "Setting up image in the database.");
     if (do_setimage ($img, %options)) {
-        carp "ERROR: Impossible to set image";
+        oscar_log(4, ERROR, "Failed to set image.");
         return -1;
     }
 
+    oscar_log (4, INFO, "Doing post binary package install.");
     if (do_post_image_creation ($img, $interface) == 0) {
-        carp "ERROR: Impossible to do post binary package install, ".
-             "deleting the image...";
+        oscar_log(4, ERROR, "Impossible to do post binary package install, ".
+             "deleting the image...");
         if (delete_image ($img)) {
-            carp "ERROR: Impossible to delete image $img";
+            oscar_log(5, ERROR, "Impossible to delete image $img");
         }
         return -1;
     }
 
+    oscar_log (4, INFO, "Doing ODA update.");
     if (do_oda_post_install ($vars, \%options)) {
-        carp "ERROR: Impossible to update data in ODA, deleting image...";
+        oscar_log(4, ERROR, "Impossible to update data in ODA, deleting image...");
         if (delete_image ($img)) {
-            carp "ERROR: Impossible to delete image $img";
+            oscar_log(5, ERROR, "Impossible to delete image $img");
         }
         return -1;
     }
 
+    oscar_log (3, INFO, "Successfully processed postimagebuild actions.");
     return 0;
 }
 
@@ -1160,47 +1202,47 @@ sub install_opkgs_into_image ($@) {
     # We check first if parameters are valid.
     if (!defined($image) || $image eq "" ||
         !@opkgs) {
-        carp "ERROR: Invalid parameters\n";
+        oscar_log(5, ERROR, "Install Opkg into image: invalid parameters.");
         return -1;
     }
 
     my $image_path = "$images_path/$image";
-    oscar_log_section "Installing OPKGs into image $image ($image_path)";
-    oscar_log_subsection "List of OPKGs to install: ". join(" ", @opkgs);
+    oscar_log(4, INFO, "Installing OPKGs into image $image ($image_path).");
+    oscar_log(5, INFO, "List of OPKGs to install: ". join(" ", @opkgs));
 
     # To install OPKGs, we use Packman, creating a specific packman object for
     # the image.
     my $pm = PackMan->new->chroot ($image_path);
     if (!defined ($pm)) {
-        carp "ERROR: Impossible to create a Packman object for the ".
-             "installation of OPKGs into the golden image\n";
+        oscar_log(5, ERROR, "Failed to create a Packman object for the ".
+                            "installation of OPKGs into the golden image.");
         return -1;
     }
 
     # We assign the correct repos to the PacjMan object.
     my $os = OSCAR::OCA::OS_Detect::open(chroot=>$image_path);
     if (!defined ($os)) {
-        carp "ERROR: Impossible to detect the OS of the image ($image_path)\n";
+        oscar_log(5, ERROR, "Impossible to detect the OS of the image ($image_path)");
         return -1;
     }
     my $image_distro = "$os->{distro}-$os->{distro_version}-$os->{arch}";
-    oscar_log_subsection "Image distro: $image_distro";
+    oscar_log(5, INFO, "Detected Image distro: $image_distro");
     require OSCAR::RepositoryManager;
     my $rm = OSCAR::RepositoryManager->new (distro=>$image_distro);
 
     # GV: do we need to install only the client side of the OPKG? or do we also
     # need to install the api part.
     foreach my $opkg (@opkgs) {
-        oscar_log_subsection "\tInstalling $opkg using opkg-$opkg-client"
-            if $OSCAR::Env::oscar_verbose;
+        oscar_log(4, ACTION, "\tInstalling $opkg using opkg-$opkg-client");
         # Once we have the packman object, it is fairly simple to install opkgs.
         my ($ret, @out) = $rm->install_pkg($image_path, "opkg-$opkg-client");
         if ($ret) {
-            carp "ERROR: Impossible to install OPKG $opkg:\n".join("\n", @out);
+            oscar_log(5, ERROR, "Impossible to install OPKG $opkg:\n".join("\n", @out));
             return -1;
         }
     }
 
+    oscar_log(4, INFO, "Successfully Installed OPKGs into image $image.");
     return 0;
 }
 
@@ -1218,8 +1260,9 @@ sub install_opkgs_into_image ($@) {
 sub export_image ($$) {
     my ($partition, $dest) = @_;
 
+    oscar_log(6, INFO, "Exporting an image.");
     if (!defined ($partition) || !defined ($dest)) {
-        carp "ERROR: Invalid arguments";
+        oscar_log(5, ERROR, "Export image: invalid arguments.");
         return -1;
     }
 
@@ -1229,26 +1272,26 @@ sub export_image ($$) {
     require File::Path;
 
     if (! -d $dest) {
-        carp "ERROR: the destination directory does not exist";
+        oscar_log(5, ERROR, "The destination directory does not exist.");
         return -1;
     }
     if (-f $tarball) {
-        carp "ERROR: the tarball already exists ($tarball)";
+        oscar_log(5, ERROR, "The tarball already exists ($tarball)");
         return -1;
     }
 
     if (image_exists ($partition) == 1) {
-        oscar_log_subsection "INFO: The image already exists" if $OSCAR::Env::oscar_verbose;
+        oscar_log(6, INFO, "The image already exists (no need to build it).");
 
         # the image already exists we just need to create the tarball
         my $cmd = "cd $images_path/$partition; tar czf $tarball *";
-        oscar_log_subsection "Executing: $cmd" if $OSCAR::Env::oscar_verbose;
+        oscar_log(7, ACTION, "[INFO] About to run: $cmd");
         if (system ($cmd)) {
-            carp "ERROR: impossible to create the tarball";
+            oscar_log(5, ERROR, "Impossible to create the tarball.");
             return -1;
         }
     } else {
-        oscar_log_subsection "INFO: the image does not exist" if $OSCAR::Env::oscar_verbose;
+        oscar_log(6, INFO, "The image does not exist (need to build it).");
         if (-d $temp_dir) {
             rmtree ($temp_dir);
         }
@@ -1256,28 +1299,31 @@ sub export_image ($$) {
         # We get the default settings for images.
         my %image_config = OSCAR::ImageMgt::get_image_default_settings ();
         if (!%image_config) {
-            carp "ERROR: Impossible to get default image settings\n";
+            oscar_log(5, ERROR, "Impossible to get default image settings.");
             return -1;
         }
         $image_config{imgpath} = $temp_dir;
         # If the image does not already exists, we create it.
+        oscar_log(6, ACTION, "Building image into $temp_dir");
         if (OSCAR::ImageMgt::create_image ($partition, %image_config)) {
-            carp "ERROR: Impossible to create the basic image\n";
+            oscar_log(5, ERROR, "Failed to create the basic image.");
             rmtree ($temp_dir);
             return -1;
         }
 
         # the image is ready to be tared!
         my $cmd = "cd $temp_dir; tar czf $tarball *";
-        oscar_log_subsection "Executing: $cmd" if $OSCAR::Env::oscar_verbose;
+        oscar_log(7, ACTION, "About to run: $cmd");
         if (system ($cmd)) {
-            carp "ERROR: impossible to create the tarball";
+            oscar_log(5, ERROR, "Failed to create the tarball.");
             rmtree ($temp_dir);
             return -1;
         }
 
+        oscar_log(6, ACTION, "Cleaning up $temp_dir");
         rmtree ($temp_dir);
     }
+    oscar_log(6, INFO, "Image successfully exported.");
     return 0;
 }
 

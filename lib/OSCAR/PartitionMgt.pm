@@ -43,6 +43,7 @@ use OSCAR::Database qw (
                         simple_oda_query
                        );
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::ConfigManager;
 use OSCAR::ImageMgt;
 use OSCAR::MAC;
@@ -76,19 +77,19 @@ sub get_partition_distro ($$) {
     # Some basic checking...
     if (!defined ($cluster_name)
         || $cluster_name eq "") {
-        carp "ERROR: invalid cluster name ($cluster_name)\n";
+        oscar_log(5, ERROR, "Invalid cluster name ($cluster_name)");
         return undef;
     }
     if (!defined ($partition_name)
         || $partition_name eq "") {
-        carp "ERROR: invalid partition name ($partition_name)\n";
+        oscar_log(5, ERROR, "Invalid partition name ($partition_name)");
         return undef;
     }
 
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        oscar_log(5, ERROR, "Impossible to get the OSCAR configuration");
         return undef;
     }
     my $config = $oscar_configurator->get_config();
@@ -96,6 +97,7 @@ sub get_partition_distro ($$) {
     my $distro;
     if ($config->{oda_type} eq "db") {
         my $sql = "SELECT * FROM Partitions WHERE name='$partition_name'";
+        oscar_log(8, DB, "Query DB: $sql;");
         $distro = oda_query_single_result ($sql, "distro");
     } elsif ($config->{oda_type} eq "file") {
         # We get the path of the partition configuration file.
@@ -108,13 +110,13 @@ sub get_partition_distro ($$) {
         my $config_obj = OSCAR::PartitionConfigManager->new(
             config_file => "$f");
         if ( ! defined ($config_obj) ) {
-            carp "ERROR: Impossible to create an object in order to handle ".
-                 "the partition configuration file.\n";
+            oscar_log(5, ERROR, "Impossible to create an object in order to handle ".
+                 "the partition configuration file.");
             return -1;
         }
         my $partition_config = $config_obj->get_config();
         if (!defined ($partition_config)) {
-            carp "ERROR: Impossible to load the partition configuration file\n";
+            oscar_log(5, ERROR, "Failed to load the partition configuration file");
             return undef;
         }
         my $id = $partition_config->{'distro'}.
@@ -124,7 +126,7 @@ sub get_partition_distro ($$) {
                  $partition_config->{'arch'};
         return $id;
     } else {
-        carp "ERROR: Unknown ODA type ($config->{oda_type})\n";
+        oscar_log(5, ERROR, "Unknown ODA type ($config->{oda_type})");
         return undef;
     }
     return $distro;
@@ -146,19 +148,19 @@ sub get_list_nodes_partition ($$) {
     # Some basic checking...
     if (!defined ($cluster_name)
         || $cluster_name eq "") {
-        carp "ERROR: invalid cluster name ($cluster_name)\n";
+        oscar_log(5, ERROR, "Invalid cluster name ($cluster_name)");
         return undef;
     }
     if (!defined ($partition_name) 
         || $partition_name eq "") { 
-        carp "ERROR: invalid partition name ($partition_name)\n";
+        oscar_log(5, ERROR, "Invalid partition name ($partition_name)");
         return undef;
     }
 
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        oscar_log(5, ERROR, "Impossible to get the OSCAR configuration");
         return undef;
     }
     my $config = $oscar_configurator->get_config();
@@ -166,16 +168,19 @@ sub get_list_nodes_partition ($$) {
     if ($config->{oda_type} eq "db") {
         # First we get the partition ID
         my $sql = "SELECT * FROM Partitions WHERE name='$partition_name'";
+        oscar_log(8, DB, "Query DB: $sql;");
         my $partition_id = oda_query_single_result ($sql, "partition_id");
 
         # Then based on the partition ID, we can get the list of nodes associated
         # to this partition (node ids).
         $sql = "SELECT * From Partition_Nodes WHERE partition_id='$partition_id'";
+        oscar_log(8, DB, "Query DB: $sql;");
         my @nodes_id = simple_oda_query ($sql, "node_id");
 
         # Finally for each node ID we find the node name
         foreach my $id (@nodes_id) {
             $sql = "SELECT * From Nodes WHERE id='$id'";
+            oscar_log(8, DB, "Query DB: $sql;");
             my $n = oda_query_single_result ($sql, "name");
             push (@nodes, $n);
         }
@@ -185,12 +190,12 @@ sub get_list_nodes_partition ($$) {
             $partition_name);
         # Some basic checking...
         if (!defined ($path) || ! -d "$path") {
-            carp "ERROR: Partition $partition_name does not exist\n";
+            oscar_log(5, ERROR, "Partition $partition_name does not exist");
             return undef;
         }
         @nodes = OSCAR::FileUtils::get_dirs_in_path ("$path");
     } else {
-        carp "ERROR: Unknown ODA type ($config->{oda_type}).\n";
+        oscar_log(5, ERROR, "Unknown ODA type ($config->{oda_type}).");
         return undef;
     }
 
@@ -208,11 +213,13 @@ sub get_list_partitions_from_clusterid ($) {
     my $cluster_id = shift;
 
     my $sql = "SELECT * FROM Cluster_Partitions WHERE cluster_id='$cluster_id'";
+    oscar_log(8, DB, "Query DB: $sql;");
     my @partitions_id = simple_oda_query ($sql, "partition_id");
 
     my @partitions = ();
     foreach my $partition (@partitions_id) {
         my $sql2 = "SELECT * FROM Partitions WHERE partition_id='$partition'";
+        oscar_log(8, DB, "Query DB: $sql2;");
         my $partition_name = oda_query_single_result ($sql2, "name");
         push (@partitions, $partition_name);
     }
@@ -244,19 +251,20 @@ sub get_list_partitions ($) {
     my @partitions;
     if ($config->{oda_type} eq "db") {
         my $sql = "SELECT * FROM Clusters WHERE name='$cluster_name'";
+        oscar_log(8, DB, "Query DB: $sql;");
         my $cluster_id = OSCAR::Database::oda_query_single_result ($sql, "id");
 #        @partitions = get_list_partitions ($cluster_id);
     } elsif ($config->{oda_type} eq "file") {
         my $path =
             $oscar_configurator->get_cluster_config_file_path($cluster_name);
         if ( ! -d "$path" ) {
-            carp "ERROR: cluster $cluster_name does not exist\n";
+            oscar_log(5, ERROR, "Cluster $cluster_name does not exist");
             return undef;
         }
         @partitions 
             = OSCAR::FileUtils::get_dirs_in_path ("$path");
     } else {
-        carp "ERROR: unknown ODA type ($config->{oda_type})";
+        oscar_log(5, ERROR, "Unknown ODA type ($config->{oda_type})");
         return undef;
     }
 
@@ -277,35 +285,31 @@ sub get_list_partitions ($) {
 sub oda_create_new_partition ($$$$$) {
     my ($cluster_name, $partition_name, $distro, $servers, $clients) = @_;
 
-    if ($OSCAR::Env::oscar_verbose) {
-        oscar_log_section "ODA: Creating a new partition";
-        oscar_log_subsection "Cluster: $cluster_name";
-        oscar_log_subsection "Partition: $partition_name";
-        oscar_log_subsection "List of servers: ";
-        print_array (@$servers);
-        oscar_log_subsection "List of clients: ";
-        print_array (@$clients);
-    }
+    oscar_log(5, SUBSECTION, "ODA: Creating a new partition");
+    oscar_log(5, INFO, "  Cluster: $cluster_name");
+    oscar_log(5, INFO, "  Partition: $partition_name");
+    oscar_log(5, INFO, "  List of servers: " . join( "  ", @$servers));
+    oscar_log(5, INFO, "  List of clients: " . join( "  ", @$clients));
 
     # We first check if the partition already exists
     my @config = get_partition_info ($cluster_name, $partition_name);
     if (!@config) {
-        carp "ERROR: Impossible to query ODA";
+        oscar_log(5, ERROR, "Failed to query ODA");
         return -1;
     }
     if (scalar (@config)) {
-        oscar_log_subsection "The partition already exist...";
-        oscar_log_subsection "Deleting the previous record...";
+        oscar_log(6, INFO, "The partition already exist...");
+        oscar_log(6, INFO, "Deleting the previous record...");
         delete_partition_info ($cluster_name, $partition_name, $distro, 
                                $servers, $clients);
     } 
-    oscar_log_subsection "Adding the partition record...";
+    oscar_log(6, INFO, "Adding the partition record...");
     set_partition_info ($cluster_name,
                         $partition_name,
                         $distro,
                         $servers,
                         $clients);
-    oscar_log_section "ODA: New partition created" if $OSCAR::Env::oscar_verbose;
+    oscar_log(5, INFO, "ODA: New partition created");
 
     return 0;
 }
@@ -328,17 +332,18 @@ sub get_partition_info ($$) {
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        oscar_log(5, ERROR, "Impossible to get the OSCAR configuration");
         return -1;
     }
     my $config = $oscar_configurator->get_config();
 
     if ($config->{oda_type} eq "db") {
         # TODO: this current does not work
-        carp "Sorry this cluster management cannot currently use a real ".
+        oscar_log(5, ERROR, "Sorry this cluster management cannot currently use a real ".
              "database, only a flat file based ODA version. Check our OSCAR ".
-             "configuration file\n";
+             "configuration file");
         my $sql = "SELECT * FROM Partitions WHERE name='$partition_name'";
+        oscar_log(8, DB, "Query DB: $sql;");
         my $options_ref;
         my $error_strings_ref;
         my $result_ref;
@@ -346,9 +351,9 @@ sub get_partition_info ($$) {
     } elsif ($config->{oda_type} eq "file") {
         my $path = $config->{oda_files_path};
         if ( ! -d "$path") {
-            carp "ERROR: the cluster configuration directory does not exist ".
+            oscar_log(5, ERROR, "ERROR: the cluster configuration directory does not exist ".
                  "($path). It most certainly mean that OSCAR is not correctly ".
-                 "initialized\n";
+                 "initialized");
             return undef;
         }
 
@@ -356,7 +361,7 @@ sub get_partition_info ($$) {
         $path =
             $oscar_configurator->get_cluster_config_file_path($cluster_name);
         if ( ! -d "$path") {
-            print "WARNING: Cluster does not exist ($cluster_name)\n";
+            oscar_log(5, ERROR, "Cluster does not exist ($cluster_name)");
             return undef;
         }
 
@@ -364,8 +369,7 @@ sub get_partition_info ($$) {
         @partitions =
             OSCAR::FileUtils::get_dirs_in_path ("$path");
     }
-    print "Partitions:\n";
-    print_array @partitions;
+    oscar_log(5, INFO, "Partitions:".join(" ", @partitions));
     return @partitions;
 }
 
@@ -377,6 +381,7 @@ sub get_partition_info ($$) {
 #        group_name, group name (servers versus clients).                      #
 #        servers, list of servers for the partition.                           #
 #        cients, list of clients for the partition.                            #
+# Return: 0: Ok, -1: Error
 # TODO: error handling.                                                        #
 # TODO: the code for the real db is buggy.                                     #
 ################################################################################
@@ -385,13 +390,13 @@ sub set_partition_info {
 #    my $sql;
     my $options_ref;
     my $error_strings_ref;
-    our $server_id;
-    our $client_id;
+    my $server_id;
+    my $client_id;
 
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        oscar_log(5, ERROR, "Impossible to get the OSCAR configuration");
         return -1;
     }
     my $config = $oscar_configurator->get_config();
@@ -400,26 +405,33 @@ sub set_partition_info {
         my $sql;
         # Step 1: we populate the partition info with basic info.
         # TODO: we should use here insert_into_table.
-#        $sql = "INSERT INTO Partitions(name, distro) VALUES ".
-#               "('$group_name', '$distro')";
-        die "ERROR: Failed to insert values via << $sql >>"
-            if! do_insert($sql,"Partitions", $options_ref, $error_strings_ref);
+        $sql = "INSERT INTO Partitions(name, distro) VALUES ".
+               "('$partition_name', '$distro_id')";
+        if(! do_insert($sql,"Partitions", $options_ref, $error_strings_ref)) {
+            oscar_log(5, ERROR, "Failed to insert values via << $sql >>");
+            return -1;
+        }
 
         # Step 2: we populate the table Cluster_Partitions (relation between 
         # partitions and clusters).
         # TODO: we should use here insert_into_table.
         # First we get the partition_id
-#        $sql = "SELECT partition_id FROM Partitions WHERE ".
-#               "Partitions.name = '$group_name'";
+        $sql = "SELECT partition_id FROM Partitions WHERE ".
+               "Partitions.name = '$partition_name'";
         my $partition_id = oda_query_single_result ($sql, "partition_id");
 
-#        $sql = "INSERT INTO Cluster_Partitions (cluster_id, partition_id) VALUES ".
-#               "('$cluster_id', '$partition_id')";
+        # Then we get the cluster_id
+        $sql = "SELECT cluster_id FROM Clusters WHERE ".
+               "Clusters.name = '$cluster_name'";
+        my $cluster_id = oda_query_single_result ($sql, "partition_id");
+
+        $sql = "INSERT INTO Cluster_Partitions (cluster_id, partition_id) VALUES ".
+               "('$cluster_id', '$partition_id')";
         if (!do_insert($sql,
                        "Cluster_Partitions", 
                        $options_ref, 
                        $error_strings_ref)) {
-            carp "ERROR: Failed to insert values via << $sql >>";
+            oscar_log(5, ERROR, "Failed to insert values via << $sql >>");
             return -1;
         }
 
@@ -431,19 +443,19 @@ sub set_partition_info {
 
         # We get the ODA id for servers (need in order to populate the database)
         $sql = "SELECT id FROM Groups WHERE name='oscar_server'";
-        my $server_id = oda_query_single_result ($sql, "id");
-        print "ODA Server Id: $server_id\n" if $OSCAR::Env::oscar_verbose;
+        $server_id = oda_query_single_result ($sql, "id");
+        oscar_log(8, DB, "ODA Server Id: $server_id");
 
         # We get the ODA id for clients (need in order to populate the database)
         $sql = "SELECT id FROM Groups WHERE name='oscar_clients'";
-        my $client_id = oda_query_single_result ($sql, "id");
-        print "ODA client Id: $client_id\n" if $OSCAR::Env::oscar_verbose;
+        $client_id = oda_query_single_result ($sql, "id");
+        oscar_log(8, DB, "ODA client Id: $client_id");
     } elsif ($config->{oda_type} eq "file") {
         my $basedir = $config->{oda_files_path};
         if ( ! -d "$basedir") {
-            carp "ERROR: the cluster configuration directory does not exist ".
+            oscar_log(5, ERROR, "The cluster configuration directory does not exist ".
                  "($basedir). It most certainly mean that OSCAR is not ".
-                 "correctly initialized\n";
+                 "correctly initialized");
             return -1;
         }
 
@@ -477,8 +489,8 @@ sub set_partition_info {
         my $config_obj = OSCAR::PartitionConfigManager->new(
             config_file => "$config_file");
         if ( ! defined ($config_obj) ) {
-            carp "ERROR: Impossible to create an object in order to handle ".
-                 "the partition configuration file.\n";
+            oscar_log(5, ERROR, "Impossible to create an object in order to handle ".
+                 "the partition configuration file.");
             return -1;
         }
         $config_obj->set_config(\%partition_config);
@@ -530,17 +542,14 @@ sub set_node_to_partition ($$$$) {
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration\n";
         return -1;
     }
     my $config = $oscar_configurator->get_config();
 
-    if ($OSCAR::Env::oscar_verbose) {
-        oscar_log_section "Adding a node to a partition";
-        oscar_log_subsection "Cluster name: $cluster_name";
-        oscar_log_subsection "Partition name: $partition_name";
-        oscar_log_subsection "Node name: $node_name";
-    }
+    oscar_log(4, INFO, "Adding a node to a partition");
+    oscar_log(4, INFO, "    Cluster name: $cluster_name");
+    oscar_log(4, INFO, "    Partition name: $partition_name");
+    oscar_log(4, INFO, "    Node name: $node_name");
 
     if ($config->{oda_type} eq "db") {
         # First we check that the node is already in the database.
@@ -550,27 +559,32 @@ sub set_node_to_partition ($$$$) {
         my @node_ids = simple_oda_query ($sql, "id");
         my $node_id;
         if ( !scalar(@node_ids) ) {
-            print "The node is not in the database, we add it...\n" if $OSCAR::Env::oscar_verbose;
+            oscar_log(6, INFO, "The node is not in the database, we add it...");
             my %node_info = ('name' => $node_name, 'type' => $node_type);
             my @list_nodes = ();
             push (@list_nodes, \%node_info);
             oda_add_node (@list_nodes);
             $node_id = oda_query_single_result ($sql, "id");
         } elsif (scalar(@node_ids) != 1) {
-            carp "ERROR: We have more than one record (".scalar(@node_ids).
-                 ") about node $node_name in the database";
+            oscar_log(5, ERROR, "We have more than one record (".scalar(@node_ids).
+                 ") about node $node_name in the database");
             return -1;
         } else {
             $node_id = $node_ids[0];
         }
+        # First we get the partition_id
+        $sql = "SELECT partition_id FROM Partitions WHERE ".
+               "Partitions.name = '$partition_name'";
+        my $partition_id = oda_query_single_result ($sql, "partition_id");
+
         # Then we have all information to populate the database.
-#        $sql = "INSERT INTO Partition_Nodes (partition_id, node_id, node_type) ".
-#               "VALUES ('$partition_id', '$node_id', '$node_type')";
+        $sql = "INSERT INTO Partition_Nodes (partition_id, node_id, node_type) ".
+               "VALUES ('$partition_id', '$node_id', '$node_type')";
         if (! do_insert($sql,
                         "Partition_Nodes",
                         $options_ref,
                         $error_strings_ref)) {
-            carp "ERROR: Failed to insert values via << $sql >>";
+            oscar_log(8, DB, "Failed to insert values via << $sql >>");
             return -1;
         }
     } elsif ($config->{oda_type} eq "file") {
@@ -581,14 +595,14 @@ sub set_node_to_partition ($$$$) {
                        $partition_name,
                        $node_name);
         if ( -d $path ) {
-            carp "ERROR: Impossible to add the node $node_name, the node is ".
-                 "already defined\n";
+            oscar_log(5, ERROR, "Failed to add the node $node_name, the node is ".
+                 "already defined");
             return -1;
         } else {
             mkdir $path;
         }
     } else {
-        carp "ERROR: Unknow ODA type ($config->{oda_type})";
+        oscar_log(5, ERROR, "Unknow ODA type ($config->{oda_type})");
         return -1;
     }
     return 0;
@@ -605,14 +619,14 @@ sub set_node_to_partition ($$$$) {
 sub oda_add_node (@) {
     my @node_list = @_;
 
-    oscar_log_section "Adding nodes to the database" if $OSCAR::Env::oscar_verbose;
+    oscar_log(4, SUBSECTION, "Adding nodes to the database");
     foreach my $node (@node_list) {
-        oscar_log_subsection "\tNode name: $node->{'name'}" if $OSCAR::Env::oscar_verbose;
-        oscar_log_subsection "\tNode type: $node->{'type'}" if $OSCAR::Env::oscar_verbose;
+        oscar_log(5, INFO, "\tNode name: $node->{'name'}");
+        oscar_log(5, INFO, "\tNode type: $node->{'type'}");
         # We need at list the name of the node and its type
         if (!defined ($node->{'name'}) || !defined ($node->{'type'})) {
-            carp "ERROR: Impossible to get enough information about the node. ".
-                 "We cannot add it into the database.";
+            oscar_log(5, ERROR, "Impossible to get enough information about the node. ".
+                 "We cannot add it into the database.");
             return -1;
         }
         my %options;
@@ -626,7 +640,7 @@ sub oda_add_node (@) {
                              \@error_string,
                              "oscar");
     }
-    oscar_log_section "Nodes added to the database" if $OSCAR::Env::oscar_verbose;
+    oscar_log(4, SUBSECTION, "Nodes added to the database");
 }
 
 ################################################################################
@@ -641,10 +655,10 @@ sub oda_add_node (@) {
 sub delete_partition_info {
     my ($cluster_name, $partition_name, $distro, $servers, $clients) = @_;
 
+    oscar_log(5, INFO, "Deleting partition: $partition_name");
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration\n";
         return -1;
     }
     my $config = $oscar_configurator->get_config();
@@ -653,28 +667,28 @@ sub delete_partition_info {
         my $sql;
         my $options_ref;
         my $error_strings_ref;
-#        $sql = "DELETE FROM Partitions WHERE name = '$group_name'";
-        if (! oda::do_sql_command($options_ref, 
+        $sql = "DELETE FROM Partitions WHERE name = '$partition_name'";
+        if (! oda::do_sql_command($options_ref,
                                   $sql,
                                   "DELETE Table Partitions",
                                   "",
                                   $error_strings_ref)) {
-            carp "ERROR: Failed to delete partition info via << $sql >>";
+            oscar_log(5, ERROR, "Failed to delete partition info via << $sql >>");
             return -1;
         }
     } elsif ($config->{oda_type} eq "file") {
         my $basedir = $config->{oda_files_path};
         if ( ! -d "$basedir" ) {
-            carp "ERROR: Configuration files missing, OSCAR is not correctly ".
-                 "initialized\n";
+            oscar_log(5, ERROR, "Configuration files missing, OSCAR is not correctly ".
+                 "initialized");
             return -1;
         }
         my $path = $oscar_configurator->get_partition_config_file_path (
                         $cluster_name,
                         $partition_name);
         if ( ! -d "$path" ) {
-            carp "Warning: the partition does not exist, no need to delete ".
-                 "it\n";
+            oscar_log(5, ERROR, "Warning: the partition does not exist, no need to delete ".
+                 "it");
             # This is not a error, if the partition does not exist, it means 
             # that the job is already done.
             return 0;
@@ -682,9 +696,10 @@ sub delete_partition_info {
             rmtree "$path";
         }
     } else {
-        carp "ERROR: Unkown db type ($config->{oda_type})\n";
+        oscar_log(5, ERROR, "Unkown db type ($config->{oda_type})");
         return -1;
     }
+    oscar_log(5, INFO, "Successfully deleted partition: $partition_name");
     return 0;
 }
 
@@ -705,17 +720,17 @@ sub validate_partition_data ($$) {
     require OSCAR::PartitionConfigManager;
     my $oconfig = OSCAR::ConfigManager->new();
     if ( ! defined ($oconfig) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration\n";
         return -1;
     }
     my $f = $oconfig->get_partition_config_file_path($cluster, $partition)
             ."/$partition.conf";
     if ( ! -f $f ) {
-        carp "ERROR: Impossible to get the partition configuration file ".
-             "($cluster, $partition)";
+        oscar_log(5, ERROR, "Impossible to get the partition configuration file ".
+             "($cluster, $partition)");
         return -1;
     }
 
+    # TODO: Actually, validate partition.
     return 0;
 }
 
@@ -732,18 +747,19 @@ sub validate_partition_data ($$) {
 sub deploy_partition ($$) {
     my ($cluster, $partition) = @_;
 
+    oscar_log(3, SUBSECTION, "About to deploy partition $partition for cluster $cluster");
     # Do we have an image for this partition?
     if (!OSCAR::ImageMgt::image_exists ($partition)) {
         # We get the default settings for images.
         my %image_config = OSCAR::ImageMgt::get_image_default_settings ();
         if (!%image_config) {
-            carp "ERROR: Impossible to get default image settings\n";
+            oscar_log(5, ERROR, "Failed to get default image settings");
             return -1;
         }
 
         # If the image does not already exists, we create it.
         if (OSCAR::ImageMgt::create_image ($partition, \%image_config)) {
-            carp "ERROR: Impossible to create the basic image\n";
+            oscar_log(5, ERROR, "Failed to create the basic image");
             return -1;
         }
 
@@ -755,7 +771,6 @@ sub deploy_partition ($$) {
         require OSCAR::PartitionConfigManager;
         my $oconfig = OSCAR::ConfigManager->new();
         if ( ! defined ($oconfig) ) {
-            carp "ERROR: Impossible to get the OSCAR configuration\n";
             return -1;
         }
         my $f = $oconfig->get_partition_config_file_path($cluster, $partition)
@@ -763,28 +778,30 @@ sub deploy_partition ($$) {
         my $config_obj = OSCAR::PartitionConfigManager->new(
             config_file => "$f");
         if ( ! defined ($config_obj) ) {
-            carp "ERROR: Impossible to create an object in order to handle ".
-                 "the partition configuration file.\n";
+            oscar_log(5, ERROR, "Failed create an object in order to handle ".
+                 "the partition configuration file.");
             return -1;
         }
         my $partition_config = $config_obj->get_config();
         my $opkgs = $partition_config->{'opkgs'};
         require OSCAR::Utils;
-        OSCAR::Utils::print_array (@$opkgs) if $OSCAR::Env::oscar_verbose;
+        oscar_log(6, INFO, "Opkgs for partition $partition:");
+        OSCAR::Utils::print_array (@$opkgs) if ($OSCAR::Env::oscar_verbose >=6);
 
         if (OSCAR::ImageMgt::install_opkgs_into_image ($partition, @$opkgs)) {
-            carp "ERROR: Impossible to install OPKGs into the basic image\n";
+            oscar_log(5, ERROR, "Failed to install OPKGs into the basic image.");
             return -1;
         }
     } else {
-        print "INFO: The image already exists, we do not overwrite\n";
+        oscar_log(5, INFO, "The image already exists, we do not overwrite");
     }
 
     # Make sure that the clients are assigned to the image
     if (assign_client_to_partition ($cluster, $partition)) {
-        carp "ERROR: Impossible to assign clients to the partition.\n";
+        oscar_log(5, ERROR, "Failed to assign clients to the partition.");
         return -1;
     }
+    oscar_log(3, SUBSECTION, "Successfully deployed partition $partition for cluster $cluster");
     return 0;
 }
 
@@ -799,14 +816,14 @@ sub display_partition_info ($$) {
 
     if (!defined($cluster) || $cluster eq "" ||
         !defined($partition) || $partition eq "") {
-        carp "ERROR: Invalid cluster or partition ($cluster, $partition)\n";
+        oscar_log(5, ERROR, "Invalid cluster or partition ($cluster, $partition)");
         return -1;
     }
 
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration\n";
+        oscar_log(5, ERROR, "Impossible to get the OSCAR configuration");
         return -1;
     }
     my $config = $oscar_configurator->get_config();
@@ -817,7 +834,7 @@ sub display_partition_info ($$) {
                         $partition);
         my $f = "$path/$partition.conf";
         if ( ! -f  $f ) {
-            carp "Warning: the partition does not exist\n";
+            oscar_log(5, WARNING, "The partition does not exist");
             # This is not a error, if the partition does not exist, it means 
             # that the job is already done.
             return 0;
@@ -826,16 +843,16 @@ sub display_partition_info ($$) {
         my $config_obj = OSCAR::PartitionConfigManager->new(
             config_file => "$f");
         if ( ! defined ($config_obj) ) {
-            carp "ERROR: Impossible to create an object in order to handle ".
-                 "the partition configuration file.\n";
+            oscar_log(5, ERROR, "Impossible to create an object in order to handle ".
+                 "the partition configuration file.");
             return -1;
         }
         $config_obj->print_config();
     } elsif ($config->{oda_type} eq "db") {
-        carp "ERROR: the uasge of a real db is not yet implemented\n";
+        oscar_log(5, ERROR, "The usage of a real db is not yet implemented");
         return -1;
     } else {
-        carp "ERROR: Unknown ODA type ($config->{oda_type})\n";
+        oscar_log(5, ERROR, "Unknown ODA type ($config->{oda_type})");
         return -1;
     }
     return 0;
@@ -860,14 +877,14 @@ sub assign_client_to_partition ($$) {
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
     if ( ! defined ($oscar_configurator) ) {
-        carp "ERROR: Impossible to get the OSCAR configuration.\n";
+        oscar_log(5, ERROR, "Impossible to get the OSCAR configuration.");
         return undef;
     }
     my $config = $oscar_configurator->get_config();
 
     my @nodes = get_list_nodes_partition ($cluster, $partition);
     if (! @nodes || scalar (@nodes) == 0) {
-        print "INFO: No nodes to assign.\n";
+        oscar_log(5, INFO, "No nodes to assign.");
         return 0;
     }
     OSCAR::Utils::print_array (@nodes) if $OSCAR::Env::oscar_verbose;
@@ -878,7 +895,7 @@ sub assign_client_to_partition ($$) {
                                                            $partition,
                                                            $node);
         if (!defined $node_config) {
-            carp "ERROR: Impossible to get node configuration ($node).\n";
+            oscar_log(5, ERROR, "Failed to get node configuration ($node).");
             return -1;
         }
 
@@ -889,24 +906,24 @@ sub assign_client_to_partition ($$) {
         # Each of these cases lead to different SIS commands.
         # First we check if the machine is already defined or not
         $cmd = "/usr/bin/mksimachine -L | grep $node";
-        oscar_log_subsection ("Is the node already defined? Executing: $cmd");
+        oscar_log(5, INFO, "Is the node already defined?");
+        oscar_log(7, INFO, "About to run: $cmd");
         my $ret = `$cmd`;
         if ($ret eq "") {
-            oscar_log_subsection ("Node $node is not yet defined");
+            oscar_log(5, INFO, "Node $node is not yet defined");
             $cmd = "/usr/bin/mksimachine -A ";
         } else {
-            oscar_log_subsection ("Node $node is already defined");
+            oscar_log(5, INFO, "Node $node is already defined");
             $cmd = "/usr/bin/mksimachine -U ";
         } 
         $cmd .= "--name $node ".
                 "--image $partition ".
                 "--ipaddress $node_config->{ip} ".
                 "--MACaddress $node_config->{mac} ";
-        oscar_log_subsection ("Assigning node $node to partition $partition: ".
-                              "executing \"$cmd\"");
-        if (system ($cmd)) {
-            carp "ERROR: Impossible to assign node $node to partition ".
-                "$partition\n";
+        oscar_log(5, INFO, "Assigning node $node to partition $partition.");
+        if (oscar_system ($cmd)) {
+            oscar_log(5, ERROR, "Failed to assign node $node to partition ".
+                "$partition");
             return -1;
         }
 
@@ -916,27 +933,29 @@ sub assign_client_to_partition ($$) {
                "--domainname oscardomain ".
                "--script $partition ";
         oscar_log_subsection ("Executing: $cmd");
-        if (system ($cmd)) {
-            carp "ERROR: Impossible to add the node ($node)\n";
+        if (oscar_system ($cmd)) {
+            oscar_log(5, ERROR, "Failed to add the node ($node)");
             return -1;
         }
     }
 
     if (OSCAR::MAC::__run_setup_pxe (0)) {
-        carp "ERROR: Impossible to setup pxe.\n";
+        oscar_log(5, ERROR, "Failed to setup pxe.");
         return -1;
     }
 
     # We update the DHCP configuration file.
     my $interface = $config->{nioscar};
     if (OSCAR::MAC::__setup_dhcpd ($interface)) {
-        carp "ERROR: Impossible to setup DHCP.\n";
+        oscar_log(5, ERROR, "Failed to setup DHCP.");
         return -1;
     }
 
 #    postaddclients
 
     # Now we are happy, the nodes should be ready to be deployed!!!
+    oscar_log(4, INFO, "Nodes (".join(", ",@nodes).") are ready to be deployed.");
+
     return 0;
 }
 

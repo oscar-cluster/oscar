@@ -23,6 +23,8 @@ BEGIN {
 use strict;
 use warnings;
 use OSCAR::Utils;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use AppConfig;
 use vars qw($config);
 use Carp;
@@ -54,7 +56,7 @@ sub load_config ($) {
     my $config_file = $self->{config_file};
 
     if (!defined($config_file) || ! -f $config_file) {
-        print "ERROR: the configuration file does not exist ($config_file)\n";
+        oscar_log(1, ERROR, "The configuration file does not exist ($config_file)");
         return -1;
     }
 
@@ -69,8 +71,8 @@ sub print_config ($) {
     my $self = shift;
 
     load_config($self);
-    print "\tDownload URL: $download_url\n";
-    print "\tFile defining supported NICs: $nics_deffile\n";
+    oscar_log(5, INFO, "\tDownload URL: $download_url");
+    oscar_log(5, INFO, "\tFile defining supported NICs: $nics_deffile");
 }
 
 sub get_config ($) {

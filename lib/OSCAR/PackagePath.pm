@@ -34,6 +34,7 @@ use base qw(Exporter);
 use OSCAR::Env;
 use OSCAR::OCA::OS_Detect;
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::Utils;
 use OSCAR::FileUtils;
 use File::Basename;
@@ -70,9 +71,9 @@ use Carp;
             use_oscar_repo
             use_default_distro_repo
             use_default_oscar_repo
-	     @PKG_SOURCE_LOCATIONS
-	     $PGROUP_PATH
-	     );
+         @PKG_SOURCE_LOCATIONS
+         $PGROUP_PATH
+         );
 
 my $tftpdir = "/tftpboot/";
 
@@ -102,7 +103,10 @@ if (defined ($ENV{OSCAR_HOME})) {
 sub distro_detect_or_die ($) {
     my ($img) = @_;
     my $os = OSCAR::OCA::OS_Detect::open($img);
-    die "ERROR: Unable to determine operating system for $img" if (!$os);
+    if (!$os) {
+        oscar_log(1, ERROR, "Fatal: Unable to determine operating system for $img");
+        die "ERROR: Unable to determine operating system for $img";
+    }
     return $os;
 }
 
@@ -116,30 +120,27 @@ sub repos_list_urlfile ($) {
 
     my @repos;
     if (-f "$path") {
-	local *IN;
-	if (open IN, "$path") {
-	    while (my $line = <IN>) {
-		chomp $line;
-		next if ($line !~ /^(http|ftp|file|mirror)/);
-		next if (($line =~ /^\s*$/) || ($line =~ /^\s*\#/));
-		if (repo_local($line) == 1 && repo_empty ($line) == 1) {
-                    OSCAR::Logger::oscar_log_subsection "Skipping empty repo ".
-                        $line;
+        local *IN;
+        if (open IN, "$path") {
+            while (my $line = <IN>) {
+                chomp $line;
+                next if ($line !~ /^(http|ftp|file|mirror)/);
+                next if (($line =~ /^\s*$/) || ($line =~ /^\s*\#/));
+                if (repo_local($line) == 1 && repo_empty ($line) == 1) {
+                    oscar_log(5, INFO, "Skipping empty repo ". $line);
                     next;
                 }
                 if (repo_local ($line) == 0) {
-                    OSCAR::Logger::oscar_log_subsection "Select online repo ".
-                        $line;
+                    oscar_log(5, INFO, "Select online repo ". $line);
                     push (@repos, $line);
                 }
                 if (repo_local ($line) == 1 && repo_empty ($line) == 0) {
-                    OSCAR::Logger::oscar_log_subsection "Select valid local ".
-                        "repo $line";
-		    push (@repos, $line);
+                    oscar_log(5, INFO, "Select valid local repo $line");
+                    push (@repos, $line);
                 }
-	    }
-	    close IN;
-	}
+            }
+            close IN;
+        }
     }
     return @repos;
 }
@@ -154,10 +155,8 @@ sub repos_list_urlfile ($) {
 sub repos_add_urlfile ($@) {
     my ($path, @repos) = (@_);
     
-    if ($OSCAR::Env::oscar_verbose) {
-        print "Adding the repositories: ";
-        OSCAR::Utils::print_array (@repos);
-    }
+    oscar_log(5, INFO, "Adding the repositories:");
+    OSCAR::Utils::print_array (@repos) if ($OSCAR::Env::oscar_verbose >= 5);
 
     # make sure local paths have "file:" prefix
     my @repos_to_add;
@@ -170,26 +169,26 @@ sub repos_add_urlfile ($@) {
             return -1;
         }
         if (repo_local($repo) == 0) {
-            OSCAR::Logger::oscar_log_subsection "Adding online repo ($repo)";
+            oscar_log(5, INFO, "Adding online repo ($repo)");
             push (@repos_to_add, $repo);
         }
         if (repo_local($repo) == 1) {
             if (repo_empty ($repo) == 0) {
-                OSCAR::Logger::oscar_log_subsection "Adding valid local repo ($repo)";
+                oscar_log(5, INFO, "Adding valid local repo ($repo)");
                 push (@repos_to_add, $repo);
             } else {
-                OSCAR::Logger::oscar_log_subsection "Skipping empty local repo ($repo)";
+                oscar_log(5, INFO, "Skipping empty local repo ($repo)");
                 next;
             }
         }
     }
 
     if (scalar (@repos_to_add) == 0) {
-        OSCAR::Logger::oscar_log_subsection "[INFO] No repository to be added";
+        oscar_log(5, INFO, "No repository to be added");
     }
 
     foreach my $repo (@repos_to_add) {
-        OSCAR::Logger::oscar_log_subsection ("Adding $repo in $path");
+        oscar_log (5, INFO, "Adding $repo in $path");
         # Fixme: should check return code of function below
         OSCAR::FileUtils::add_line_to_file_without_duplication ("$repo\n", $path);
     }
@@ -206,39 +205,39 @@ sub repos_del_urlfile ($@) {
     my ($path, @repos) = (@_);
 
     if (! -f "$path") {
-        carp ("ERROR: URL file $path does not exist!!!");
+        oscar_log(5, ERROR, "URL file $path does not exist!!!");
         return -1;
     }
     # build hash of repos to be deleted
     my %rhash;
     for (@repos) {
-	    s,^/,file:/,;
-	    if (!m,^(file|http|ftp|https|mirror):,) {
-	        carp "ERROR: Repository must either be a URL or an absolute path\n";
-	        return -1;
-	    }
-	    $rhash{$_} = 1;
+        s,^/,file:/,;
+        if (!m,^(file|http|ftp|https|mirror):,) {
+            oscar_log(5, ERROR, "Repository must either be a URL or an absolute path.");
+            return -1;
+        }
+        $rhash{$_} = 1;
     }
     local *IN;
     open IN, "$path"
-        or (carp("Could not open $path for reading. $!"), return -1);
+        or (oscar_log(5, ERROR, "Could not open $path for reading. $!"), return -1);
     my @orepos = <IN>;
     close IN;
 
     local *OUT;
-    open OUT, "> $path" or croak("Could not open $path for writing. $!");
+    open OUT, "> $path" or (oscar_log(5, ERROR, "Could not open $path for writing. $!"), return -1);
     for (@orepos) {
-	    chomp;
-	    if (!defined($rhash{$_})) {
-	        print OUT "$_\n";
-	    } else {
-	        delete $rhash{$_};
-	    }
+        chomp;
+        if (!defined($rhash{$_})) {
+            print OUT "$_\n";
+        } else {
+            delete $rhash{$_};
+        }
     }
     close OUT;
     if (scalar(keys(%rhash))) {
-        carp "WARNING: Following repositories were not found in $path:\n  ".
-	    join("\  ",sort(keys(%rhash)))."\n";
+        oscar_log(5, WARNING, "Following repositories were not found in $path:\n  ".
+        join("\  ",sort(keys(%rhash)))."\n");
         return -1;
     }
     return 0;
@@ -251,12 +250,12 @@ sub repos_del_urlfile ($@) {
 sub query_os ($$) {
     my ($img, $os);
     if (scalar(@_) <= 1) {
-    	($img) = (@_);
+        ($img) = (@_);
     } elsif ($_[0] eq "os") {
-	    $os = $_[1];
+        $os = $_[1];
     }
     if (!defined($os)) {
-	    $os = distro_detect_or_die($img);
+        $os = distro_detect_or_die($img);
     }
     return $os;
 }
@@ -270,7 +269,7 @@ sub get_urlfile ($%) {
     my $url_type = shift;
     my $os = &query_os(@_);
     if (!defined($os) || ref($os) ne "HASH") {
-        carp "ERROR: impossible to query the OS\n";
+        oscar_log(5, ERROR, "Failed to query the OS");
         return undef;
     }
     my $distro;
@@ -291,7 +290,7 @@ sub get_urlfile ($%) {
 sub distro_urlfile (%) {
     my $os = &query_os(@_);
     if (!defined($os) || ref($os) ne "HASH") {
-        carp "ERROR: impossible to query the OS\n";
+        oscar_log(5, ERROR, "Failed to query the OS");
         return undef;
     }
     my $distro    = $os->{distro};
@@ -308,7 +307,7 @@ sub distro_urlfile (%) {
 sub oscar_urlfile (%) {
     my $os = &query_os(@_);
     if (!defined($os) || ref($os) ne "HASH") {
-        print "ERROR: impossible to query the OS\n";
+        oscar_log(5, ERROR, "Failed to query the OS");
         return undef;
     }
     my $cdistro   = $os->{compat_distro};
@@ -349,14 +348,14 @@ sub distro_repo_url (%) {
     my $url = &distro_urlfile(%arg);
     my $os = &query_os(%arg);
     if (!OSCAR::Utils::is_a_valid_string($url)) {
-        carp "ERROR: impossible to get a URL from OSCAR repo config file\n";
+        oscar_log(5, ERROR, "Failed to get a URL from OSCAR repo config file");
         return undef;
     }
     my $path = dirname($url)."/".basename($url, ".url");
 
     # create .url file and add local path as first entry
     if (repos_add_urlfile("$url", "file:$path")) {
-        carp "ERROR: Impossible to add $path to $url";
+        oscar_log(5, ERROR, "Impossible to add $path to $url");
         return undef;
     }
 
@@ -393,7 +392,7 @@ sub distro_repo_url (%) {
 sub oscar_repo_url (%) {
     my ($url, $pkg) = &oscar_urlfile(@_);
     if (!defined ($url) || $url eq "") {
-        print "ERROR: impossible to get a URL from OSCAR repo config file\n";
+        oscar_log(5, ERROR, "Failed to get a URL from OSCAR repo config file");
         return undef;
     }
     my $path = dirname($url)."/".basename($url, ".url");
@@ -405,14 +404,14 @@ sub oscar_repo_url (%) {
     &repos_add_urlfile("$url", "file:$path", "file:$comm");
 
     if (! -d $path && ! -l $path) {
-        warn "Distro repository $path not found. Creating empty directory.";
+        oscar_log(5, WARNING, "Distro repository $path not found. Creating empty directory.");
         File::Path::mkpath ($path, 1, 0777) or
-            (carp "ERROR: Could not create directory $path!", return undef);
+            (oscar_log(5, ERROR, "Could not create directory $path!"), return undef);
     }
     if (! -d $comm && ! -l $comm) {
-        warn "Commons repository $comm not found. Creating empty directory.\n";
+        oscar_log(5, WARNING, "Commons repository $comm not found. Creating empty directory.");
         File::Path::mkpath ($comm, 1, 0777) or
-            (carp "ERROR: Could not create directory $comm!", return undef);
+            (oscar_log(5, ERROR, "Could not create directory $comm!"), return undef);
     }
     my @repos = &repos_list_urlfile("$url");
     return join(",", @repos);
@@ -426,12 +425,12 @@ sub repo_empty ($) {
     my ($path) = (@_);
     $path =~ s,^file:/,/,;
     if (! -d $path) {
-        OSCAR::Logger::oscar_log_subsection "[WARN] $path does not exist";
+        oscar_log(5, WARNING, "$path does not exist.");
         return 1;
     }
     my $entries = 0;
     opendir (DIR, $path)
-        or (carp "ERROR: Could not read directory $path!", return 0);
+        or (oscar_log(5, ERROR, "Could not read directory $path!"), return 0);
     for my $d (readdir (DIR)) {
         next if ($d eq "." || $d eq "..");
         $entries++;
@@ -476,7 +475,7 @@ sub list_distro_pools () {
     my %pools;
     local *DIR;
     opendir DIR, $ddir 
-        or (carp "Could not read directory $ddir!", return undef);
+        or (oscar_log(5, ERROR, "Could not read directory $ddir!"), return undef);
     for my $e (readdir DIR) {
         if ( ($e =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) ||
             ($e =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
@@ -542,22 +541,22 @@ sub pkg_separator ($) {
 sub os_distro_string ($) {
     my ($os) = @_;
     if (!defined ($os)) {
-        carp "ERROR: undefined distro";
+        oscar_log(5, ERROR, "Undefined distro");
         return undef;
     }
     return $os->{distro}."-".$os->{distro_version}.
-	"-".$os->{arch};
+    "-".$os->{arch};
 }
 
 # Return: undef if error, distro_id (OS_Detect syntax) else.
 sub os_cdistro_string {
     my ($os) = @_;
     if (!defined ($os)) {
-        carp "ERROR: undefined distro";
+        oscar_log(5, ERROR, "Undefined distro");
         return undef;
     }
     return $os->{compat_distro}."-".$os->{compat_distrover}.
-	"-".$os->{arch};
+    "-".$os->{arch};
 }
 
 ################################################################################
@@ -579,8 +578,12 @@ sub get_repo_type ($) {
         "/usr/bin/rapt --repo $repo_url update 2>/dev/null 1>/dev/null";
     my $yume_cmd = "wget -nd --delete-after $repo_url/repodata/filelists.xml.gz";
     if (!system($yume_cmd)) {
+        oscar_log(7, ACTION, "Just ran: $yume_cmd");
+        oscar_log(6, INFO, "Repo type: yum");
         return ("yum");
     } elsif (!system ($rapt_cmd)) {
+        oscar_log(7, ACTION, "Just ran: $rapt_cmd");
+        oscar_log(6, INFO, "Repo type: apt");
         return ("apt");
     } else {
         return undef;
@@ -590,21 +593,27 @@ sub get_repo_type ($) {
 sub mirror_yum_repo ($$$) {
     my ($distro, $url, $dest) = @_;
 
-    OSCAR::Logger::oscar_log_subsection "Getting repo meta-data...";
+    oscar_log(2, INFO, "Mirroring yum repo $url");
+    oscar_log(5, INFO, "Source: $url");
+    oscar_log(5, INFO, "Destination: $dest");
 
     my $metafile = "primary.xml";
     my $path = "$dest/$distro";
     # We get the metadata file
-    mkpath("$path/tmp") or (carp "ERROR: Impossible to create $dest/tmp", 
+    mkpath("$path/tmp") or (oscar_log(5, ERROR, "Impossible to create $dest/tmp"), 
                             return -1);
+    oscar_log(6, INFO, "Retrieving $metafile.gz");
     my $cmd = "cd $path/tmp; wget $url/repodata/$metafile.gz";
+    oscar_log(7, ACTION, "About to run: $cmd");
     if (system ($cmd)) {
-        carp "ERROR: Impossible to execute $cmd";
+        oscar_log(5, ERROR, "Failed to execute $cmd");
         return -1;
     }
 
     # We uncompress the file
+    oscar_log(6, INFO, "Uncompressing $metafile.gz");
     $cmd = "cd $path/tmp; gunzip $metafile.gz";
+    oscar_log(7, ACTION, "About to run: $cmd");
     if (system ($cmd)) {
         carp "ERROR: Impossible to execute $cmd";
         return -1;
@@ -618,34 +627,37 @@ sub mirror_yum_repo ($$$) {
         }
     }
 
-    OSCAR::Logger::oscar_log_subsection "Download packages...";
-    OSCAR::Utils::print_array (@locations);
+    oscar_log(6, INFO, "Retrieving the following packages:");
+    OSCAR::Utils::print_array (@locations) if ($OSCAR::Env::oscar_verbose >= 6);
 
     # Now we can download the packages!
     for (my $i=0; $i < scalar (@locations); $i++) {
         my $cmd = "cd $path; wget $url/$locations[$i]";
-        print "Executing $cmd\n";
+        oscar_log(7, ACTION, "About to run: $cmd");
         if (system ($cmd)) {
-            carp "ERROR: Impossible to execute $cmd";
+            oscar_log(5, ERROR, "Failed to execute $cmd");
             return -1;
         }
     }
 
     # We do some cleanup.
-    OSCAR::Logger::oscar_log_subsection "Cleaning up...";
+    oscar_log(6, INFO, "Cleaning up...");
+    oscar_log(7, ACTION, "Removing $path/tmp/$metafile");
     unlink ("$path/tmp/$metafile");
+    oscar_log(7, ACTION, "Removing $path/tmp/$metafile.gz");
     unlink ("$path/tmp/$metafile.gz");
 
     # Now we generate the metadata of the new repo
-    OSCAR::Logger::oscar_log_subsection "Generating the mirror meta-data...";
+    oscar_log(6, INFO, "Generating the mirror meta-data...");
+    # Fixme: need to update prepare_pool so it doesn't need a verbose argument.
     my $pm = OSCAR::PackageSmart::prepare_pool ($OSCAR::Env::oscar_verbose,
                                                 $path);
     if (!defined $pm) {
-        carp "ERROR: impossible to generate the metadata of the mirror";
+        oscar_log(5, ERROR, "Failed to generate the metadata of the mirror");
         return -1;
     }
 
-    OSCAR::Logger::oscar_log_subsection "Successfully mirror the repo $url";
+    oscar_log(2, INFO, "Successfully mirrored repo $url");
 
     return 0;
 }
@@ -656,11 +668,11 @@ sub parse_aptrepo_metadata ($) {
     my $line;
     
     if (! -f $file) {
-        carp "ERROR: Impossible to read $file";
+        oscar_log(5, ERROR, "Impossible to read $file");
         return undef;
     }
 
-    open (FILE, "$file") or (carp "ERROR: Impossible to open $file",
+    open (FILE, "$file") or (oscar_log(5, ERROR, "Failed to open $file for reading"),
                              return undef);
     while ($line = <FILE>) {
         if ($line =~ /^Filename: (.*)$/) {
@@ -678,7 +690,10 @@ sub parse_aptrepo_metadata ($) {
 sub mirror_apt_repo ($$$) {
     my ($distro_id, $url, $dest) = @_;
 
-    OSCAR::Logger::oscar_log_subsection "Getting repo meta-data for $distro_id...";
+    oscar_log(2, INFO, "Mirroring apt repo $url");
+    oscar_log(5, INFO, "Source: $url");
+    oscar_log(5, INFO, "Destination: $dest");
+
     # The repo follows the RAPT notation, from it, we create the actual URL to
     # access meta-data
     my ($base_url, @keys) = split (/\+/, $url);
@@ -687,12 +702,13 @@ sub mirror_apt_repo ($$$) {
                                                   distro_version=>$ver,
                                                   arch=>$arch});
     if (!defined $os) {
-        carp "ERROR: Impossible to get OS data";
+        oscar_log(5, ERROR, "Failed to get OS data");
         return -1;
     }
 
     # OS_Detect should give the codename
-    OSCAR::Utils::print_hash ("", "", $os);
+    oscar_log(9, INFO, "Detected os hash infos:");
+    OSCAR::Utils::print_hash ("", "", $os) if($OSCAR::Env::oscar_verbose >= 9);
     my $codename = $os->{'codename'};
     my $metadata_url = "$base_url/dists/$codename/binary-$arch/Packages";
     # We check that the destination directory exists
@@ -701,35 +717,41 @@ sub mirror_apt_repo ($$$) {
         mkdir ($dest_dir) or (carp "ERROR: Impossible to create $dest_dir",
                              return -1);
     }
+    oscar_log(6, INFO, "Retrieving Packages meta-data file");
     my $cmd = "cd $dest_dir; /usr/bin/wget $metadata_url";
-    oscar_log_subsection ("Executing: $cmd");
+    oscar_log(7, ACTION, "About to run: $cmd");
     if (system ($cmd)) {
-        carp "ERROR: Impossible to execute $cmd";
+        oscar_log(5, ERROR, "Failed to execute $cmd");
         return -1;
     }
 
     my @files = parse_aptrepo_metadata ("$dest_dir/Packages");
+    oscar_log(6, INFO, "Retrieving the following packages:");
+    OSCAR::Utils::print_array (@files) if ($OSCAR::Env::oscar_verbose >= 6);
     foreach my $file (@files) {
         $cmd = "cd $dest_dir; /usr/bin/wget $base_url/$file";
-        oscar_log_subsection ("Executing $cmd");
+        oscar_log(7, ACTION, "About to run: $cmd");
         if (system $cmd) {
-            carp "ERROR: Impossible to download $base_url/$file";
+            oscar_log(5, ERROR, "Impossible to download $base_url/$file");
             return -1;
         }
     }
 
-    oscar_log_subsection "Cleaning up...";
+    oscar_log(6, INFO, "Cleaning up...");
     my $rm_file = "$dest_dir/Packages";
-    unlink ("$rm_file") or (carp "ERROR: Impossible to delete $rm_file",
+    oscar_log(7, ACTION, "Removing $rm_file");
+    unlink ("$rm_file") or (oscar_log(5, ERROR, "Failed to delete $rm_file"),
                             return -1);
 
-    oscar_log_subsection "Generating the mirror meta-data...";
+    oscar_log(6, INFO, "Generating the mirror meta-data...");
     my $pm = OSCAR::PackageSmart::prepare_pool ($OSCAR::Env::oscar_verbose,
                                                 $dest_dir);
     if (!defined $pm) {
-        carp "ERROR: impossible to generate the metadata of the mirror";
+        oscar_log(5, ERROR, "Failed to generate the metadata of the mirror");
         return -1;
     }
+
+    oscar_log(2, INFO, "Successfully mirrored repo $url");
     return 0;
 }
 
@@ -749,24 +771,27 @@ sub mirror_repo ($$$) {
     require OSCAR::PackageSmart;
     my $repo_type = OSCAR::PackageSmart::detect_pool_format ($url);
 
-    die "ERROR: Impossible to determine the repository type of $url ".
-        "($repo_type)\n" if (!defined $repo_type);
+    if (!defined $repo_type) {
+        oscar_log(5, ERROR, "Impossible to determine the repository type of $url " .
+            "($repo_type)");
+        return -1;
+    }
 
-    print "Mirroring repo of type: $repo_type\n";
+    oscar_log(4, INFO, "Mirroring repo of type: $repo_type");
     if ($repo_type eq "deb") {
         if (mirror_apt_repo ($distro, $url, $destination)) {
-            carp "ERROR: We cannot mirror the APT repos ($distro, $url, ".
-                 "$destination)";
+            oscar_log(5, ERROR, "We cannot mirror the APT repos ($distro, $url, ".
+                 "$destination)");
             return -1;
         }
     } elsif ($repo_type eq "yum") {
         if (mirror_yum_repo ($distro, $url, $destination)) {
-            carp "ERROR: Impossible to mirror the repository ($url, ".
-                 "$destination";
+            oscar_log(5, ERROR, "Failed to mirror the repository ($url, ".
+                 "$destination");
             return -1;
         }
     } else {
-        carp "WARNING: we do not know how to mirror $repo_type repos\n";
+        oscar_log(5, WARNING, "We do not know how to mirror $repo_type repos");
         return -1;
     }
 
@@ -787,7 +812,7 @@ sub use_default_distro_repo ($) {
     my @distro_repo_urls = ();
     @distro_repo_urls = get_default_distro_repo ($distro);
     if (!OSCAR::Utils::is_a_valid_string ($distro)) {
-        carp "ERROR: undefined default distro repo for ($distro)";
+        oscar_log(5, ERROR, "Undefined default distro repo for ($distro)");
         return -1;
     }
     if (@distro_repo_urls and $#distro_repo_urls >= 0 and defined $distro_repo_urls[0]) {
@@ -795,15 +820,15 @@ sub use_default_distro_repo ($) {
         for my $i (@distro_repo_urls) {
             $message .= "  $distro_repo_urls[$i]\n";
         }
-        OSCAR::Logger::oscar_log_subsection ($message);
+        oscar_log(6, INFO, $message);
 
         if (use_distro_repo ($distro, @distro_repo_urls)) {
-            carp "ERROR: Impossible to set the distro repo\n";
+            oscar_log(5, ERROR, "Failed to set the distro repo");
             return -1;
         }
         return 0;
     } else {
-        carp "ERROR: undefined default distro repo for ($distro)";
+        oscar_log(5, ERROR, "Undefined default distro repo for ($distro)");
         return -1;
     }
 }
@@ -823,7 +848,7 @@ sub use_default_oscar_repo ($) {
     @distro_oscar_urls = get_default_oscar_repo ($distro);
 
     if (!OSCAR::Utils::is_a_valid_string ($distro)) {
-        carp "ERROR: undefined oscar OSCAR repo for ($distro)";
+        oscar_log(5, ERROR, "Undefined oscar OSCAR repo for ($distro)");
         return -1;
     }
     if (@distro_oscar_urls and $#distro_oscar_urls >= 0 and defined $distro_oscar_urls[0]) {
@@ -831,15 +856,15 @@ sub use_default_oscar_repo ($) {
         for my $i (@distro_oscar_urls) {
             $message .= "  $distro_oscar_urls[$i]\n";
         }
-        OSCAR::Logger::oscar_log_subsection ($message);
+        oscar_log(6, INFO, $message);
 
         if (use_oscar_repo ($distro, @distro_oscar_urls)) {
-            carp "ERROR: Impossible to set the OSCAR repos\n";
+            oscar_log(5, ERROR, "Failed to set the OSCAR repos");
             return -1;
         }
         return 0;
     } else {
-        carp "ERROR: undefined oscar distro repo for ($distro)";
+        oscar_log(5, ERROR, "Undefined oscar distro repo for ($distro)");
         return -1;
     }
 }
@@ -868,7 +893,7 @@ sub decompose_distro_id ($) {
 sub get_distro () {
     my $os = OSCAR::OCA::OS_Detect::open ();
     if (!defined $os || ref ($os) ne "HASH") {
-        carp "ERROR: Impossible to detect the local distro";
+        oscar_log(5, ERROR, "Impossible to detect the local distro");
         return undef;
     }
     return (os_distro_string ($os));
@@ -914,7 +939,7 @@ sub use_distro_repo ($$) {
     my ($distro, @repos) = @_;
 
     if (!OSCAR::Utils::is_a_valid_string ($distro)) {
-        carp "ERROR: the distro is invalid ($distro)";
+        oscar_log(5, ERROR, "The distro is invalid ($distro)");
         return -1;
     }
 
@@ -922,14 +947,14 @@ sub use_distro_repo ($$) {
 
     my $path = $tftpdir . "distro";
     if (! -d $path) {
-        OSCAR::Logger::oscar_log_subsection "Creating $path";
+        oscar_log(7, ACTION, "Creating $path");
         File::Path::mkpath ($path, 1, 0777) 
-            or (carp "ERROR: impossible to create the directory $path", 
+            or (oscar_log(5, ERROR, "Failed to create the directory $path"), 
                 return -1);
     }
 
     if (OSCAR::PackagePath::repos_add_urlfile ("$path/$distro.url", @repos)) {
-        carp "ERROR: Impossible to create file $path.url";
+        oscar_log(5, ERROR, "Failed to create file $path.url");
         return -1;
     }
     return 0;
@@ -947,7 +972,7 @@ sub use_oscar_repo ($$) {
 
     if (!OSCAR::Utils::is_a_valid_string ($distro)) {
         # FIXME: need to loop on @repos testing they are valid strings.
-        carp "ERROR: the distro or the repo URL are invalid ($distro)";
+        oscar_log(5, ERROR, "The distro or the repo URL are invalid ($distro)");
         return -1;
     }
 
@@ -959,7 +984,7 @@ sub use_oscar_repo ($$) {
     push (@repos, $path) if (repo_empty ($path) == 0);
     if (scalar (@repos)) {
         if (repos_add_urlfile ($repo_file, @repos)) {
-            carp "ERROR: Impossible to add repos in $repo_file";
+            oscar_log(5, ERROR, "Failed to add repos in $repo_file");
             return -1;
         }
     }
@@ -1047,7 +1072,7 @@ sub get_default_distro_repo ($) {
     my $distro = shift;
 
     if (!defined ($distro)) {
-        carp "ERROR: Undefined distro";
+        oscar_log(5, ERROR, "Undefined distro");
         return undef;
     }
     require OSCAR::Distro;
@@ -1073,7 +1098,7 @@ sub get_default_oscar_repo ($) {
     my $distro = shift;
 
     if (!defined ($distro)) {
-        carp "ERROR: Undefined distro";
+        oscar_log(5, ERROR, "Undefined distro");
         return undef;
     }
     require OSCAR::Distro;
@@ -1193,21 +1218,21 @@ sub generate_default_urlfiles ($) {
     my $distro = shift;
 
     if (!defined ($distro)) {
-        carp "ERROR: Undefined distro";
+        oscar_log(5, ERROR, "Undefined distro");
         return -1;
     }
 
      if (use_default_distro_repo ($distro) == -1 ) {
 #    if (generate_default_oscar_urlfile ($distro) == -1) {
-        carp "ERROR: Impossible to generate the default OSCAR url file ".
-             "($distro)";
+        oscar_log(5, ERROR, "Failed to generate the default OSCAR url file ".
+             "($distro)");
         return -1;
     }
 
      if (use_default_oscar_repo ($distro) == -1 ) {
 #    if (generate_default_distro_urlfile ($distro) == -1) {
-        carp "ERROR: Impossible to generate the default distro url file ".
-             "($distro)";
+        oscar_log(5, ERROR, "Failed to generate the default distro url file ".
+             "($distro)");
         return -1;
     }
 }

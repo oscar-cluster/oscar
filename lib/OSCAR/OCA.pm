@@ -12,6 +12,8 @@
 package OSCAR::OCA;
 
 use strict;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 
 #######################################################
 # Subroutine to find components in a given framework. #
@@ -23,7 +25,7 @@ sub find_components {
     # If framework is not specified, this is an error
 
     if (!$framework) {
-        print "OCA::find_components invoked without a framework name\n";
+        oscar_log(5, ERROR, "OCA::find_components invoked without a framework name");
         return undef;
     }
 
@@ -50,7 +52,7 @@ sub find_components {
             if (-d "/opt/oscar") {
                 $basedir = "/opt/oscar/lib";
             } else {
-                print "Unable to find an OSCAR directory to look for components (no \$OSCAR_HOME\nand no /opt/oscar)\n";
+                oscar_log(5, ERROR, "Unable to find an OSCAR directory to look for components (no \$OSCAR_HOME\nand no /opt/oscar)");
                 return undef;
             }
         }
@@ -63,7 +65,7 @@ sub find_components {
     # Return on bozo error
 
     if (! -d $basedir) {
-        print "Unable to find framework directory\n($basedir)\n";
+        oscar_log(5, ERROR, "Unable to find framework directory\n($basedir)");
         return undef;
     }
 

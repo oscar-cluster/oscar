@@ -25,6 +25,8 @@ use File::Glob qw(:globally :nocase); # disabling case sensitivity so it
 use Carp;
 
 use OSCAR::OCA;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 
 #
 # Exports
@@ -50,17 +52,17 @@ use OSCAR::OCA;
 sub open {
     my %arg;
     if (@_) {
-	if (scalar(@_) == 1) {
-	    if (defined($_[0])) {
-		$arg{chroot} = $_[0];
-	    } else {
-		$arg{chroot} = "/";
-	    }
-	} else {
-	    %arg = @_;
-	}
+    if (scalar(@_) == 1) {
+        if (defined($_[0])) {
+        $arg{chroot} = $_[0];
+        } else {
+        $arg{chroot} = "/";
+        }
     } else {
-	$arg{chroot} = "/";
+        %arg = @_;
+    }
+    } else {
+    $arg{chroot} = "/";
     }
 
     my ($path,$pool,$oscar_pool,$fake);
@@ -73,21 +75,26 @@ sub open {
     } elsif (exists($arg{fake})) {
         $fake = $arg{fake};
     } else {
-        print STDERR "ERROR: Unknown detection target in OS_Detect: ".
-            join(",",keys(%arg))."\n";
+#        print STDERR "ERROR: Unknown detection target in OS_Detect: ".
+#            join(",",keys(%arg))."\n";
+        oscar_log(5, ERROR, "Unknown detection target in OS_Detect: ".
+             join(",",keys(%arg)));
+        oscar_log(1, ERROR, "Failed to detect OS");
         return undef;
     }
 
     if ($path) {
-	# return immediately if path doesn't exist
-	if (! -d $path) {
-	    print STDERR "ERROR: Path $path does not exist!\n";
-	    return undef;
-	}
-	# return cached value if detecting local OS
-	if (($path eq "/") && $LOCAL_NODE_OS) {
-	    return $LOCAL_NODE_OS;
-	}
+    # return immediately if path doesn't exist
+    if (! -d $path) {
+#        print STDERR "ERROR: Path $path does not exist!\n";
+        oscar_log(5, ERROR, "Path $path does not exist!");
+        oscar_log(1, ERROR, "Failed to detect OS");
+        return undef;
+    }
+    # return cached value if detecting local OS
+    if (($path eq "/") && $LOCAL_NODE_OS) {
+        return $LOCAL_NODE_OS;
+    }
     }
 
     my $comps = OSCAR::OCA::find_components("OS_Detect");
@@ -97,10 +104,14 @@ sub open {
     if (!defined($comps)) {
         # If we get undef, then find_components() already printed an
         # error, and we decide that we want to die
-        print STDERR "Cannot continue, find_components returned undef";
+#        print STDERR "Cannot continue, find_components returned undef";
+        oscar_log(5, ERROR, "Cannot continue, find_components returned undef");
+        oscar_log(1, ERROR, "Failed to detect OS");
         return undef;
     } elsif (scalar(@$comps) == 0) {
-        print STDERR "Could not find an OS_Detect component for this system!\n";
+#        print STDERR "Could not find an OS_Detect component for this system!\n";
+        oscar_log(5, ERROR, "Could not find an OS_Detect component for this system!");
+        oscar_log(1, ERROR, "Failed to detect OS");
         return undef;
     }
 
@@ -126,7 +137,7 @@ sub open {
         }
     }
     if ($path && ($path eq "/") && !$LOCAL_NODE_OS) {
-	$LOCAL_NODE_OS = $ret;
+        $LOCAL_NODE_OS = $ret;
     }
     return $ret;
 }
@@ -169,44 +180,47 @@ sub detect_arch_pool {
     my ($pool,$pkg) = @_;
 
     if ($pkg eq "rpm") {
-	my $known = "i?86,x86_64,ia64,ppc,ppc64";
-	my @files = glob("$pool/bash-*{$known}.rpm");
-	my $arch;
-	for my $f (@files) {
-	    if ($f =~ /\.([^\.]+)\.rpm$/) {
-		my $a = $1;
-		if (!$arch) {
-		    $arch = $a;
-		} elsif ($a ne $arch) {
-		    print STDERR "Multiple architectures detected in $pool.\n";
-		    return "unknown";
-		}
-	    }
-	}
-	$arch = "i386" if ($arch =~ /i.86/);
-	return $arch;
+        my $known = "i?86,x86_64,ia64,ppc,ppc64";
+        my @files = glob("$pool/bash-*{$known}.rpm");
+        my $arch;
+        for my $f (@files) {
+            if ($f =~ /\.([^\.]+)\.rpm$/) {
+                my $a = $1;
+                if (!$arch) {
+                    $arch = $a;
+                } elsif ($a ne $arch) {
+#                    print STDERR "Multiple architectures detected in $pool.\n";
+                    oscar_log(5, ERROR, "Multiple architectures detected in $pool.");
+                    return "unknown";
+                }
+            }
+        }
+        $arch = "i386" if ($arch =~ /i.86/);
+        return $arch;
     } elsif ($pkg eq "deb") {
-	my $known = "i?86,amd64,ia64,ppc,ppc64";
-	my @files = glob("$pool/bash_*_{$known}.deb");
-	my $arch;
-	for my $f (@files) {
-	    if ($f =~ /_([^_]+)\.deb$/) {
-		my $a = $1;
-		if (!$arch) {
-		    $arch = $a;
-		} elsif ($a ne $arch) {
-		    print STDERR "Multiple architectures detected in $pool.\n";
-		    return "unknown";
-		}
-	    }
-	}
-	if ($arch eq "amd64") {
-	    $arch = "x86_64";
-	}
-	$arch = "i386" if ($arch =~ /i.86/);
-	return $arch;
+        my $known = "i?86,amd64,ia64,ppc,ppc64";
+        my @files = glob("$pool/bash_*_{$known}.deb");
+        my $arch;
+        for my $f (@files) {
+            if ($f =~ /_([^_]+)\.deb$/) {
+                my $a = $1;
+                if (!$arch) {
+                    $arch = $a;
+                } elsif ($a ne $arch) {
+#                    print STDERR "Multiple architectures detected in $pool.\n";
+                    oscar_log(5, ERROR, "Multiple architectures detected in $pool.");
+                    return "unknown";
+                }
+            }
+        }
+        if ($arch eq "amd64") {
+            $arch = "x86_64";
+        }
+        $arch = "i386" if ($arch =~ /i.86/);
+        return $arch;
     } else {
-	print "Don't know how to detect package pool architecture for $pkg.\n";
+        oscar_log(5, ERROR, "Don't know how to detect package pool architecture for $pkg.");
+        return "unknown";
     }
 }
 
@@ -215,44 +229,44 @@ sub detect_pool_rpm {
     my ($pool,$detect_package,$distro,$compat) = @_;
 
     if (! -d "$pool") {
-	return undef;
+        return undef;
     }
     my @files = glob("$pool/$detect_package"."-"."*.rpm");
     if (!scalar(@files)) {
-	return undef;
+        return undef;
     }
     # these packages have simple version strings!
     my ($version,$flavor);
     for my $f (@files) {
-	my $v = `rpm -q --qf "%{VERSION}" -p $f 2>/dev/null`;
-	# don't care about release for pools, only version counts (except for openSUSE)
-	$v =~ s/\.\d+$// if ($distro ne "suse");
-	# for redhat-el
-	if ($v =~ /^(.*)(AS|WS|ES)$/) {
-	    $v = $1;
-	    $flavor = $2;
-	}elsif ( $v =~ /^(\d*)[A-Za-z]*/){ # DI, Added to take care of RHEL-5
-        $v = $1;
-    }
-	if (!$version) {
-	    $version = $v;
-	} else {
-	    if ($v > $version) {
-		$version = $v;
-	    }
-	}
+        my $v = `rpm -q --qf "%{VERSION}" -p $f 2>/dev/null`;
+        # don't care about release for pools, only version counts (except for openSUSE)
+        $v =~ s/\.\d+$// if ($distro ne "suse");
+        # for redhat-el
+        if ($v =~ /^(.*)(AS|WS|ES)$/) {
+            $v = $1;
+            $flavor = $2;
+        } elsif ( $v =~ /^(\d*)[A-Za-z]*/){ # DI, Added to take care of RHEL-5
+            $v = $1;
+        }
+        if (!$version) {
+            $version = $v;
+        } else {
+            if ($v > $version) {
+                $version = $v;
+            }
+        }
     }
     return undef if (!$version);
 
     # this hash contains all info necessary for identifying the OS
     my $id = {
-	os               => "linux",
-	pool             => $pool,
-	distro           => $flavor ? $distro."-".lc($flavor) : $distro,
-	distro_version   => $version,
-	compat_distro    => $compat,
-	compat_distrover => $version,
-	pkg              => "rpm",
+    os               => "linux",
+    pool             => $pool,
+    distro           => $flavor ? $distro."-".lc($flavor) : $distro,
+    distro_version   => $version,
+    compat_distro    => $compat,
+    compat_distrover => $version,
+    pkg              => "rpm",
     };
 
     # determine architecture
@@ -267,11 +281,11 @@ sub detect_pool_deb {
     my ($pool,$detect_package,$distro,$compat) = @_;
 
     if (! -d "$pool") {
-	return undef;
+        return undef;
     }
     my @files = glob("$pool/$detect_package"."_"."*.deb");
     if (!scalar(@files)) {
-	return undef;
+        return undef;
     }
 
     # version recognition must be fixed!
@@ -279,30 +293,31 @@ sub detect_pool_deb {
     # is not the same as the debian distro version!
     my ($version,$flavor);
     for my $f (@files) {
-	my $v = `dpkg-query --queryformat %{VERSION} $f 2>/dev/null`;
-	# don't care about release for pools, only version counts
-	$v =~ s/\.\d+$//;
-	if (!$version) {
-	    $version = $v;
-	} else {
-	    if ($v > $version) {
-		$version = $v;
-	    }
-	}
+        my $v = `dpkg-query --queryformat %{VERSION} $f 2>/dev/null`;
+        # don't care about release for pools, only version counts
+        $v =~ s/\.\d+$//;
+        if (!$version) {
+            $version = $v;
+        } else {
+            if ($v > $version) {
+                $version = $v;
+            }
+        }
     }
     return undef if (!$version);
     # this hash contains all info necessary for identifying the OS
     my $id = {
-	os               => "linux",
-	pool             => $pool,
-	distro           => $distro,
-	distro_version   => $version,
-	compat_distro    => $compat,
-	compat_distrover => $version,
-	pkg              => "deb",
+    os               => "linux",
+    pool             => $pool,
+    distro           => $distro,
+    distro_version   => $version,
+    compat_distro    => $compat,
+    compat_distrover => $version,
+    pkg              => "deb",
     };
     # determine architecture
     my $arch = detect_arch_pool($pool,"deb");
+    # FIXME: Should check $arch.
     $id->{arch} = $arch;
     return $id;
 }

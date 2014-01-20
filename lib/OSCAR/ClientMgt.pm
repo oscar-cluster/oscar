@@ -35,6 +35,7 @@ use strict;
 use OSCAR::Database;
 use OSCAR::FileUtils;
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::Utils;
 use vars qw(@EXPORT);
 use base qw(Exporter);
@@ -81,14 +82,19 @@ sub parse_mksimachine_output ($) {
 # Return: 0 if success, -1 else.
 sub cleanup_clients {
 
+    oscar_log(5, INFO, "Cleaning up clients.");
+    oscar_log(6, INFO, "Determining list of clients.");
     # First we get the list of defined clients from the SIS database.
     my $cmd = "mksimachine -L --parse";
+    oscar_log(7, ACTION, "About to run: $cmd");
     my $output = `$cmd`;
     my @si_clients = parse_mksimachine_output ($output);
+    oscar_log(6, INFO, "List of clients in SIS db: " . join(" " , @si_clients));
 
     # We do the same for defined clients at OSCAR level
     my (@oscar_clients, $options, $errors);
     OSCAR::Database::get_client_nodes(\@oscar_clients,$options,$errors);
+    oscar_log(6, INFO, "List of clients in ODA db: " . join(" " , @oscar_clients));
 
     # Now we check which clients are defined of the file system (typically
     # clients' scripts)
@@ -100,6 +106,7 @@ sub cleanup_clients {
             push (@fs_clients, $1);
         }
     }
+    oscar_log(6, INFO, "List of clients having scripts in the filesystem: " . join(" " , @fs_clients));
 
     #
     # Now we cleanup
@@ -111,35 +118,40 @@ sub cleanup_clients {
         if (!OSCAR::Utils::is_element_in_array ($n, @oscar_clients)
             && !OSCAR::Utils::is_element_in_array ($n, @si_clients)) {
             my $file_to_remove = "$dir$n.sh";
-            OSCAR::Logger::oscar_log_subsection "[INFO] Removing the ".
-                "$file_to_remove script\n";
+            oscar_log(5, ACTION, "Removing the $file_to_remove script");
             unlink ($file_to_remove);
         }
     }
 
+    oscar_log(5, INFO, "Finished cleaning up clients.");
     return 0;
 }
 
 # Input: - options, hash reference,
 #        - errors, array reference.
 sub update_client_node_package_status ($$) {
+    oscar_log(5, INFO, "Updating client nodes package status.");
     my ($options, $errors) = @_;
     my @pkgs = OSCAR::Database::list_selected_packages();
+    oscar_log(6, INFO, "List of selected packages:" . join(" " , @pkgs));
     my @tables = ("Nodes", "Group_Nodes", "Groups", "Packages",
                   "Node_Package_Status");
 #    locking("WRITE", \%options, \@tables, \@errors);
     my @client_nodes = ();
     OSCAR::Database::get_client_nodes(\@client_nodes,$options,$errors);
+    oscar_log(6, INFO, "List of clients to update:" . join(" " , @client_nodes));
     my @nodes = ();
     foreach my $client_ref (@client_nodes){
         my $node_id = $$client_ref{id};
         my $node_name = $$client_ref{name};
         push @nodes, $node_name;
     }
+    oscar_log(5, INFO, "Setting group (oscar_clients) for: " . join (" " , @client_nodes));
     my $client_group = "oscar_clients";
     OSCAR::Database::set_group_nodes($client_group,\@nodes,$options,$errors);
 
     # We assume that all the selected packages should be installed
+    oscar_log(5, INFO, "Setting selected packages as installed for clients (oscar_clients)");
     my $status = 8;
     foreach my $node_name (@nodes){
         OSCAR::Database::update_node_package_status($options,
@@ -149,6 +161,7 @@ sub update_client_node_package_status ($$) {
                                                     $errors,
                                                     undef);
     }
+    oscar_log(5, INFO, "Finished updating client nodes package status.");
 
 #    unlock(\%options, \@errors);
 }

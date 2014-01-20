@@ -37,12 +37,14 @@ BEGIN {
 }
 
 use strict;
+use OSCAR::Env;
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::Utils;
 use OSCAR::FileUtils;
 use vars qw(@EXPORT);
 use base qw(Exporter);
-use Carp;
+#use Carp;
 use AppConfig;
 use AppConfig::State;
 use warnings "all";
@@ -73,7 +75,7 @@ sub get_value ($$$) {
     my ($config_file, $block, $key) = @_;
 
     if (!defined($config_file) || ! -f $config_file) {
-        carp "ERROR: the configuration file does not exist ($config_file)\n";
+        oscar_log(1, ERROR, "The configuration file does not exist ($config_file).");
         return undef;
     }
 
@@ -88,7 +90,7 @@ sub get_value ($$$) {
         $key            => { ARGCOUNT => 1 },
         );
     if (!defined ($config)) {
-        carp "ERROR: Impossible to parse configuration file ($config_file)";
+        oscar_log(1, ERROR, "Impossible to parse configuration file ($config_file).");
         return undef;
     }
     $config->file($config_file);
@@ -106,12 +108,12 @@ sub get_block_list ($) {
     my $config_file = shift;
 
     if (! -f $config_file) {
-        carp "ERROR: the config file ($config_file) does not exist";
+        oscar_log(1, ERROR, "The config file ($config_file) does not exist.");
         return undef;
     }
 
     my $list_blocks = `grep '\\[' $config_file`;
-#    print "List blocks ($config_file): $list_blocks";    
+    oscar_log(10, INFO, "List blocks ($config_file): $list_blocks.");
 
     my @blocks = split ("\n", $list_blocks);
     my @final_blocks = ();
@@ -135,7 +137,7 @@ sub get_list_values ($$){
     my ($config_file, $key) = @_;
 
     if (! -f $config_file) {
-        carp "ERROR: the config file ($config_file) does not exist";
+        oscar_log(1, ERROR, "The config file ($config_file) does not exist.");
         return undef;
     }
 
@@ -161,16 +163,16 @@ sub set_value ($$$$) {
     my ($config_file, $block, $key, $value) = @_;
 
     if (!defined($config_file) || ! -f $config_file) {
-        carp "ERROR: the configuration file does not exist ($config_file)\n";
+        oscar_log(1, ERROR, "The configuration file does not exist ($config_file).");
         return -1;
     }
 
     if (!is_a_valid_string ($key)) {
-        carp "ERROR: the key we try to set is not valid";
+        oscar_log(5, ERROR, "The key we try to set is not valid.");
         return -1;
     }
 
-    open (FILE, $config_file) or (carp "ERROR: Impossible to open $config_file",
+    open (FILE, $config_file) or (oscar_log(1,ERROR, "Impossible to open $config_file"),
                                   return -1);
     my @file_data = <FILE>;
     close (FILE);
@@ -232,7 +234,7 @@ sub set_value ($$$$) {
     if (OSCAR::FileUtils::replace_line_in_file ($config_file,
                                                 $position,
                                                 $line)) {
-        carp "ERROR: Impossible to add \"$key=$value\" to $config_file";
+        oscar_log(5, ERROR, "Impossible to add \"$key=$value\" to $config_file.");
         return -1;
     }
 
@@ -259,7 +261,7 @@ sub get_all_values ($$) {
     my %ret;
 
     if (!defined($config_file) || ! -f $config_file) {
-        print "ERROR: the configuration file does not exist ($config_file)\n";
+        oscar_log(1, ERROR, "The configuration file does not exist ($config_file)."); 
         return -1;
     }
 

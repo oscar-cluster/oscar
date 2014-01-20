@@ -18,6 +18,8 @@ use strict;
 use warnings;
 use Carp;
 use AppConfig;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 
 ##########################################################
 # A bunch of variable filled up when creating the object #
@@ -45,7 +47,7 @@ sub load_config ($) {
     require AppConfig;
 
     if (!defined($config_file) || ! -f $config_file) {
-        print "ERROR: the configuration file does not exist ($config_file)\n";
+        oscar_log(5, ERROR, "The configuration file does not exist ($config_file)");
         return -1;
     }
 
@@ -69,11 +71,11 @@ sub print_config ($) {
     my $self = shift;
 
     load_config ($self);
-    print "Partition Configuration:\n";
-    print "\tDistro: $distro\n";
-    print "\tDistro version: $dist_version\n";
-    print "\tArch: $arch\n";
-    print "\tOPKGS: @opkgs\n";
+    oscar_log(5, INFO, "Partition Configuration:");
+    oscar_log(5, NONE, "\tDistro: $distro");
+    oscar_log(5, NONE, "\tDistro version: $dist_version");
+    oscar_log(5, NONE, "\tArch: $arch");
+    oscar_log(5, NONE, "\tOPKGS: @opkgs");
 }
 
 sub get_config ($) {
@@ -92,15 +94,15 @@ sub get_config ($) {
 sub set_config ($$) {
     my ($self, $cfg) = @_;
 
-    print "Creating config file ".$self->{config_file}."\n";
-    print "$cfg->{'distro'}, $cfg->{'distro_version'}, $cfg->{'arch'}\n";
+    oscar_log(5, INFO, "Creating config file ".$self->{config_file});
+    oscar_log(5, INFO, "$cfg->{'distro'}, $cfg->{'distro_version'}, $cfg->{'arch'}");
     open (MYFILE, ">$self->{config_file}");
     print MYFILE "distro\t\t = $cfg->{'distro'}\n";
     print MYFILE "distro_version\t\t = ".$cfg->{'distro_version'}."\n";
     print MYFILE "arch\t\t = $cfg->{'arch'}\n";
     print MYFILE "opkgs\t\t = ";
     my $opkgs = $cfg->{'opkgs'};
-    OSCAR::Utils::print_array (@$opkgs);
+    OSCAR::Utils::print_array (@$opkgs) if($OSCAR::Env::oscar_verbose >= 5);
     for (my $i=0; $i < scalar (@$opkgs); $i++) {
         if ($i != 0) {
             print MYFILE "\t\t\t$$opkgs[$i]";

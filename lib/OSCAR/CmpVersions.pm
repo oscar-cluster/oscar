@@ -29,6 +29,7 @@ use strict;
 use vars qw($verbose @EXPORT);
 use POSIX;
 use base qw(Exporter);
+use OSCAR::Env;
 
 @EXPORT = qw(cmp_version_strings cmp_version_strings_num);
 
@@ -61,17 +62,18 @@ sub cmp_version_strings($$) {
     #
     my $ans;
     while (@a && @b) {
-	last if $ans = cmp_version_strings_num( shift( @a ), shift( @b ) );
-	last if $ans = shift( @a ) cmp shift( @b );
+        last if $ans = cmp_version_strings_num( shift( @a ), shift( @b ) );
+        last if $ans = shift( @a ) cmp shift( @b );
     }
     unless( $ans ) {
-	my $ta = shift( @a ) || -1;
-	my $tb = shift( @b ) || -1;
-	$ans = cmp_version_strings_num( $ta, $tb );
+        my $ta = shift( @a ) || -1;
+        my $tb = shift( @b ) || -1;
+        $ans = cmp_version_strings_num( $ta, $tb );
     }
-    if( $verbose > 7 ) {
-	my $word = $ans < 0 ? "<" : $ans ? ">" : "==";
-	print join( " ", @aa ), " $word ", join( " ", @bb ), "\n";
+    # if( $verbose > 7 ) {
+    if( $OSCAR::Env::oscar_verbose > 9 ) {
+        my $word = $ans < 0 ? "<" : $ans ? ">" : "==";
+        print join( " ", @aa ), " $word ", join( " ", @bb ), "\n";
     }
     return $ans;
 }
@@ -86,8 +88,8 @@ sub cmp_version_strings_num($$) {
     # like "2.0.1." compared to "2.0."
     # If both strings end with a dot, strip it off
     if (($a =~ /\d\.$/) && ($b =~ /\d\.$/)) {
-	$a =~ s/\.$//;
-	$b =~ s/\.$//;
+        $a =~ s/\.$//;
+        $b =~ s/\.$//;
     }
     #
     #       Split a & b into runs of numbers.
@@ -104,13 +106,13 @@ sub cmp_version_strings_num($$) {
     #
     my $ans;
     while (@a && @b) {
-	last if $ans = shift( @a ) <=> shift( @b );
-	last if $ans = shift( @a ) cmp shift( @b );
+        last if $ans = shift( @a ) <=> shift( @b );
+        last if $ans = shift( @a ) cmp shift( @b );
     }
     unless( $ans ) {
-	my $ta = shift( @a ) || -1;
-	my $tb = shift( @b ) || -1;
-	$ans = $ta <=> $tb;
+        my $ta = shift( @a ) || -1;
+        my $tb = shift( @b ) || -1;
+        $ans = $ta <=> $tb;
     }
     return $ans;
 }

@@ -29,6 +29,8 @@ use lib ".", "$ENV{OSCAR_HOME}/lib";
 use XML::Simple;	# Read the XML package set files
 use Data::Dumper;
 use OSCAR::Env;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::Utils qw ( 
                     print_array
                     is_element_in_array 
@@ -101,17 +103,16 @@ sub list_servers_in_group ($) {
     my @group_servers = ();
 
     my @machines = list_machines_in_group ($group);
-    print "List of machines in set $group: " if $OSCAR::Env::oscar_verbose;
-    print_array (@machines) if $OSCAR::Env::oscar_verbose;
+    oscar_log(6, INFO, "List of machines in set $group:");
+    print_array (@machines) if( $OSCAR::Env::oscar_verbose >= 5);
     my @servers = list_servers ();
-    print "List of servers: " if $OSCAR::Env::oscar_verbose;
-    print_array (@servers) if $OSCAR::Env::oscar_verbose;
+    oscar_log(6, INFO, "List of servers:");
+    print_array (@servers) if( $OSCAR::Env::oscar_verbose >= 5);
     foreach my $node (@machines) {
         if (is_element_in_array ($node, @servers)) {
             push (@group_servers, $node);
         }
     }
-
     return @group_servers;
 }
 
@@ -130,11 +131,11 @@ sub list_clients_in_group {
     my @group_clients = ();
 
     my @machines = list_machines_in_group ($group);
-    print "List of machines in set $group: " if $OSCAR::Env::oscar_verbose;
-    print_array (@machines) if $OSCAR::Env::oscar_verbose;
+    oscar_log(6, INFO, "List of machines in set $group:");
+    print_array (@machines) if($OSCAR::Env::oscar_verbose >= 5);
     my @clients = list_clients ();
-    print "List of clients: " if $OSCAR::Env::oscar_verbose;
-    print_array (@clients) if $OSCAR::Env::oscar_verbose;
+    oscar_log(6, INFO, "List of clients:");
+    print_array (@clients) if($OSCAR::Env::oscar_verbose >= 5);
     foreach my $node (@machines) {
         if (is_element_in_array ($node, @clients)) {
             push (@group_clients, $node);
@@ -164,13 +165,17 @@ sub use_file {
 	
 	# Check to see if the xml validates against the schema
 
-	if(system("xmlstarlet --version >/dev/null 2>&1") == 0) {
-		my $rc = system("xmlstarlet val -s $schema_dir/machineset.xsd $machine_set_dir/$filename >/dev/null");
+    my $cmd = "xmlstarlet --version >/dev/null 2>&1";
+    oscar_log(7, ACTION, "About to run: $cmd");
+	if(system($cmd) == 0) {
+        $cmd = "xmlstarlet val -s $schema_dir/machineset.xsd $machine_set_dir/$filename >/dev/null";
+        oscar_log(7, ACTION, "About to run: $cmd");
+		my $rc = system($cmd);
 		if($rc != 0) {
 			return "XML does not validate against schema\n";
 		}
 	} else {
-		print "XML not validated: xmlstarlet not installed.\n";
+		oscar_log(5, ERROR, "XML not validated: xmlstarlet not installed.");
 	}
 	
 	%list = %{$xml->XMLin("$machine_set_dir/$filename", ForceArray => ['machine', 'machineSet'])};
@@ -312,14 +317,14 @@ sub parse_machine_set ($) {
     my $xml_file_path = shift;
 
     # Step 1: We use OSM to parse the XML file
-    print "Parsing the machine set...\n" if $OSCAR::Env::oscar_verbose;
+    oscar_log(6, INFO, "Parsing the machine set...");
     my $res = OSCAR::msm::use_file ($xml_file_path);
     die $res if defined $res;
 
     # Step 2: We get the list of machine sets
     my @list_sets = OSCAR::msm::list_sets();
-    print "Machine set(s): ";
-    print_array @list_sets;
+    oscar_log(6, INFO, "Machine set(s):");
+    print_array @list_sets if($OSCAR::Env::oscar_verbose >= 5);
 
     # Step 3: for each set we get the list of servers and compute nodes and we 
     # populate the database accordingly.
@@ -327,13 +332,13 @@ sub parse_machine_set ($) {
     foreach my $group (@list_sets) {
         # We get the list of servers for the current group of nodes
         my @group_servers = list_servers_in_group ($group);
-        print "List of servers in group $group: " if $OSCAR::Env::oscar_verbose;
-        print_array (@group_servers) if $OSCAR::Env::oscar_verbose;
+        oscar_log(6, INFO, "List of servers in group $group:");
+        print_array (@group_servers) if($OSCAR::Env::oscar_verbose >= 5);
 
         # We get the list of clients for the current group of nodes
         my @group_clients = list_clients_in_group ($group);
-        print "List of clients in group $group: " if $OSCAR::Env::oscar_verbose;
-        print_array (@group_clients) if $OSCAR::Env::oscar_verbose;
+        oscar_log(6, INFO, "List of clients in group $group:");
+        print_array (@group_clients) if($OSCAR::Env::oscar_verbose >= 5);
 
         # Now we populate the database: each machine group is a partition.
         my @partition_config = ( @group_servers, @group_clients );

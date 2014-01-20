@@ -29,7 +29,9 @@ package OSCAR::ConfigManager;
 
 use strict;
 use warnings;
-use Carp;
+#use Carp;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 
 ##########################################################
 # A bunch of variable filled up with creating the object #
@@ -60,6 +62,8 @@ our $oda_files_path;
 our $packager_download_path;
 
 sub new {
+    my ($perl_package, $perl_filename, $perl_line) = caller;
+    $perl_filename =~ s{.*/}{};
     my $invocant = shift;
     my $class = ref($invocant) || $invocant;
     my $self = { 
@@ -67,7 +71,9 @@ sub new {
         @_,
     };
     bless ($self, $class);
-    load_oscar_config ($self);
+    !load_oscar_config ($self)
+        or (oscar_log(1, ERROR, "Failed to load OSCAR configuration"), return undef);
+    oscar_log(9, INFO, "Loaded OSCAR configuration (at $perl_filename:$perl_line)");
     return $self;
 }
 
@@ -77,8 +83,13 @@ sub load_oscar_config ($) {
 
     require AppConfig;
 
-    if (!defined($config_file) || ! -f $config_file) {
-        print "ERROR: the configuration file does not exist ($config_file)\n";
+    if (!defined($config_file)) {
+        # Can be undef is constructor called with a pair that points to undef value.
+        oscar_log(1, ERROR, "The configuration file for OSCAR is undefined");
+        return -1;
+    }
+    if (! -f $config_file) {
+        oscar_log(1, ERROR, "The configuration file does not exist ($config_file).");
         return -1;
     }
 
@@ -111,6 +122,7 @@ sub load_oscar_config ($) {
     $oda_files_path     = $config->get('PATH_ODA_CONFIG_FILES');
     $opkgs_path         = $config->get('OPKGS_PATH');
     $packager_download_path = $config->get('PACKAGER_DOWNLOAD_PATH');
+    return 0;
 }
 
 sub get_config () {
@@ -144,7 +156,7 @@ sub get_cluster_config_file_path ($) {
     if (defined ($cluster) && $cluster ne "") {
         return "$oda_files_path/$cluster";
     } else {
-        carp "ERROR: Invalid cluster name ($cluster)\n";
+        oscar_log(5, ERROR, "Invalid cluster name ($cluster).");
         return undef;
     }
 }
@@ -154,7 +166,7 @@ sub get_partition_config_file_path ($$) {
 
     # Some sanity checking
     if (!defined ($partition) || $partition eq "") {
-        carp "ERROR: Invalid partition name ($partition)\n";
+        oscar_log(5, ERROR, "Invalid partition name ($partition).");
         return undef;
     }
 
@@ -171,7 +183,7 @@ sub get_node_config_file_path ($$$) {
 
     # Some sanity checking
     if (!defined ($node) || $node eq "") {
-        carp "ERROR: Invalid node name ($node)\n";
+        oscar_log(5, ERROR, "Invalid node name ($node).");
         return undef;
     }
 

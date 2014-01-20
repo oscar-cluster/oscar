@@ -18,6 +18,8 @@ use strict;
 use warnings;
 use Carp;
 use AppConfig;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 
 ##########################################################
 # A bunch of variable filled up when creating the object #
@@ -43,7 +45,7 @@ sub load_config ($) {
     require AppConfig;
 
     if (!defined($config_file) || ! -f $config_file) {
-        print "ERROR: the configuration file does not exist ($config_file)\n";
+        oscar_log(1, ERROR, "Configuration file does not exist ($config_file)");
         return -1;
     }
 
@@ -63,8 +65,8 @@ sub print_config ($) {
     my $self = shift;
 
     load_config($self);
-    print "\tVM type: $type\n";
-    print "\tHostOS IP: $hostos_ip\n";
+    oscar_log(5, INFO, "VM type: $type");
+    oscar_log(5, INFO, "HostOS IP: $hostos_ip");
 }
 
 sub get_config ($) {
@@ -81,8 +83,8 @@ sub get_config ($) {
 sub set_config ($$) {
     my ($self, $cfg) = @_;
 
-    print "Creating config file ".$self->{config_file}."\n";
-    print "$cfg->{'type'}, $cfg->{'hostos_ip'}\n";
+    oscar_log(5, INFO, "Creating config file ".$self->{config_file});
+    oscar_log(6, INFO, "type = $cfg->{'type'}, hostos_ip = $cfg->{'hostos_ip'}");
     open (MYFILE, ">$self->{config_file}");
     print MYFILE "type\t\t = $cfg->{'type'}\n";
     print MYFILE "hostos_ip\t\t = ".$cfg->{'hostos_ip'}."\n";

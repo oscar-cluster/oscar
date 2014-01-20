@@ -13,6 +13,8 @@ package OSCAR::OCA::OS_Settings;
 
 use strict;
 use OSCAR::Env;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::OCA::OS_Detect;
 use vars qw(@EXPORT $LOCAL_NODE_OS);
 use base qw(Exporter);
@@ -77,14 +79,15 @@ sub getconf () {
 sub getitem ($) {
     my $request = shift;
     my $config = getconf();
-    if ($OSCAR::Env::oscar_verbose) { print "Called getitem with " . $request . " and returning " . $config->{$request} . "\n" };
+    oscar_log(6, INFO, "Called getitem with $request and returning $config->{$request}");
+#    if ($OSCAR::Env::oscar_verbose) { print "Called getitem with " . $request . " and returning " . $config->{$request} . "\n" };
     #if ($OSCAR::Env::oscar_verbose) { print Dumper($config) };
     if ( $config->{$request} ) {
         return $config->{$request};
         } else {
         # Unclear if we should die, or return undef here..
-        if ($OSCAR::Env::oscar_verbose) { print "We did not find a config option for " . $request . " please check the configuration files in lib/OSCAR/OCA/OS_Settings\n" };
-        return undef;
+            oscar_log(5, ERROR, "We did not find a config option for " . $request . " please check the configuration files in lib/OSCAR/OCA/OS_Settings");
+            return undef;
         }
     }
 

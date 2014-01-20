@@ -130,7 +130,10 @@ sub display_ANSI_results($$$) {
     my $apitestp = $apitestwin->ROTextANSIColor(-width=>80,-height=>25);
     $apitestp->grid(-sticky=>"nsew");
     my $cl_b = $apitestwin->Button(-text=>"Close",
-                                -command=> sub {$apitestwin->destroy},-pady=>"8");
+                                -command=> sub {
+                                                  $window->Unbusy();
+                                                  $apitestwin->destroy},
+                                -pady=>"8");
     $apitestwin->bind("<Escape>",sub {$cl_b->invoke()});
     $cl_b->grid(-sticky=>"nsew",-ipady=>"4");
     $apitestp->delete("1.0","end");
@@ -146,17 +149,21 @@ sub display_ANSI_results($$$) {
         $apitestp->update;
         close STDOUT;
     }
-    # Restore stdout.
-    open STDOUT, '>&OLDOUT' or die "Can't restore stdout: $!";
+    # Restore stdout (don't die if it fails, we need to close OLDOUT anyway).
+    open STDOUT, '>&OLDOUT' or oscar_log(5, ERROR, "Can't restore stdout: $!");
     # Avoid leaks by closing the independent copies.
-    close OLDOUT or die "Can't close OLDOUT: $!";
+    close OLDOUT or oscar_log(5, ERROR, "Can't close OLDOUT: $!");
 
     OSCAR::Tk::center_window( $apitestwin );
 }
 
 ## FIXME: use OSCAR::Tk for that.
 sub display_cluster_test_succed($) {
-    oscar_log(1, INFO, "Cluster test SUCCESS");
+    my $window = shift;
+    my $title = "Cluster test SUCCESS";
+    oscar_log(1, INFO, $title);
+    OSCAR::Tk::done_window($window, $title, sub { $window->Unbusy() });
+    #$window->Unbusy();
 }
 
 ################################################################################
@@ -278,20 +285,29 @@ sub test_cluster($) {
     my @pkgs_hash = list_selected_packages();
     my $output = "";
     my $rc = 0;
+
     # 1st, create oscar testing environment.
-    !system("$apitests_path/helpers/create_oscartst.sh")
-        or carp("ERROR: Cant create oscartst user");
+    oscar_log(5, INFO, "Creating oscartst user if needed");
+    my $cmd = "$apitests_path/helpers/create_oscartst.sh";
+    oscar_log(7, ACTION, "About to run: $cmd");
+    !system($cmd)
+        or oscar_log(5, ERROR,"Cant create oscartst user");
+
     # FIXME: Copy files to oscartst user if needed.
+    oscar_log(5, INFO, "Copying files for oscartst user (FIXME: NOT IMPLEMENTED)");
 
     # Add packages tests to the list of tests.
+    oscar_log(5, INFO, "Querying tests to run for opkgs.");
     foreach my $pkg_name (@pkgs_hash) {
         if ( -f "$apitests_path/$pkg_name"."_validate.apb" ) {
             push @tests_to_run, "$pkg_name"."_validate.apb";
-            # FIXME: print "[INFO] Adding test: $pkg_name"."_validate.apb to the test list\n" if $verbose
+            oscar_log(6, INFO, "Adding test: $pkg_name"."_validate.apb to the test list");
         }
     }
 
     # Run all the tests.
+    oscar_log(5, INFO, "About to perform the following tests: \n  - " .
+                        join("  - \n", @tests_to_run) . "\n");
     ($output,$rc) = run_multiple_tests(@tests_to_run);
     if( $rc > 0) {
         display_ANSI_results($window, "Cluster validation", $output);
@@ -321,9 +337,9 @@ sub step_test($$) {
     if( $rc > 0) {
         $output = "Requirements for step '$step_name' are not met.\nPlease fix problems before retrying.\n\n".$output;
         display_ANSI_results($window, $test_name, $output);
-        oscar_log(1,INFO,"Refusing to enter step \"$step_name\" (Requirements not met).");
+        oscar_log(1, INFO, "Refusing to enter step \"$step_name\" (Requirements not met).");
     } else {
-        oscar_log(5,INFO,"Ready to enter step \"$step_name\"");
+        oscar_log(5, INFO, "Ready to enter step \"$step_name\"");
     }
     return ($rc);
 }

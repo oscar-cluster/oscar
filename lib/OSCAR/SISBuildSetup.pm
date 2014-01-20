@@ -28,6 +28,7 @@ use English;
 use Carp;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::OCA::OS_Settings;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
@@ -65,29 +66,29 @@ sub invoke
 #returns 0 on success, 1 on a failure
 #when one is returned, error output is printed
 {
-	oscar_log_section("Running ODA/SIS updater.");
+	oscar_log(3, SUBSECTION, "Running ODA/SIS updater.");
 
-	oscar_log_subsection("Reading from database.");
+	oscar_log(4, INFO, "Reading from database.");
 	read_from_database();
-	oscar_log_subsection("Completed database read.");
+	oscar_log(4, INFO, "Completed database read.");
 
-	oscar_log_subsection("Loading node information.");
+	oscar_log(4, INFO, "Loading node information.");
 	load_node_mac_ip_info();
-	oscar_log_subsection("Completed loading node information.");
+	oscar_log(4, INFO, "Completed loading node information.");
 	
-	oscar_log_subsection("Generating dhcp entries.");
+	oscar_log(4, INFO, "Generating dhcp entries.");
 	generate_dhcpd_entries();
-	oscar_log_subsection("Dhcp entries complete.");
+	oscar_log(4, INFO, "Dhcp entries complete.");
 	
-	oscar_log_subsection("Redoing $conf_file_dhcp file.");
+	oscar_log(4, INFO, "Redoing $conf_file_dhcp file.");
 	if ( redo_file($conf_file_dhcp, $front_marker, $back_marker, @temp_array_dhcp) == 1)
 	{
 		print_errors();	
 		return 1;
 	}
-	oscar_log_subsection("Redoing $conf_file_dhcp file complete.");
+	oscar_log(4, INFO, "Redoing $conf_file_dhcp file complete.");
 
-	oscar_log_subsection("Setting up SIS stuff.");
+	oscar_log(4, INFO, "Setting up SIS stuff.");
 	if (setup_sis_stuff() == 1)
 	{
 		print_errors();	
@@ -103,15 +104,15 @@ sub invoke
 		print_errors();	
 		return 1;
 	}
-	oscar_log_subsection("SIS stuff setup complete.");
+	oscar_log(4, INFO, "SIS stuff setup complete.");
 
-	oscar_log_subsection("Restarting dhcpd.");
+	oscar_log(4, INFO, "Restarting dhcpd.");
     !system_service(DHCP(),RESTART())
         or (print_errors(), return 1);
 
-	oscar_log_subsection("Completed restarting dhcpd.");
+	oscar_log(4, INFO, "Completed restarting dhcpd.");
 
-	oscar_log_section("Completed running ODA/SIS updater.");
+	oscar_log(3, SUBSECTION, "Completed running ODA/SIS updater.");
 }
 
 sub read_from_database
@@ -214,13 +215,13 @@ sub setup_sis_stuff
 
 	if (-d $SIS_dir)
 	{
-		opendir(DNAME, $SIS_dir) or Carp::croak "error: cannot open directory ($SIS_dir) - $!\n";
-		@temp = readdir(DNAME) or Carp::croak "error: cannot read directory ($SIS_dir) - $!\n";
+		opendir(DNAME, $SIS_dir) or (oscar_log(5, ERROR, "Cannot open directory ($SIS_dir) - $!"), return 1);
+		@temp = readdir(DNAME) or (oscar_log(5, ERROR, "Cannot read directory ($SIS_dir) - $!"), return 1);
 	}
 	else
 	{
-		my $e_string = "error in redo_file(): directory $SIS_dir does not exist.\n";
-		print $e_string;
+		my $e_string = "Error in redo_file(): directory $SIS_dir does not exist.";
+        oscar_log(5, ERROR, $e_string);
 		add_error($e_string);
 		return 1;
 	}
@@ -259,7 +260,7 @@ sub setup_sis_stuff
 					if ( (symlink("$SIS_dir$record_array[2].master", "$SIS_dir$record_array[0].sh")) == 0)
 					{
 						my $e_string = "error symlink failed for $SIS_dir$record_array[0].sh\n";
-						print $e_string;
+                        oscar_log(5, ERROR, $e_string);
 						add_error($e_string);
 						return 1;
 					}
@@ -267,7 +268,7 @@ sub setup_sis_stuff
 				else
 				{
 					my $e_string = "error Master script $SIS_dir$record_array[2].master does not exist for $record_array[0]\n";
-					print $e_string;
+                    oscar_log(5, ERROR, $e_string);
 					add_error($e_string);
 					return 1;
 				}
@@ -294,15 +295,15 @@ sub redo_file
 
 	if (-e $filename)
 	{
-		open(YADDA, "$filename") or Carp::croak "cannot open file $filename:$!\n";
+		open(YADDA, "$filename") or (oscar_log(1, ERROR, "Cannot open file $filename:$!"), return 1);
 		@in_array = <YADDA>;
 		chomp (@in_array);
 		close(YADDA);
 	}
 	else
 	{
-		my $e_string = "error in redo_file(): file $filename does not exist.\n";
-		print $e_string;
+		my $e_string = "Error in redo_file(): file $filename does not exist.";
+        oscar_log(5, ERROR, $e_string);
 		add_error($e_string);
 	}
 		
@@ -323,8 +324,8 @@ sub redo_file
 		{
 			if ($status != 1)
 			{
-				my $e_string = "error in redo_file(): back marker found, no front marker.\n";
-				print $e_string;
+				my $e_string = "Error in redo_file(): back marker found, no front marker.";
+                oscar_log(5, ERROR, $e_string);
 				add_error($e_string);
 				return 1;
 			}
@@ -343,8 +344,8 @@ sub redo_file
 	{
 		#error case, front marker found, no back marker
 		#log error
-		my $e_string = "error in redo_file(): front marker found in $filename, but no back marker.\n";
-		print $e_string;
+		my $e_string = "Error in redo_file(): front marker found in $filename, but no back marker.\n";
+        oscar_log(5, ERROR, $e_string);
 		add_error($e_string);
 		return 1;
 	}
@@ -357,7 +358,7 @@ sub redo_file
 		push @out_array, "$my_back_marker\n"; #pushing the back marker
 	}
 
-	open(YADDA, ">$filename") or Carp::croak "cannot open file $filename:$!\n";
+	open(YADDA, ">$filename") or (oscar_log(5, ERROR, "Cannot open file $filename:$!"), return 1);
 	print YADDA @out_array;	
 	close(YADDA);
 
@@ -378,15 +379,15 @@ sub run_command_general
 
 	if (defined (open (CMD, "$cmd_string 2>&1 |")))
 	{
-		print "executing:$cmd_string\n";
+		oscar_log(7, ACTION, "About to run: $cmd_string");
 		@cmd_out = <CMD>;
 		chomp(@cmd_out);
 		close(CMD);
 	}
 	else
 	{
-		my $e_string = "error executing:$cmd_string\n";
-		print $e_string;
+		my $e_string = "Failed to execute: $cmd_string";
+        oscar_log(5, ERROR, $e_string);
 		add_error($e_string);
 		return 1;
 	}
@@ -398,12 +399,12 @@ sub run_command_general
 	else
 	{
 		#log results
-		my $e_string = "error executing:$cmd_string:\n";
-		print $e_string;
+		my $e_string = "Failed to execute: $cmd_string:\n";
+        oscar_log(5, ERROR, $e_string);
 		add_error($e_string);
 		foreach $aline (@cmd_out)
 		{
-			print $aline."\n";
+			oscar_log(5, NONE, "    $aline");
 		}
 		return 1;
 	}
@@ -425,9 +426,10 @@ sub add_error
 sub print_errors
 {
 	my $error;
+    oscar_log(5, ERROR, "Summup of all above errors:");
 	foreach $error (@error_array)
 	{
-		print $error;
+		oscar_log(5, NONE, $error);
 	}
 }
 

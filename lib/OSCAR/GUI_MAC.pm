@@ -32,8 +32,6 @@ BEGIN {
 }
 
 use strict;
-#use lib "/usr/lib/systeminstaller";
-#use lib "/usr/lib/systemimager/perl";
 use Tk;
 use Tk::Tree;
 use SystemImager::Client;
@@ -42,6 +40,7 @@ use SIS::Adapter;
 use SIS::Client;
 use SIS::NewDB;
 use SIS::Image;
+use OSCAR::Env;
 use OSCAR::Tk;
 use OSCAR::MAC qw(save_to_file
                   load_from_file
@@ -72,6 +71,7 @@ use OSCAR::MAC qw(save_to_file
 
 use Carp;
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::Database;
 use OSCAR::Network;
 use vars qw($VERSION @EXPORT);
@@ -106,17 +106,17 @@ sub mac_window {
     $window->title("Setup Networking");
 
     if ($0 =~ /manage/) {
-        oscar_log_section("OSCAR Management Wizard: Setup networking");
+        oscar_log(2, SECTION, "OSCAR Management Wizard: Setup networking");
     } else {
-        oscar_log_section("Running step $step_number of the OSCAR wizard:".
-	"Setup networking");
+        oscar_log(2, SECTION, "Running step $step_number of the OSCAR wizard:".
+        "Setup networking");
     }
 
     my $instructions = $window->Message(-text => "MAC Address collection. ".
         "When a new MAC address is received on the network, it will appear in".
-	" the left column.  To assign that MAC address to a machine highlight".
-	" the address and the machine and click \"Assign MAC to Node\".",
-	-aspect => 800);
+        " the left column.  To assign that MAC address to a machine highlight".
+        " the address and the machine and click \"Assign MAC to Node\".",
+        -aspect => 800);
 
     our $starttext = $startcoll;
     our $label = $window->Label(-text => "Not Listening to Network. Click".
@@ -167,10 +167,10 @@ sub mac_window {
     $topframe->gridColumnconfigure(2, -weight => 2);
 
     our $start = $frame->Button(
-                                   -textvariable => \$starttext,
-                                   -command => [\&begin_collect_mac, 
-				                $$vars{interface} ],
-                                   );
+                                -textvariable => \$starttext,
+                                -command => [\&begin_collect_mac, 
+                                             $$vars{interface} ],
+                                );
     our $exitbutton = $frame->Button(
                                      -text => "Close",
                                      -borderwidth => "6",
@@ -178,10 +178,10 @@ sub mac_window {
                                      -command => sub {
                                          undef $destroyed;
                                          end_ping();
-                                         end_collect_mac($label);
-                                         oscar_log_subsection(
-					   "Step $step_number: ".
-					   "Completed successfully");
+                                         #end_collect_mac($label);
+                                         oscar_log(2, SUBSECTION,
+                                           "Step $step_number: ".
+                                           "Completed successfully");
                                          $parent->Unbusy();
                                          $window->destroy;
                                      },
@@ -189,8 +189,8 @@ sub mac_window {
     our $assignbutton = $frame->Button(
                                       -text => "Assign MAC to Node",
                                       -command => [\&assign2machine, 
-				                   undef, 
-						   undef],
+                                                   undef, 
+                                                   undef],
                                       -state => "disabled",
                                      );
     our $deletebutton = $frame->Button(
@@ -201,7 +201,7 @@ sub mac_window {
     our $dhcpbutton = $frame->Button(
                                     -text => "Configure DHCP Server",
                                     -command => [\&setup_dhcpd, 
-				                 $$vars{interface}],
+                                                 $$vars{interface}],
                                     -state => "disabled",
                                    );
 
@@ -232,13 +232,13 @@ sub mac_window {
                                    -text => "Import MACs from",
                                    -menuitems => [ [ 'command' => "file...",
                                                      "-command" => [
-						       \&macfile_selector, 
-						       "load", 
-						       $frame] ],
+                                                                    \&macfile_selector, 
+                                                                    "load", 
+                                                                    $frame] ],
                                                    [ 'command' => 
-						       "user input...",
+                                                     "user input...",
                                                      "-command" => 
-						       \&macs_inputer ],
+                                                     \&macs_inputer ],
                                                  ],
                                    -tearoff => 0,
                                    -direction => "right",
@@ -249,8 +249,8 @@ sub mac_window {
     our $savebutton = $frame->Button(
                                     -text => "Export MACs to file...",
                                     -command => [\&macfile_selector, 
-				                 "save", 
-						 $frame],
+                                                 "save", 
+                                                 $frame],
                                     -state => "disabled",
                                    );
 
@@ -314,7 +314,7 @@ sub mac_window {
     $refreshdhcp->grid($dhcpbutton, -sticky => "ew");
     my $label2 = $frame->Label(-text => 
         "Boot Environment (CD or PXE-boot) Setup",
-	-relief => 'sunken');
+        -relief => 'sunken');
     $label2->grid("-","-",-sticky => "ew");
     $uyok_radio->grid($bootcd, $networkboot, -sticky => "ew");
     $exitbutton->grid("-","-",-sticky=>"nsew",-ipady=>"4");
@@ -379,8 +379,8 @@ sub set_buttons {
 
     if( $trs && $node =~ /^\|([^\|]+)/) {
         my @client = SIS::NewDB::list_client(name=>$1);
-        print "\t -> Client:\n";
-        print Dumper @client;
+        oscar_log(9, INFO, "\t -> Client:\n");
+        print Dumper @client if($OSCAR::Env::oscar_verbose >= 9);
         my %h = (client=>$client[0]->{name},devname=>"eth0");
         my $adapter = list_adapter(\%h);
         $state = @$adapter[0]->{mac} ? "normal" : "disabled";
@@ -397,7 +397,7 @@ sub setup_dhcpd {
 
     $window->Busy(-recurse => 1);
     if (OSCAR::MAC::__setup_dhcpd($interface)) {
-        carp "ERROR: Impossible to setup dhcpd ($interface)";
+        oscar_log(1, ERROR, "Impossible to setup dhcpd ($interface)");
         return -1;
     }
     our $dhcpbutton->configure(-state => 'disabled'); 
@@ -410,27 +410,27 @@ sub regenerate_tree {
     $tree->delete("all");
     $tree->add("|",-text => "All Clients",-itemtype => "text");
     my @clients = sortclients list_client();
-    print "****** Clients ******\n";
-    print Dumper @clients;
+    oscar_log(9, INFO, "****** Clients ******");
+    print Dumper @clients if($OSCAR::Env::oscar_verbose >= 9);
     foreach my $client (@clients) {
         my %h = (client=>$client->{name},devname=>"eth0");
         my $adapter = SIS::NewDB::list_adapter(\%h);
         my $nodename = $client->{name};
         if (!defined $adapter) {
-            carp "ERROR: Impossible to get network adapter data for $nodename";
+            oscar_log(5, ERROR, "Impossible to get network adapter data for $nodename");
         }
-        print "**** Client Adapter ($nodename) ****\n";
-        print Dumper $adapter;
+        oscar_log(9, INFO, "**** Client Adapter ($nodename) ****");
+        print Dumper $adapter if($OSCAR::Env::oscar_verbose >= 9);
         $tree->add("|".$nodename, 
            -text => $nodename, # TODO: here we should use the hostname
            -itemtype => "text");
         my $mac=@$adapter[0]->{mac} || "" ;
         $tree->add("|".$nodename . "|mac",
-                   -text => @$adapter[0]->{name} . " mac = " . $mac, 
-		   -itemtype => "text");
+                   -text => @$adapter[0]->{name} . " mac = " . $mac,
+                   -itemtype => "text");
         $tree->add("|".$nodename . "|ip" . @$adapter[0]->{name},
                    -text => @$adapter[0]->{name} . " ip = " . @$adapter[0]->{ip}, 
-		   -itemtype => "text");
+                   -itemtype => "text");
     }
     $tree->autosetmode;
     set_buttons();
@@ -464,7 +464,7 @@ sub assign2machine {
     $node = $$node[0] if ref($node) eq "ARRAY";
 
     if($node =~ /^\|([^\|]+)/) {
-        oscar_log_subsection("Step $step_number: Assigned $mac to $1");
+        oscar_log(5, INFO, "Step $step_number: Assigned $mac to $1");
         @client = SIS::NewDB::list_client(name=>$1);
     } else {
         return -1;
@@ -474,16 +474,16 @@ sub assign2machine {
     my %h = (devname=>"eth0",client=>$1);
     my $adapter = SIS::NewDB::list_adapter(\%h);
     if (!defined($adapter)) {
-        carp "ERROR: Impossible to get data for $1";
+        oscar_log(5, ERROR, "Impossible to get data for $1");
         return -1;
     }
     my $ip = @$adapter[0]->{ip};
     if (!defined $ip) {
-        carp "ERROR: Impossible to get the Ip ($1)";
+        oscar_log(5, ERROR, "Impossible to get the Ip ($1)");
         return -1;
     }
     if (!OSCAR::Network::is_a_valid_ip ($ip)) {
-        carp "ERROR: Invalid IP $ip";
+        oscar_log(5, ERROR, "Invalid IP $ip");
         return -1;
     }
 
@@ -495,12 +495,14 @@ sub assign2machine {
     $adapdef->mac($mac);
 
     $MAC{$mac}->{client} = @$adapter[0]->{ip};
-    print "After MAC assignment...\n";
-    print Dumper $adapdef;
+
+    oscar_log(9, INFO, "After MAC assignment...");
+    print Dumper $adapdef if ($OSCAR::Env::oscar_verbose >= 9);
+
     my @a = ();
     push (@a, $adapdef);
     if (SIS::NewDB::set_adapter(@a)) {
-        carp "ERROR: Impossible to set the network adapter";
+        oscar_log(5, ERROR, "Impossible to set the network adapter");
         return -1;
     }
     regenerate_listbox();
@@ -594,7 +596,7 @@ sub clear_mac ($$) {
     my $adapter = list_adapter(\%h);
     my $mac = @$adapter[0]->{mac};
     if ( ! $mac ) { return undef; }
-    oscar_log_subsection("Step $step_number: Cleared $mac from $1");
+    oscar_log(5, INFO, "Step $step_number: Cleared $mac from $1");
 
     # now put the mac back in the pool
     $listbox->selectionClear(0, 'end');
@@ -611,7 +613,7 @@ sub clear_mac ($$) {
     push (@a, $adapdef);
 
     if (SIS::NewDB::set_adapter(@a)) {
-        carp "ERROR: Impossible to set the network adapter";
+        oscar_log(5, ERROR, "Impossible to set the network adapter.");
         return -1;
     }
 
@@ -671,9 +673,10 @@ sub end_collect_mac {
     our $exitbutton->configure(-state => 'normal');
     set_buttons();
 
+    # We do not kill the tcpdump process here, we just trigger the kill by
+    # setting global $COLLECT to 0.
+#    __end_collect_mac($interface);
     our $start->configure(-command => [\&begin_collect_mac, $interface]);
-    __end_collect_mac($interface);
-    oscar_log_subsection("Step $step_number: Stopped listening to network");
     $COLLECT = 0;
 }
 
@@ -700,41 +703,51 @@ sub begin_collect_mac {
     our $loadbutton->configure(-state => 'disabled');
     our $exitbutton->configure(-state => 'disabled');
 
+    oscar_log(2, SUBSECTION, "Starting to collect MACs");
+
     $start->configure(-command => [\&end_collect_mac, $interface]);
     start_ping($interface);
     my $cmd = "/usr/sbin/tcpdump -i $interface -n -e -l";
-    oscar_log_subsection("Step $step_number: Starting to listen to network: ".
-                         "$cmd");
-    open(TCPDUMP,"$cmd |") or (carp("Could not run $cmd"), return undef);
+    oscar_log(3, INFO, "Starting to listen to network.");
+    oscar_log(7, ACTION, "About to run: $cmd");
+    my $tcpdump_pid = open(TCPDUMP,"$cmd |") or (oscar_log(5, ERROR, "Could not run $cmd"), return undef);
     $label->configure(-text => 
         "Currently Scanning Network... Click \"$starttext\" to stop.");
+    oscar_log(6, INFO, "tcpdump process pid: $tcpdump_pid");
     while($COLLECT and $_ = <TCPDUMP>) {
         # print $_ unless $_ =~ /echo/;
         # This is for tcpdump version 3.8 (MDK 10.0)
     if(/^\S+.*BOOTP\/DHCP,\sRequest\sfrom\s([a-f0-9\:]{11,17}).*$/) {
-        regenerate_listbox() if add_mac_to_hash( $1 );
+        regenerate_listbox() if add_mac_to_hash( $1, undef );
     }
     # This is the for tcp dump version 3.6 (MDK 8.0)
         if(/^\S+\s+([a-f0-9\:]{11,17}).*bootp.*\(DF\)/) {
 #            print "1 collected: ", $_||"NOTHING\n";
-             regenerate_listbox() if add_mac_to_hash( $1 );
+             regenerate_listbox() if add_mac_to_hash( $1, undef );
         }
         # This is for tcp dump version 3.4 (RH 7.1)
         elsif (/^\S+\s+\S\s+([a-f0-9\:]{11,17}).*\[\|bootp\]/) {
 #            print "2 collected: ", $_||"NOTHING\n";
-             regenerate_listbox() if add_mac_to_hash( $1 );
+             regenerate_listbox() if add_mac_to_hash( $1, undef );
         }
         # This is for tcp dump version 3.6 (RH 7.2 for IA64)
         elsif(/^\S+\s+([a-f0-9\:]{11,17}).*bootp/) {
 #            print "3 collected: ", $_||"NOTHING\n";
-             regenerate_listbox() if add_mac_to_hash( $1 );
+             regenerate_listbox() if add_mac_to_hash( $1, undef );
         }
 
         $window->update;
     }
     close(TCPDUMP);
-    system("killall tcpdump");
+    # We don't need to end collect mac. In fact, closing the tcpdump
+    # output sends SIG_HUP to tcpdump which quits.
+    # __end_collect_mac($tcpdump_pid);
+    oscar_log(3, INFO, "Finished listening to network.");
+
     end_ping();
+
+
+    oscar_log(2, SUBSECTION, "Stopped collecting MACs");
 }
 
 # Import MACs via user input (entry widget)
@@ -858,7 +871,7 @@ sub build_autoinstall_cd {
     our $uyok;
 
     if (OSCAR::MAC::__build_autoinstall_cd($ip, $uyok)) {
-        carp "ERROR: Impossible to build the autoinstall CDROM";
+        oscar_log(1, ERROR, "Failed to build the autoinstall CDROM.");
         return 0;
     }
     OSCAR::Tk::done_window($window,"You can now burn your ISO image to a " .
@@ -877,7 +890,7 @@ sub enable_install_mode {
 
     $window->Busy(-recurse => 1);
     if (OSCAR::MAC::__enable_install_mode() == 0) {
-        carp "ERROR: Impossible to enable install mode";
+        oscar_log(1, ERROR, "Impossible to enable install mode.");
         return 0;
     }
     our $dhcpbutton->configure(-state => 'normal');

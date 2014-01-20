@@ -43,6 +43,7 @@ use Carp;
 
 use OSCAR::ConfigManager;
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 
 @EXPORT = qw (
                 remove_prereq
@@ -53,29 +54,31 @@ sub remove_prereq ($$) {
     my ($prereq_cmd, $prereq_path) = @_;
     my $cmd;
 
+    oscar_log(3, SUBSECTION, "Removing prereqs");
     # We get the current status of the prereq first
     $cmd = $prereq_cmd . " --status " . $prereq_path;
     my $prereq_name = basename ($cmd);
-    OSCAR::Logger::oscar_log_subsection "\nDealing with Prereq $prereq_name";
-    if (system ($cmd)) {
-        OSCAR::Logger::oscar_log_subsection "$prereq_name is not installed.";
+    oscar_log(4, INFO, "Dealing with Prereq $prereq_name");
+    if (oscar_system ($cmd)) {
+        oscar_log(4, INFO, "$prereq_name is not installed.");
         return 0;
     } else {
-        # We try to install the prereq
+        # We try to remove the prereq
         $cmd = $prereq_cmd . " --remove " . $prereq_path;
-        if (system ($cmd)) {
-            carp "ERROR: impossible to remove $prereq_name ($cmd).\n";
+        if (oscar_system ($cmd)) {
+            oscar_log(4, ERROR, "Failed to remove $prereq_name");
             return -1;
         }
 
         # Packman should be installed now
         $cmd = $prereq_cmd . " --status " . $prereq_path;
-        if (!system ($cmd)) {
-            carp "ERROR: $prereq_name is still installed\n";
+        if (!oscar_system ($cmd)) {
+            oscar_log(4, ERROR, "$prereq_name is still installed");
             return -1;
         }
     }
 
+    oscar_log(3, SUBSECTION, "Prereqs removed");
     return 0;
 }
 
@@ -104,7 +107,7 @@ sub startover_server ($) {
                                                          undef,
                                                          undef);
         if ($rc != 1) {
-            carp "ERROR: Impossible to get the list of selected OPKGs";
+            oscar_log(5, ERROR, "Unable to get the list of selected OPKGs");
             return -1;
         }
         foreach my $o (@selected) {
@@ -114,10 +117,9 @@ sub startover_server ($) {
 
         # Drop the OSCAR database
         my $cmd = $oscar_cfg->{'binaries_path'} . "/oda --reset";
-        OSCAR::Logger::oscar_log_subsection "Executing: $cmd\n";
-        system ($cmd);
+        oscar_system ($cmd);
     } else {
-        print "ODA is not installed, we skip the ODA reset\n";
+        oscar_log(5, INFO, "ODA is not installed, we skip the ODA reset");
     }
     
     return 0;
@@ -126,13 +128,13 @@ sub startover_server ($) {
 sub startover_stage2 ($) {
     my $config = shift;
     if (!defined $config) {
-        carp "ERROR: Invalid configurator object.\n";
+        oscar_log(5, ERROR, "Invalid configurator object.");
         return -1;
     }
 
     # Remove server side of OSCAR
     if (startover_server ($config)) {
-        carp "ERROR: Start over of the server side of OSCAR failed";
+        oscar_log(5, ERROR, "Start over of the server side of OSCAR failed");
         return -1;
     }
     
@@ -143,8 +145,8 @@ sub startover_stage2 ($) {
     my $orderfile = "$prereqs_path/prereqs.order";
     my @ordered_prereqs;
     if (! -f "$orderfile") {
-        carp "ERROR: Impossible to find the prereq ordering file".
-              " ($orderfile)\n";
+        oscar_log(5, ERROR, "Can't to find the prereq ordering file".
+              " ($orderfile)");
         return -1;
     }
     open(MYFILE, $orderfile);
@@ -172,7 +174,7 @@ sub startover_stage2 ($) {
 sub startover_stage1 ($) {
     my $config = shift;
     if (!defined $config) {
-        carp "ERROR: Invalid configurator object.\n";
+        oscar_log(5, ERROR, "Invalid configurator object.");
         return -1;
     }
 
@@ -180,12 +182,12 @@ sub startover_stage1 ($) {
     use OSCAR::Utils;
     my $distro = OSCAR::PackagePath::get_distro();
     if (!OSCAR::Utils::is_a_valid_string ($distro)) {
-        carp "ERROR: Impossible to detect the local distro";
+        oscar_log(5, ERROR, "Unable to detect the local distro");
         return -1;
     }
     my $compat_distro = OSCAR::PackagePath::get_compat_distro ($distro);
     if (!OSCAR::Utils::is_a_valid_string ($compat_distro)) {
-        carp "ERROR: Impossible to detect the compat distro";
+        oscar_log(5, ERROR, "Unable to detect the compat distro");
         return -1;
     }
 
@@ -224,7 +226,7 @@ sub startover_stage1 ($) {
     # Remove PackMan
     my $packman_path = $config->{'packman_path'};
     if (! defined ($packman_path) || ($packman_path eq "")) {
-        carp "ERROR: Impossible to get the Packman path\n";
+        oscar_log(5, ERROR, "Unable to get the Packman path");
         return -1;
     }
     remove_prereq ($ipcmd, $packman_path);
@@ -233,13 +235,13 @@ sub startover_stage1 ($) {
     my $file = "/tftpboot/distro/$compat_distro.url";
     if (-f $file) {
         OSCAR::Logger::oscar_log_subsection ("Removing $file...");
-        unlink ($file) or (carp "ERROR: Impossible to remove $file",
+        unlink ($file) or (oscar_log(5, ERROR, "Failed to remove $file"),
                            return -1);
     }
     $file = "/tftpboot/oscar/$distro.url";
     if (-f $file) {
         OSCAR::Logger::oscar_log_subsection ("Removing $file...");
-        unlink ($file) or (carp "ERROR: Impossible to remove $file",
+        unlink ($file) or (oscar_log(5, ERROR, "Failed to remove $file"),
                            return -1);
     }
     
@@ -252,19 +254,21 @@ sub start_over () {
     my $oscar_configurator = OSCAR::ConfigManager->new(
         config_file => "$configfile_path");
     if (!defined $oscar_configurator) {
-        carp "ERROR: Invalid configurator object.\n";
+        oscar_log(5, ERROR, "Invalid configurator object.");
         return -1;
     }
     my $config = $oscar_configurator->get_config();
     
 
     if (startover_stage2 ($config)) {
-        carp "ERROR: Impossible to execute stage 2 of the start over process";
+        oscar_log(5, ERROR, "Failed to execute stage 2 of the start over process");
         return -1;
     }
     if (startover_stage1 ($config)) {
-        carp "ERROR: Impossible to execute stage 1 of the start over process";
+        oscar_log(5, ERROR, "Failed to execute stage 1 of the start over process");
         return -1;
     }
     return 0;
 }
+
+1;

@@ -36,7 +36,7 @@ use strict;
 #use lib "/usr/lib/systeminstaller";
 use vars qw($VERSION @EXPORT);
 use Tk;
-use Carp;
+#use Carp;
 use SystemInstaller::Tk::Common;
 use base qw(Exporter);
 use SIS::Client;
@@ -44,6 +44,7 @@ use SIS::Adapter;
 use SIS::NewDB;
 use OSCAR::Database;
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::Network;
 use OSCAR::Package;
 use OSCAR::ConfigManager;
@@ -152,10 +153,12 @@ sub delnodes {
     if ($fail) {
       OSCAR::Tk::error_window($window,"Clients deleted, but reconfiguration ".
                               "failed.");
+      oscar_log(4, ERROR, "Clients deleted, but reconfiguration failed.");
       return 0;
     } else {
         &delete_client_node_opkgs(@clients);
         OSCAR::Tk::done_window($window,"Clients deleted.");
+        oscar_log(4, INFO, "Clients deleted.");
     }
 
     # Update the /etc/hosts file
@@ -163,7 +166,7 @@ sub delnodes {
     if (OSCAR::FileUtils::find_block_from_file ("/etc/hosts", 
                                                 "OSCAR hosts",
                                                 \@data)) {
-        carp "ERROR: Impossible to extract OSCAR block from /etc/hosts";
+        oscar_log(6, ERROR, "Impossible to extract OSCAR block from /etc/hosts");
         return 0;
     }
     for (my $i = 0; $i < scalar (@data); $i++) {
@@ -178,7 +181,7 @@ sub delnodes {
     if (OSCAR::FileUtils::replace_block_in_file ("/etc/hosts",
                                                  "OSCAR hosts",
                                                  \@data)) {
-        carp "ERROR: Impossible to replace OSCAR hosts block in /etc/hosts";
+        oscar_log(6, ERROR, "Impossible to replace OSCAR hosts block in /etc/hosts");
         return 0;
     }
 
@@ -214,7 +217,7 @@ sub delete_client_node_opkgs {
     my @nodes = @_;
     foreach my $node (@nodes){
        if (!OSCAR::Database::delete_node($node, undef, undef)) {
-          carp("Failed to delete the records for node_config_revs and config_opkgs");
+          oscar_log(6, ERROR, "Failed to delete the records for node_config_revs and config_opkgs");
        }
     }
 }

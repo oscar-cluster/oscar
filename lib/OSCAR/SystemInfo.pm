@@ -27,6 +27,8 @@ use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
 use OSCAR::Utils;
 use OSCAR::FileUtils;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use Carp;
 use vars qw(@EXPORT $VERSION);
 use base qw(Exporter);
@@ -47,7 +49,7 @@ sub read_proc_entry ($$) {
     my $entry = shift;
 
     my %data;
-    open(DAT, $entry) || die("Could not open file!");
+    open(DAT, $entry) || (oscar_log(5, ERROR, "Unable to read $entry"), return undef);
     foreach my $line (<DAT>) {
         my ($key, $value) = split(":", $line);
         $key = OSCAR::Utils::trim ($key);
@@ -70,9 +72,14 @@ sub proc_info ($) {
     my $self = shift;
 
     my %data = get_proc_info ($self);
-    print "Number of CPU(s): $data{'processor'}\n";
-    print "Number of cores: $data{'cpu cores'}\n";
-    print "Clock speed: $data{'cpu MHz'} MHz\n";
+    if(%data) {
+        oscar_log(5, INFO, "Processor(s) infos:");
+        oscar_log(5, NONE, "    Number of CPU(s): $data{'processor'}");
+        oscar_log(5, NONE, "    Number of cores: $data{'cpu cores'}");
+        oscar_log(5, NONE, "    Clock speed: $data{'cpu MHz'} MHz");
+    } else {
+        oscar_log(5, ERROR, "Failed to get processor info.");
+    }
 }
 
 sub get_number_of_cache_levels ($) {
@@ -85,28 +92,33 @@ sub get_number_of_cache_levels ($) {
 sub cache_info ($) {
     my $self = shift;
 
+    oscar_log(5, INFO, "Processor(s) cache infos:");
     my %cpu_data = get_proc_info ($self);
+    if(! %cpu_data) {
+        oscar_log(5, ERROR, "Failed to get cpu cache info.");
+        return;
+    }
     for (my $ncpu = 0; 
          $ncpu < ($cpu_data{'processor'} * $cpu_data{'cpu cores'});
          $ncpu++) {
         my $dir = "/sys/devices/system/cpu/cpu$ncpu/cache";
-        print "\nCPU/Core ($ncpu) cache info:\n";
+        oscar_log(5, INFO, "CPU/Core ($ncpu) cache info:");
         for (my $i=0; $i<get_number_of_cache_levels($self); $i++) {
             my $path = "$dir/index$i";
-            open(FILE, "$path/level") || die("Could not open file!");
+            open(FILE, "$path/level") || (oscar_log(5, ERROR, "Failed to get cache level."), return);
             my $level = <FILE>;
             chomp $level;
             close (FILE);
-            open(FILE, "$path/type") || die("Could not open file!");
+            open(FILE, "$path/type") || (oscar_log(5, ERROR, "Failed to get cache type."), return);
             my $type = <FILE>;
             chomp $type;
             $type = "Shared" if ($type eq "Unified");
             close (FILE);
-            open(FILE, "$path/size") || die("Could not open file!");
+            open(FILE, "$path/size") || (oscar_log(5, ERROR, "Failed to get cache size."), return);
             my $size = <FILE>;
             chomp $size;
             close (FILE);
-            print "\tL".$level." cache ($type): $size\n";
+            oscar_log(5, NONE, "    L".$level." cache ($type): $size");
         }
         #my %data = read_proc_entry
     }
