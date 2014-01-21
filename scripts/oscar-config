@@ -16,10 +16,13 @@
 #
 
 use strict;
-use Carp;
+#use Carp;
 use Cwd qw(chdir cwd);
+use OSCAR::Env;
 use Getopt::Long;
 use OSCAR::Utils;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use warnings "all";
 
 BEGIN {
@@ -63,6 +66,25 @@ GetOptions(
         ) || help_and_exit();
 
 
+if ($debug) {
+    $ENV{OSCAR_VERBOSE} = 10;
+    $OSCAR::Env::oscar_verbose=10;
+} elsif ($verbose) {
+    $ENV{OSCAR_VERBOSE} = 5;
+    $OSCAR::Env::oscar_verbose=5;
+}
+
+
+# Enforce that the user running this script is 'root'
+sub force_run_as_root() {
+    if($< != 0) {
+        oscar_log(1, ERROR, "You must be 'root' to use these options. Aborting.");
+        exit 1;
+    }
+    oscar_log(5, INFO, "We run as 'root'. Ok.");
+}
+
+
 ################################################################################
 # Boostrap OSCAR (install prereqs, setup the system, install core packages on  #
 # the server side.                                                             #
@@ -72,8 +94,8 @@ GetOptions(
 #         error.                                                               #
 ################################################################################
 sub bootstrap () {
-    OSCAR::Logger::init_log_file ("/var/log/oscar/bootstrap.log");
-    OSCAR::Logger::oscar_log_section "OSCAR bootstrap";
+    init_log_file ("/var/log/oscar/bootstrap.log");
+    oscar_log(2, INFO, "Bootstrapping OSCAR");
     # First of all we check if the OSCAR_HOME environment variable is set or not
     # This variable is currently mandatory for the usage of OSCAR.
 #     if ($ENV{OSCAR_HOME} eq "") {
@@ -92,16 +114,16 @@ sub bootstrap () {
     require OSCAR::Bootstrap;
     my $configurator = OSCAR::Bootstrap::bootstrap_stage0();
     if (!defined $configurator) {
-        carp "ERROR: Impossible to complete stage 0 of the bootstrap.";
+        oscar_log(1, ERROR, "Failed to complete stage 0 of the bootstrap.");
         return -1;
     }
 
     if (OSCAR::Bootstrap::oscar_bootstrap ($configurator)) {
-        carp "ERROR: Impossible to bootstrap OSCAR";
+        oscar_log(1, ERROR, "Failed to bootstrap OSCAR");
         return -1;
     }
 
-    OSCAR::Logger::oscar_log_section "Successfully bootstrapped OSCAR";
+    oscar_log(1, INFO, "Successfully bootstrapped OSCAR");
     return 0;
 }
 
@@ -158,6 +180,7 @@ sub display_list_setup_distros () {
 # Return: exit 0 if success, exit 1 else.                                      #
 ################################################################################
 sub generate_config_file () {
+    force_run_as_root();
     if (! -d "/etc/oscar/") {
         mkdir "/etc/oscar";
     }
@@ -183,7 +206,7 @@ sub generate_config_file () {
         }
     } else {
         if ( -f "/etc/oscar/oscar.conf") {
-            print "[INFO] configuration file already exists, no updating\n";
+            oscar_log(5, INFO, "Configuration file already exists, no updating");
             exit 0;
         }
         print "Not yet implemented\n";
@@ -216,12 +239,15 @@ if ($verbose) {
 }
 
 if ($startover) {
+    force_run_as_root();
     require OSCAR::Startover;
     if (OSCAR::Startover::start_over()) {
-        die "ERROR: Impossible to start over, please bootstrap OSCAR again ".
-            "to try to recover";
+        oscar_log(1, ERROR, "Failed to start over, please bootstrap OSCAR again ".
+            "to try to recover");
+        exit 1;
         }
-    goto EXIT_SUCCESS;
+#    goto EXIT_SUCCESS;
+    exit 0;
 }
 
 if ($distro_repo) {
@@ -262,12 +288,15 @@ if ($distro_to_setup) {
     require OSCAR::Logger;
     require OSCAR::Utils;
 
-    OSCAR::Logger::oscar_log_section ("Setting $distro_to_setup...");
+    force_run_as_root();
+
+    oscar_log(2, SUBSECTION, "Setting $distro_to_setup...");
 
     # We check first if the distro is supported
     my @distros = OSCAR::Distro::get_list_of_supported_distros ();
     if (OSCAR::Utils::is_element_in_array ($distro_to_setup, @distros) == 0) {
-        die "ERROR: Unsupported distro ($distro_to_setup)";
+        oscar_log(1, ERROR, "Unsupported distro ($distro_to_setup)");
+        exit 1;
     }
 
     # Before setting up repositories; we remove existing repo files
@@ -278,7 +307,8 @@ if ($distro_to_setup) {
                       "/tftpboot/oscar/$compat_distro.url");
     foreach my $f (@conf_files) {
         if (-f $f) {
-            unlink(@conf_files) or die ("ERROR: Impossible to delete $f");
+            oscar_log(5, ACTION, "Removing file: $f");
+            unlink(@conf_files) or oscar_log(5, ERROR, "Failed to delete $f");
         }
     }
 
@@ -291,29 +321,33 @@ if ($distro_to_setup) {
 
     # We setup the distro repos (configuration files in /tftpboot/distro).
     if (OSCAR::Utils::is_a_valid_string ($distro_repo_to_use) == 0) {
-        OSCAR::Logger::oscar_log_subsection ("... using default distro repo");
+        oscar_log(2, INFO, "... using default distro repo");
         if (OSCAR::PackagePath::use_default_distro_repo ($distro_to_setup)) {
-            die "ERROR: Impossible to set the default distro repo";
+            oscar_log(1, ERROR, "Failed to set the default distro repo");
+            exit 1;
         }
     } else {
-        OSCAR::Logger::oscar_log_subsection ("... using $distro_repo_to_use");
+        oscar_log(2, INFO, "... using $distro_repo_to_use");
         OSCAR::PackagePath::use_distro_repo ($distro_to_setup,
                                              $distro_repo_to_use);
     }
 
     # We setup the OSCAR repos (configuration files in /tftpboot/oscar).
     if (OSCAR::Utils::is_a_valid_string ($oscar_repo_to_use) == 0) {
-        OSCAR::Logger::oscar_log_subsection ("... using default OSCAR repo");
+        oscar_log(2, INFO, "... using default OSCAR repo");
         if (OSCAR::PackagePath::use_default_oscar_repo ($distro_to_setup)) {
-            die "ERROR: Impossible to set the default repository";
+            oscar_log(1, ERROR, "Failed to set the default repository");
         }
     } else {
-        OSCAR::Logger::oscar_log_subsection ("... using $oscar_repo_to_use");
+        oscar_log(2, INFO, "... using $oscar_repo_to_use");
         OSCAR::PackagePath::use_oscar_repo ($distro_to_setup,
                                              $oscar_repo_to_use);
     }
 
-    goto EXIT_SUCCESS;
+    oscar_log(1, INFO, "$distro_to_setup successfully set up.");
+
+#    goto EXIT_SUCCESS;
+    exit 0;
 }
 
 # if ($network) {
@@ -325,34 +359,46 @@ if ($distro_to_setup) {
 # }
 
 if ($headnode_nic) {
-    OSCAR::Logger::oscar_log_subsection "--> Updating the NIC used on the ".
-        "headnode for cluster management\n";
+
+    force_run_as_root();
+
+    oscar_log(2, SUBSECTION, "Updating the NIC used on the ".
+        "headnode for cluster management");
     require OSCAR::Network;
     if (OSCAR::Network::update_head_nic ()) {
-        die "ERROR: Impossible to update the headnode NIC data";
+        oscar_log(1, ERROR, "Failed to update the headnode NIC data");
+        exit 1;
     }
+    oscar_log(1, INFO, "Successfully updated the NIC used on the headnode ".
+        "headnode for cluster management");
 }
 
 if ($sanity_check) {
+
+    force_run_as_root();
+
     require OSCAR::ConfigFile;
     my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
                                                       undef,
                                                       "OSCAR_SCRIPTS_PATH");
-    if (system ("$binaries_path/system-sanity")) {
-        die "ERROR: Impossible to successfully execute system-sanity";
+    if (oscar_system ("$binaries_path/system-sanity")) {
+        oscar_log(1, ERROR, "Failed to successfully execute system-sanity");
     }
 }
 
 if ($bootstrap) {
+
+    force_run_as_root();
+
     if (bootstrap()) {
-        die "ERROR: Impossible to bootstrap OSCAR";
+        oscar_log(1, ERROR, "Unable to bootstrap OSCAR");
+        exit 1;
     }
 }
 
-EXIT_SUCCESS:
-$ENV{OSCAR_VERBOSE} = $initial_verbose_value;
+#EXIT_SUCCESS:
+#$ENV{OSCAR_VERBOSE} = $initial_verbose_value;
 exit 0;
-
 
 __END__
 
