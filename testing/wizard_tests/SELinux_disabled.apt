@@ -41,6 +41,8 @@ Desired result : PASS
     <command interpreter="/bin/bash" wdir="/tmp">
 if grep 'SELINUX=.*enforcing' /etc/selinux/config
 then
+    echo "SELinux is enabled in /etc/selinux/config."
+    echo "Make sure that SELINUX is not set to enforcing. before retrying".
     exit 1
 else
     exit 0
