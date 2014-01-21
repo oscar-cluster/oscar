@@ -42,6 +42,8 @@ Desired result : PASS
     <command interpreter="/bin/bash" wdir="/tmp" uname="oscartst">
 if grep '::1.*localhost\.localdomaine' /etc/hosts
 then
+    echo "localhost.localdomain has an IP V6 assigned (::1)"
+    echo "Please fix /etc/hosts and try again."
     exit 1
 else
     exit 0
