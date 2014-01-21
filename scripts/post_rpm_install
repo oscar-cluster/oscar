@@ -41,67 +41,85 @@ use File::Path;
 use File::Basename;
 use AppConfig;
 use SystemInstaller::Utils;
+use OSCAR::Env;
 use OSCAR::ConfigFile;
 use OSCAR::Database;
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::Network;
 use OSCAR::Package;
 use Getopt::Long;
 use Cwd;
 
-my $verbose;
+my ($verbose,$debug,$quiet);
 GetOptions(
-    "verbose"   => \$verbose,
-    );
+            "verbose"   => \$verbose,
+            "debug"     => \$debug,
+            "quiet"     => \$quiet,
+          );
 
 my $initial_verbose_value = 0;
 $initial_verbose_value = $ENV{OSCAR_VERBOSE} if (defined $ENV{OSCAR_VERBOSE});
-if ($verbose) {
+
+if ($debug) {
+    $ENV{OSCAR_VERBOSE} = 10;
+    $OSCAR::Env::oscar_verbose=10;
+} elsif ($verbose) {
     $ENV{OSCAR_VERBOSE} = 5;
+    $OSCAR::Env::oscar_verbose=5;
+} elsif ($quiet) {
+    $ENV{OSCAR_VERBOSE} = 0;
+    $OSCAR::Env::oscar_verbose=0;
+} else {
+    $ENV{OSCAR_VERBOSE} = 1;
+    $OSCAR::Env::oscar_verbose=1;
 }
 
 my $imagename = shift 
-    or die("ERROR: No arguments passed - please pass <image name> and <headnode interface name>");
+    or (oscar_log(1, ERROR, "No arguments passed - please pass <image name> and <headnode interface name>"),exit 1);
 my $serverint = shift 
-    or die("ERROR: Only one argument passed - please pass <image name> and <headnode interface name>"); 
+    or (oscar_log(5, ERROR, "Only one argument passed - please pass <image name> and <headnode interface name>"), exit 1); 
 
 my $config = SystemInstaller::Utils::init_si_config();
 
 my $targetdir = $config->default_image_dir . "/$imagename";
 
 if(!-d $targetdir) {
-    die ("ERROR: The directory $targetdir doesn't exist");
+    oscar_log(1, ERROR, "The directory $targetdir doesn't exist");
+    exit 1;
 }
 
-oscar_log_subsection("post_rpm_install: Making sure /dev/null is r/w for all");
-!system("chmod a+rw $targetdir/dev/null") 
-    or die("ERROR: Couldn't set $targetdir/dev/null permissions!");
+oscar_log(2, SUBSECTION, "Running post_rpm_install");
+oscar_log(5, INFO, "post_rpm_install: Making sure /dev/null is r/w for all");
+!oscar_system("chmod a+rw $targetdir/dev/null") 
+    or (oscar_log(1, ERROR, "Couldn't set $targetdir/dev/null permissions!"), exit 1);
 
-oscar_log_subsection("post_rpm_install: Syncing system files");
+oscar_log(3, INFO, "post_rpm_install: Syncing system files");
 sync_system_files($targetdir) 
-    or die("ERROR: Couldn't sync system files ($targetdir)");
+    or (oscar_log(1, ERROR, "Couldn't sync system files ($targetdir)"), exit 1);
 
-oscar_log_subsection("post_rpm_install: Syncing user files");
+oscar_log(3, INFO, "post_rpm_install: Syncing user files");
 sync_user_files($targetdir) 
-    or die("ERROR: Couldn't sync user files ($targetdir)");
+    or (oscar_log(1, ERROR, "Couldn't sync user files ($targetdir)"), exit 1);
 
-oscar_log_subsection("post_rpm_install: Running ssh setup");
+oscar_log(3, INFO, "post_rpm_install: Running ssh setup");
 my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
                                                   undef,
                                                   "OSCAR_SCRIPTS_PATH");
 my $cmd = "$binaries_path/ssh_install $targetdir";
-!system($cmd) 
-    or die("ERROR: Couldn't generate ssh keys ($cmd)");
+!oscar_system($cmd) 
+    or (oscar_log(1, ERROR, "Couldn't generate ssh keys ($cmd)"), exit 1);
 
 $cmd = "$binaries_path/integrate_image --name $imagename --verbose";
-if (system ($cmd)) {
-    die "ERROR: Impossible to execute $cmd";
+if (oscar_system ($cmd)) {
+    oscar_log(1, ERROR, "Failed to integrate_image");
+    exit 1;
 }
 
 # unmount /proc from image, if needed
-if (!system("grep $targetdir/proc /proc/mounts >/dev/null 2>&1")) {
-    oscar_log_subsection("post_rpm_install: unmounting /proc from image $imagename");
-    !system("umount $targetdir/proc") or croak("Couldn't umount /proc from image!");
+if (!oscar_system("grep $targetdir/proc /proc/mounts >/dev/null 2>&1")) {
+    oscar_log(3, INFO, "post_rpm_install: unmounting /proc from image $imagename");
+    !oscar_system("umount $targetdir/proc") or (oscar_log(1, ERROR, "Couldn't umount /proc from image!"), exit 1);
 }
 
 # Here we run all the post_rpm_install scripts
@@ -110,24 +128,24 @@ my @pkgs = OSCAR::Database::list_selected_packages();
 
 my $return = 0;
 
-oscar_log_subsection "Running OSCAR package post_rpm_install scripts for "
-                     .join(", ", @pkgs);
+oscar_log(3, INFO, "Running OSCAR package post_rpm_install scripts for "
+                     .join(", ", @pkgs));
 foreach my $pkg (@pkgs) {       # %$pkg_ref has the two keys ( package, version);
     if(OSCAR::Package::run_pkg_script_chroot($pkg, $targetdir) != 1) {
-       carp("ERROR: Couldn't run post_rpm_install for $pkg");
+       oscar_log(2, ERROR, "Couldn't run post_rpm_install for $pkg");
        $return++;
     }
     # Config script running outside chroot, for access to
     # master databases, xml files and parsing perl modules.
     # Argument passed: image directory path.
     if(!OSCAR::Package::run_pkg_script($pkg,"post_rpm_nochroot",1,$targetdir)) {
-       carp("ERROR: Couldn't run post_rpm_nochroot for $pkg");
+       oscar_log(2, ERROR, "Couldn't run post_rpm_nochroot for $pkg");
        $return++;
     }
 }
 
 if($return) {
-    die ("ERROR: There were errors running post_rpm_install scripts.  Please check your logs.");
+    oscar_log (1, ERROR, "There were errors running post_rpm_install scripts. Please check your logs.");
 }
 
 $ENV{OSCAR_VERBOSE} = $initial_verbose_value;
@@ -142,12 +160,12 @@ sub link_kernel_files {
     chdir "$imagedir/boot" or croak ("Can't change to image /boot directory");
     foreach my $link ("module-info","System.map","vmlinuz") {
         unless (-e $link) {
-	    @file = glob("$link*smp");
-	    symlink($file[0], $link) or croak("Couldn't make symlink for $link");
-	}
+            @file = glob("$link*smp");
+            symlink($file[0], $link) or (oscar_log(1, ERROR, "Couldn't make symlink for $link"), exit 1);
+        }
     }
     chdir "$dir" 
-        or (carp ("ERROR: Can't change back to original directory"), return 0);
+        or (oscar_log(1, ERROR, "Can't change back to original directory"), return 0);
     return 1;
 }
 
@@ -159,12 +177,13 @@ sub sync_system_files {
     foreach my $file (@files) {
       if(-e $file) {
         copy($file,$imagedir . $file) 
-            or (carp("Couldn't populate $file to $imagedir"), return 0);
+            or (oscar_log(1, ERROR, "Couldn't populate $file to $imagedir"), return 0);
       }
     }
     return 1;
 }
 
+# Return: 1 if success, 0 else.
 sub sync_user_files {
     my ($imagedir) = @_;
 
@@ -172,7 +191,7 @@ sub sync_user_files {
     foreach my $file (@files) {
       if(-e $file) {
         copy($file,$imagedir . $file) 
-            or (carp("Couldn't populate $file to $imagedir"), return 0);
+            or (oscar_log(1, ERROR, "Couldn't populate $file to $imagedir"), return 0);
       }
     }
     return 1;
