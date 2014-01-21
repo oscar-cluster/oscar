@@ -38,22 +38,36 @@ use SIS::NewDB;
 use File::Copy;
 use File::Path;
 use File::Basename;
+use OSCAR::Env;
 use OSCAR::Database;
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::Package;
 use Getopt::Long;
 use Carp;
 
-my ($verbose);
+my ($verbose,$debug,$quiet);
 GetOptions(
             "verbose"   => \$verbose,
+            "debug"     => \$debug,
+            "quiet"     => \$quiet,
           );
 
 my $initial_verbose_value = 0;
 $initial_verbose_value = $ENV{OSCAR_VERBOSE} if (defined $ENV{OSCAR_VERBOSE});
 
-if ($verbose) {
+if ($debug) {
+    $ENV{OSCAR_VERBOSE} = 10;
+    $OSCAR::Env::oscar_verbose=10;
+} elsif ($verbose) {
     $ENV{OSCAR_VERBOSE} = 5;
+    $OSCAR::Env::oscar_verbose=5;
+} elsif ($quiet) {
+    $ENV{OSCAR_VERBOSE} = 0;
+    $OSCAR::Env::oscar_verbose=0;
+} else {
+    $ENV{OSCAR_VERBOSE} = 1;
+    $OSCAR::Env::oscar_verbose=1;
 }
 
 my $errors = 0;
@@ -62,10 +76,10 @@ my @failed_opkgs;
 # We currently do not assume that getting the number of procs is a fatal
 # problem
 if(update_node_ressource("cat /proc/cpuinfo",qr/^processor/,"CPU","cpu_num",1)) {
-    warn "WARNING: Impossible to get CPU count";
+    oscar_log(5, WARNING, "Unable to get CPU count");
 }
 if(update_node_ressource("nvidia-smi -L",qr/^GPU/,"GPU","gpu_num",0)) {
-    warn "WARNING: Impossible to get GPU count";
+    oscar_log(5, WARNING, "Unable to get GPU count");
 }
 
 # This makes sure existing nodes have the latest /etc/hosts. 
@@ -87,17 +101,17 @@ my $cmd;
 my @pkgs = list_selected_packages();
 foreach my $pkg (@pkgs) {
     if(!OSCAR::Package::run_pkg_script($pkg, "post_install", 1, "")) {
-        carp("ERROR: Couldn't run 'post_install' script for $pkg");
+        oscar_log(5, ERROR, "Couldn't run 'post_install' script for $pkg");
         push (@failed_opkgs, $pkg);
         $errors++;
     }
 }
 
 if($errors) {
-    carp("ERROR: Some of the post install scripts failed, please check your ".
+    oscar_log(2, ERROR, "Some of the post install scripts failed, please check your ".
          "logs for more info (". join (", ", @failed_opkgs).")");
 } else {
-    oscar_log_subsection ("Cluster setup complete!");
+    oscar_log(2, SUBSECTION, "Cluster setup complete!");
 }
 
 $ENV{OSCAR_VERBOSE} = $initial_verbose_value;
@@ -129,26 +143,27 @@ sub update_node_ressource($$$$$) {
 	foreach my $mach (@machines) {
 		my $return_code=0;
 		my $CMD="/usr/bin/ssh -n ".$mach->{name}." $query_cmd 2> /dev/null";
-		oscar_log_subsection ("Gathering $ressource_name count from " . $mach->{name});
-		open (CPIPE,"$CMD |") or (carp("ERROR: Can't run $CMD"),next);
+		oscar_log(5, INFO, "Gathering $ressource_name count from " . $mach->{name});
+        oscar_log(7, ACTION, "About to run: $CMD");
+		open (CPIPE,"$CMD |") or (oscar_log(5, ERROR, "Failed run $CMD"),next);
 		my $count=0;
 		while (<CPIPE>) {
 			++$count if (/$query_filter/);
 		}
 		close(CPIPE) or $return_code=$?;
 		if ($return_code == 32512) { # Command not found (e.g. no nvidia-smi)
-			warn("WARNING: '$query_cmd' not found on Node ".$mach->{name}),next;
+			oscar_log(5, WARNING, "'$query_cmd' not found on Node ".$mach->{name}),next;
 		} elsif ($return_code == 65280) { # Node not responding to ssh command
-			carp("ERROR: Node ".$mach->{name}." DOWN! (not responding)"),next;
+			oscar_log(5, ERROR, "Node ".$mach->{name}." DOWN! (not responding)"),next;
 		} elsif ($return_code > 0) { # ????
-			carp("ERROR: ($return_code) while trying to run: $CMD"),next;
+			oscar_log(5, ERROR, "($return_code) while trying to run: $CMD"),next;
 		}
 
 		if (($count !~ /^[0-9]+$/) || ($count < $min_count)) {
-			carp("ERROR: Improper count ($count) returned from machine " . $mach->{name});
+			oscar_log(5, ERROR, "Improper count ($count) returned from machine " . $mach->{name});
 			return -1;
 		} else {
-			oscar_log_subsection ("Updating database for machine " .
+			oscar_log(5, SUBSECTION, "Updating database for machine " .
                                  $mach->{name} . " $db_field=$count.");
 			my %data =  (
                 		$db_field    => $count,
@@ -158,7 +173,7 @@ sub update_node_ressource($$$$$) {
 			    \%data,
 			    undef,
 			    undef) != 1) {
-				carp "ERROR: Impossible to update node $ressource_name information";
+				oscar_log(5, ERROR, "Failed to update node $ressource_name information");
 				return -1;
     			}
 		}
