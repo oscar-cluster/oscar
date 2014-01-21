@@ -41,15 +41,18 @@ use POSIX; # gives us uname function
 use File::Path;
 use File::Copy;
 use File::Basename;
+use OSCAR::Env;
 use OSCAR::FileUtils;
 use OSCAR::Network;
 use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::Database;
 use OSCAR::Package;
 use OSCAR::PackMan;
 use OSCAR::PackageSmart;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
+use OSCAR::Utils;
 use Carp;
 use Data::Dumper;
 use OSCAR::OCA::OS_Detect;
@@ -61,7 +64,7 @@ use OSCAR::Opkg;
 my $OSCAR_SERVER_NODE = "oscar_server";
 my $OSCAR_SERVER_GROUP = "oscar_server";
 
-my $INTERFACE = shift or croak("No interface specified");
+my $INTERFACE = shift or (oscar_log(1, ERROR,"No interface specified"), exit 1);
 
 my $verbose = $ENV{OSCAR_VERBOSE};
 if ($verbose && !$ENV{YUME_VERBOSE}) {
@@ -75,17 +78,18 @@ if ($verbose && !$ENV{YUME_VERBOSE}) {
 my @rcfiles = qw(/root/.bashrc /root/.tcshrc /root/.cshrc);
 
 # Sanity checking for /etc/hosts
-oscar_log_subsection("Getting internal IP address");
+oscar_log(5, INFO, "Getting internal IP address");
 my ($ip,$bcast,$netmask) = OSCAR::Network::interface2ip($INTERFACE) 
-    or croak("Couldn't determine internal ip address");
-oscar_log_subsection("Got: [Interface: $INTERFACE]");
-oscar_log_subsection("Got: [IP: $ip]");
-oscar_log_subsection("Got: [Broadcast: $bcast]");
-oscar_log_subsection("Got: [Netmask: $netmask]");
+    or (oscar_log(1, ERROR, "Couldn't determine internal ip address\nAborting."), exit 1);
+oscar_log(5, INFO, "Got: [Interface: $INTERFACE]");
+oscar_log(5, INFO, "Got: [IP: $ip]");
+oscar_log(5, INFO, "Got: [Broadcast: $bcast]");
+oscar_log(5, INFO, "Got: [Netmask: $netmask]");
 
 oscar_log_subsection("Adding hosts to /etc/hosts");
 if (OSCAR::Network::update_hosts($ip)) {
-    die("ERROR: Couldn't add required host entries to /etc/hosts");
+    oscar_log(1, ERROR, "Couldn't add required host entries to /etc/hosts\nAborting.");
+    exit 1;
 }
 
 
@@ -99,23 +103,24 @@ foreach my $opkg (@selected_opkgs) {
         push (@opkgs, $opkg);
     }
 }
-oscar_log_subsection("Identified non-core packages: " . join(' ', @opkgs));
+oscar_log(5, INFO, "Identified non-core packages: " . join(" ", @opkgs));
 
 
 # Now install the pkgs that we found
 # Note that we install only the server side, the API side is necessary for
 # configuration of the OPKGs and therefore is installed at the beginning of
 # the configuration phase.
-oscar_log_subsection("Installing server non-core packages " .
+oscar_log(3, INFO, "Installing server non-core packages " .
                      "(core packages already installed)");
 if (scalar (@opkgs) == 0) {
-    warn "INFO: no OPKG(s) to install";
+    oscar_log(3, WARNING, "No OPKG(s) to install");
 } else {
     if (OSCAR::Opkg::opkgs_install("server", @opkgs)) {
-        die ("ERROR: Impossible to install " . join (", ", @opkgs));
+        oscar_log(1, ERROR, "Failed to install " . join (", ", @opkgs));
+        exit 1;
     }
 }
-oscar_log_subsection("Successfully installed server non-core binary packages");
+oscar_log(3, INFO, "Successfully installed server non-core binary packages");
 
 #
 # NEST
@@ -143,85 +148,90 @@ my @errors = ();
 # Have installed Server RPMs & did not croak, so mark packages.<pkg>installed 
 # true. If clients (image) fail they will set it to false. (best effort for now)
 
-oscar_log_subsection("Marking installed bit in ODA for server non-core ".
+oscar_log(6, INFO, "Marking installed bit in ODA for server non-core ".
                      "packages");
 
 my $requested = 8; # "Installed" flag for the Node_Package_Status"
-die "$0:Failed to update the table Node_Package_Status"
-    if(!OSCAR::Database::update_node_package_status(\%options,
+if(!OSCAR::Database::update_node_package_status(\%options,
                                    $OSCAR_SERVER_NODE,
                                    \@opkgs,
                                    $requested,
                                    \@errors,
-                                   undef));
+                                   undef)) {
+    oscar_log(1, ERROR, "$0:Failed to update the table Node_Package_Status");
+    exit 1;
+}
 
 
 # UNLOCKING FOR NEST
 #unlock(\%options, \@errors);
 
-oscar_log_subsection("Done marking installed bits in ODA");
+oscar_log(6, INFO, "Done marking installed bits in ODA");
 
 
 # And do the post install script
 
-oscar_log_subsection("Running post_server_install scripts " .
-		     "for server non-core packages");
+oscar_log(5, INFO, "Running post_server_install scripts " .
+             "for server non-core packages");
 foreach my $opkg (@opkgs) {
     OSCAR::Package::run_pkg_script($opkg, "post_server_install", 0, undef) 
-        or die("ERROR: Failed running post_server_install for $opkg");
+        or (oscar_log(1, ERROR, "Failed running post_server_install for $opkg"), exit 1);
 }
-oscar_log_subsection("Successfully ran server non-core package ".
-                     "post_server_install scripts");
+oscar_log(6, INFO, ("Successfully ran server non-core package ".
+                     "post_server_install scripts"));
 
 # Additional housekeeping
 
 #oscar_log_subsection("Updating /etc/profile");
 #update_profile() or croak("Couldn't add path entries to /etc/profile");
 
-oscar_log_subsection("Updating /etc/exports");
+oscar_log(5, INFO, "Updating /etc/exports");
 if (update_exports($ip,$netmask)) {
-    die ("Couldn't add filesystem entries to /etc/exports");
+    oscar_log(1, ERROR, "Couldn't add filesystem entries to /etc/exports");
+    exit 1;
 }
 
-oscar_log_subsection("Updating rsyncd.conf");
+oscar_log(5, INFO, "Updating rsyncd.conf");
 if (update_rsyncd_conf($ip,$netmask)) {
-    croak("Couldn't update rsyncd.conf file ($!)");
+    oscar_log(1, ERROR, "Couldn't update rsyncd.conf file ($!)");
+    exit 1;
 }
 
-oscar_log_subsection("Refreshing services");
+oscar_log(5, INFO, "Refreshing services");
 # Note: it is better to try to restart the service, "start" generates an error
 # if the service is already running
 chomp(my $nfs_export = `which exportfs`);
 
 # Start or restart the nfs server service
 !system_service(NFS(),RESTART())
-    or croak "ERROR: Couldn't restart nfs service.";
+    or (oscar_log(1, ERROR, "Couldn't restart nfs service."), exit 1);
 
 # Export filesystems
 if ($nfs_export) {
-    !system("exportfs -a") or croak("Couldn't refresh nfs exports");
+    !oscar_system("exportfs -a") or (oscar_log(1, ERROR, "Couldn't refresh nfs exports"), exit 1);
 }
 
 # Start or restart ssh service
 !system_service(SSH(),RESTART())
-    or croak "ERROR: Couldn't restart ssh service.";
+    or (oscar_log(1, ERROR, "Couldn't restart ssh service."), exit 1);
 
 # Enable essential services.
 my @services = (SSH(), DHCP(), RPC(), NFS());
-if (OSCAR::SystemServices::enable_system_services (@services)) {
-    die "ERROR: Impossible to enable some system services";
+if (enable_system_services (@services)) {
+    oscar_log(1, ERROR, "Failed to enable some system services");
+    exit 1;
 }
 
 # Mandrake fixup: comment out hard-coded PATH line
 
-oscar_log_subsection('Fixing root "dot" files');
+oscar_log(5, INFO, "Fixing root 'dot' files");
 foreach my $f (@rcfiles) {
     unmunge_pathenv($f);
 }
 
 # All done
 
-oscar_log_subsection("Finished server_prep script");
+oscar_log(2, INFO, "Finished server_prep script");
 
 
 #
@@ -254,8 +264,9 @@ sub update_exports ($$) {
     my $ip = shift;
     my $netmask = shift;
 
+    oscar_log(5, INFO, "Updating exports");
     if (!defined $ip || !defined $netmask) {
-        carp "ERROR: Invalid parameters";
+        oscar_log(5, ERROR, "Invalid parameters");
         return -1;
     }
 
@@ -263,30 +274,30 @@ sub update_exports ($$) {
     # 1st, we backup $dhcpd_configfile. (if not done yet)
     my $exports=OSCAR::OCA::OS_Settings::getitem("exports_configfile");
     backup_file_if_not_exist($exports)
-        or (carp "ERROR: Couldn't backup dhcp server config file ($exports)", return -1);
+        or (oscar_log(5, ERROR, "Couldn't backup exports config file ($exports)"), return -1);
 
     open(IN,"<$exports.oscarbak") or return -1;
     open(OUT,">$exports") or (close(IN), return -1);
-    verbose("Checking for /home export");
+    oscar_log(6, INFO, "Checking for /home export");
     while (<IN>) {
-	    if (/^\/home/) {
-		    verbose("Found /home entry");
-		    $done=1;
-		    if (/$ip\/$netmask\(async,rw,no_root_squash\)/) {
-			    verbose("Existing /home entry ok, preserved");
-			    print OUT $_;
-		    } else {
-			    verbose("Existing /home modified");
-			    chomp;
-			    print OUT $_." $ip/$netmask(async,rw,no_root_squash)\n";
-		    }
-	    } else {
-		    print OUT $_;
-	    }
+        if (/^\/home/) {
+            oscar_log(6, INFO, "Found /home entry");
+            $done=1;
+            if (/$ip\/$netmask\(async,rw,no_root_squash\)/) {
+                oscar_log(6, INFO, "Existing /home entry ok, preserved");
+                print OUT $_;
+            } else {
+                oscar_log(6, INFO, "Existing /home modified");
+                chomp;
+                print OUT $_." $ip/$netmask(async,rw,no_root_squash)\n";
+            }
+        } else {
+            print OUT $_;
+        }
     }
     unless ($done) {
-    	verbose("Adding /home export");
-	    print OUT "/home $ip/$netmask(async,rw,no_root_squash)\n";
+        oscar_log(6, INFO, "Adding /home export");
+        print OUT "/home $ip/$netmask(async,rw,no_root_squash)\n";
     }
     close(OUT);
     close(IN);
@@ -299,44 +310,45 @@ sub update_rsyncd_conf ($$) {
     my ($ip, $netmask) = @_;
     my $done = 0;
 
-    verbose("Backing up rsyncd header stub");
+    oscar_log(5, INFO, "Updating systemimager rsynd config file");
+    oscar_log(6, INFO, "Backing up rsyncd header stub");
     my $basefile = "/etc/systemimager/rsync_stubs/10header";
-    my $backup = $basefile . '~';
-    copy($basefile,$backup) or return -1;
+    backup_file_if_not_exist($basefile)
+        or (oscar_log(5, ERROR, "Couldn't backup exports config file ($basefile)"), return -1);
 
-    open(IN,"<$backup") or return -1;
+    open(IN,"<$basefile.oscarbak") or return -1;
     open(OUT,">$basefile") or return -1;
     while(<IN>) {
-	if (/hosts allow/) {
-	    verbose("Found hosts allow stanza");
-	    if(/hosts allow = $ip\/$netmask/) {
-		$done = 1;
-		verbose("Looks like we already have it!");
-	    }
-	}
-	if(/\[scripts\]/ and !$done) {
-	    verbose("Adding hosts allow to file");
-	    print OUT "hosts allow = $ip/$netmask\n\n";
-	}
-	print OUT $_;
+    if (/hosts allow/) {
+        oscar_log(6, INFO, "Found hosts allow stanza");
+        if(/hosts allow = $ip\/$netmask/) {
+        $done = 1;
+        oscar_log(6, INFO, "Looks like we already have it!");
+        }
+    }
+    if(/\[scripts\]/ and !$done) {
+        oscar_log(6, INFO, "Adding hosts allow to file");
+        print OUT "hosts allow = $ip/$netmask\n\n";
+    }
+    print OUT $_;
     }
 
     close(IN);
     close(OUT);
-    unlink($backup);
+#    unlink("$basefile.oscarbak");
 
     my $MKRSYNCD="/usr/sbin/si_mkrsyncd_conf";
     #EF# for compatibility with SystemImager 3.3 and below
     if (! -x $MKRSYNCD) {
-	if (-x "/usr/sbin/mkrsyncd_conf") {
-	    $MKRSYNCD="/usr/sbin/mkrsyncd_conf";
-	} else {
-	    verbose("Could not find [si_]mkrsyncd_conf script!");
-	    return -1;
-	}
+    if (-x "/usr/sbin/mkrsyncd_conf") {
+        $MKRSYNCD="/usr/sbin/mkrsyncd_conf";
+    } else {
+        oscar_log(5, ERROR, "Could not find [si_]mkrsyncd_conf script!");
+        return -1;
     }
-    !system($MKRSYNCD) or return -1;
-    verbose("Updated rsyncd.conf file");
+    }
+    !oscar_system($MKRSYNCD) or return -1;
+    oscar_log(5, INFO, "Updated rsyncd.conf file");
 
     return 0;
 }
@@ -347,7 +359,7 @@ sub update_rsyncd_conf ($$) {
 sub unmunge_pathenv ($) {
     my $file = pop @_;
 
-    print "Making any necessary PATH fixes to ($file)\n";
+    oscar_log(5, INFO, "Making any necessary PATH fixes to ($file)");
     copy($file, "$file.bak") or return;
 
     if (!open(IN, "<$file.bak")) {
@@ -361,14 +373,14 @@ sub unmunge_pathenv ($) {
     }
 
     while (<IN>) {
-        if (! /^\s*#/ ) {	#ignore comments
+        if (! /^\s*#/ ) {    #ignore comments
 
             # Bashrc fixups
             # RegEx: if processing bashrc file, check for line containing 
             #  PATH and not containing $PATH, remember value found ($1)
             if ($file =~ /bashrc/ && /(.*PATH=.*)/ &&  ! /\$PATH/) {
                 $_ = "#OSCAR: Modified following line to contain all PATH\n";
-                $_ .= "$1:" . '$PATH' . "\n";	
+                $_ .= "$1:" . '$PATH' . "\n";    
             }
             # Cshrc fixups
             # RegEx: if processing cshrc files, check for set|setenv line
