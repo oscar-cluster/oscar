@@ -26,15 +26,33 @@
   #
   #############################################################################
   -->
+<testDef>
 
-<testBatch>
   <info>
-    Check that the cluster is functionnal (core system components)
-  </info>
+This script tests That the oscartst user is created and usable.
 
-  <shortDescription>CORE: Validate OSCAR system components.</shortDescription>
-  <test name="system-sanity.apb"/>
-  <test name="oscartst_user.apt"/>
-  <dep parent="ssh_user_tests.apb" child="home_mounts_ok.apt"/>
+Desired result : PASS
+</info>
 
-</testBatch>
+  <shortDescription>Is oscartst user is created</shortDescription>
+
+  <test type="script">
+  
+    <command interpreter="/bin/bash" wdir="/tmp" uname="oscartst">
+if test -z "$(whoami|grep oscartst)"
+then
+    exit 1
+else
+    exit 0
+fi
+    </command>
+
+    <output name="stdout" />
+    <output name="stderr" />
+    <output name="status" format="literal">0</output>
+
+  </test>
+
+</testDef>
+
+<!-- EOF -->
