@@ -638,7 +638,9 @@ sub add_mac_to_hash($$) {
         return 1;
     }
     # else, add the mac address with a null client
-    oscar_log(6, INFO, "Adding $mac for client $client to global MAC list.");
+    my $client_msg = "";
+    $client_msg = " for client $client" if (OSCAR::Utils::is_a_valid_string($client));
+    oscar_log(6, INFO, "Adding $mac$client_msg to global MAC list.");
     $MAC{$mac} = {
                   client => $client,
                   order => $ORDER,
