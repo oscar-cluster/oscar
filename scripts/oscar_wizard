@@ -1034,31 +1034,34 @@ sub monitor_deployment ($) {
     our $monitor_button;
 
     # We make sure the service associated to the monitor is started
-    my $rc = OSCAR::SystemServices::system_service (SI_MONITOR(), START());
+    my $rc = system_service (SI_MONITOR(), START());
     if ($rc != 0) {
-        carp "ERROR: Impossible to start service ".
-             OSCAR::SystemServicesDefs::SI_MONITOR()." ($rc)";
+        oscar_log(5, ERROR,"Failed to start service ". SI_MONITOR()." ($rc)");
         return 0;
     }
 
     my $cmd = "/usr/sbin/si_monitortk --progress";
-    $monitor_button->configure(-state => 'disabled');
+
+    $window->Busy(-recurse => 1);
+    #$monitor_button->configure(-state => 'disabled');
 
     my $pipe = new FileHandle;
-    our $monitortk_pid = $pipe->open("$cmd |") or die "Cannot fork: $!";
+    our $monitortk_pid = $pipe->open("$cmd |") or (oscar_log(5, ERROR, "Cannot fork: $!"), $monitor_button->configure(-state => 'normal'), return 0);
     $window->fileevent($pipe, 'readable', [\&stop_monitor_deployment, $window, $pipe]);
     return 1;
 }
 
 # Unfreeze the "Monitor Cluster Deployment" button in the main OSCAR Wizard widget
-sub stop_monitor_deployment {
+sub stop_monitor_deployment($$) {
     my ($window, $pipe) = @_;
     our $monitortk_pid;
     our $monitor_button;
 
     waitpid($monitortk_pid, WNOHANG);
-    $monitor_button->configure(-state => 'normal') if Tk::Exists($monitor_button);;
+    #$monitor_button->configure(-state => 'normal') if Tk::Exists($monitor_button);;
     $window->fileevent($pipe, 'readable', "");
+    close $pipe;
+    $window->Unbusy();
 }
 
 # Pop up Network Boot Manager widget
