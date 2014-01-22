@@ -46,7 +46,7 @@ rsync_service=systemimager-server-rsyncd
 sendmail_service=sendmail
 ssh_service=sshd
 syslog_service=rsyslog
-tftp_service=atftp
+tftp_service=tftp
 trqauthd_service=trqauthd
 xinetd_service=xinetd
 
