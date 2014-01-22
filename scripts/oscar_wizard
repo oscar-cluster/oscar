@@ -1046,7 +1046,8 @@ sub monitor_deployment ($) {
     #$monitor_button->configure(-state => 'disabled');
 
     my $pipe = new FileHandle;
-    our $monitortk_pid = $pipe->open("$cmd |") or (oscar_log(5, ERROR, "Cannot fork: $!"), $monitor_button->configure(-state => 'normal'), return 0);
+    #our $monitortk_pid = $pipe->open("$cmd |") or (oscar_log(5, ERROR, "Cannot fork: $!"), $monitor_button->configure(-state => 'normal'), return 0);
+    our $monitortk_pid = $pipe->open("$cmd |") or (oscar_log(5, ERROR, "Cannot fork: $!"), $window->Unbusy(), return 0);
     $window->fileevent($pipe, 'readable', [\&stop_monitor_deployment, $window, $pipe]);
     return 1;
 }
