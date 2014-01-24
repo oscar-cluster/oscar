@@ -40,7 +40,7 @@ Desired result : PASS
 
   <test type="script">
   
-    <command interpreter="/bin/bash" wdir="/tmp" uname="oscartst">
+    <command interpreter="/bin/bash" wdir="/tmp">
 exit 0
     </command>
 

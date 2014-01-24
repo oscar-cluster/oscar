@@ -43,7 +43,7 @@ Desired result : PASS
 
   <test type="script">
   
-    <command interpreter="perl" wdir="/tmp" uname="oscartst">
+    <command interpreter="perl" wdir="/tmp">
 #!/usr/bin/perl
 
 BEGIN {

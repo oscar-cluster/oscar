@@ -39,7 +39,7 @@ Desired result : PASS
 
   <test type="script">
   
-    <command interpreter="/bin/bash" wdir="/tmp" uname="oscartst">
+    <command interpreter="/bin/bash" wdir="/tmp">
 if grep '::1.*localhost\.localdomaine' /etc/hosts
 then
     echo "localhost.localdomain has an IP V6 assigned (::1)"
