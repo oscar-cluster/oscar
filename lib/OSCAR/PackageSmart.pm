@@ -464,7 +464,7 @@ sub checksum_files {
     " \\) -printf \"%p %s %u %g %m %t\\n\" | sort ";
     if ($OSCAR::Env::oscar_verbose >= 7) {
         my $tee = $ENV{OSCAR_HOME}."/tmp/".basename($dir).".files";
-        oscar_log(7, INFO, "Output of following ccommand will be stored in $tee");
+        oscar_log(7, INFO, "Output of following command will be stored in $tee");
         $cmd .= "| tee $tee | $md5sum_cmd ";
     } else {
         $cmd .= "| $md5sum_cmd ";
