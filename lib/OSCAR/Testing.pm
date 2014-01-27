@@ -307,7 +307,7 @@ sub test_cluster($) {
 
     # Run all the tests.
     oscar_log(5, INFO, "About to perform the following tests: \n  - " .
-                        join("  - \n", @tests_to_run) . "\n");
+                        join("\n  - ", @tests_to_run) . "\n");
     ($output,$rc) = run_multiple_tests(@tests_to_run);
     if( $rc > 0) {
         display_ANSI_results($window, "Cluster validation", $output);
