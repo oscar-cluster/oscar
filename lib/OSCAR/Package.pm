@@ -227,12 +227,12 @@ sub run_pkg_apitest_test ($$$) {
         my $uid=getpwnam($user);
         if ($uid == $>) {
             #FIXME: work around path problem of APItest
-            #$rc = system("$apitest -T -f $script");
+            #$rc = oscar_system("$apitest -T -f $script");
             my $cmd = "(cd $cpath && $apitest -T -f $file)";
             $rc = oscar_system($cmd);
         } else {
             #FIXME: work around path problem of APItest (cd $cpath; ...)
-            #$rc = system("su --command='OSCAR_HOME=$ENV{OSCAR_HOME} $apitest -T -f $script' - $user");
+            #$rc = oscar_system("su --command='OSCAR_HOME=$ENV{OSCAR_HOME} $apitest -T -f $script' - $user");
             my $cmd = "su --command='OSCAR_HOME=$ENV{OSCAR_HOME} (cd $cpath && $apitest -T -f $file)' - $user";
             $rc = oscar_system($cmd);
         }

@@ -150,9 +150,7 @@ sub add_clients ($) {
     oscar_log(4, INFO, "Populating the SIS database...");
     my $cmd = "/usr/sbin/si_addclients --hosts " . $client_refobj->{'name'} . 
               " --script " . $client_refobj->{'imagename'};
-    oscar_log(7, ACTION, "About to run: $cmd"); 
-    if (system ($cmd)) {
-        oscar_log(5, ERROR, "Failed to execute $cmd");
+    if (oscar_system ($cmd)) {
         return -1;
     }
 
@@ -246,17 +244,13 @@ sub delete_clients (@) {
         my $generic_service = $$services_ref{service};
         oscar_log(4, INFO, "Disabling $generic_service for oscar_server");
         $cmd = "/etc/init.d/$generic_service stop";
-        oscar_log(7, ACTION, "About to run: $cmd");
-        if (system($cmd)) {
-            oscar_log(5, ERROR, "Failed to execute $cmd");
+        if (oscar_system($cmd)) {
             $fail++;
         }
         foreach my $client (@clients) {
             oscar_log(4, INFO, "Disabling $generic_service for $client");
             $cmd = "/usr/bin/ssh $client /etc/init.d/$generic_service stop";
-            oscar_log(7, ACTION, "About to run: $cmd");
-            if (system($cmd)) {
-                oscar_log(5, ERROR, "Failed to execute $cmd");
+            if (oscar_system($cmd)) {
                 $fail++;
             }
         }
@@ -283,8 +277,7 @@ sub delete_clients (@) {
     # We delete the clients from the Database and SIS
 #    $cmd = "/usr/bin/mksimachine --Delete --name $clientstring";
 #    print ">> Effectively deleting the nodes ($cmd)\n";
-#    if (system($cmd)) {
-#        carp("ERROR: Impossible to execute $cmd");
+#    if (oscar_system($cmd)) {
 #        $fail++;
 #    }
     oscar_log(3, SUBSECTION, "deleting node from SIS.");
@@ -310,9 +303,7 @@ sub delete_clients (@) {
 
     oscar_log(3, SUBSECTION, "Executing post_clients phase.");
     $cmd = "$config->{binaries_path}/post_clients";
-    oscar_log(7, ACTION, "About to run: $cmd"); 
-    if (system($cmd)) {
-        oscar_log(5, ERROR, "Failed to execute $cmd");
+    if (oscar_system($cmd)) {
         return -1;
     }
     
@@ -320,9 +311,7 @@ sub delete_clients (@) {
     # We do not check the return code since we may not have connectivity with
     # compute nodes and therefore the script may fail.
     $cmd = "$config->{binaries_path}/post_install --force";
-    oscar_log(7, ACTION, "About to run: $cmd"); 
-    if (system($cmd)) {
-        oscar_log(5, ERROR, "Failed to execute $cmd");
+    if (oscar_system($cmd)) {
         return -1;
     }
 
@@ -330,9 +319,7 @@ sub delete_clients (@) {
     foreach my $services_ref (@generic_services) {
         my $generic_service = $$services_ref{service};
         $cmd = "/etc/init.d/$generic_service restart";
-        oscar_log(7, ACTION, "About to run: $cmd"); 
-        if (system($cmd)) {
-            oscar_log(5, ERROR, "Failed to execute $cmd");
+        if (oscar_system($cmd)) {
             $fail++;
         }
     }
@@ -346,9 +333,7 @@ sub delete_clients (@) {
     foreach my $services_ref (@server_services) {
         my $server_service = $$services_ref{service};
         $cmd = "/etc/init.d/$server_service restart";
-        oscar_log(7, ACTION, "About to run: $cmd"); 
-        if (system($cmd)) {
-            oscar_log(5, ERROR, "Failed to execute $cmd");
+        if (oscar_system($cmd)) {
             $fail++;
         }
     }
@@ -367,9 +352,7 @@ sub delete_clients (@) {
     $cmd = "/usr/bin/ssh-keygen -R";
     foreach my $client (@clients) {
         my $sub_cmd = "$cmd $client";
-        oscar_log(7, ACTION, "About to run: $sub_cmd"); 
-        if (system ($sub_cmd)) {
-            oscar_log(5, ERROR, "Failed to execute $sub_cmd");
+        if (oscar_system ($sub_cmd)) {
             return -1;
         }
     }
@@ -381,9 +364,7 @@ sub delete_clients (@) {
         my $generic_service = $$services_ref{service};
         my $cmd = "$config->{binaries_path}/cexec ".
                   "/etc/init.d/$generic_service restart";
-        oscar_log(7, ACTION, "About to run: $cmd"); 
-        if (system($cmd)) {
-                oscar_log(5, ERROR, "Failed to execute $cmd");
+        if (oscar_system($cmd)) {
                 $fail++;
         }
     }
@@ -410,9 +391,7 @@ sub delete_clients (@) {
     if ($install_mode eq "systemimager-multicast") {
        $cmd = $cmd . " --multicast=yes";
     }
-    oscar_log(7, ACTION, "About to run: $cmd"); 
-    if (system($cmd)) {
-        oscar_log(5, ERROR, "ERROR: Failed to execute $cmd");
+    if (oscar_system($cmd)) {
         return -1;
     }
 

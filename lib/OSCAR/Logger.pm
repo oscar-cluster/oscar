@@ -27,6 +27,7 @@ use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
 use OSCAR::Env;
 use OSCAR::LoggerDefs;
+use OSCAR::Utils;
 use Switch 'Perl5', 'Perl6';
 
 our @EXPORT = qw(
@@ -183,7 +184,7 @@ sub init_log_file ($) {
         if (@ologs) {
             $indx = $ologs[$#ologs] + 1;
         }
-        !system("mv $log_file $log_file"."_$indx")
+        !oscar_system("mv $log_file $log_file"."_$indx")
         or (oscar_log(5, ERROR, "Could not rename $log_file : $!"), return -1);
     }
 

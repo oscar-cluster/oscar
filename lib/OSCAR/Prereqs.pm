@@ -23,6 +23,7 @@ use OSCAR::PackagePath;
 use OSCAR::PrereqsDefs;
 use OSCAR::Logger;
 use OSCAR::LoggerDefs;
+use OSCAR::Utils;
 use warnings "all";
 use Carp;
 
@@ -309,7 +310,7 @@ sub is_deb_pkg_installed ($) {
 sub is_rpm_pkg_installed ($) {
     my $p = shift;
     my $cmd = "rpm -q $p >/dev/null 2>&1";
-    if (!system($cmd)) {
+    if (!oscar_system($cmd)) {
         return 1;
     } else {
         return 0;

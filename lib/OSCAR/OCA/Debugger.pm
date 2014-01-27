@@ -22,6 +22,7 @@ package OSCAR::OCA::Debugger;
 
 use strict;
 use OSCAR::Logger;
+use OSCAR::Logger::Defs;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 
@@ -31,7 +32,7 @@ use base qw(Exporter);
 sub oca_debug_section {
   my $debug_text = shift;
   if ( defined $ENV{OCA_DEBUG} && $ENV{OCA_DEBUG} eq "y" ) {
-    oscar_log_section ($debug_text);
+    oscar_log(8, SUBSECTION, $debug_text);
   }
 }
 
@@ -39,6 +40,6 @@ sub oca_debug_section {
 sub oca_debug_subsection {
   my $debug_text = shift;
   if ( defined $ENV{OCA_DEBUG} && $ENV{OCA_DEBUG} eq "y" ) {
-    oscar_log_subsection ($debug_text);
+    oscar_log(8, INFO, $debug_text);
   }
 }

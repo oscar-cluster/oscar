@@ -453,7 +453,7 @@ sub checksum_files {
     # Since some distros does not support "md5sum -" to get the std input
     # we check first what md5sum we have to use. Not that currently only
     # Debian Sarge seems to not support "md5sum -"
-    if (system ("echo \"toto\" | md5sum - > /dev/null 2>&1")) {
+    if (oscar_system ("echo \"foobar\" | md5sum - > /dev/null 2>&1")) {
         $md5sum_cmd = "md5sum ";
     } else {
         $md5sum_cmd = "md5sum - ";

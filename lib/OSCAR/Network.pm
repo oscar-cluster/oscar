@@ -534,9 +534,7 @@ sub update_head_nic () {
     } elsif ($OSCAR::Env::oscar_verbose >= 5) {
         $cmd .= " --verbose";
     }
-    oscar_log(7, ACTION, "About to run: $cmd");
-    if (system ($cmd)) {
-        oscar_log(5, ERROR, "Failed to successfully execute \"$cmd\"");
+    if (oscar_system ($cmd)) {
         return -1;
     }
 

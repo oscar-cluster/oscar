@@ -577,12 +577,10 @@ sub get_repo_type ($) {
     my $rapt_cmd = 
         "/usr/bin/rapt --repo $repo_url update 2>/dev/null 1>/dev/null";
     my $yume_cmd = "wget -nd --delete-after $repo_url/repodata/filelists.xml.gz";
-    if (!system($yume_cmd)) {
-        oscar_log(7, ACTION, "Just ran: $yume_cmd");
+    if (!oscar_system($yume_cmd)) {
         oscar_log(6, INFO, "Repo type: yum");
         return ("yum");
-    } elsif (!system ($rapt_cmd)) {
-        oscar_log(7, ACTION, "Just ran: $rapt_cmd");
+    } elsif (!oscar_system ($rapt_cmd)) {
         oscar_log(6, INFO, "Repo type: apt");
         return ("apt");
     } else {
@@ -604,18 +602,14 @@ sub mirror_yum_repo ($$$) {
                             return -1);
     oscar_log(6, INFO, "Retrieving $metafile.gz");
     my $cmd = "cd $path/tmp; wget $url/repodata/$metafile.gz";
-    oscar_log(7, ACTION, "About to run: $cmd");
-    if (system ($cmd)) {
-        oscar_log(5, ERROR, "Failed to execute $cmd");
+    if (oscar_system ($cmd)) {
         return -1;
     }
 
     # We uncompress the file
     oscar_log(6, INFO, "Uncompressing $metafile.gz");
     $cmd = "cd $path/tmp; gunzip $metafile.gz";
-    oscar_log(7, ACTION, "About to run: $cmd");
-    if (system ($cmd)) {
-        carp "ERROR: Impossible to execute $cmd";
+    if (oscar_system ($cmd)) {
         return -1;
     }
 
@@ -633,9 +627,7 @@ sub mirror_yum_repo ($$$) {
     # Now we can download the packages!
     for (my $i=0; $i < scalar (@locations); $i++) {
         my $cmd = "cd $path; wget $url/$locations[$i]";
-        oscar_log(7, ACTION, "About to run: $cmd");
-        if (system ($cmd)) {
-            oscar_log(5, ERROR, "Failed to execute $cmd");
+        if (oscar_system ($cmd)) {
             return -1;
         }
     }
@@ -719,9 +711,7 @@ sub mirror_apt_repo ($$$) {
     }
     oscar_log(6, INFO, "Retrieving Packages meta-data file");
     my $cmd = "cd $dest_dir; /usr/bin/wget $metadata_url";
-    oscar_log(7, ACTION, "About to run: $cmd");
-    if (system ($cmd)) {
-        oscar_log(5, ERROR, "Failed to execute $cmd");
+    if (oscar_system ($cmd)) {
         return -1;
     }
 
@@ -730,8 +720,7 @@ sub mirror_apt_repo ($$$) {
     OSCAR::Utils::print_array (@files) if ($OSCAR::Env::oscar_verbose >= 6);
     foreach my $file (@files) {
         $cmd = "cd $dest_dir; /usr/bin/wget $base_url/$file";
-        oscar_log(7, ACTION, "About to run: $cmd");
-        if (system $cmd) {
+        if (oscar_system $cmd) {
             oscar_log(5, ERROR, "Impossible to download $base_url/$file");
             return -1;
         }

@@ -106,8 +106,7 @@ sub backup_file_if_not_exist($) {
             return 1;
         } else {
             my $cmd = "/bin/cp -f $file $file.oscarbak";
-            if (system ($cmd)) {
-                oscar_log(7, ERROR, "($!) Impossible to execute $cmd");
+            if (oscar_system ($cmd)) {
                 oscar_log(5, ERROR, "Failed to backup $file.");
                 return 0;
             } else {
@@ -219,14 +218,12 @@ sub download_file ($$$$) {
         $cmd .= "$source";
         $cmd .= " 1>/dev/null 2>/dev/null" if ($OSCAR::Env::oscar_verbose < 6);
 
-        oscar_log(7, ACTION, "About to run: $cmd");
-        my $rc = system ($cmd);
+        my $rc = oscar_system ($cmd);
         # It seems that the wget return code for errors is 1. Note that other 
         # values > 0 are returned in some specific case which are not 
         # necessarily errors.
         if ($rc == 1) {
             oscar_log(5, ERROR, "Failed to download $source.");
-            oscar_log(6, ERROR, "     : ($cmd, rc: $rc)");
             return -1;
         }
     } else {
@@ -272,11 +269,9 @@ sub extract_file ($$) {
                 return -1;
         }
     }
-    oscar_log(7, ACTION, "About to run: $cmd");
-    my $rc = system ($cmd);
+    my $rc = oscar_system ($cmd);
     if ($rc) {
         oscar_log(5, ERROR, "Failed to extract $file");
-        oscar_log(7, ERROR, "\\__ Return code: $rc");
         return -1;
     }
     return 0;
@@ -561,8 +556,7 @@ sub parse_xmlfile ($) {
             oscar_log (6, ACTION, "Trying to xmllint the $xmlfile_path to show ".
                                   "problems:");
             my $cmd = "xmllint $xmlfile_path";
-            oscar_log(7, ACTION, "About to run: $cmd");
-            system $cmd if ($OSCAR::Env::oscar_verbose >= 6);
+            oscar_system($cmd) if ($OSCAR::Env::oscar_verbose >= 6);
         }
     }
 

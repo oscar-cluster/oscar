@@ -24,6 +24,7 @@ use Cwd qw(chdir cwd);
 
 use OSCAR::Logger;
 use OSCAR::LoggerDefs;
+use OSCAR::Utils;
 use File::Basename;
 use vars qw(@EXPORT);
 use base qw(Exporter);
@@ -59,7 +60,7 @@ sub oscar_home_env {
         my $cmd4deb;
         if ($ret eq "") {
              $cmd4deb = "echo \"OSCAR_HOME=$ohome\nexport OSCAR_HOME\n\" >> /root/.bashrc";
-             system ($cmd4deb);
+             oscar_system ($cmd4deb);
         }
     $ENV{OSCAR_HOME} = $ohome;
     }

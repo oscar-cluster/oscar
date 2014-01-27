@@ -161,7 +161,7 @@ sub patch_grub ($) {
  #endif /* NO_DHCP_SUPPORT */
 EOF";
 
-    if (system ($cmd)) {
+    if (oscar_system ($cmd)) {
         oscar_log(5, ERROR, "Failed to patch grub.");
         return -1;
     }

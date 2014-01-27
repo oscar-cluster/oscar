@@ -34,6 +34,7 @@ use OSCAR::LoggerDefs;
 use OSCAR::Utils qw ( 
                     print_array
                     is_element_in_array 
+                    oscar_system
                     );
 use OSCAR::PartitionMgt qw  (
                             oda_create_new_partition 
@@ -166,11 +167,9 @@ sub use_file {
 	# Check to see if the xml validates against the schema
 
     my $cmd = "xmlstarlet --version >/dev/null 2>&1";
-    oscar_log(7, ACTION, "About to run: $cmd");
-	if(system($cmd) == 0) {
+	if(oscar_system($cmd) == 0) {
         $cmd = "xmlstarlet val -s $schema_dir/machineset.xsd $machine_set_dir/$filename >/dev/null";
-        oscar_log(7, ACTION, "About to run: $cmd");
-		my $rc = system($cmd);
+		my $rc = oscar_system($cmd);
 		if($rc != 0) {
 			return "XML does not validate against schema\n";
 		}

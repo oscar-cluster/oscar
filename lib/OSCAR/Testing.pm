@@ -34,6 +34,7 @@ use OSCAR::LoggerDefs;
 use OSCAR::Tk;
 use OSCAR::Package;
 use OSCAR::Database;
+use OSCAR::Utils;
 use Tk::ROTextANSIColor;
 
 
@@ -289,8 +290,7 @@ sub test_cluster($) {
     # 1st, create oscar testing environment.
     oscar_log(5, INFO, "Creating oscartst user if needed");
     my $cmd = "$apitests_path/helpers/create_oscartst.sh";
-    oscar_log(7, ACTION, "About to run: $cmd");
-    !system($cmd)
+    !oscar_system($cmd)
         or oscar_log(5, ERROR,"Cant create oscartst user");
 
     # FIXME: Copy files to oscartst user if needed.

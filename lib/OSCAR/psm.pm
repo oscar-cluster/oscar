@@ -39,6 +39,7 @@ use XML::Simple;	# Read the XML package set files
 use Data::Dumper;
 use OSCAR::VersionParser;
 use OSCAR::opd2;
+use OSCAR::Utils;
 
 our $xml = new XML::Simple;  # XML parser object
 our %list = clear_list(); # The hash that holds all the information about the OPKGs
@@ -64,8 +65,8 @@ sub select_set {
 		return "File $package_set_dir/$filename not found";
 	}
 
-	if(system("xmlstarlet --version >/dev/null 2>&1") == 0) {
-		my $rc = system("xmlstarlet val -s $schema_dir/pkgset.xsd $package_set_dir/$filename >/dev/null");
+	if(oscar_system("xmlstarlet --version >/dev/null 2>&1") == 0) {
+		my $rc = oscar_system("xmlstarlet val -s $schema_dir/pkgset.xsd $package_set_dir/$filename >/dev/null");
 		if($rc != 0) {
 			return "XML does not validate against schema\n";
 		}

@@ -32,7 +32,6 @@ BEGIN {
 }
 
 use strict;
-#use lib "/usr/lib/systeminstaller","/usr/lib/systemimager/perl";
 use OSCAR::Logger;
 use OSCAR::LoggerDefs;
 use OSCAR::PackagePath;
@@ -160,13 +159,10 @@ sub do_post_image_creation ($$) {
     chdir "$config->{binaries_path}";
     my $cmd = "$config->{binaries_path}/post_rpm_install $img $interface --verbose";
 
-    oscar_log(7, INFO, "About to run: $cmd");
-    if (system($cmd)) {
-        oscar_log(5, ERROR, "Failed to execute $cmd");
+    if (oscar_system($cmd)) {
         delete_image($img);
         return 0;
     }
-    oscar_log(7, INFO, "Successfully ran: $cmd");
 
     chdir "$cwd";
     return 1;
@@ -477,9 +473,7 @@ sub delete_image ($) {
 
         oscar_log(6, ACTION, "Removing image $imgname from disk.");
         my $cmd = "/usr/bin/mksiimage -D --name $imgname --force";
-        oscar_log(7, ACTION, "About to run: $cmd.");
-        if (system($cmd)) {
-            oscar_log(5, ERROR, "Failed to execute $cmd");
+        if (oscar_system($cmd)) {
             return -1;
         }
         require SystemImager::Server;
@@ -731,10 +725,9 @@ sub umount_image_proc ($) {
 
     if ($proc_status == 1) {
         $cmd = "/usr/sbin/chroot $image_path umount /proc";
-        oscar_log(7, ACTION, "About to run: $cmd");
-        system ($cmd); # we do not check the return code because when creating
-                       # the image, the status of /proc may not be coherent, so
-                       # the command returns an error but this is just fine.
+        oscar_system ($cmd); # we do not check the return code because when creating
+                             # the image, the status of /proc may not be coherent, so
+                             # the command returns an error but this is just fine.
     }
 
     return 0;
@@ -820,9 +813,8 @@ sub create_image ($%) {
     }
     $cmd .= " $vars{extraflags} --verbose";
 
-    oscar_log(7, ACTION, "About to run: $cmd");
-    if (system ($cmd)) {
-        oscar_log(5, ERROR, "Impossible to create the image ($cmd)");
+    if (oscar_system ($cmd)) {
+        oscar_log(5, ERROR, "Failed to build the image.");
         cleanup_sis_configfile ($image);
         return -1;
     }
@@ -878,9 +870,7 @@ sub create_image ($%) {
 
     # Deal with the harddrive configuration of the image
     $cmd = "mksidisk -A --name $vars{imgname} --file $vars{diskfile}";
-    oscar_log(7, ACTION, "About to run: $cmd");
-    if( system($cmd) ) {
-        oscar_log(5, ERROR, "Couldn't run command $cmd");
+    if( oscar_system($cmd) ) {
         cleanup_sis_configfile ($image);
         return -1;
     }
@@ -1010,9 +1000,7 @@ sub update_grub_config ($) {
     $path .= "/menu.lst";
     if (!-f $path) {
         my $cmd = "touch $path";
-        oscar_log(7, ACTION, "About to run: $cmd");
-        if (system $cmd) {
-            oscar_log(5, ERROR, "Failed to execute $cmd");
+        if (oscar_system $cmd) {
             return -1;
         }
     }
@@ -1092,9 +1080,7 @@ sub update_image_initrd ($) {
     }
     my $fake_fstab = "$imgpath/etc/fstab.fake";
     $cmd = "echo \"$root_device  /  ext3  defaults  1 1\" >> $fake_fstab";
-    oscar_log(7, ACTION, "About to run: $cmd");
-    if (system ($cmd)) {
-        oscar_log(6, ERROR, "Impossible to execute $cmd");
+    if (oscar_system ($cmd)) {
         oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
         return -1;
     }
@@ -1134,9 +1120,7 @@ sub update_image_initrd ($) {
     # OL: End of tmp fix. (should be replaced with OS_Settings::getitem).
     $cmd = "$chroot_bin $imgpath $mkinitrd_cmd -v -f --fstab=/etc/fstab.fake ".
            "--allow-missing $initrd $version";
-    oscar_log(7, ACTION, "About to run: $cmd");
-    if (system ($cmd)) {
-        oscar_log(6, ERROR, "Impossible to execute $cmd");
+    if (oscar_system ($cmd)) {
         oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
         return -1;
     }
@@ -1285,8 +1269,7 @@ sub export_image ($$) {
 
         # the image already exists we just need to create the tarball
         my $cmd = "cd $images_path/$partition; tar czf $tarball *";
-        oscar_log(7, ACTION, "[INFO] About to run: $cmd");
-        if (system ($cmd)) {
+        if (oscar_system ($cmd)) {
             oscar_log(5, ERROR, "Impossible to create the tarball.");
             return -1;
         }
@@ -1313,8 +1296,7 @@ sub export_image ($$) {
 
         # the image is ready to be tared!
         my $cmd = "cd $temp_dir; tar czf $tarball *";
-        oscar_log(7, ACTION, "About to run: $cmd");
-        if (system ($cmd)) {
+        if (oscar_system ($cmd)) {
             oscar_log(5, ERROR, "Failed to create the tarball.");
             rmtree ($temp_dir);
             return -1;

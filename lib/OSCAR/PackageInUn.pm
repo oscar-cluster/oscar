@@ -41,6 +41,7 @@ use OSCAR::Database;
 use OSCAR::Logger;
 use OSCAR::LoggerDefs;
 use OSCAR::Configurator;
+use OSCAR::Utils;
 use Tk::Dialog;
 use English;
 # use OSCAR::PackMan;
@@ -192,9 +193,7 @@ sub install_uninstall_packages
     my $olddir = Cwd::cwd();
     chdir($ENV{OSCAR_HOME} . '/lib/Qt');
     my $cmd = "/usr/bin/perl Selector.pl -i";
-    oscar_log(7, ACTION, "About to run: $cmd");
-    if (system ($cmd)) {
-        oscar_log(5, ERROR, "Failed to execute $cmd");
+    if (oscar_system ($cmd)) {
         return -1;
     }
   chdir($olddir);
@@ -1561,8 +1560,7 @@ sub uninstall_rpms_patch
           $image = $_->name;
           oscar_log(4, INFO, "Uninstalling package $package_name from image $image");
           my $cmd = "yume --installroot $imagepath/$image -y remove $rpms";
-          oscar_log(7, ACTION, "About to run: $cmd");
-          if (!system($cmd)) {
+          if (!oscar_system($cmd)) {
             return 0;
           } else {
             my $e_string = "Error on image [$image] RPM un-install for $package_name";
@@ -1583,8 +1581,7 @@ sub uninstall_rpms_patch
         #}
         oscar_log(4, INFO, "Uninstalling package $package_name from headnode.");
         my $cmd = "yume -y remove $rpms";
-        oscar_log(7, ACTION, "About to run: $cmd");
-        if (!system("yume -y remove $rpms")) {
+        if (!oscar_system("yume -y remove $rpms")) {
             return 0;
         }
         else
