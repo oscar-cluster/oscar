@@ -14,9 +14,9 @@ use constant NO_OVERWRITE       => 0;
 use constant OVERWRITE          => 1;
 
 # Some macros specific to file management: the different file types are support
-use constant TARBALL            => 0;
-use constant SRPM               => 1;
-use constant SVN		=> 2;
+use constant TARBALL            => 'tarball';
+use constant SRPM               => 'srpm';
+use constant SVN                => 'svn';
 
 my @ISA = qw(Exporter);
 
