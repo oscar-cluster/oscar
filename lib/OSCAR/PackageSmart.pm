@@ -474,7 +474,7 @@ sub checksum_files {
     open CMD, "$cmd |" or (oscar_log(5, ERROR, "Could not run md5sum: $!"), return 0);
     my ($md5sum,$junk) = split(" ",<CMD>);
     close CMD;
-    chdir($wd);
+    chdir($wd) if(defined ($wd));
     oscar_log(5, INFO, "Checksum is: $md5sum");
     return $md5sum;
 }
