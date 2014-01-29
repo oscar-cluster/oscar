@@ -192,9 +192,7 @@ baserpms:
 		--exclude share/prereqs/\*/SRPMS oscar-$(OSCAR_VERSION)
 	@rm -rf oscar-$(OSCAR_VERSION)
 	rpmbuild -tb oscar-$(OSCAR_VERSION).tar.gz && \
-	@rm -f oscar-$(OSCAR_VERSION).tar.gz oscar-base.spec # && \
-	#mv `rpm --eval '%{_topdir}'`/RPMS/noarch/oscar*$(OSCAR_VERSION)-*.noarch.rpm $(PKGDEST)
-	#@echo "Binary packages are available in $(PKGDEST)"
+	rm -f oscar-$(OSCAR_VERSION).tar.gz oscar-base.spec # && \
 
 moverpms: rpm
 	@mv `rpm --eval '%{_topdir}'`/RPMS/noarch/oscar*$(OSCAR_VERSION)-*.noarch.rpm $(PKGDEST)
@@ -221,8 +219,6 @@ basedebs:
 		cd /tmp/oscar-debian && tar xzf oscar-base-$(OSCAR_VERSION).tar.gz && \
 		dpkg-buildpackage -rfakeroot; \
 	fi
-	#mv /tmp/*oscar*.deb $(PKGDEST);
-	#@echo "Binary packages are available in $(PKGDEST)"
 
 movedebs: deb
 	@mv /tmp/*oscar*.deb $(PKGDEST);
