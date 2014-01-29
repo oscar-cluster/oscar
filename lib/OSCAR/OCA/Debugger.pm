@@ -22,7 +22,7 @@ package OSCAR::OCA::Debugger;
 
 use strict;
 use OSCAR::Logger;
-use OSCAR::Logger::Defs;
+use OSCAR::LoggerDefs;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 
