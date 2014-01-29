@@ -1,15 +1,21 @@
 6.1.2 (not yet released):
 - Update C3 to 5.1.3.
-- Update jobmonarch to 1.1
-- Add the support for Scientific Linux 6.0.
-- Add the support for Fedora 17 and 18.
+- Update jobmonarch to 1.1.1
+- Add the support for Scientific Linux 6.
+- Add the support for RedHat Enterprise Linux 6.
+- Add the support for Fedora 17.
 - Add the support for Ubuntu 12.04 (Precise).
 - Add the support for Ubuntu 12.10 (Wheezy).
 - Fix some formatting problems in man pages.
-- Add GPU support in the database and torque configuration
-- Add blcr and munge support
-- Add oscar-release rpm for repository setup
-- Add oscar-utils to host scripts/binaries that needs to be installed on nodes
+- Add GPU support in the database and torque configuration.
+- Add blcr and munge support.
+- Add oscar-release rpm for repository setup.
+- Add oscar-utils to host scripts/bin that needs to be installed on nodes.
+- Add slurm-2.6.1 batch queing system.
+- Greatly improved oscar-packager.
+- Integrated apitest testing mechanism for each step.
+- Added configuration interface to opkg-nfs.
+- Added configuration interface for opkg-mta.
 
 6.1.1:
 - Update C3 to 5.1.2.

@@ -21,7 +21,7 @@ Package: oscar-bin
 Architecture: all
 Description: Binaries for OSCAR
  Set of binaries for OSCAR
-Depends: liboscar, libnetwork-ipv4addr-perl
+Depends: liboscar, libnetwork-ipv4addr-perl, systeminstaller-oscar (>= 2.4.12)
 
 Package: oscar-utils
 Architecture: all
@@ -53,6 +53,6 @@ Description: Transitional package for OSCAR (client side)
 
 Package: oscar-dev
 Architecture: all
-Depends: oscar-base, opkgc (>= 0.6.0), packman (>= 3.2.0)
+Depends: oscar-base, opkgc (>= 0.6.0), packman (>= 3.2.2)
 Description: Everything needed for OSCAR related developments
  Everything needed for OSCAR related developments.
