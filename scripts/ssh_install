@@ -43,11 +43,12 @@ use warnings "all";
 use File::Path;
 use Getopt::Long;
 
+use OSCAR::Env;
 use OSCAR::FileUtils;
 use OSCAR::Logger;
 use OSCAR::Utils;
 
-my ($verbose);
+my ($verbose,$debug,$quiet);
 my (@BASES);
 
 sub help () {
@@ -66,6 +67,8 @@ sub help_and_exit {
 
 GetOptions  (
         "verbose"   => \$verbose,
+        "debug"     => \$debug,
+        "quiet"     => \$quiet,
             ) || help_and_die();
 
 foreach my $arg (@ARGV) {
@@ -96,8 +99,16 @@ foreach my $b (@BASES) {
 
 my $initial_verbose_value = 0;
 $initial_verbose_value = $ENV{OSCAR_VERBOSE} if (defined $ENV{OSCAR_VERBOSE});
-if ($verbose) {
+
+if ($debug) {
+    $ENV{OSCAR_VERBOSE} = 10;
+    $OSCAR::Env::oscar_verbose=1;
+} elsif ($verbose) {
     $ENV{OSCAR_VERBOSE} = 5;
+    $OSCAR::Env::oscar_verbose=1;
+} elsif ($quiet) {
+    $ENV{OSCAR_VERBOSE} = 0;
+    $OSCAR::Env::oscar_verbose=0;
 }
 
 # the directory where ssh/sshd puts host configuration data
