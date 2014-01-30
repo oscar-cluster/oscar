@@ -1,3 +1,16 @@
+oscar (6.1.2~svn20140130-1) precise; urgency=low
+
+  * Migration to new Logger machanism
+  * Added abstraction layer for system services management.
+    supports systemd, upstart, initscripts, manual
+  * Added apitest testing mechanisms. All steps are now protected with
+    sanity tests, so a user can stop wizard and later, continue. If
+    system configuration was modified in a way that could prevent
+    oscar_wizard to perform normally, the testing mechanism will prevent
+    to continue before sanity condition are met again.
+
+ -- Olivier Lahaye <olivier.lahaye@cea.fr>  Wed, 06 Mar 2013 17:08:24 +0100
+
 oscar (6.1.2~svn20130628-1) precise; urgency=low
 
   * [oscar:packages/config.xml] Add missing version to the opkg-nfs package.
