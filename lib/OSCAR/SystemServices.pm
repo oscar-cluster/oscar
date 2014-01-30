@@ -79,9 +79,10 @@ This module provides a collection of fuctions to provide an abstraction
 layer to system services management.
 
 Depending on Linux distro, services are managed by systemd, initscripts
-commands (chkconfig, service) or manually (run the /etc/init.d script
-directly or enabling it manually as well). This module allows to forget
-those differences when managing services.
+commands (chkconfig, service) upstart commands (start, stop, restart, ...)
+or manually (run the /etc/init.d script directly or enabling it manually
+as well). This module allows to forget those differences when managing
+services.
 
 =head2 Functions
 
@@ -166,6 +167,7 @@ sub system_service_status ($) {
             # The service is more than disabled (unknown, not loaded unknown from systemd, ...)
             close SYSTEMCTL;
             return undef;
+            last;
         }
         when ("initscripts") {
             my $output = `LC_ALL=C /sbin/chkconfig --list $service_name`;
@@ -177,6 +179,17 @@ sub system_service_status ($) {
             } else {
                 return OSCAR::SystemServicesDefs::SERVICE_ENABLED();
             }
+            last;
+        }
+        when ("upstart") {
+            open( INITCTL, "LC_ALL=C initctl show-config $service_name |" );
+            while (<INITCTL>) {
+                if (/^\s*start.*\[.*23.*5\]$/) {
+                    return OSCAR::SystemServicesDefs::SERVICE_ENABLED();
+                }
+            }
+            return OSCAR::SystemServicesDefs::SERVICE_DISABLED();
+            last;
         }
         when ("manual") {
             my $initrd_path= OSCAR::OCA::OS_Settings::getitem('init');
@@ -190,6 +203,7 @@ sub system_service_status ($) {
             }
             # Still here? This means we found all entries in required run levels: service is enabled.
             return OSCAR::SystemServicesDefs::SERVICE_ENABLED();
+            last;
         }
         default {
             oscar_log(5, ERROR, "Unknwon SystemService Mgt method: $service_mgt");
@@ -318,6 +332,7 @@ sub set_system_services ($@) {
                     oscar_log(6, INFO, "$service is already ".$command."d");
                 }
             }
+            last;
         }
         when ("initscripts") {
             my $command = "on";
@@ -350,9 +365,36 @@ sub set_system_services ($@) {
                     oscar_log(6, INFO, "$service is already ".$command);
                 }
             }
+            last;
+        }
+        when ("upstart") { # same as manual
+            my $command = "start 20 2 3 5";
+            $command = "remove" if ($config eq SERVICE_DISABLED());
+            foreach my $service (@services) {
+                oscar_log(5, INFO, "Setting service $service to ".$command."d...");
+                my $status = system_service_status ($service);
+                # If status is not what we want, then perform the change.
+                if ($status ne $config) {
+                    my $service_name = OSCAR::OCA::OS_Settings::getitem($service . "_service");
+                    # If undefined, we assume that the $service is the exact name.
+                    $service_name = "$service" if (not defined $service_name);
+                    my $cmd = "/usr/sbin/update-rc.d -f $service_name $command";
+                    # FIXME: would be better to handle return code for system() call below.
+                    oscar_system($cmd);
+                    if ($? != 0) {
+                        oscar_log(5, ERROR, "Failed to $command $service");
+                        push (@failed_services, $service);
+                    } else {
+                        oscar_log(3, INFO, "$service successfully ".$command."d");
+                    }
+                } else {
+                    oscar_log(6, INFO, "$service is already ".$command."d");
+                }
+            }
+            last;
         }
         when ("manual") {
-            my $command = "start 20 2";
+            my $command = "start 20 2 3 5";
             $command = "remove" if ($config eq SERVICE_DISABLED());
             #my $initrd_path="/etc/init.d";
             my $initrd_path= OSCAR::OCA::OS_Settings::getitem('init');
@@ -387,6 +429,7 @@ sub set_system_services ($@) {
                     oscar_log(6, INFO, "$service is already ".$command."d");
                 }
             }
+            last;
         }
     }
 
@@ -448,7 +491,8 @@ sub set_system_sockets ($@) {
                 oscar_system("LC_ALL=C systemctl daemon-reload");
                 # FIXME: what about checking return code?
             }
-         }
+            last;
+        }
         when "initscripts" {
             my $command = "off";
             if ($config eq SERVICE_ENABLED()) {
@@ -471,8 +515,13 @@ sub set_system_sockets ($@) {
             }
             # FIXME: check return codes.
             system_service(XINETD(), RESTART());
+            last;
          }
-        when "manual" {
+        when ("upstart") {
+            oscar_log(1, ERROR, "OSCAR::SystemServices:set_system_sockets() not implemented for 'upstart'");
+            last;
+        }
+        when ("manual") {
             my $command = "no";
             $command = "yes" if ($config eq SERVICE_DISABLED());
             my $xinetd_path= OSCAR::OCA::OS_Settings::getitem('xinetd_dir');
@@ -491,6 +540,7 @@ sub set_system_sockets ($@) {
                 oscar_system($cmd);
                 # FIXME: what about checking return code?
             }
+            last;
         }
     }
 }
@@ -589,7 +639,7 @@ sub remote_system_service($$$) {
     }
 
     my $os = OSCAR::OCA::OS_Detect::open();
-    my $service_mgt = $os->{service_mgt}; # (systemd, initscripts, manual)
+    my $service_mgt = $os->{service_mgt}; # (systemd, initscripts, upstart, manual)
 
     # Get the real daemon name (example: http service can be httpd or apache2)
     my $service_name = OSCAR::OCA::OS_Settings::getitem ($service . "_service");
@@ -630,8 +680,12 @@ sub remote_system_service($$$) {
             $cmd = "LC_ALL=C /sbin/service ".$service_name." ".$cmd_action;
             last
         }
+        when "upstart" {
+            $cmd = "LC_ALL=C /sbin/initctl ".$cmd_action." ".$service_name;
+            last
+        }
         when "manual" {
-            $cmd = OSCAR::OCA::OS_Settings::getitem('init')." ".$cmd_action;
+            $cmd = OSCAR::OCA::OS_Settings::getitem('init')." ".$service_name." "..$cmd_action;
             last
         }
     }
@@ -682,7 +736,7 @@ sub remote_system_socket($$$) {
     }
 
     my $os = OSCAR::OCA::OS_Detect::open();
-    my $service_mgt = $os->{service_mgt}; # (systemd, initscripts, manual)
+    my $service_mgt = $os->{service_mgt}; # (systemd, initscripts, upstart, manual)
 
     # Get the real daemon name (example: http service can be httpd or apache2)
     my $service_name = OSCAR::OCA::OS_Settings::getitem ($service . "_service");
@@ -720,13 +774,21 @@ sub remote_system_socket($$$) {
         when "initscripts" {
             $service_name = OSCAR::OCA::OS_Settings::getitem (XINETD() . "_service");
             # we won't stop xinetd as it would stop all xinetd services.
-            system_service(XINETD(), $cmd_action) if ($cmd_action ne STOP());
+            system_service($service_name, $cmd_action) if ($cmd_action ne STOP());
+            $cmd="";
+            last
+        }
+        when "upstart" {
+            $service_name = OSCAR::OCA::OS_Settings::getitem (XINETD() . "_service");
+            # we won't stop xinetd as it would stop all xinetd services.
+            system_service($service_name, $cmd_action) if ($cmd_action ne STOP());
             $cmd="";
             last
         }
         when "manual" {
+            $service_name = OSCAR::OCA::OS_Settings::getitem (XINETD() . "_service");
             # we won't stop xinetd as it would stop all xinetd services.
-            system_service(XINETD(), $cmd_action) if ($cmd_action ne STOP());
+            system_service($service_name, $cmd_action) if ($cmd_action ne STOP());
             $cmd="";
             last
         }
