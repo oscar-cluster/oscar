@@ -246,12 +246,11 @@ sub generate_pool_checksum ($) {
 # Prepare a given pool, i.e., generation of the checksum and create a Packman  #
 # object for future pool handling.                                             #
 #                                                                              #
-# Input: verbose, do you want logs or not (0 = no, anything else = yes)?       #
-#        pool, pool URL we need to prepare.                                    #
+# Input: pool, pool URL we need to prepare.                                    #
 # Return: Packman object that can handle the pool.                             #
 ################################################################################
-sub prepare_pool ($$) {
-    my ($verbose,$pool) = @_;
+sub prepare_pool ($) {
+    my $pool = shift;
 
     # demultiplex pool arguments
     oscar_log(2, SUBSECTION, "Preparing pool: $pool");
@@ -331,8 +330,8 @@ sub detect_pools_format (@) {
 #        pools, array with the list of repos to prepare.                       #
 # Return: the packman object that can handle these repos, undef if error.      #
 ################################################################################
-sub prepare_pools ($@) {
-    my ($v, @pools) = @_;
+sub prepare_pools (@) {
+    my @pools = @_;
 
     oscar_log(2, SUBSECTION, "Preparing pools: @pools");
     if (scalar (@pools) == 0) {
@@ -351,7 +350,7 @@ sub prepare_pools ($@) {
     my $pm;
     foreach my $p (@pools) {
         oscar_log(6, INFO, "Pool: $p");
-        $pm = prepare_pool($v, $p);
+        $pm = prepare_pool($p);
         if (!$pm) {
             oscar_log(5, ERROR, "Could not create PackMan instance!");
             return undef;

@@ -641,9 +641,7 @@ sub mirror_yum_repo ($$$) {
 
     # Now we generate the metadata of the new repo
     oscar_log(6, INFO, "Generating the mirror meta-data...");
-    # Fixme: need to update prepare_pool so it doesn't need a verbose argument.
-    my $pm = OSCAR::PackageSmart::prepare_pool ($OSCAR::Env::oscar_verbose,
-                                                $path);
+    my $pm = OSCAR::PackageSmart::prepare_pool ($path);
     if (!defined $pm) {
         oscar_log(5, ERROR, "Failed to generate the metadata of the mirror");
         return -1;
@@ -733,8 +731,7 @@ sub mirror_apt_repo ($$$) {
                             return -1);
 
     oscar_log(6, INFO, "Generating the mirror meta-data...");
-    my $pm = OSCAR::PackageSmart::prepare_pool ($OSCAR::Env::oscar_verbose,
-                                                $dest_dir);
+    my $pm = OSCAR::PackageSmart::prepare_pool ($dest_dir);
     if (!defined $pm) {
         oscar_log(5, ERROR, "Failed to generate the metadata of the mirror");
         return -1;
