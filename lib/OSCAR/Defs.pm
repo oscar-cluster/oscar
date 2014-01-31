@@ -17,6 +17,8 @@ use constant OVERWRITE          => 1;
 use constant TARBALL            => 'tarball';
 use constant SRPM               => 'srpm';
 use constant SVN                => 'svn';
+use constant GIT                => 'git';
+use constant MERCURIAL          => 'hg';
 
 my @ISA = qw(Exporter);
 
