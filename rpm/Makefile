@@ -39,7 +39,7 @@ macros.oscar:
 
 oscar.list:
 	cat oscar.list.in | sed -e "s|##SERVER_URL##|http://svn.oscar.openclustergroup.org|g" \
-				-e "s|##REPO_PATH##|$$(../scripts/compute_repo_url repos)|g" > oscar.list
+				-e "s|##REPO_PATH##|$$(../dist/compute_repo_url repos)|g" > oscar.list
 
 oscar.repo:
 	cat oscar.repo.in | sed -e "s|##URL##|$$(../scripts/compute_repo_url http://svn.oscar.openclustergroup.org/repos)|g" \

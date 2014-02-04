@@ -10,14 +10,19 @@
 # Syntax: $0 <URL base>
 # example: compute_repo_url http://svn.oscar.openclustergroup.org/repos
 
-URL_BASE="$1"
+if test -n "$1"
+then
+    URL_BASE="$1"
+else
+    URL_BASE="http://svn.oscar.openclustergroup.org/repos"
+fi
 
 #if test -z $(echo $URL_BASE |grep -E '(ht|f)tp://[a-zA-Z0-9\-\./]+$')
 # OL : We don't want to enforce full URL as sometimes we only need the end of the URL
-if test -z "$URL_BASE"
+if test "$URL_BASE" = "--help"
 then
-	echo "Usage: $1 <URL BASE>"
-	exit 1
+	echo "Usage: $0 [URL BASE]"
+	exit 0
 fi
 
 if [ -z "$OSCAR_HOME" ]
