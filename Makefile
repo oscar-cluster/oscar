@@ -27,7 +27,7 @@
 
 PKGDEST=.
 DESTDIR=
-SUBDIRS := lib oscarsamples scripts utils share testing rpm
+SUBDIRS := bin lib oscarsamples scripts utils share testing rpm
 
 include ./Config.mk
 

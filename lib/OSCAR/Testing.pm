@@ -36,7 +36,9 @@ use OSCAR::Package;
 use OSCAR::Database;
 use OSCAR::Utils;
 use Tk::ROTextANSIColor;
-
+use XML::Simple;
+use File::Basename;
+use File::Path qw(remove_tree);
 
 @EXPORT = qw(
                 display_apitest_results
@@ -45,6 +47,7 @@ use Tk::ROTextANSIColor;
                 run_multiple_tests
                 test_cluster
                 step_test
+                apitest_xml_to_text
             );
 
 
@@ -114,17 +117,18 @@ sub display_apitest_results($$$) {
 
 Open a window with the apitests results. (Honoring color ANSI codes)
 
- Input:       $window : main window
-               $title : Test short description.
-        $test_results : text output of the test.
+ Input:        $window : main window
+                $title : Test short description.
+         $test_results : text output of the test.
+        $error_details : Details of the failed tests.
 Return: none
 
 Exported: YES
 
 =cut
 ################################################################################
-sub display_ANSI_results($$$) {
-    my ($window, $title, $test_results) = @_;
+sub display_ANSI_results($$$$) {
+    my ($window, $title, $test_results, $error_details) = @_;
     my $apitestwin = $window->Toplevel();
     $apitestwin->withdraw;
     $apitestwin->title("Testing: $title");
@@ -146,7 +150,7 @@ sub display_ANSI_results($$$) {
     {
         local *STDOUT;
         open STDOUT, '>/dev/null' or warn "Can't open /dev/null: $!";
-        $apitestp->insert("end",$test_results);
+        $apitestp->insert("end",$test_results."\n========\nDetails:========\n\n".$error_details);
         $apitestp->update;
         close STDOUT;
     }
@@ -158,7 +162,101 @@ sub display_ANSI_results($$$) {
     OSCAR::Tk::center_window( $apitestwin );
 }
 
-## FIXME: use OSCAR::Tk for that.
+=cut
+################################################################################
+=item get_failed_tests_from_batch_log($test_full_name)
+
+Parse test xml output and returns an array of failed tests.
+
+ Input:       $result_file:  apitest batch log.
+Return:       @failed_tests: array of failed tests.
+
+Exported: NO
+
+=cut
+################################################################################
+sub get_failed_tests_from_batch_log($)
+{
+    my $result_file = shift;
+    my $xml = new XML::Simple;
+    my $parsed_hash = $xml->XMLin($result_file);
+    my @failed_tests = ();
+    my @sub_tests = $parsed_hash->{child};
+    for my $test (@{$parsed_hash->{child}}) {
+        if ($test->{status} ne "PASS") { # Test failed or had problem.
+            push (@failed_tests, $test->{file})
+                if($parsed_hash->{filename} ne $test->{file}); # Avoid pushing self
+        }
+    }
+    return(@failed_tests);
+}
+
+=cut
+################################################################################
+=item apitest_xml_to_text($test_full_name)
+
+Parse test xml output and display as normal test.
+
+ Input:       $testlog_full_name: The full path name of the test log (apt or apf)
+Return:       $error_output:      Formatted test error message.
+
+Exported: NO
+
+=cut
+################################################################################
+sub apitest_xml_to_text($) {
+    my $test_full_name = shift;
+    return("Missing test file: $test_full_name\n")
+        if( ! -f $test_full_name );
+    my $test_file_name = basename($test_full_name);
+    my $test_name;
+    my $test_type;
+    my $error_output = "";
+    if ($test_file_name =~ /(.*)\.ap(.)/) {
+        $test_name = $1;
+        $test_type = $2;
+    }  else {
+        oscar_log(5, ERROR, "API Error: $test_name is not an apitest test or batch script");
+        return "API Error: $test_name is not an apitest test or batch script";
+    }
+    my @result_file = glob("/var/log/oscar/apitests/run.*/$test_type*$test_name.out");
+    if ( -s $result_file[0] ) {
+       if ( $test_type eq "b" ) {
+           my @failed_tests = get_failed_tests_from_batch_log($result_file[0]);
+           for my $test (@failed_tests) {
+               $error_output .= apitest_xml_to_text($test);
+           }
+       } elsif ( $test_type eq "t" ) {
+           my $xml = new XML::Simple;
+           my $parsed_hash = $xml->XMLin($result_file[0]);
+           if ($parsed_hash->{status} eq "FAIL") {
+               $error_output .= "Failed script: $test_name.apt\n";
+               if ($parsed_hash->{output}->{ERROR}) {
+                   chomp($parsed_hash->{output}->{ERROR}->{actual});
+                   $error_output .= "=> Apitest ERROR:\n$parsed_hash->{output}->{ERROR}->{actual}\n";
+               }
+               if ($parsed_hash->{output}->{status}->{matched} eq "NO") {
+                   chomp($parsed_hash->{output}->{stdout}->{actual});
+                   $error_output .= "=> Unexpected return code: $parsed_hash->{output}->{status}->{actual}\n";
+               }
+               if ($parsed_hash->{output}->{stdout}->{matched} eq "NO") {
+                   chomp($parsed_hash->{output}->{stdout}->{actual});
+                   $error_output .= "=> Unexpected stdout:\n$parsed_hash->{output}->{stdout}->{actual}\n";
+               }
+               if ($parsed_hash->{output}->{stderr}->{matched} eq "NO") {
+                   chomp($parsed_hash->{output}->{stderr}->{actual});
+                   $error_output .= "=> Unexpected stderr:\n$parsed_hash->{output}->{stderr}->{actual}\n";
+               }
+               $error_output .= "--------------\n";
+           } # Else FAILDEP (no error to display (done before) and no usefull things to tell to user).
+       }
+    } else {
+        oscar_log(5, ERROR, "No output for test $test_full_name.");
+        oscar_log(5, ERROR, "file not found.") if ( ! -f $test_full_name );
+    }
+    return($error_output);
+}
+
 sub display_cluster_test_succed($) {
     my $window = shift;
     my $title = "Cluster test SUCCESS";
@@ -175,6 +273,7 @@ Run an apitest script or batch.
  Input:  $test_name : test filename (without path)
 Return: $test_output: The text output of the test.
         $rc: The return code of the test.
+        $error_details: error explanation if error occured or "".
 
 Exported: YES
 =cut
@@ -182,21 +281,25 @@ Exported: YES
 sub run_apitest($) {
     my $test_name = shift;
     my $apitests_path="/usr/lib/oscar/testing/wizard_tests";
-    my $apitest_options = "-T";
+    my $apitest_options = "-o /var/log/oscar/apitests";
     if($OSCAR::Env::oscar_verbose >= 10) { # debug option
-        $apitest_options = "-o /var/log/oscar -v";
+        $apitest_options .= " -v";
     } elsif ($OSCAR::Env::oscar_verbose >= 5) { # verbose option
-        $apitest_options = "-T -v";
+        $apitest_options .= " -v";
     }
-    my $cmd = "cd $apitests_path; LC_ALL=C /usr/bin/apitest $apitest_options -f $test_name";
+    # Cleaing up apitest previous logs.
+    remove_tree('/var/log/oscar/apitests');
+    my $cmd = "LC_ALL=C /usr/bin/apitest $apitest_options -f $apitests_path/$test_name";
     my $test_output = "";
     my $rc = 0 ; # SUCCESS
+    my $error_details = "";
 
     # Test that test file exists.
     if ( ! -f "$apitests_path/$test_name" ) {
         $rc = 255; # File not found.
         $test_output = "Test $apitests_path/$test_name not found";
-        return($test_output, $rc);
+        $error_details = "$test_output\n";
+        return($test_output, $rc, $error_details);
     }
 
     # Run the test and collect the output if any.
@@ -205,8 +308,9 @@ sub run_apitest($) {
         # Problem: can't run the command.
         $rc = $!;
         $test_output = "Can't run $cmd ($rc)";
+        $error_details = "$test_output\n";
         oscar_log(5, ERROR, "Failed to run: $cmd");
-        return($test_output, $rc);
+        return($test_output, $rc, $error_details);
     }
     my $quoted_test_name = quotemeta $test_name;
     while (my $line = <CMD>) {
@@ -224,13 +328,15 @@ sub run_apitest($) {
 
     if ($rc > 0) {
         oscar_log(5, ERROR, "Test $test_name failed.");
-        oscar_log(6, ERROR, "apitest result was:\n$test_output") if ($rc > 0);
+        oscar_log(6, ERROR, "apitest result was:\n$test_output");
+        $error_details = apitest_xml_to_text("$apitests_path/$test_name");
+        oscar_log(6, ERROR, "Error details:\n$error_details");
     } else {
         oscar_log(5, INFO, "Test $test_name succeeded.");
     }
     $rc += $cmd_rc;
 
-    return($test_output, $rc);
+    return($test_output, $rc, $error_details);
 }
 
 ################################################################################
@@ -239,8 +345,9 @@ sub run_apitest($) {
 Run a set of apitests and display an error window if needed.
 
  Input: @apitests_to_run: the list of apitests to run.
-Return: 1 if an arror occured
-        0 if test ran without error.
+Return: $all_output:        output from apitest.
+        $all_rc:            1 if an arror occured 0 if test ran without error.
+        $all_error_details: details off tests errors.
 
 Exported: YES
 
@@ -252,11 +359,14 @@ sub run_multiple_tests(@) {
     my $rc;
     my $all_output = "";
     my $all_rc = 0;
+    my $error_details;
+    my $all_error_details = "";
     for my $test_to_run ( @apitests_to_run ) {
-        ($test_output, $rc) = run_apitest($test_to_run);
+        ($test_output, $rc, $error_details) = run_apitest($test_to_run);
         $all_output .= "Processing test: $test_to_run\n================================================================================\n";
         if($rc > 0) {
             $all_output .= "=> FAILED!\n$test_output\n\n";
+            $all_error_details .= $error_details;
             $all_rc = 1; # Keep track that at least one test failed.
 #            oscar_log(5, ERROR, $all_output);
         } else {
@@ -266,7 +376,7 @@ sub run_multiple_tests(@) {
 #    if ($all_rc == 0) {
 #        oscar_log(5, INFO, "Successfully passed the following tests: ".join(" ",@apitests_to_run));
 #    }
-    return($all_output, $all_rc);
+    return($all_output, $all_rc, $all_error_details);
 }
 
 ################################################################################
@@ -285,6 +395,7 @@ sub test_cluster($) {
     my @tests_to_run = ( 'base_system_validate.apb' );
     my @pkgs_hash = list_selected_packages();
     my $output = "";
+    my $error_details = "";
     my $rc = 0;
 
     # 1st, create oscar testing environment.
@@ -308,9 +419,9 @@ sub test_cluster($) {
     # Run all the tests.
     oscar_log(5, INFO, "About to perform the following tests: \n  - " .
                         join("\n  - ", @tests_to_run) . "\n");
-    ($output,$rc) = run_multiple_tests(@tests_to_run);
+    ($output,$rc,$error_details) = run_multiple_tests(@tests_to_run);
     if( $rc > 0) {
-        display_ANSI_results($window, "Cluster validation", $output);
+        display_ANSI_results($window, "Cluster validation", $output, $error_details);
     } else {
         display_cluster_test_succed($window);
     }
@@ -332,11 +443,12 @@ sub step_test($$) {
     my ($window, $step_name ) = @_;
     my $test_name="before_".$step_name.".apb";
     my $output= "";
+    my $error_details = "";
     my $rc=0;
-    ($output,$rc) = run_multiple_tests($test_name);
+    ($output,$rc, $error_details) = run_multiple_tests($test_name);
     if( $rc > 0) {
         $output = "Requirements for step '$step_name' are not met.\nPlease fix problems before retrying.\n\n".$output;
-        display_ANSI_results($window, $test_name, $output);
+        display_ANSI_results($window, $test_name, $output, $error_details);
         oscar_log(1, INFO, "Refusing to enter step \"$step_name\" (Requirements not met).");
     } else {
         oscar_log(5, INFO, "Ready to enter step \"$step_name\"");

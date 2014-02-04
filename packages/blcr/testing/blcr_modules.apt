@@ -39,11 +39,18 @@ Desired result : PASS
   <test type="script">
   
     <command interpreter="/bin/bash" wdir="/tmp" uname="oscartst">
-lsmod|grep '^blcr'|wc -l
+LOADED_MODULES_COUNT=$(lsmod|grep '^blcr'|wc -l)
+if test $LOADED_MODULES_COUNT -ne 2
+then
+    echo "Expected to see 2 blcr modules loaded. Found: $LOADED_MODULES_COUNT"
+    exit 1
+else
+    exit 0
+fi
     </command>
 
-    <output name="stdout" format="regexp">^2$</output>
-    <output name="stderr" format="literal"></output>
+    <output name="stdout"/>
+    <output name="stderr"/>
     <output name="status" format="literal">0</output>
 
   </test>

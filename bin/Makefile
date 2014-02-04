@@ -2,15 +2,8 @@ DESTDIR=
 TOP_DIR = ..
 include $(TOP_DIR)/Config.mk
 
-SCRIPTS := create_and_populate_basic_node_info get_arch \
-		get_num_proc get-oscar-version.sh install_prereq install_server \
-		integrate_image mac_collector macinfo2sis OCA-driver opd oscar \
-		oscar_sanity_check \
-		ping_clients post_clients post_install post_rpm_install prepare_repos \
-		prep_oscar_repos set_node_nics set_oscar_interface \
-		ssh_install update_live_macs \
-		oscar-updater compute_repo_url
-SUBDIRS := cli oscar-updater.d
+SCRIPTS := oscar-config oscar_image_cleanup oscar_wizard repo-update setup_pxe system-sanity
+SUBDIRS := system-sanity.d
 
 doc:
 	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1/
