@@ -20,10 +20,10 @@
   #                      All rights reserved.
   #   Copyright (c) 2006 Geoffroy Vallee
   #                      All rights reserved.
-  #   Copyright (c) 2013 CEA - Commissariat a l'Energie Atomique et
+  #   Copyright (c) 2013-2014 CEA - Commissariat a l'Energie Atomique et
   #                            aux Energies Alternatives
   #                      All rights reserved.
-  #   Copyright (c) 2013 Olivier LAHAYE <olivier.lahaye@cea.fr>
+  #   Copyright (c) 2013-2014 Olivier LAHAYE <olivier.lahaye@cea.fr>
   #                      All rights reserved.
   #
   # $Id: $
@@ -63,11 +63,9 @@ if ( ($UID == 0) and ($ENV{USER} eq "root") ) {
 	$rc = SUCCESS;
 
 } else {
-	print " ----------------------------------------------\n";
-	print "  $0 \n";
+	print "  ERROR: We are not running as root.\n";
 	print "   UID=(" . $UID       . ") \t should be \'0\'\n";
 	print "  USER=(" . $ENV{USER} . ") \t should be \'root\'\n";
-	print " ----------------------------------------------\n";
 
 	$rc = FAILURE;  
 }

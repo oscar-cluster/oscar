@@ -16,14 +16,10 @@
   #   along with this program; if not, write to the Free Software
   #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   #
-  #   Copyright (c) 2006 Oak Ridge National Laboratory.
-  #                      All rights reserved.
-  #   Copyright (c) 2006 Geoffroy Vallee
-  #                      All rights reserved.
-  #   Copyright (c) 2013 CEA - Commissariat a l'Energie Atomique et
+  #   Copyright (c) 2013-2014 CEA - Commissariat a l'Energie Atomique et
   #                            aux Energies Alternatives
   #                      All rights reserved.
-  #   Copyright (c) 2013 Olivier LAHAYE <olivier.lahaye@cea.fr>
+  #   Copyright (c) 2013-2014 Olivier LAHAYE <olivier.lahaye@cea.fr>
   #                      All rights reserved.
   #
   # $Id: $
@@ -40,49 +36,9 @@ Desired result : PASS
 
   <shortDescription>TFTPBOOT: Tests that /tftpboot urls files are ok.</shortDescription>
 
-  <test type="script">
+  <test type="cmd">
   
-    <command interpreter="perl" wdir="/tmp" uname="root">
-#!/usr/bin/perl -w
-
-BEGIN {
-    if (defined $ENV{OSCAR_HOME}) {
-        unshift @INC, "$ENV{OSCAR_HOME}/lib";
-    }
-}
-
-use warnings;
-use English '-no_match_vars';
-use OSCAR::OCA::OS_Detect;
-use warnings "all";
-
-# NOTE: Use the predefined constants for consistency!
-use OSCAR::SystemSanity;
-
-my $rc = FAILURE;
-
-my $os = OSCAR::OCA::OS_Detect::open();
-if (!defined ($os)) {
-    die "ERROR: unsupported Linux distribution\n";
-}
-my $distro_id = $os->{distro} . "-" . $os->{distro_version} . "-" . 
-                $os->{arch};
-
-# Step 2: we check if /tftpboot have all we need for the local distro
-# Two cases: we use a local pool or an online pool
-my $file = "/tftpboot/distro/" . $distro_id . ".url";
-my $dir = "/tftpboot/distro/" . $distro_id;
-if ( ! -f $file &amp;&amp; ! -d $dir ) {
-    print " ---------------------------------------------------------\n";
-    print " ERROR: Impossible to find a local or online repository in\n";
-    print " /tftpboot for the distro $distro_id\n";
-    print " ---------------------------------------------------------\n";
-    exit ($rc);
-}
-
-$rc = SUCCESS;
-exit ($rc);
-</command>
+    <command wdir="/tmp" uname="root">tests.d/tftpboot_url_setup.pl</command>
 
     <output name="stdout" format="regexp">.*</output>
     <output name="stderr" />

@@ -36,39 +36,9 @@ Desired result : PASS
 
   <shortDescription>CORE: Has "oscar-config --setup-distro" been run?</shortDescription>
 
-  <test type="script">
+  <test type="cmd">
   
-    <command interpreter="perl" wdir="/tmp" uname="root">
-#!/usr/bin/perl -w
-
-BEGIN {
-    if (defined $ENV{OSCAR_HOME}) {
-        unshift @INC, "$ENV{OSCAR_HOME}/lib";
-    }
-}
-
-use warnings;
-use English '-no_match_vars';
-use OSCAR::PackagePath;
-use OSCAR::Utils;
-
-# We Get the detected distro id.
-my $distro_id = get_distro();
-if (!OSCAR::Utils::is_a_valid_string ($distro_id)) {
-    die "ERROR: Impossible to detect the local distro ID";
-}
-
-# We check that our detected distro id is in the configured distros.
-my @setup_distros = OSCAR::PackagePath::get_list_setup_distros ();
-if (scalar (@setup_distros) == 0 ||
-    !OSCAR::Utils::is_element_in_array ($distro_id, @setup_distros)) {
-    die "ERROR: The local distro is not setup, please run \"oscar-config ".
-        "--setup-distro &lt;distro_id&gt;\" first (see man oscar-config for more ".
-        "details";
-}
-
-exit(0);
-    </command>
+    <command uname="root">tests.d/distro_setup.pl</command>
 
     <output name="stdout" />
     <output name="stderr" />

@@ -1,7 +1,7 @@
 DESTDIR=
 INSTALLDIR=/usr/lib/oscar/testing/wizard_tests
 
-SUBDIRS := helpers
+SUBDIRS := helpers tests.d
 SCRIPTS := *.apt *.apb
 
 all:

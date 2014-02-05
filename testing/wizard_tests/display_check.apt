@@ -16,14 +16,10 @@
   #   along with this program; if not, write to the Free Software
   #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   #
-  #   Copyright (c) 2006 Oak Ridge National Laboratory.
-  #                      All rights reserved.
-  #   Copyright (c) 2006 Geoffroy Vallee
-  #                      All rights reserved.
-  #   Copyright (c) 2013 CEA - Commissariat a l'Energie Atomique et
+  #   Copyright (c) 2013-2014 CEA - Commissariat a l'Energie Atomique et
   #                            aux Energies Alternatives
   #                      All rights reserved.
-  #   Copyright (c) 2013 Olivier LAHAYE <olivier.lahaye@cea.fr>
+  #   Copyright (c) 2013-2014 Olivier LAHAYE <olivier.lahaye@cea.fr>
   #                      All rights reserved.
   #
   # $Id: $
@@ -40,44 +36,9 @@ Desired result : PASS
 
   <shortDescription>System-Sanity: Is X display available?</shortDescription>
 
-  <test type="script">
+  <test type="cmd">
   
-    <command interpreter="perl" wdir="/tmp" uname="root">
-#!/usr/bin/perl -w
-
-BEGIN {
-    if (defined $ENV{OSCAR_HOME}) {
-        unshift @INC, "$ENV{OSCAR_HOME}/lib";
-    }
-}
-
-use warnings;
-use English '-no_match_vars';
-use POSIX;
-
-# NOTE: Use the predefined constants for consistency!
-use OSCAR::SystemSanity;
-
-my $rc = SUCCESS;
-
-# No need to check DISPLAY env variable if we're not using the GUI
-if (!defined$ENV{OSCAR_UI} || $ENV{OSCAR_UI} ne "gui") {
-    exit ($rc);
-}
-
-if ( not defined $ENV{DISPLAY} ) {
-    print " ------------------------------------------------------------\n";
-    print " ERROR: Your \"DISPLAY\" environment variable is not set,\n";
-    print " probably indicating that you are not running in an X windows\n";
-    print " environment.\n";
-    print " OSCAR requires that you run the installer in an X windows\n";
-    print " environment.\n";
-    print " ------------------------------------------------------------\n";
-    $rc = FAILURE;
-}
-
-exit ($rc);
-    </command>
+    <command uname="root">tests.d/display_check.pl</command>
 
     <output name="stdout" />
     <output name="stderr" />

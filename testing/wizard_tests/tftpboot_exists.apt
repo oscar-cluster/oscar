@@ -16,14 +16,10 @@
   #   along with this program; if not, write to the Free Software
   #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   #
-  #   Copyright (c) 2006 Oak Ridge National Laboratory.
-  #                      All rights reserved.
-  #   Copyright (c) 2006 Geoffroy Vallee
-  #                      All rights reserved.
-  #   Copyright (c) 2013 CEA - Commissariat a l'Energie Atomique et
+  #   Copyright (c) 2013-2014 CEA - Commissariat a l'Energie Atomique et
   #                            aux Energies Alternatives
   #                      All rights reserved.
-  #   Copyright (c) 2013 Olivier LAHAYE <olivier.lahaye@cea.fr>
+  #   Copyright (c) 2013-2014 Olivier LAHAYE <olivier.lahaye@cea.fr>
   #                      All rights reserved.
   #
   # $Id: $
@@ -40,38 +36,9 @@ Desired result : PASS
 
   <shortDescription>TFTPBOOT: Tests that /tftpboot exists</shortDescription>
 
-  <test type="script">
+  <test type="cmd">
   
-    <command interpreter="perl" wdir="/tmp" uname="root">
-#!/usr/bin/perl -w
-
-BEGIN {
-    if (defined $ENV{OSCAR_HOME}) {
-        unshift @INC, "$ENV{OSCAR_HOME}/lib";
-    }
-}
-
-use warnings;
-use English '-no_match_vars';
-use warnings "all";
-
-# NOTE: Use the predefined constants for consistency!
-use OSCAR::SystemSanity;
-
-my $rc = FAILURE;
-
-# Step 1: we do some very basic tests
-if ( ! -d "/tftpboot" &amp;&amp; 
-     ! -d "/tftpboot/distro") {
-     print " --------------------------------------------\n";
-     print " ERROR: Directories for tftpboot do not exist\n";
-     print " --------------------------------------------\n";
-     exit ($rc);
-}
- 
-$rc = SUCCESS;
-exit ($rc);
-</command>
+    <command wdir="/tmp" uname="root">tests.d/tftpboot_exists.pl</command>
 
     <output name="stdout" />
     <output name="stderr" />
