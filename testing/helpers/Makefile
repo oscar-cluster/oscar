@@ -1,8 +1,8 @@
 DESTDIR=
-INSTALLDIR=/usr/lib/oscar/testing/wizard_tests
+INSTALLDIR=/usr/lib/oscar/testing/helpers
 
-SUBDIRS := helpers tests.d
-SCRIPTS := *.apt *.apb
+SUBDIRS := 
+SCRIPTS := oscar_nodes.sh create_oscartst.sh
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done

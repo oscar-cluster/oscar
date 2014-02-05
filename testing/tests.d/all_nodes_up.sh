@@ -25,7 +25,7 @@
 #
 #############################################################################
 SOME_NODES_ARE_DOWN=0
-for node in $(/usr/lib/oscar/testing/wizard_tests/helpers/oscar_nodes.sh)
+for node in $(/usr/lib/oscar/testing/helpers/oscar_nodes.sh)
 do
     if ! ping -c1 $node >/dev/null 2>&amp;1
     then

@@ -16,10 +16,10 @@
   #   along with this program; if not, write to the Free Software
   #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   #
-  #   Copyright (c) 2013-2014 CEA - Commissariat à l'énergie atomique et
+  #   Copyright (c) 2013 CEA - Commissariat à l'énergie atomique et
   #                            aux énergies alternatives
   #                      All rights reserved.
-  #   Copyright (C) 2013-2014 Olivier LAHAYE <olivier.lahaye@cea.fr>
+  #   Copyright (C) 2013 Olivier LAHAYE <olivier.lahaye@cea.fr>
   #                      All rights reserved.
   #
   # $Id: $
@@ -29,37 +29,33 @@
 <testDef>
 
   <info>
-this script tests that all nodes have a properly mounted /home
+This script tests that user can ssh from all nodes to oscar_server
 
 Desired result : PASS
 </info>
 
-  <shortDescription>CORE: Are all nodes up?</shortDescription>
+  <shortDescription>SSH: Can user ssh to head from all nodes</shortDescription>
 
   <test type="script">
   
     <command interpreter="/bin/bash" wdir="/tmp" uname="oscartst">
-# 1st create a dummy file in ~oscartst/
-if ! echo "OSCAR IS COOL" > ~oscartst/oscartestfile 2>/dev/null
-then
-    echo "Unable to create ~oscartst/oscartestfile as user oscartst on head"
-    exit 2
-fi
-
-SOME_NODES_HAVE_BAD_HOME=0
-for node in $(/usr/lib/oscar/testing/wizard_tests/helpers/oscar_nodes.sh)
+SOME_NODES_FAILED_SSH=0
+for node in $(/usr/lib/oscar/testing/helpers/oscar_nodes.sh)
 do
-    if ! ssh $node ls ~oscartst/oscartestfile > /dev/null 2>&amp;1
-    then
-        SOME_NODES_HAVE_BAD_HOME=1
-        echo "$node/home not properly mounted"
-    fi
+    # Need to do that for all server aliases so torque don't fail.
+    for server_alias in $(hostname -a)
+    do
+        if ! [[ $i =~ localhost.* ]]
+        then
+            if ! ssh $node "ssh -o 'StrictHostKeyChecking no' ${server_alias} hostname > /dev/null 2>&amp;1"
+            then
+                SOME_NODES_FAILED=1
+                echo "failed to ssh from $node to oscar_server"
+            fi
+        fi
+    done
 done
-
-# Delete the testfile
-rm ~oscartst/oscartestfile
-
-exit $SOME_NODES_HAVE_BAD_HOME
+exit $SOME_NODES_FAILED_SSH
     </command>
 
     <output name="stdout" format="literal"></output>

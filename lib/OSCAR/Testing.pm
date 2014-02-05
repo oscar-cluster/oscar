@@ -35,6 +35,7 @@ use OSCAR::Tk;
 use OSCAR::Package;
 use OSCAR::Database;
 use OSCAR::Utils;
+use OSCAR::OCA::OS_Settings;
 use Tk::ROTextANSIColor;
 use XML::Simple;
 use File::Basename;
@@ -219,7 +220,8 @@ sub apitest_xml_to_text($) {
         oscar_log(5, ERROR, "API Error: $test_name is not an apitest test or batch script");
         return "API Error: $test_name is not an apitest test or batch script";
     }
-    my @result_file = glob("/var/log/oscar/apitests/run.*/$test_type*$test_name.out");
+    my $apitests_logdir=OSCAR::OCA::OS_Settings::getitem('oscar_apitests_logdir');
+    my @result_file = glob("$apitests_logdir/run.*/$test_type*$test_name.out");
     if ( -s $result_file[0] ) {
        if ( $test_type eq "b" ) {
            my @failed_tests = get_failed_tests_from_batch_log($result_file[0]);
@@ -280,25 +282,38 @@ Exported: YES
 ################################################################################
 sub run_apitest($) {
     my $test_name = shift;
-    my $apitests_path="/usr/lib/oscar/testing/wizard_tests";
-    my $apitest_options = "-o /var/log/oscar/apitests";
+    my $test_output = "";
+    my $rc = 0 ; # SUCCESS
+    my $error_details = "";
+    my $olddir = Cwd::cwd();
+
+    my $testing_path = OSCAR::OCA::OS_Settings::getitem('oscar_testing_path');
+    if ( -d "$testing_path") {
+        chdir $testing_path; # We are working on relative path. Need to move in oscar_testing_path.
+     } else {
+        $test_output = "$testing_path not found.";
+        $error_details = "Can't run tests, no $testing_path\n";
+        oscar_log(5, ERROR, "$test_output");
+        return($test_output, $rc, $error_details);
+    }
+    #my $apitests_path = "apitests.d";
+    my $apitests_logdir = OSCAR::OCA::OS_Settings::getitem('oscar_apitests_logdir');
+    my $apitest_options = "-o $apitests_logdir";
     if($OSCAR::Env::oscar_verbose >= 10) { # debug option
         $apitest_options .= " -v";
     } elsif ($OSCAR::Env::oscar_verbose >= 5) { # verbose option
         $apitest_options .= " -v";
     }
     # Cleaing up apitest previous logs.
-    remove_tree('/var/log/oscar/apitests');
-    my $cmd = "LC_ALL=C /usr/bin/apitest $apitest_options -f $apitests_path/$test_name";
-    my $test_output = "";
-    my $rc = 0 ; # SUCCESS
-    my $error_details = "";
+    remove_tree($apitests_logdir);
+    my $cmd = "LC_ALL=C /usr/bin/apitest $apitest_options -f apitests.d/$test_name";
 
     # Test that test file exists.
-    if ( ! -f "$apitests_path/$test_name" ) {
+    if ( ! -f "apitests.d/$test_name" ) {
         $rc = 255; # File not found.
-        $test_output = "Test $apitests_path/$test_name not found";
+        $test_output = "Test apitests.d/$test_name not found";
         $error_details = "$test_output\n";
+        chdir($olddir);
         return($test_output, $rc, $error_details);
     }
 
@@ -309,7 +324,8 @@ sub run_apitest($) {
         $rc = $!;
         $test_output = "Can't run $cmd ($rc)";
         $error_details = "$test_output\n";
-        oscar_log(5, ERROR, "Failed to run: $cmd");
+        oscar_log(5, ERROR, "$test_output");
+        chdir($olddir);
         return($test_output, $rc, $error_details);
     }
     my $quoted_test_name = quotemeta $test_name;
@@ -329,13 +345,14 @@ sub run_apitest($) {
     if ($rc > 0) {
         oscar_log(5, ERROR, "Test $test_name failed.");
         oscar_log(6, ERROR, "apitest result was:\n$test_output");
-        $error_details = apitest_xml_to_text("$apitests_path/$test_name");
-        oscar_log(6, ERROR, "Error details:\n$error_details");
+        $error_details = apitest_xml_to_text("apitests.d/$test_name");
+        oscar_log(1, ERROR, "Error details:\n$error_details");
     } else {
         oscar_log(5, INFO, "Test $test_name succeeded.");
     }
     $rc += $cmd_rc;
 
+    chdir($olddir);
     return($test_output, $rc, $error_details);
 }
 
@@ -391,7 +408,8 @@ Return: 0: upon success (displays a success dialog box)
 ################################################################################
 sub test_cluster($) {
     my $window = shift;
-    my $apitests_path="/usr/lib/oscar/testing/wizard_tests";
+    my $testing_path = OSCAR::OCA::OS_Settings::getitem('oscar_testing_path');
+    my $apitests_path = $testing_path . "/apitests.d";
     my @tests_to_run = ( 'base_system_validate.apb' );
     my @pkgs_hash = list_selected_packages();
     my $output = "";
@@ -400,7 +418,7 @@ sub test_cluster($) {
 
     # 1st, create oscar testing environment.
     oscar_log(5, INFO, "Creating oscartst user if needed");
-    my $cmd = "$apitests_path/helpers/create_oscartst.sh";
+    my $cmd = "$testing_path/helpers/create_oscartst.sh";
     !oscar_system($cmd)
         or oscar_log(5, ERROR,"Cant create oscartst user");
 

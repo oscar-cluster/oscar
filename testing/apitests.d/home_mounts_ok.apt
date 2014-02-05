@@ -29,26 +29,37 @@
 <testDef>
 
   <info>
-This script tests that user can ssh to all nodes from oscar_server
+this script tests that all nodes have a properly mounted /home
 
 Desired result : PASS
 </info>
 
-  <shortDescription>SSH: Can user ssh to all nodes from head</shortDescription>
+  <shortDescription>CORE: Are all nodes up?</shortDescription>
 
   <test type="script">
   
     <command interpreter="/bin/bash" wdir="/tmp" uname="oscartst">
-SOME_NODES_FAILED_SSH=0
-for node in $(/usr/lib/oscar/testing/wizard_tests/helpers/oscar_nodes.sh)
+# 1st create a dummy file in ~oscartst/
+if ! echo "OSCAR IS COOL" > ~oscartst/oscartestfile 2>/dev/null
+then
+    echo "Unable to create ~oscartst/oscartestfile as user oscartst on head"
+    exit 2
+fi
+
+SOME_NODES_HAVE_BAD_HOME=0
+for node in $(/usr/lib/oscar/testing/helpers/oscar_nodes.sh)
 do
-    if ! ssh -o 'StrictHostKeyChecking no' $node hostname > /dev/null 2>&amp;1
+    if ! ssh $node ls ~oscartst/oscartestfile > /dev/null 2>&amp;1
     then
-        SOME_NODES_FAILED=1
-        echo "failed to ssh to $node"
+        SOME_NODES_HAVE_BAD_HOME=1
+        echo "$node/home not properly mounted"
     fi
 done
-exit $SOME_NODES_FAILED_SSH
+
+# Delete the testfile
+rm ~oscartst/oscartestfile
+
+exit $SOME_NODES_HAVE_BAD_HOME
     </command>
 
     <output name="stdout" format="literal"></output>

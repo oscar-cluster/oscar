@@ -1,14 +1,14 @@
 # OSCAR Specific stuffs
-oscar_scripts_path = /usr/bin
-oscar_helpers_path = /usr/lib/oscar/scripts
-oscar_binaries_path = /usr/bin
-oscar_apitests_path = /usr/lib/oscar/testing/wizard_tests
-oscar_tests_path = /usr/lib/oscar/scripts/tests.d
-prereqs_path = /usr/share/oscar/prereqs
-rapt_path = /usr/share/oscar/prereqs/rapt
-yume_path = /usr/share/oscar/prereqs/yume
-opkgs_path = packages
-oda_config_files_path = /etc/oscar/clusters
+oscar_scripts_path=/usr/bin
+oscar_helpers_path=/usr/lib/oscar/scripts
+oscar_binaries_path=/usr/bin
+oscar_testing_path=/usr/lib/oscar/testing
+oscar_apitests_logdir=/var/log/oscar/apitests
+prereqs_path=/usr/share/oscar/prereqs
+rapt_path=/usr/share/oscar/prereqs/rapt
+yume_path=/usr/share/oscar/prereqs/yume
+opkgs_path=packages
+oda_config_files_path=/etc/oscar/clusters
 
 # Init directory specific to this distribution
 init=/etc/init.d 

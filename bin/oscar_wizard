@@ -215,7 +215,7 @@ my $sys_sanity_rc=0;
 oscar_log(5, INFO, "Checking system-sanity...");
 ($sys_sanity_output,$sys_sanity_rc) = run_apitest("system-sanity.apb");
 if($sys_sanity_rc > 0) {
-    oscar_log(1, ERROR, "Failed sanity tests.\n$sys_sanity_output");
+    #oscar_log(1, ERROR, "Failed sanity tests.\n$sys_sanity_output");
     oscar_log(1, SUBSECTION, "Please fix error(s) before retrying.");
     exit 1;
 } else {
