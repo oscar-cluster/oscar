@@ -205,6 +205,7 @@ Exported: NO
 
 =cut
 ################################################################################
+sub apitest_xml_to_text($); # Prototype to avaid warning at runtime.
 sub apitest_xml_to_text($) {
     my $test_full_name = shift;
     return("Missing test file: $test_full_name\n")
