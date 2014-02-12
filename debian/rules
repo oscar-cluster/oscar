@@ -124,6 +124,8 @@ install: build
 	cd  $(CURDIR)/scripts; make clean;
 	# Then we install the binaries
 	cd  $(CURDIR)/scripts; make install DESTDIR=$(CURDIR)/debian/oscar-bin
+	# Then we install the binaries
+	cd  $(CURDIR)/bin; make install DESTDIR=$(CURDIR)/debian/oscar-bin
 	# mv $(CURDIR)/install_cluster \
 	#	$(CURDIR)/debian/oscar-bin/usr/bin
 
