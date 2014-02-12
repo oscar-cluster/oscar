@@ -1,3 +1,11 @@
+oscar (6.1.2~svn20140212-1) precise; urgency=low
+
+  * Updated packaging. bin and scripts split.
+    bin goes into /usr/bin
+    scripts are helpers and will move elsewhere (still in /usr/bin for compat)
+
+ -- Olivier Lahaye <olivier.lahaye@cea.fr>  Wed, 12 Feb 2014 18:16:18 +0100
+
 oscar (6.1.2~svn20140130-1) precise; urgency=low
 
   * Migration to new Logger machanism
