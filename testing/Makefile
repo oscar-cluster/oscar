@@ -1,5 +1,5 @@
 DESTDIR=
-INSTALLDIR=/usr/lib/oscar/testing/
+INSTALLDIR=/usr/lib/oscar/testing
 
 SUBDIRS := unit_testing helpers tests.d apitests.d
 SCRIPTS := run_unit_test testprint test_cluster ssh_user_tests
@@ -9,6 +9,7 @@ all:
 
 install:
 	install -d -m 0755 $(DESTDIR)$(INSTALLDIR)
+	install -d -m 0755 $(DESTDIR)$(INSTALLDIR)/data
 	install    -m 0755 ${SCRIPTS} $(DESTDIR)$(INSTALLDIR)
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} install ) ; done
 
