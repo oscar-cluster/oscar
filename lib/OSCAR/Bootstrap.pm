@@ -463,7 +463,7 @@ sub bootstrap_stage0 () {
                                                       undef,
                                                       "OSCAR_SCRIPTS_PATH");
     my $cmd = "$binaries_path/oscar-updater";
-    if (oscar_ system ($cmd)) {
+    if (oscar_system ($cmd)) {
         oscar_log(1, ERROR, "Failed to execute oscar-updater");
         exit 1;
     }
