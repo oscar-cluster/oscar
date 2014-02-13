@@ -2,8 +2,7 @@ DESTDIR=
 TOP_DIR = ..
 include $(TOP_DIR)/Config.mk
 
-SCRIPTS := oscar-config oscar_image_cleanup oscar_wizard repo-update setup_pxe system-sanity
-SUBDIRS := system-sanity.d
+SCRIPTS := oscar-config oscar_image_cleanup oscar_wizard repo-update setup_pxe
 
 doc:
 	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1/
