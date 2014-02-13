@@ -394,7 +394,7 @@ sub prepare_distro_pools ($) {
     oscar_log(5, INFO, "Pools to prepare for distro $distro_id:");
     OSCAR::Utils::print_array (@pools);
 
-    my $pm = OSCAR::PackageSmart::prepare_pools ($OSCAR::Env::oscar_verbose, @pools);
+    my $pm = OSCAR::PackageSmart::prepare_pools (@pools);
 
     return $pm;
 }
