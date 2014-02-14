@@ -27,6 +27,7 @@ use OSCAR::Database;
 use OSCAR::Configurator_backend;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
+use OSCAR::FileUtils;
 use Carp;
 
 my $ntpBuffer = "";

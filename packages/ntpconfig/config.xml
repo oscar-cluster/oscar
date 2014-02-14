@@ -55,6 +55,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.0.6-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-01-14T11:59:37+01:00">
+        <item>Fixed missing "use FileUtils;" in server-post-install.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.0.5-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-12-21T21:40:44+01:00">
         <item>Fixed post scripts.</item>
