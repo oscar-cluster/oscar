@@ -39,7 +39,7 @@ Desired result : FAIL
 
   <test type="script">
   
-    <command interpreter="/bin/bash" wdir="/tmp" uname="oscartst">
+    <command interpreter="/bin/bash" wdir="/tmp">
 
 echo "ERROR: this is unsupported"
 exit 1
