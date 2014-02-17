@@ -24,6 +24,7 @@ use OSCAR::CmpVersions;
 use OSCAR::Prereqs;
 use OSCAR::Logger;
 use OSCAR::LoggerDefs;
+use OSCAR::Utils;
 use Data::Dumper;
 use Carp;
 
