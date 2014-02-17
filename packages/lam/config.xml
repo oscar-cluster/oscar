@@ -10,7 +10,7 @@
      
       $Id$
   -->
-  <name>lam-oscar</name>
+  <name>lam</name>
   <class>included</class>
   <summary>LAM/MPI specifically packaged for OSCAR clusters</summary>
   <description>This RPM is created specifically for the OSCAR
