@@ -1,0 +1,65 @@
+#!/bin/bash
+# $Id: $
+# Copyright (c) 2012, CEA² Commissariat à l'Énergie Atomique et Énergies Alternatives
+#		      All rights reserved.
+
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+ 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+ 
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+# Authors: Olivier LAHAYE
+
+# Purpose: fix munge installation (just after the package is installed)
+# Check that user munge exist
+ROOT_DIR=$1
+if [ -z "$ROOT_DIR" -o ! -d "$ROOT_DIR" ]; then
+    echo "[ERROR] $0: root directory not specified."
+    exit 1
+fi
+
+# If ${ROOT_DIR}/etc/munge does not exists, assume that munge is not yet installed.
+# Thus we prepare the correct tree.
+if test ! -d ${ROOT_DIR}/etc/munge
+then
+	/bin/mkdir -p ${ROOT_DIR}/etc/munge
+	/bin/mkdir -p ${ROOT_DIR}/var/log/munge
+	/bin/mkdir -p ${ROOT_DIR}/var/lib/munge
+fi
+# Create the /var/run/munge directory
+/bin/mkdir -p ${ROOT_DIR}/var/run/munge
+
+# Get the munge UID and GID from the ${ROOT_DIR}/etc/passwd
+# (Can differs from head if dynamicaly assigned by munge package post install)
+if test -z "$(grep munge ${ROOT_DIR}/etc/passwd)"
+then
+  echo "[ERROR] $0: Munge user does not exists in ${ROOT_DIR}/etc/passwd."
+  exit 1
+fi
+MUNGE_UID=$(grep munge ${ROOT_DIR}/etc/passwd|cut -d: -f3)
+MUNGE_GID=$(grep munge ${ROOT_DIR}/etc/passwd|cut -d: -f4)
+
+# Make sure that correct permissions and owners are set.
+/bin/chmod 700 ${ROOT_DIR}/etc/munge
+/bin/chmod 711 ${ROOT_DIR}/var/log/munge
+/bin/chmod 700 ${ROOT_DIR}/var/lib/munge
+/bin/chmod 755 ${ROOT_DIR}/var/run/munge
+/bin/chown $MUNGE_UID.$MUNGE_GID ${ROOT_DIR}/etc/munge
+/bin/chown $MUNGE_UID.$MUNGE_GID ${ROOT_DIR}/var/log/munge
+/bin/chown $MUNGE_UID.$MUNGE_GID ${ROOT_DIR}/var/lib/munge
+/bin/chown $MUNGE_UID.$MUNGE_GID ${ROOT_DIR}/var/run/munge
+
+if test -f ${ROOT_DIR}/etc/munge/munge.key
+then
+    /bin/chown $MUNGE_UID.$MUNGE_GID ${ROOT_DIR}/etc/munge/munge.key
+    /bin/chmod 600 ${ROOT_DIR}/etc/munge/munge.key
+fi

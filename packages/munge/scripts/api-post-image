@@ -30,36 +30,14 @@ if [ -z "$IMAGEDIR" -o ! -d "$IMAGEDIR" ]; then
     exit 1
 fi
 
-# If ${IMAGEDIR}/etc/munge does not exists, assume that munge is not yet installed.
-# Thus we prepare the correct tree.
-if test ! -d ${IMAGEDIR}/etc/munge
+# Get helper path: fix-munge-config
+MUNGE_OPKG_DIR=$(basename $0)
+if test -x ${MUNGE_OPKG_DIR}/fix-munge-config
 then
-	/bin/mkdir -p ${IMAGEDIR}/etc/munge
-	/bin/mkdir -p ${IMAGEDIR}/var/log/munge
-	/bin/mkdir -p ${IMAGEDIR}/var/lib/munge
+	${MUNGE_OPKG_DIR}/fix-munge-config $IMAGEDIR
+else
+	/usr/lib/oscar/packages/munge/fix-munge-config $IMAGEDIR
 fi
-# Create the /var/run/munge directory
-/bin/mkdir -p ${IMAGEDIR}/var/run/munge
-
-# Get the munge UID and GID from the image.
-# (Can differs from head if dynamicaly assigned by munge package post install)
-if test -z "$(grep munge ${IMAGEDIR}/etc/passwd)"
-then
-  echo "Munge user does not exists in the image."
-  exit 1
-fi
-MUNGE_UID=$(grep munge ${IMAGEDIR}/etc/passwd|cut -d: -f3)
-MUNGE_GID=$(grep munge ${IMAGEDIR}/etc/passwd|cut -d: -f4)
-
-# Make sure that correct permissions and owners are set.
-/bin/chmod 700 ${IMAGEDIR}/etc/munge
-/bin/chmod 711 ${IMAGEDIR}/var/log/munge
-/bin/chmod 700 ${IMAGEDIR}/var/lib/munge
-/bin/chmod 755 ${IMAGEDIR}/var/run/munge
-/bin/chown $MUNGE_UID.$MUNGE_GID ${IMAGEDIR}/etc/munge
-/bin/chown $MUNGE_UID.$MUNGE_GID ${IMAGEDIR}/var/log/munge
-/bin/chown $MUNGE_UID.$MUNGE_GID ${IMAGEDIR}/var/lib/munge
-/bin/chown $MUNGE_UID.$MUNGE_GID ${IMAGEDIR}/var/run/munge
 
 if test ! -r /etc/munge/munge.key
 then

@@ -25,25 +25,33 @@
 
 use Carp;
 use OSCAR::Opkg;
+use OSCAR::Utils;
+use OSCAR::Package;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
 use OSCAR::OCA::OS_Settings;
 
 
-my $munge_dir = OSCAR::OCA::OS_Settings::getitem(MUNGE."_configdir");
+my $pkgdir = OSCAR::Package::get_scripts_dir("munge", "post_server_install");
 
+my $cmd = "$pkgdir/fix-munge-config /";
+if (oscar_system($cmd)) {
+    exit 1;
+}
+
+my $munge_dir = OSCAR::OCA::OS_Settings::getitem(MUNGE."_configdir");
 if (! -f "$munge_dir/munge.key") {
     opkg_print("MUNGE: server-post-install => creating munge sercret key $munge_dir/munge.key\n");
-	!system("/usr/sbin/create-munge-key") or (carp "ERROR: Unable to create munge key ($!): $cmd", return -1);
+	!oscar_system("/usr/sbin/create-munge-key -f") or die "ERROR: Unable to create munge key ($!): $cmd";
 }
 
 # Start the munge service.
 !system_service(MUNGE,START)
-    or (carp "ERROR: Couldn't start munge service on the server.\n", return -1);
+    or die "ERROR: Couldn't start munge service on the server.\n";
 
 # If we could start it, then enable it (it doesn't makes sens to enable a broken service).
 !enable_system_services( (MUNGE) )
-    or (carp "ERROR: Couldn't enable munge service on the server.\n", return -1);
+    or die "ERROR: Couldn't enable munge service on the server.\n";
 
 # Succeffully configured munge.
 opkg_print("[INFO] successfully configured munge daemon on the server\n");
