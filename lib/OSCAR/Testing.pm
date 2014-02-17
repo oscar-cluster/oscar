@@ -182,8 +182,14 @@ sub get_failed_tests_from_batch_log($)
     my $xml = new XML::Simple;
     my $parsed_hash = $xml->XMLin($result_file);
     my @failed_tests = ();
-    my @sub_tests = $parsed_hash->{child};
-    for my $test (@{$parsed_hash->{child}}) {
+    my @sub_tests;
+
+    if( ref($parsed_hash->{child}) ne 'ARRAY') {
+        push(@sub_tests,$parsed_hash->{child});
+    } else {
+        @sub_tests = @{$parsed_hash->{child}};
+    }
+    for my $test (@sub_tests) {
         if ($test->{status} ne "PASS") { # Test failed or had problem.
             push (@failed_tests, $test->{file})
                 if($parsed_hash->{filename} ne $test->{file}); # Avoid pushing self
