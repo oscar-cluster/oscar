@@ -25,6 +25,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.1.0-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-02-17T20:23:46+01:00">
+        <item>Make sure perms are correct on server before trying to enable service</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.6-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-12-17T12:13:25+01:00">
         <item>full post-install rewrite in perl to use service abstraction mechanisms</item>
