@@ -118,7 +118,7 @@ if (oscar_system ($cmd)) {
 }
 
 # unmount /proc from image, if needed
-if (!oscar_system("grep $targetdir/proc /proc/mounts >/dev/null 2>&1")) {
+if (!system("grep $targetdir/proc /proc/mounts >/dev/null 2>&1")) {
     oscar_log(3, INFO, "post_rpm_install: unmounting /proc from image $imagename");
     !oscar_system("umount $targetdir/proc") or (oscar_log(1, ERROR, "Couldn't umount /proc from image!"), exit 1);
 }
