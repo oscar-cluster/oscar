@@ -46,6 +46,9 @@ use OSCAR::Configbox;
 use OSCAR::Configurator_backend;
 use OSCAR::Database;
 use OSCAR::Package;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
+use OSCAR::Utils;
 use SIS::DB;
 use SIS::Image;
 
@@ -82,8 +85,7 @@ if (-e $masterconf) {
 }
 
 if (! -d $configdir) {
-    !system("mkdir ".$configdir) || do {
-        carp "ERROR: Could not create directory $configdir\n";
+    !oscar_system("mkdir ".$configdir) || do {
         exit 1;
     };
 }
@@ -94,21 +96,20 @@ if (!$i) {
     exit 1;
 }
 
-print "configuring gmond for image=$image\n";
+oscar_log(5, INFO, "configuring gmond for image=$image");
 
 if (! -d $imageconf) {
-    !system("mkdir ".$imageconf) || do {
-        carp "ERROR: Could not create directory $imageconf\n";
+    !oscar_system("mkdir ".$imageconf) || do {
         exit 1;
     };
     if (! -e $imageconf."/configurator.html") {
-	!system("sed -e \"s/\@IMAGENAME\@/$image/\" ".
+	!oscar_system("sed -e \"s/\@IMAGENAME\@/$image/\" ".
 		"< $pkgdir/configurator_image.html ".
 		"> $imageconf/configurator.html") or
-		croak("ERROR: Could not create $imageconf/configurator.html! $!\n");
+		(oscar_log(5, ERROR,"Could not create $imageconf/configurator.html! $!"), exit 1);
     }
 } else {
-    print "Found $imageconf\n";
+    oscar_log(5, INFO, "Found $imageconf");
 }
 
 # configure this only if no config values found in database
@@ -132,7 +133,8 @@ if (!@res) {
 		"--package=ganglia",
 		"--context=image:$image");
 	} else {
-        croak("ERROR: OSCAR_UI not set to gui or cli\n");
+        oscar_log(5, ERROR, "OSCAR_UI not set to gui or cli");
+        exit 1;
 	}
 }
 
@@ -141,6 +143,6 @@ if (!@res) {
 #
 run_image_conf:
 exec "$pkgdir/edit_ganglia_conf --gmond --image $image --verbose"
-    or carp("ERROR: Could not run edit_ganglia_conf! $!");
+    or (oscar_log(5, ERROR, "Could not run edit_ganglia_conf! $!"), exit 1);
 
 exit 0;

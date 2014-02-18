@@ -26,12 +26,14 @@
 use Carp;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 
 # Enable munge service in image.
 !enable_system_services( (GANGLIA_GMOND) )
-    or (carp "ERROR: Couldn't enable gmond service in the image.\n", return -1);
+    or (oscar_log(5, ERROR, "Couldn't enable gmond service in the image."), exit 1);
 
 # Succeffully configured munge.
-print("[INFO] successfully enabled munge daemon in the image\n");
+oscar_log(5, INFO, "Successfully enabled gmond daemon in the image");
 
 exit 0;

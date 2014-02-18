@@ -35,7 +35,9 @@ use warnings "all";
 use OSCAR::Package;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
-
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
+use OSCAR::Utils;
 
 # Note that we do not care if "stop" does not work, we just want to be sure the service is stopped.
 system_service(GANGLIA_GMOND,STOP);
@@ -43,13 +45,13 @@ system_service(GANGLIA_GMOND,STOP);
 my $pkgdir = OSCAR::Package::get_scripts_dir("ganglia", "post_server_install");
 
 my $cmd = "$pkgdir/edit_ganglia_conf --gmond --verbose";
-if (system($cmd)) {
-    die "ERROR: Impossible to execute $cmd";
+if (oscar_system($cmd)) {
+    exit 1;
 }
 
 $cmd = "$pkgdir/edit_ganglia_conf --gmetad --verbose";
-if (system($cmd)) {
-    die "ERROR: Impossible to execute $cmd";
+if (oscar_system($cmd)) {
+    exit 1;
 }
 
 exit 0;

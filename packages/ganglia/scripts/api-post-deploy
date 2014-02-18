@@ -33,27 +33,31 @@ use warnings "all";
 use OSCAR::Package;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
+use OSCAR::Utils;
 
 my $pkgdir = OSCAR::Package::get_scripts_dir("ganglia", "post_server_install");
 
 my $script = "$pkgdir/edit_ganglia_conf";
 if (! -f $script) {
-    die ("ERROR: script $script no available");
+    oscar_log(5, ERROR, "script $script no available");
+    exit 1;
 }
 my $cmd = "$script --gmetad --verbose";
-if (system ($cmd)) {
-    die "ERROR: Impossible to execute $cmd";
+if (oscar_system ($cmd)) {
+    exit 1;
 }
 
 !system_service(GANGLIA_GMETAD,START)
-    or die "ERROR: Couldn't restart gmetad on head.";
+    or (oscar_log(5, ERROR, "Couldn't restart gmetad on head."), exit 1);
 
 # OL: Should we start gmond on head?
 !system_service(GANGLIA_GMOND,START)
-    or die "ERROR: Couldn't start gmond on head.";
+    or (oscar_log(5, ERROR, "Couldn't start gmond on head."), exit 1);
 
 # Restart gmond on nodes.
 !remote_system_service(GANGLIA_GMOND,RESTART,"/usr/bin/cexec")
-    or die "ERROR: Couldn't restart gmond on all nodes.";
+    or (oscar_log(5, ERROR, "Couldn't restart gmond on all nodes."), exit 1);
 
 exit 0;
