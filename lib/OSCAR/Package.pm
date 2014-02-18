@@ -112,7 +112,7 @@ sub get_scripts_dir ($$) {
 sub run_pkg_script ($$$$) {
     my ($pkg, $phase, $verbose, $args) = @_;
     my $scripts = $PHASES{$phase};
-    oscar_log(6, INFO, "run_pkg_script for $pkg ($phase)");
+    oscar_log(5, SUBSECTION, "run_pkg_script for $pkg ($phase)");
     if (!$scripts) {
         oscar_log(5, ERROR, "No such phase '$phase' in OSCAR package API");
         return 0;
@@ -145,7 +145,7 @@ sub run_pkg_script_chroot ($$) {
     my ($pkg, $imagedir) = @_;
     my $phase = "post_rpm_install";
     my $scripts = $PHASES{$phase};
-    oscar_log(6, INFO, "run_pkg_script_chroot for $pkg in image $imagedir ($phase)");
+    oscar_log(5, SUBSECTION, "run_pkg_script_chroot for $pkg in image $imagedir ($phase)");
     if (!$scripts) {
         oscar_log(5, ERROR, "No such phase 'post_rpm_install' in OSCAR package API");
         return undef;
