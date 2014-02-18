@@ -152,7 +152,7 @@ sub system_service_status ($) {
 
     given ($service_mgt) {
         when ("systemd") {
-            open SYSTEMCTL, "LC_ALL=C /bin/systemctl is-enabled $service_name.service |"
+            open SYSTEMCTL, "LC_ALL=C /bin/systemctl --no-reload is-enabled $service_name.service |"
                 or (oscar_log(6, ERROR, "Could not run: $!"), return undef);
             while (<SYSTEMCTL>) {
                 if (/^enabled/) {
@@ -318,7 +318,7 @@ sub set_system_services ($@) {
                     # If undefined, we assume that the $service is the exact name.
                     $service_name = "$service" if (not defined $service_name);
 
-                    my $cmd = "LC_ALL=C /bin/systemctl $command $service_name.service";
+                    my $cmd = "LC_ALL=C /bin/systemctl --no-reload $command $service_name.service";
                     # FIXME: would be better to handle return code for system() call below.
                     oscar_system($cmd);
                     my $status = system_service_status ($service);
