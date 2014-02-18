@@ -90,6 +90,11 @@ if(!-d $targetdir) {
     exit 1;
 }
 
+oscar_log(5, INFO, "post_rpm_install: mounting /dev /proc /sys in the image");
+for my $mount_point ( ("/dev", "/proc", "/sys") ) {
+    oscar_system("mount -o bind $mount_point $targetdir$mount_point");
+}
+
 oscar_log(2, SUBSECTION, "Running post_rpm_install");
 oscar_log(5, INFO, "post_rpm_install: Making sure /dev/null is r/w for all");
 !oscar_system("chmod a+rw $targetdir/dev/null") 
@@ -118,10 +123,10 @@ if (oscar_system ($cmd)) {
 }
 
 # unmount /proc from image, if needed
-if (!system("grep $targetdir/proc /proc/mounts >/dev/null 2>&1")) {
-    oscar_log(3, INFO, "post_rpm_install: unmounting /proc from image $imagename");
-    !oscar_system("umount $targetdir/proc") or (oscar_log(1, ERROR, "Couldn't umount /proc from image!"), exit 1);
-}
+#if (!system("grep $targetdir/proc /proc/mounts >/dev/null 2>&1")) {
+#    oscar_log(3, INFO, "post_rpm_install: unmounting /proc from image $imagename");
+#    !oscar_system("umount $targetdir/proc") or (oscar_log(1, ERROR, "Couldn't umount /proc from image!"), exit 1);
+#}
 
 # Here we run all the post_rpm_install scripts
 
@@ -143,6 +148,11 @@ foreach my $pkg (@pkgs) {       # %$pkg_ref has the two keys ( package, version)
        oscar_log(2, ERROR, "Couldn't run post_rpm_nochroot for $pkg");
        $return++;
     }
+}
+
+oscar_log(5, INFO, "post_rpm_install: Unmounting /dev /proc /sys in the image");
+for my $mount_point ( ("/dev", "/proc", "/sys") ) {
+    oscar_system("umount $mount_point $targetdir$mount_point");
 }
 
 if($return) {
