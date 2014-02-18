@@ -39,17 +39,17 @@ macros.oscar:
 
 oscar.list:
 	cat oscar.list.in | sed -e "s|##SERVER_URL##|http://svn.oscar.openclustergroup.org|g" \
-				-e "s|##REPO_PATH##|$$(../dist/compute_repo_url repos)|g" > oscar.list
+				-e "s|##REPO_PATH##|$$(./compute_repo_url repos)|g" > oscar.list
 
 oscar.repo:
-	cat oscar.repo.in | sed -e "s|##URL##|$$(../dist/compute_repo_url http://svn.oscar.openclustergroup.org/repos)|g" \
+	cat oscar.repo.in | sed -e "s|##URL##|$$(./compute_repo_url http://svn.oscar.openclustergroup.org/repos)|g" \
 				-e "s|##OSCAR_VERSION|$$(../scripts/get-oscar-version.sh ../VERSION --full)|g"  > oscar.repo
 
 oscar.channel:
-	cat oscar.channel.in | sed -e "s|##URL##|$$(../dist/compute_repo_url http://svn.oscar.openclustergroup.org/repos)|g" > oscar.channel
+	cat oscar.channel.in | sed -e "s|##URL##|$$(./compute_repo_url http://svn.oscar.openclustergroup.org/repos)|g" > oscar.channel
 
 sources.oscar.txt:
-	cat sources.oscar.txt.in | sed -e "s|##URL##|$$(../dist/compute_repo_url http://svn.oscar.openclustergroup.org/repos)|g" > sources.oscar.txt
+	cat sources.oscar.txt.in | sed -e "s|##URL##|$$(./compute_repo_url http://svn.oscar.openclustergroup.org/repos)|g" > sources.oscar.txt
 clean:
 	rm -f ${FILES}
 	rm -f *~
