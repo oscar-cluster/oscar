@@ -3,6 +3,7 @@
 
 # Overwrite few services
 rpc_service=portmap
+nfs_service=nfs
 #
 # Overwrite few package names
 

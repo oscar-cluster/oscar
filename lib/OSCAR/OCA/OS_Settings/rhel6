@@ -1,0 +1,20 @@
+# rhel specific settings (valid for rhel, centos)
+# Init directory specific to this distribution
+init=/etc/rc.d/init.d 
+
+# Overwrite the name of few packages
+nfs_package=nfs-utils
+ssh_package=openssh-server
+portmap_package=rpcbind
+
+# Overwrite the name of few deamons
+
+# Overwrite the name of few services
+munge_service=munge
+nfs_service=nfs
+
+# Overwrite the name of few configuration files
+dhcp_leases=/var/lib/dhcpd/dhcpd.leases
+
+# Overwrite the name of few directories
+pxe_dir=/usr/share/syslinux/
