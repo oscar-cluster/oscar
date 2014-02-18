@@ -34,7 +34,7 @@ do
       echo "Error:  Can't find cpush utility."
       exit 1
     fi
-    # OL: FIXME: Should use remote_system_service API here.
+    # OL: FIXME: Should use remote_system_service API here.
     echo "Sending SIGHUP to all moms..."
     if [ -x `which cexec` ] ; then
       cexec killall -1 pbs_mom

@@ -39,7 +39,7 @@ use OSCAR::Database;
 
 # Init torque DB if needed.
 if(!-f '/var/lib/torque/server_priv/serverdb' && !-f '/var/spool/pbs/server_priv/serverdb') {
-    # Find server_priv directory.
+    # Find server_priv directory.
     my $pbs_home="/var/lib/torque";
     $pbs_home="/var/spool/pbs" if(-d '/var/spool/pbs');
 
@@ -56,7 +56,7 @@ if(!-f '/var/lib/torque/server_priv/serverdb' && !-f '/var/spool/pbs/server_priv
     # system('/etc/init.d/pbs_server create'); # no config file: need to initialise config.
 }
 
-# Enable auth daemon and pbs_server
+# Enable auth daemon and pbs_server
 !enable_system_services( (PBS_TRQAUTHD, PBS_SERVER) )
     or carp "ERROR: Couldn't enable pbs_trqauthd and pbs_server on head.\n";
 

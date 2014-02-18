@@ -91,7 +91,7 @@ sub startPBSserver
   !system_service(PBS_TRQAUTHD,START)
       or carp "ERROR: Couldn't start pbs trqauthd service.\n";
 
-  # 2nd: Start the pbs server.
+  # 2nd: Start the pbs server.
   opkg_print("Starting pbs server daemon\n");
   !system_service(PBS_SERVER,START)
       or carp "ERROR: Couldn't start pbs service on head.\n";
@@ -115,7 +115,7 @@ sub startPBSserver
           or carp "ERROR: Couldn't start pbs scheduler service.\n";
   }
 
-  # NOTE: If we're using MAUI, the maui scheduler will be started by maui's api-post-deploy scripts
+  # NOTE: If we're using MAUI, the maui scheduler will be started by maui's api-post-deploy scripts
   # We don't need it at the moment.
 
   # Trying to find the qstat binary. if alternatives is used, it can be named qstat-torque
