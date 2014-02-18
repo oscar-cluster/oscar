@@ -91,7 +91,7 @@ if(!-d $targetdir) {
 }
 
 oscar_log(5, INFO, "post_rpm_install: mounting /dev /proc /sys in the image");
-for my $mount_point ( ("/dev", "/proc", "/sys") ) {
+for my $mount_point ( ("/dev", "/proc", "/sys", "/run") ) {
     oscar_system("mount -o bind $mount_point $targetdir$mount_point");
 }
 
@@ -151,7 +151,7 @@ foreach my $pkg (@pkgs) {       # %$pkg_ref has the two keys ( package, version)
 }
 
 oscar_log(5, INFO, "post_rpm_install: Unmounting /dev /proc /sys in the image");
-for my $mount_point ( ("/dev", "/proc", "/sys") ) {
+for my $mount_point ( ("/dev", "/proc", "/sys", "/run") ) {
     oscar_system("umount $mount_point $targetdir$mount_point");
 }
 
