@@ -96,6 +96,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="3.5.2-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-02-18T13:03:24+01:00">
+        <item>Migration to new OSCAR::Logger + bugfixes.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="3.5.1-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-12-04T14:56:33+01:00">
         <item>Bugfix release</item>
