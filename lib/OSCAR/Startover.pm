@@ -44,6 +44,7 @@ use Carp;
 use OSCAR::ConfigManager;
 use OSCAR::Logger;
 use OSCAR::LoggerDefs;
+use OSCAR::Utils;
 
 @EXPORT = qw (
                 remove_prereq

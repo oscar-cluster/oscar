@@ -41,6 +41,7 @@ use strict;
 use OSCAR::Env;
 use OSCAR::ConfigManager;
 use OSCAR::FileUtils;
+use OSCAR::Utils;
 use OSCAR::Database;
 use OSCAR::Logger;
 use OSCAR::LoggerDefs;
