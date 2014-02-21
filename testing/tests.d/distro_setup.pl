@@ -47,7 +47,7 @@ my @setup_distros = OSCAR::PackagePath::get_list_setup_distros ();
 if (scalar (@setup_distros) == 0 ||
     !OSCAR::Utils::is_element_in_array ($distro_id, @setup_distros)) {
     die "ERROR: The local distro is not setup, please run \"oscar-config ".
-        "--setup-distro &lt;distro_id&gt;\" first (see man oscar-config for more ".
+        "--setup-distro <distro_id>\" first (see man oscar-config for more ".
         "details";
 }
 
