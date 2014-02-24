@@ -78,7 +78,6 @@ mysql_configfile=/etc/my.cnf
 postfix_configfile=/etc/postfix/main.cf
 rsync_configfile=
 sendmail_configfile=/etc/mail/sendmail.cf
-ssh_configfile=/etc/ssh/sshd_config
 dns_configfile=/etc/named.conf
 exports_configfile=/etc/exports
 jobmonitor_configfile=/etc/jobmond.conf
@@ -95,6 +94,7 @@ postgresql_datadir=/var/lib/pgsql/data
 postgresql_bindir=/usr/bin
 pxe_configdir=/tftpboot/pxelinux.cfg/
 pxe_dir=/usr/lib/syslinux/
+ssh_configdir=/etc/ssh/
 tftp_dir=/tftpboot/
 xinetd_dir=/etc/xinetd.d/
 
