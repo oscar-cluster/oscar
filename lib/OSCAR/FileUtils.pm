@@ -337,6 +337,36 @@ sub add_line_to_file_without_duplication ($$) {
 }
 
 ################################################################################
+=item re_line_in_file()
+
+Check if a given regexp is already in the file.
+
+ Input:      $line: the regexp line to look for.
+        $file_path: the file to look into.
+Return:  -1:  regexp line is not in the file (or if file can't be accessed)
+         The line number otherwise
+
+Exported: YES
+=cut
+################################################################################
+sub re_line_in_file ($$) {
+    my ($regexp, $file_path) = @_;
+    open (FILE, $file_path)
+        or (oscar_log(5, ERROR, "Impossible to open the file: $file_path."), return -1);
+    my $pos=0;
+    chomp ($regexp);
+    foreach my $l (<FILE>) {
+        chomp($l);
+        if ($l =~ m/$regexp/) {
+            return $pos;
+        }
+        $pos += 1;
+    }
+    close (FILE);
+    return -1;
+}
+
+################################################################################
 =item line_in_file()
 
 Check if a given line is already in the file.
