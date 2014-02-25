@@ -152,6 +152,8 @@ perl-DBD-Pg
 perl-DBI
 perl-HTML-Parser
 perl-HTML-Tagset
+plymouth
+plymouth-theme-charge
 popt
 postfix
 postgresql
