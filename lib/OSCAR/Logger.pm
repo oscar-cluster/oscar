@@ -25,6 +25,7 @@ use strict;
 use Carp;
 use vars qw($VERSION @EXPORT);
 use base qw(Exporter);
+use File::Basename;
 use OSCAR::Env;
 use OSCAR::LoggerDefs;
 use OSCAR::Utils;
@@ -128,7 +129,8 @@ sub oscar_log ($$$) {
             $message = "$message\n";
         }
         default {
-            $message = "[$type] $message\n";
+            my $bin_name = basename($0);
+            $message = "[$type - $bin_name] $message\n";
         }
     }
 
