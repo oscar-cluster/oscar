@@ -25,6 +25,13 @@
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.1.0-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-02-25T18:37:50+01:00">
+        <item>Fix server-post-install</item>
+        <item>Migrate to OSCAR::SystemServices</item>
+        <item>Migrate to OSCAR::Logger</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.0.0-2">
       <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
         <item>Rebuild for FHS compliance</item>
