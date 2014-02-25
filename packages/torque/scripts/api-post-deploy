@@ -433,6 +433,6 @@ if ($rc > 0) {
     oscar_log(1, ERROR, "Failed to properly setup torque on OSCAR head");
     exit 1;
 } else {
-    oscar_log(1, ERROR, "Successfully configured torque on OSCAR head");
+    oscar_log(1, INFO, "Successfully configured torque on OSCAR head");
     exit 0;
 }
