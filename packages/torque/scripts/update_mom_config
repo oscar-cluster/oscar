@@ -12,8 +12,6 @@
 
 # Try to find the correct mom config file.
 mom_config_files=( /etc/torque/mom/config /var/lib/torque/mom_priv/config /var/spool/pbs/mom_priv/config )
-# server_name is also required.
-server_name_files=( /etc/torque/server_name /var/lib/torque/server_name /var/spool/pbs/server_name )
 . /etc/profile
 
 for i in ${!mom_config_files[*]} # expands to array indices
@@ -29,7 +27,6 @@ do
     echo "Pushing config file to clients..."
     if [ -x `which cpush` ] ; then
       cpush ${mom_config_files[$i]} ${mom_config_files[$i]}
-      cpush ${server_name_files[$i]} ${server_name_files[$i]} # push the server_name as well.
     else
       echo "Error:  Can't find cpush utility."
       exit 1

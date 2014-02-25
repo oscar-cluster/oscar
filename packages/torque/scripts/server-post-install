@@ -27,6 +27,7 @@ BEGIN {
 
 use strict;
 use Carp;
+use Sys::Hostname;
 use OSCAR::Opkg;
 use OSCAR::Utils;
 use OSCAR::Logger;
@@ -41,6 +42,23 @@ my $rc=0;
 ########################
 #  BEGIN MAIN PROGRAM  #
 ########################
+
+# Set server_name
+my $pbs_server = hostname;
+my @server_name=('/etc/torque/server_name', '/var/lib/torque/server_name', '/var/spool/pbs/server_name');
+for my $server_name_configfile (@server_name) {
+    if (-f $server_name_configfile) {
+        if (open (SERVER_NAME, ">$server_name_configfile")) {
+            print SERVER_NAME $pbs_server; 
+            close (SERVER_NAME);
+        } else {
+            oscar_log(5, ERROR, "Couldn't open $server_name_configfile for writing.");
+            oscar_log(5, ERROR, "Can't set server_name to $pbs_server");
+            $rc++;
+        }
+        last; # We found it, it's ok, other are at best links or don't exist
+    }
+}
 
 # Init torque DB if needed.
 if(!-f '/var/lib/torque/server_priv/serverdb' && !-f '/var/spool/pbs/server_priv/serverdb') {
