@@ -182,6 +182,7 @@ INLINE_TEXT
 
         if ($masquerade_domains_is_set == 0) {
             my $dnsdomainname=`hostname -d`;
+            chomp($dnsdomainname);
             printf OUT <<INLINE_TEXT;
 # Strips any.thing.$dnsdomainname to $dnsdomainname in the domain part of email address.
 masquerade_domains = $dnsdomainname

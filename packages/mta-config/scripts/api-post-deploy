@@ -18,7 +18,9 @@ BEGIN {
 }
 
 use strict;
-
+use OSCAR::Utils;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::Database;
 use OSCAR::FileUtils;
 use OSCAR::OCA::OS_Settings;
@@ -41,14 +43,12 @@ my @error_strings = ();
 # Otherwise, it throws an error.
 
 # The list of the mailing service rpms
-my @services = ("postfix", "sendmail", "exim");
+my @services = (POSTFIX, SENDMAIL, EXIM);
 my $service_name = "";
 foreach my $service (@services){
 
     # See if this is supposed to run when computer boots up.
-    system("chkconfig --list $service > /dev/null 2>&1");
-    if(! $? ){
-
+    if (defined(system_service_status($service))) {
         # If any above rpm is running,
         # assign the name of the rpm found to the variable $service_name
         # and then break out the 'for' loop 
@@ -62,8 +62,8 @@ foreach my $service (@services){
 	# the installed rpm for the localhost only.
     # Otherwise, the error will be thrown.
 
-if($service_name eq "postfix"){
-    print "POSTFIX is running\n";
+if($service_name eq POSTFIX){
+    oscar_log(1, INFO, "POSTFIX is available.");
         # The list of configuration files possible for the Postfix
         # in the current linux distro. 
     my @configure_files = ("/etc/postfix/main.cf", "/etc/main.cf",
@@ -73,7 +73,7 @@ if($service_name eq "postfix"){
     my $postfix_conf;
     foreach my $file (@configure_files){
         if ( !$found && -e $file ){
-            system("grep postfix $file > /dev/null  2>&1");
+            oscar_system("grep postfix $file > /dev/null  2>&1");
             if (! $? ){
                 $postfix_conf = $file;
                 $found = 1;
@@ -84,7 +84,7 @@ if($service_name eq "postfix"){
 
     if( $found ){
         # Make a backup copy of the postfix config file before editing it.
-        backup_file_if_not_exist($postfix_conf) or print "ERROR: Can't make a backup copy of $postfix_conf\n";
+        backup_file_if_not_exist($postfix_conf) or oscar_log(5, ERROR, "Can't make a backup copy of $postfix_conf");
         
         my $line_num = `cat $postfix_conf | wc -l`;
         my $added_line = 8;
@@ -99,14 +99,14 @@ if($service_name eq "postfix"){
             $line_num = $line_num - $added_line;
         }
         $line_num .= "q";
-        system("sed $line_num $postfix_conf > main.cf.server.$$");
+        oscar_system("sed $line_num $postfix_conf > main.cf.server.$$");
         my @nodes = (); my $nodelist;
         OSCAR::Database::get_nodes(\@nodes, \%options,\@error_strings)
-            or die "Can't get node list from database";
+            or (oscar_log(5, ERROR, "Can't get node list from database; aborting postfix mynetworks config"), exit -1);
         for (my $i=0; $i<@nodes; $i++) {$nodes[$i] = $nodes[$i]{hostname};}
         $nodelist = join ", ", @nodes;
         open CONF, ">> main.cf.server.$$"
-            or die "Can not open the config file: $!";
+            or (oscar_log(5, ERROR, "Can not open the config file: main.cf.server.$$ $!"), exit -1);
         
         print CONF "\n";
         print CONF "# Allow the mail to access to only the following list of nodes by setting the 'mynetworks'\n";
@@ -122,38 +122,38 @@ if($service_name eq "postfix"){
         copy "main.cf.server.$$", "$postfix_conf";
         
         unlink "main.cf.server.$$";
-        print "Postfix is succesfully configured. : SERVER NODE\n";
+        oscar_log(5, INFO, "Postfix is succesfully configured. : SERVER NODE");
         
-        # Restart postfix.
-        system("/etc/init.d/postfix stop");
-        system("/etc/init.d/postfix start");
+        # Restart the postfix service
+        !system_service(POSTFIX(),RESTART())
+            or (oscar_log(5, ERROR,"Couldn't restart postfix service."), exit -1);
 
-        print "- finished configuring postfix\n";
+        oscar_log(5, INFO, "- finished configuring postfix");
     }else{
-        print "WARNING: I could not find postfix's configuration file!\n";
-        print "WARNING: There will be no mail service running on the client nodes!\n";
+        oscar_log(5, WARNING, "I could not find postfix's configuration file!");
+        oscar_log(5, WARNING, "There will be no mail service running on the client nodes!");
     }
 }
 
-if($service_name eq "sendmail"){
-    print "WARNING: OSCAR does not know how to configure sendmail yet.\n";
-    print "WARNING: Please bug the OSCAR developers to finish the mta-config package!\n";
-    print "WARNING: There will be no mail service running on the client nodes!\n";
+if($service_name eq SENDMAIL){
+    oscar_log(5, WARNING, "OSCAR does not know how to configure sendmail yet.");
+    oscar_log(5, WARNING, "Please bug the OSCAR developers to finish the mta-config package!");
+    oscar_log(5, WARNING, "There will be no mail service running on the client nodes!");
 }    
 
-if($service_name eq "exim"){
-    print "WARNING: OSCAR does not know how to configure exim yet.\n";
-    print "WARNING: Please bug the OSCAR developers to finish the mta-config package!\n";
-    print "WARNING: There will be no mail service running on the client nodes!\n"
+if($service_name eq EXIM){
+    oscar_log(5, WARNING, "OSCAR does not know how to configure exim yet.");
+    oscar_log(5, WARNING, "Please bug the OSCAR developers to finish the mta-config package!");
+    oscar_log(5, WARNING, "There will be no mail service running on the client nodes!");
 }
 
 if(!$service_name){
-    print "************************************ WARNING ************************************\n";
-    print "OSCAR could not set up the configuration for any mailing service on the server.\n";
-    print "The current version of the mta-config package in OSCAR only supports the Postfix mail transfer agent (MTA).\n";
-    print "It looks like you have another MTA installed (e.g, sendmail or exim); as such,\n";
-    print "please be aware that OSCAR will not automatically configure it.\n";
-    print "************************************ WARNING ************************************\n";
+    oscar_log(5, WARNING, "************************************ WARNING ************************************");
+    oscar_log(5, WARNING, "OSCAR could not set up the configuration for any mailing service on the server.");
+    oscar_log(5, WARNING, "The current version of the mta-config package in OSCAR only supports the Postfix mail transfer agent (MTA).");
+    oscar_log(5, WARNING, "It looks like you have another MTA installed (e.g, sendmail or exim); as such,");
+    oscar_log(5, WARNING, "please be aware that OSCAR will not automatically configure it.");
+    oscar_log(5, WARNING, "************************************ WARNING ************************************");
 }
 
 exit 0;
