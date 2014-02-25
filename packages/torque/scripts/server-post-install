@@ -28,10 +28,15 @@ BEGIN {
 use strict;
 use Carp;
 use OSCAR::Opkg;
+use OSCAR::Utils;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
 use SystemInstaller::Machine;
 use OSCAR::Database;
+
+my $rc=0;
 
 ########################
 #  BEGIN MAIN PROGRAM  #
@@ -47,18 +52,19 @@ if(!-f '/var/lib/torque/server_priv/serverdb' && !-f '/var/spool/pbs/server_priv
     my $pbs_server_daemon="/usr/sbin/pbs_server";
     $pbs_server_daemon="/opt/pbs/sbin/pbs_server" if(-x '/opt/pbs/sbin/pbs_server');
 
-    !system("$pbs_server_daemon -d $pbs_home -f -t create")
-        or carp("ERROR: Cant init pbs_server db. Failed command: $pbs_server_daemon -t create");
+    !oscar_system("$pbs_server_daemon -d $pbs_home -f -t create")
+        or ($rc++,oscar_log(5, ERROR,"Cant init pbs_server db. Failed command: $pbs_server_daemon -t create"));
 
     if( -f "/etc/torque/nodes") {
-        system("ln -sf /etc/torque/nodes $pbs_home/server_priv/nodes");
+        !oscar_system("ln -sf /etc/torque/nodes $pbs_home/server_priv/nodes")
+            or $rc++;
     }
     # system('/etc/init.d/pbs_server create'); # no config file: need to initialise config.
 }
 
 # Enable auth daemon and pbs_server
 !enable_system_services( (PBS_TRQAUTHD, PBS_SERVER) )
-    or carp "ERROR: Couldn't enable pbs_trqauthd and pbs_server on head.\n";
+    or ($rc++, oscar_log(5, ERROR, "Couldn't enable pbs_trqauthd and pbs_server on head."));
 
 # Make sure only one scheduler is active.
 # Config Torque sched service not to start if we use Maui
@@ -70,27 +76,27 @@ my @pkgs = OSCAR::Database::list_selected_packages();
 if ( 'maui' ~~ @pkgs ) {
     # Using MAUI: need to disable pbs_sched
     if ( system_service_status(PBS_SCHED) == SERVICE_ENABLED ) {
-        print("[INFO] Using MAUI: Disabpling pbs_sched\n");
+        oscar_log(1, INFO, "Using MAUI: Disabpling pbs_sched");
         !disable_system_services( (PBS_SCHED) )
-            or carp "ERROR: MAUI scheduler enabled, but couldn't disable pbs scheduler.\n";
+            or ($rc++, oscar_log(5, ERROR, "MAUI scheduler enabled, but couldn't disable pbs scheduler."));
         !system_service(PBS_SCHED,STOP)
-            or carp "ERROR: Couldn't stop pbs scheduler service.\n";
+            or ($rc++, oscar_log(5, ERROR, "Couldn't stop pbs scheduler service."));
     }
     # We could enable maui here, but it's better to let maui post-scripts do that.
 } else {
     # Using PBS_SCHED: need to disable maui
     if ( system_service_status(MAUI) == SERVICE_ENABLED ) {
-        print("[INFO] Using PBS_SCHED: Disabpling maui\n");
+        oscar_log(1, INFO, "Using PBS_SCHED: Disabpling maui");
         !disable_system_services( (MAUI) )
-            or carp "ERROR: PBS_SCHED scheduler enabled, but couldn't disable maui scheduler.\n";
+            or ($rc++, oscar_log(5, ERROR, "PBS_SCHED scheduler enabled, but couldn't disable maui service."));
         !system_service(PBS_SCHED,STOP)
-            or carp "ERROR: Couldn't stop maui scheduler service.\n";
+            or ($rc++, oscar_log(5, ERROR, "Couldn't stop maui scheduler service."));
     }
     !enable_system_services( (PBS_SCHED) )
-        or carp "ERROR: PBS_SCHED scheduler enabled, but couldn't unable it.\n";
+        or ($rc++, oscar_log(1, ERROR, "PBS_SCHED scheduler enabled, but couldn't unable service."));
 }
 
-opkg_print("...updating xpbsmonrc file\n");
+oscar_log(1, INFO, "...updating xpbsmonrc file");
 my $arch = `uname -i`;
 chomp($arch);
 
@@ -118,12 +124,15 @@ if (-f $xpbsmonrc) {
     my @lines = `cat $xpbsmonrc`;
     grep { s/ICON.*$/ICON;pbs_oscar;pbs_oscar;;;}/ } @lines;
 
-    open (RCFILE, ">$xpbsmonrc") 
-      or croak("Error: XPBSMONRC not setup - Couldn't open $xpbsmonrc.\n");
-    print RCFILE @lines; 
-    close (RCFILE);
+    if (open (RCFILE, ">$xpbsmonrc")) {
+        print RCFILE @lines; 
+        close (RCFILE);
+    } else {
+        oscar_log(5, WARNING, "XPBSMONRC not setup - Couldn't open $xpbsmonrc.");
+        $rc++;
+    }
 } else {
-    print "xpbsmon not installed!\n"
+    oscar_log(1, INFO, "xpbsmon not installed!");
 }
 
 my $rm_detect_dir;
@@ -137,5 +146,7 @@ $rm_detect_dir .= "/OSCAR/OCA/RM_Detect";
 
 # Copy RM_Detect component for TORQUE to the right location
 my $rm_file = "/usr/lib/oscar/packages/torque/TORQUE.pm";
-system("cp -a $rm_file $rm_detect_dir") == 0 
-    or croak("Failed to copy $rm_file to $rm_detect_dir");
+oscar_system("cp -a $rm_file $rm_detect_dir") == 0 
+    or ($rc++, oscar_log(5, ERROR, "Failed to copy $rm_file to $rm_detect_dir"), exit 1);
+
+exit $rc;

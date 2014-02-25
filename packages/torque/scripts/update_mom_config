@@ -18,17 +18,17 @@ server_name_files=( /etc/torque/server_name /var/lib/torque/server_name /var/spo
 
 for i in ${!mom_config_files[*]} # expands to array indices
 do
-  if [ -f ${mom_config[$i]} ] ; then
+  if [ -f ${mom_config_files[$i]} ] ; then
     # OL: update the $pbsserver full line instead of replacing pbs_oscar
     # this permits the use of distro torque package.
     # if there is no $pbsserver line in the file, it doesn't fail and
     # the $PBS_SERVER_HOME/server_name hostname is used instead.
-    sed -i -e "s/\$pbsserver.*$/\$pbsserver $HOSTNAME/g" ${mom_config[$i]}
-    echo "TORQUE mom config file ${mom_config[$i]}"
+    sed -i -e "s/\$pbsserver.*$/\$pbsserver $HOSTNAME/g" ${mom_config_files[$i]}
+    echo "TORQUE mom config file: ${mom_config_files[$i]}"
     echo "updated with clienthost: $HOSTNAME"
     echo "Pushing config file to clients..."
     if [ -x `which cpush` ] ; then
-      cpush ${mom_config[$i]} ${mom_config[$i]}
+      cpush ${mom_config_files[$i]} ${mom_config_files[$i]}
       cpush ${server_name_files[$i]} ${server_name_files[$i]} # push the server_name as well.
     else
       echo "Error:  Can't find cpush utility."

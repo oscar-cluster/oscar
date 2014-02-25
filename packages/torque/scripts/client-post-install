@@ -23,10 +23,13 @@ use strict;
 use Carp;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 
 
 # Config Torque mom service to start
 !enable_system_services( (PBS_MOM) )
-    or carp "ERROR: Couldn't enable pbs_mom in image.\n";
+    or (oscar_log(5, ERROR, "Couldn't enable pbs_mom in image."), exit 1);
 
+oscar_log(5, INFO, "pbs_mom successfully enabled in image.");
 exit 0;
