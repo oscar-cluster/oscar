@@ -447,7 +447,7 @@ sub replace_line_in_file ($$$) {
     }
     close (FILE);
 
-    oscar_log(6, ACTION, "Replacing line #$line_number with \"$line\" into $file");
+    oscar_log(6, ACTION, "Replacing line #$line_number with \"$new_line\" into $file");
     open (FILE, ">$file")
         or (oscar_log(5, ERROR, "Impossible to open $file."), return -1);
     # Then we write the file
