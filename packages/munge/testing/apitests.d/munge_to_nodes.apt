@@ -16,11 +16,11 @@
   #   along with this program; if not, write to the Free Software
   #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   #
-  #   Copyright (c) 2013 CEA - Commissariat à l'énergie atomique et
-  #                            aux énergies alternatives
-  #                      All rights reserved.
-  #   Copyright (C) 2013 Olivier LAHAYE <olivier.lahaye@cea.fr>
-  #                      All rights reserved.
+  #   Copyright (c) 2013-2014 CEA - Commissariat a l'Energie Atomique et
+  #                                 aux Energies Alternatives
+  #                                 All rights reserved.
+  #   Copyright (C) 2013-2014 Olivier LAHAYE <olivier.lahaye@cea.fr>
+  #                           All rights reserved.
   #
   # $Id: $
   #
@@ -36,7 +36,7 @@ Desired result : PASS
 
   <shortDescription>MUNGE: Does munges works across all nodes?</shortDescription>
 
-  <test type="script">
+  <test type="script" match="no">
   
     <command interpreter="/bin/bash" wdir="/tmp" uname="root">
 # Test munge -n | ssh somehost unmunge
@@ -48,6 +48,7 @@ do
         then
                 echo "$NODE: Success"
         else
+                # match="no" => if "Failed" echoed: match, thus fails.
                 echo "$NODE: Failed"
                 exit 1
         fi
@@ -55,8 +56,8 @@ done
 exit 0
     </command>
 
-    <output name="stdout" format="regexp">.*Success.*</output>
-    <output name="stderr" format="literal"></output>
+    <output name="stdout" format="regexp">.*Failed$</output>
+    <output name="stderr" format="regexp">.*</output>
     <output name="status" format="literal">0</output>
 
   </test>
