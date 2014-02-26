@@ -36,25 +36,9 @@ Desired result : PASS
 
   <shortDescription>Are all nodes ready?</shortDescription>
 
-  <test type="script">
+  <test type="cmd">
   
-    <command interpreter="perl" wdir="/tmp" uname="root">
-#!/usr/bin/perl -w
-
-use strict;
-use warnings;
-use Carp;
-
-BEGIN {
-    if (defined $ENV{OSCAR_HOME}) {
-        unshift @INC, "$ENV{OSCAR_HOME}/lib";
-    }
-}
-
-# FIXME: Need to check that services are up and running on head at least.
-
-exit 0;
-</command>
+    <command wdir="/tmp" uname="root">tests.d/torque_services_up.pl</command>
 
     <output name="stdout" />
     <output name="stderr" />

@@ -29,10 +29,12 @@
 
 <testBatch>
   <info>
-    Checks that munge is functionnal
+    Checks that torque is functionnal
   </info>
+  <dev parent="torque_config.apb" child "torque_services_up.apt"/>
   <dep parent="torque_services_up.apt" child="torque_workq.apt"/>
   <dep parent="torque_services_up.apt" child="torque_nodes_up.apt"/>
   <dep parent="torque_workq.apt" child="torque_job_test.apt"/>
+  <dep parent="oscartst_user.apt" child="torque_job_test.apt"/>
 
 </testBatch>

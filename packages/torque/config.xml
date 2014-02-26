@@ -76,6 +76,12 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.3.0-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-02-26T11:31:01+01:00">
+        <item>Updated scripts and put them apart in tests.d.</item>
+        <item>Fixed script testing nodes.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.2.1-1">
       <changelogEntry authorName="Olivier Lahaye" date="2014-02-25T14:56:37+01:00">
         <item>Bug fixes and port to OSCAR::Logger.</item>
