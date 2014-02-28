@@ -57,7 +57,11 @@ sub get_config {
 
     $conf->{'http_user'}     = http_info();
 
-    if ( -d "/usr/share/ganglia" ) {
+    if ( -d "/usr/share/ganglia-webfrontend" ) {
+        $conf->{'gangliawww'}    = "/usr/share/ganglia-webfrontend";
+    } elsif ( -d "/usr/share/ganglia-web" ) {
+        $conf->{'gangliawww'}    = "/usr/share/ganglia-web";
+    } elsif ( -d "/usr/share/ganglia" ) {
         $conf->{'gangliawww'}    = "/usr/share/ganglia";
     } elsif ( -d "/var/www/html/ganglia" ) {
         $conf->{'gangliawww'}    = "/var/www/html/ganglia";
@@ -65,7 +69,11 @@ sub get_config {
         $conf->{'gangliawww'}    = "/opt/ganglia";
     }
 
-    if ( -f "/etc/ganglia/conf.php" ) {
+    if ( -f "/etc/ganglia-webfrontend" ) {
+        $conf->{'ganglia_conf'}  = "/etc/ganglia-webfrontend/conf.php";
+    } elsif ( -f "/etc/ganglia-web" ) {
+        $conf->{'ganglia_conf'}  = "/etc/ganglia-web/conf.php";
+    } elsif ( -f "/etc/ganglia/conf.php" ) {
         $conf->{'ganglia_conf'}  = "/etc/ganglia/conf.php";
     } else {
         $conf->{'ganglia_conf'}  = $conf->{'gangliawww'}."/conf.php";
