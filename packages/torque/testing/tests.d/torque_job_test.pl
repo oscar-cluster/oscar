@@ -35,6 +35,4 @@ BEGIN {
     }
 }
 
-# FIXME: Need to check that services are up and running on head at least.
-
 exit 0;

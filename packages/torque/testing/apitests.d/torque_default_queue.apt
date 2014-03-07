@@ -16,26 +16,36 @@
   #   along with this program; if not, write to the Free Software
   #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   #
-  #   Copyright (c) 2013 CEA - Commissariat à l'énergie atomique et
-  #                            aux énergies alternatives
+  #   Copyright (c) 2013 CEA - Commissariat a l'Energie Atomique et
+  #                            aux Energies Alternatives
   #                      All rights reserved.
-  #   Copyright (C) 2013 Olivier LAHAYE <olivier.lahaye@cea.fr>
+  #   Copyright (c) 2013 Olivier LAHAYE <olivier.lahaye@cea.fr>
   #                      All rights reserved.
   #
   # $Id: $
   #
   #############################################################################
   -->
+<testDef>
 
-<testBatch>
   <info>
-    Checks that torque is functionnal
-  </info>
-  <dep parent="torque_config.apb" child="torque_services_up.apt"/>
-  <dep parent="torque_services_up.apt" child="torque_workq.apt" mustPass="false"/>
-  <dep parent="torque_services_up.apt" child="torque_default_queue.apt" />
-  <dep parent="torque_services_up.apt" child="torque_nodes_up.apt"/>
-  <dep parent="torque_workq.apt" child="torque_job_test.apt"/>
-  <dep parent="oscartst_user.apt" child="torque_job_test.apt"/>
+This script tests that torque has a default_queue defined.
 
-</testBatch>
+Desired result : PASS
+</info>
+
+  <shortDescription>Do we have a default_queue?</shortDescription>
+
+  <test type="cmd">
+  
+    <command wdir="/tmp">tests.d/torque_default_queue.pl</command>
+
+    <output name="stdout" />
+    <output name="stderr" />
+    <output name="status" format="literal">0</output>
+
+  </test>
+
+</testDef>
+
+<!-- EOF -->
