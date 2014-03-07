@@ -109,7 +109,7 @@ foreach my $client_ref (@oda_nodes){
 
     # Check that the nodes are ok. (no errors)
     for my $state (split ',', $pbsnodes_hash->{Node}->{$node_name}->{state}) {
-        if ($state ~~ {"down","unknown","offline","buzy"}) {
+        if ($state ~~ {"down","unknown","offline","buzy","state-unknown"}) {
             oscar_log(5, ERROR, "Node: $node_name bad state: $state");
             $rc++;
         }
