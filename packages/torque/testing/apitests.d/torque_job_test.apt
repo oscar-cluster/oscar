@@ -29,18 +29,18 @@
 <testDef>
 
   <info>
-This script tests that torque services daemons are up.
+This script tests that torque can run a simple batch script.
 
 Desired result : PASS
 </info>
 
-  <shortDescription>Are all nodes ready?</shortDescription>
+  <shortDescription>Can torque run a batch script?</shortDescription>
 
   <test type="cmd">
   
     <command wdir="/tmp" uname="oscartst">tests.d/torque_job_test.pl</command>
 
-    <output name="stdout" />
+    <output name="stdout" format="regexp">.*</output>
     <output name="stderr" />
     <output name="status" format="literal">0</output>
 
