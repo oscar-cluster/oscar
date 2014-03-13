@@ -49,6 +49,8 @@ use File::Path qw(remove_tree);
                 test_cluster
                 step_test
                 apitest_xml_to_text
+                get_user_home
+                get_test_user
             );
 
 
@@ -479,6 +481,51 @@ sub step_test($$) {
         oscar_log(5, INFO, "Ready to enter step \"$step_name\"");
     }
     return ($rc);
+}
+
+##############################################################################
+=item get_user_home ($user)
+
+Return return the home directory for a giver user.
+
+Input:  The name of the user
+
+Return: Path of the user or undef.
+
+=cut
+###############################################################################
+
+sub get_user_home ($) {
+    my $user = shift;
+    if (! defined($user)) {
+        oscar_log(5, ERROR, "user undefined");
+        return undef;
+    }
+    my $getent=`getent passwd $user`;
+    if ($? >0) {
+        oscar_log(5, ERROR, "Failed to getent passwd $user");
+        return undef;
+    }
+    my @entries = split(":", $getent);
+    my $path = $entries[5];
+    chomp($path);
+    return ($path);
+}
+
+##############################################################################
+=item get_test_user ()
+
+Return return the user name that should be used for testing
+
+Input:  None.
+
+Return: OSCAR test username
+
+=cut
+###############################################################################
+
+sub get_test_user () {
+    return OSCAR::OCA::OS_Settings::getitem('oscar_test_user');
 }
 
 =back

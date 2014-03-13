@@ -3,6 +3,7 @@ oscar_scripts_path=/usr/bin
 oscar_helpers_path=/usr/lib/oscar/scripts
 oscar_binaries_path=/usr/bin
 oscar_testing_path=/usr/lib/oscar/testing
+oscar_test_user=oscartst
 oscar_apitests_logdir=/var/log/oscar/apitests
 prereqs_path=/usr/share/oscar/prereqs
 rapt_path=/usr/share/oscar/prereqs/rapt

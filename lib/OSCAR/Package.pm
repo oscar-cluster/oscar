@@ -42,6 +42,7 @@ use File::Basename;
 use File::Copy;
 use XML::Simple;
 use OSCAR::OCA::OS_Detect;
+use OSCAR::OCA::OS_Settings;
 use OSCAR::ConfigManager;
 use Carp;
 
@@ -51,6 +52,7 @@ my $DEFAULT = "Default";
 @EXPORT = qw(
              get_excluded_opkg
              get_scripts_dir
+             get_data_dir
              getConfigurationValues
              isPackageSelectedForInstallation
              run_pkg_script
@@ -60,10 +62,49 @@ my $DEFAULT = "Default";
              );
 $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
-# The list of phases that are valid for package install.  For more
-# info, please see the developement doc
-# Note that we still list old scripts' name to ease the transition.
-# Mid-term they should be removed
+=encoding utf8
+
+=head1 NAME
+
+OSCAR::Package; -- OSCAR Packages management abstraction module
+
+=head1 SYNOPSIS
+
+use OSCAR::Package;
+
+=head1 DESCRIPTION
+
+This module provides a collection of fuctions to provide an abstraction
+layer to system services management.
+
+Depending on Linux distro, services are managed by systemd, initscripts
+commands (chkconfig, service) upstart commands (start, stop, restart, ...)
+or manually (run the /etc/init.d script directly or enabling it manually
+as well). This module allows to forget those differences when managing
+services.
+
+=head2 Phases
+
+=over 4
+
+The list of phases that are valid for package install.  For more
+info, please see the developement doc
+Note that we still list old scripts' name to ease the transition.
+Mid-term they should be removed
+
+  Phase               corresponding script    when it is run
+* setup               api-pre-install         
+* pre_configure       api-pre-configure       Before step 2 (before configuration occures)
+* post_configure      api-post-configure      End of step 2 (after configuration occured)
+* post_server_install server-post-install     End of step 3
+* post_rpm_install    client-post-install     After image creation (chrooted in image)
+* post_rpm_nochroot   api-post-image          After image creation (not chrooted)
+* post_clients        api-post-clientdef      After step 5 (Define OSCAR Clients)
+* post_install        api-post-deploy         During step 7 (complete cluster setup)
+* test_root           test_root               DEPRECATED (step 8)
+* test_user           test_user               DEPRECATED (step 8)
+
+=cut
 %PHASES = (
            setup => ['api-pre-install',
                      'setup'], # deprecated
@@ -89,25 +130,69 @@ $VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
            test_user    => ['test_user'],
           );
 
-#
-# get_pkg_dir - return directory where scripts can be found for a given
-#               package and phase
-#
+=head2 Functions
 
+=over 4
+
+=cut
+
+###############################################################################
+=item get_script_dir($pkg,$phase)
+
+Returns directory where scripts can be found for a given package and phase
+
+Input:  $pkg:   The package
+        $phase: The phase which can be chosen from %PHASES (see above)
+
+Return: directory where scripts can be found
+
+=cut 
+###############################################################################
+
+# OL: FIXME: scriptdir in test_* phase is wrong.
+# OL: Obsolete?
 sub get_scripts_dir ($$) {
     my ($pkg, $phase) = @_;
+    my $testing_path=OSCAR::OCA::OS_Settings::getitem('oscar_testing_path');
     if ($phase eq 'test_root' || $phase eq 'test_user') {
-        return "/usr/lib/oscar/testing/$pkg";
+        return "$testing_path/$pkg";
     } else {
-        return "/usr/lib/oscar/packages/$pkg";
+        return "$testing_path/$pkg";
     }
 }
 
+###############################################################################
+=item get_data_dir($pkg)
 
-#
-# run_pkg_script - runs the package script for a specific package
-#
-# Return: 1 if success, 0 else.
+Return directory where test data can be found for a given package
+
+Input:  $pkg:   The package
+
+Return: directory where scripts can be found
+
+=cut
+###############################################################################
+
+sub get_data_dir ($) {
+    my $pkg = shift;
+    my $testing_path=OSCAR::OCA::OS_Settings::getitem('oscar_testing_path');
+    return "$testing_path/data/$pkg";
+}
+
+###############################################################################
+=item run_pkg_script ($pkg, $phase, $verbose, $args)
+
+Runs the package script for a specific package
+
+Input:     $pkg: Name of package
+         $phase: Phase (see %PHASE possible values above)
+       $verbose: verbosity
+          $args: args for the script.
+
+Return:  1 if success, 0 else.
+
+=cut
+###############################################################################
 
 sub run_pkg_script ($$$$) {
     my ($pkg, $phase, $verbose, $args) = @_;
@@ -140,7 +225,19 @@ sub run_pkg_script ($$$$) {
     return 1;
 }
 
-# Return: 1 if success, undef else.
+###############################################################################
+=item run_pkg_script_chroot($pkg, $imagedir)
+
+Run a script chrooted in image dir.
+
+Input:        $pkg: package name
+         $imagedir: path to image
+
+Return:  1 if success, undef else.
+
+=cut
+###############################################################################
+
 sub run_pkg_script_chroot ($$) {
     my ($pkg, $imagedir) = @_;
     my $phase = "post_rpm_install";
@@ -170,10 +267,21 @@ sub run_pkg_script_chroot ($$) {
     return 1;
 }
 
-#
-# run_pkg_user_test - runs the package test script as a user
-#
-# Return: 1 if success, 0 else.
+###############################################################################
+=item run_pkg_user_test ($script, $user, $verbose, $args)
+
+Runs the package test script as a user
+
+Input:   $script: script name.
+           $user: username.
+        $verbose: verbosity level. (unused)
+           $args: arguments to the script.
+
+Return:  1 if success, 0 else.
+
+=cut
+###############################################################################
+
 sub run_pkg_user_test ($$$$) {
     my ($script, $user, $verbose, $args) = @_;
 
@@ -199,13 +307,26 @@ sub run_pkg_user_test ($$$$) {
 }
 
 
-#
-# APItest Additions
-#  This runs an APItest file (or batch file).  Expected that this 
-#  will be run as 'root', but can use another user if needed.
-#
-# Return: 1 if success, 0 else.
-# TODO Fix work arounds for current release of APItest v0.2.5-1
+###############################################################################
+=item run_pkg_apitest_test ($script, $user, $verbose)
+
+APItest Additions
+ This runs an APItest file (or batch file).  Expected that this
+ will be run as 'root', but can use another user if needed.
+
+Input:  $script: apitest script
+        $user: username
+        $verbose: verbosity
+
+Return:  1 if success, 0 else.
+
+TODO Fix work arounds for current release of APItest v0.2.5-1
+
+NOTE: This function is mostly deprecated.
+
+=cut
+###############################################################################
+
 sub run_pkg_apitest_test ($$$) {
     use File::Spec;
 
@@ -248,18 +369,26 @@ sub run_pkg_apitest_test ($$$) {
 }
 
 
-#########################################################################
-# Subroutine: get_excluded_opkg
-# Parameter : None
-# Returns   : The list of OSCAR packages excluded for the current Linux
-#             distribution, i.e., for the end node
-#
-# TODO: - extend to any systems, not only the headnode (warning for that
-#         dependences with the headnode has to be managed, we currently 
-#         have nothing for that.
-#       - currently the list of excluded opkg for Linux distributions is
-#         done via files in oscar/share/exclude_pkg_set. It should be 
-#         nice to be able to do that via config.xml files.
+###############################################################################
+=item get_excluded_opkg ()
+
+Get the list of OSCAR packages excluded for the current Linux distribution
+i.e., for the end node
+
+Input:   None
+
+Return:  The list of OSCAR packages excluded for the current Linux distribution
+
+TODO: - extend to any systems, not only the headnode (warning for that
+        dependences with the headnode has to be managed, we currently 
+        have nothing for that.
+      - currently the list of excluded opkg for Linux distributions is
+        done via files in oscar/share/exclude_pkg_set. It should be 
+        nice to be able to do that via config.xml files.
+
+=cut
+###############################################################################
+
 sub get_excluded_opkg () {
     my $os = OSCAR::OCA::OS_Detect::open();
     exit -1 if(!$os);
@@ -282,7 +411,6 @@ sub get_excluded_opkg () {
 
     return @exclude_packages;
 }
-
 
 #########################################################################
 #  Subroutine: isPackageSelectedForInstallation                         #
@@ -307,26 +435,31 @@ sub isPackageSelectedForInstallation # ($package) -> $yesorno
   #return $selhash->{$package};
 }
 
-#########################################################################
-#  Subroutine: getConfigurationValues                                   #
-#  Parameter : The name of an OSCAR package (directory)                 #
-#  Returns   : A hash of configuration parameters and their values      #
-#  This subroutine takes in the name of an OSCAR package and returns    #
-#  The configuration values set by the user in Step 3 of the OSCAR      #
-#  install_cluster script.  These values are completely determined by   #
-#  each package maintainer in the HTML configuration file (if any).     #
-#  NOTE: To make things consistent, each value for a given parameter    #
-#        is stored in an array.  So to correctly access each value,     #
-#        you need to iterate through each hash parameter.  However, if  #
-#        you know that a particular parameter can have at most one      #
-#        value, you can access the zeroth element of the array.  See    #
-#        the example in the Usage clause below.                         #
-#                                                                       #
-#  Usage: $configvalues = getConfigurationValues('mypackage');          #
-#         $myvalue = $configvalues->{'value'}[0];  # Only one value     #
-#         @myvalues = $configvalues->{'happy'};    # Multiple values    #
-# Return: configuration parameters (hash) or undef if error.            #
-#########################################################################
+###############################################################################
+=item getConfigurationValues ($package) 
+
+This subroutine takes in the name of an OSCAR package and returns
+The configuration values set by the user in Step 3 of the OSCAR
+install_cluster script.  These values are completely determined by
+each package maintainer in the HTML configuration file (if any).
+NOTE: To make things consistent, each value for a given parameter
+      is stored in an array.  So to correctly access each value,
+      you need to iterate through each hash parameter.  However, if
+      you know that a particular parameter can have at most one
+      value, you can access the zeroth element of the array. See
+      the example in the Usage clause below.
+
+Usage: $configvalues = getConfigurationValues('mypackage');
+       $myvalue = $configvalues->{'value'}[0];  # Only one value
+       @myvalues = $configvalues->{'happy'};    # Multiple values
+
+Input:   $package: The name of an OSCAR package (directory)
+
+Return:  configuration parameters (hash) or undef if error. 
+
+=cut
+###############################################################################
+
 sub getConfigurationValues ($) # ($package) -> $valueshashref
 {
     my $package = shift;
@@ -357,32 +490,34 @@ sub getConfigurationValues ($) # ($package) -> $valueshashref
     return undef;
 }
 
-1;
-
-__END__
-
-=head1 Exported Functions
-
-=over 4
-
-=item get_excluded_opkg
-
-=item get_scripts_dir
-
-=item getConfigurationValues
-
-=item isPackageSelectedForInstallation
-
-=item run_pkg_script
-
-=item run_pkg_user_test
-
-=item run_pkg_script_chroot
-
-=item run_pkg_apitest_test
-
-=item run_pkg_apitest_test
-
 =back
 
+=head1 AUTHORS
+    (c) 2001-2002 Sean Dague <japh@us.ibm.com>
+                  International Business Machines
+                  All rights reserved.
+Enhanced and documented by:
+    (c) 2013-2014 Olivier Lahaye C<< <olivier.lahaye@cea.fr> >>
+                  CEA (Commissariat à l'Énergie Atomique)
+                  All rights reserved
+
+=head1 LICENSE
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 =cut
+
+42;
+
+__END__
