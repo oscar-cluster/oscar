@@ -76,6 +76,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.3.1-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-03-13T20:31:17+01:00">
+        <item>Added torque_job_test.apt</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.3.0-1">
       <changelogEntry authorName="Olivier Lahaye" date="2014-02-26T11:31:01+01:00">
         <item>Updated scripts and put them apart in tests.d.</item>
