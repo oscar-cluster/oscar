@@ -318,7 +318,7 @@ if (scalar (@BASES) == 0) {
 foreach my $image (@BASES) {
     # updating the host ssh configuration in the image
     OSCAR::Logger::oscar_log(1, INFO, "Checking/updating ssh config for image $image .");
-    $cmd = "/bin/cp -fpr $SSHCFGDIR $image$SSHCFGDIR";
+    $cmd = "/bin/cp -fpr $SSHCFGDIR/* $image$SSHCFGDIR/";
     if (oscar_system ($cmd)) {
         oscar_log(1, ERROR, "Unable to copy $SSHCFGDIR to $image$SSHCFGDIR");
         exit 1;
