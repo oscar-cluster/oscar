@@ -592,7 +592,7 @@ given ($command) {
         print "delcluster";
     }
     when ('addnodes') {
-        print "addnodes";
+        # print "addnodes";
         # 1st, check that we know the target cluster and that it exists.
         die "ERROR: cluster not specified" if (! defined($target_cluster));
         die "ERROR: unknown cluster" if ( $target_cluster ~~ get_cluster_names() );
@@ -600,9 +600,10 @@ given ($command) {
         for my $node (@target_nodes) {
             add_node($target_cluster,$node)
         }
+write_c3_conf(@clusters);
     }
     when ('delnodes') {
-        print "delnodes";
+        # print "delnodes";
         # 1st, check that we know the target cluster and that it exists.
         die "ERROR: cluster not specified" if (! defined($target_cluster));
         die "ERROR: unknown cluster" if ( $target_cluster ~~ get_cluster_names() );
@@ -620,26 +621,37 @@ given ($command) {
             }
             die "ERROR: node '$node' not found in '$target_cluster', aborting.";
         }
+write_c3_conf(@clusters);
     }
     when ('disablenodes') {
         print "disablenodes";
+write_c3_conf(@clusters);
     }
     when ('enablenodes') {
         print "enablenodes";
+write_c3_conf(@clusters);
     }
     when ('update') {
         print "update";
+write_c3_conf(@clusters);
     }
     when ('listnodes') {
         print "listnodes";
+write_c3_conf(@clusters);
     }
     when ('listclusters') {
-        print "listclusters";
+        my @clusters_list = ();
+        for my $element (@clusters) {
+            if (ref($element) eq 'HASH') { # Found
+                push(@clusters_list, $element->{'name'});
+            }
+        }
+        print join(" ", @clusters_list)."\n";
     }
     default {
-        print "ERROR: $command";
+        die "ERROR: unknown command '$command'.";
     }
 }
 
-write_c3_conf(@clusters);
+#write_c3_conf(@clusters);
 exit 0;
