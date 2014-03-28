@@ -610,6 +610,14 @@ write_c3_conf(@clusters);
     }
     when ('delcluster') {
         print "delcluster";
+        die "ERROR: cluster not specified" if (! defined($target_cluster));
+        die "ERROR: unknown cluster" if ( $target_cluster ~~ get_cluster_names() );
+        for (my $i; $i < scalar(@clusters); $i++) {
+            if ((ref($clusters[$i]) eq 'HASH') && ($clusters[$i]->{'name'} eq $target_cluster)) { # Found
+                splice(@clusters,$i,1); # Kill it.
+            }
+        }
+write_c3_conf(@clusters);
     }
     when ('addnodes') {
         # print "addnodes";
