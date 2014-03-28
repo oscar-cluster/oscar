@@ -583,12 +583,6 @@ sub get_cluster($) {
 # Prepare target_nodes table.
 @target_nodes = expand_nodes(@target_nodes);
 
-#for my $cluster (@clusters) {
-#    if (ref($cluster) eq 'HASH') {
-#        print Dumper($cluster);
-#    }
-#}
-
 # Check what must be done.
 given ($command) {
     when ('addcluster') {
@@ -614,6 +608,7 @@ given ($command) {
         die "ERROR: unknown cluster" if ( $target_cluster ~~ get_cluster_names() );
         die "ERROR: You need at least a node" if ( scalar(@target_nodes) < 1 );
         my $cluster_ref = get_cluster($target_cluster);
+        die "ERROR: Unknown cluster: $target_cluster" if (! defined($cluster_ref));
         die "ERROR: This cluster has no nodes to delete" if (! defined ($$cluster_ref->{'nodes'})); # A vcluster.
         my $cluster_nodes = $$cluster_ref->{'nodes'};
         NODE: for my $node (@target_nodes) { # For each nodes specified on the cmd line
