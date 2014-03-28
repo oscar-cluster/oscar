@@ -1,0 +1,650 @@
+#!/usr/bin/perl
+
+# cconfig (replacement for c3_conf_manager)
+#
+# Written by Olivier Lahaye 14/03/2014
+
+# Copyright (C) 2014        CEA - Commissariat a l'Energie Atomique
+#                           Olivier LAHAYE <olivier dot lahaye at cea dot fr>
+#                           All rights reserved.
+
+use strict;
+use Carp;
+use feature "switch";
+use Data::Dumper;
+
+use Getopt::Long;
+Getopt::Long::Configure ("pass_through");
+
+my $SCRIPT      = "cconfig";
+my $SVN_VERSION = sprintf "r%d", q$Revision: 1 $ =~ /(\d+)/g;
+my $VERSION     = "v1.0 ($SVN_VERSION)";
+my $refreshstate   = undef;
+my $sortnodes      = undef;
+my $target_cluster = undef;
+my @target_nodes   = ();
+my $zero           = undef; # 1 if use 0-indexing. (default is not to use zero indexing). undef means don't change.
+my $allnodes       = 0;
+my $file           = undef;
+
+our @clusters;  # Table of clusters hashes (and comments)
+my $hostname    = `hostname`;
+
+my $c3conf = '/etc/c3.conf';
+if (defined($ENV{C3_CONF})) {
+    # Override default "c3.conf" based on C3_CONF EnvVar
+    $c3conf = $ENV{C3_CONF};
+}
+
+sub show_version () {
+  print "$SCRIPT $VERSION\n";
+  exit 0;
+}
+
+sub usage () {
+  print <<EOF;
+$SCRIPT $VERSION
+$0
+
+Written by Olivier Lahaye <olivier.lahaye\@cea.fr>
+Full revrwrite of c3_conf_manager written by Jason Brechin
+and Geoffroy Vallee.
+
+Usage: $0 [command] [options]
+
+
+COMMANDS:
+
+--version                  Print version information
+--help|h|?                 Usage Information (this)
+addcluster                 Adds cluster with given name
+                           (MUST BE USED WITH the --cluster and --nodes options if not a virtual cluster.)
+delcluster                 Removes cluster with given name
+addnodes                   Add nodes to a cluster
+                           If a node was marked dead, the node is
+                           marked back to alive.
+                           (MUST BE USED WITH the --cluster and --nodes options)
+                           ranges are accepted.
+delnodes                   Remove a node from a cluster
+                           (MUST BE USED WITH the --cluster and --nodes option)
+disablenodes               Mark nodes as dead (or excluded if part of a range)
+                           ( --allnodes can replace the --nodes <nodenames> )
+enablenodes                Mark nodes back to life.
+                           ( --allnodes can replace the --nodes <nodenames> )
+update                     Update config file (usefull to sort nodes or updating status)
+listnodes                  Lists nodes in cluster
+                           (MUST BE USED WITH the --cluster option)
+listclusters               Lists defined clusters
+
+
+OPTIONS:
+
+--refreshstate             Update nodes states (dead or alive) using ping -c1.
+--sortnodes                Sort the nodes in cluster definitions.
+                           (can be used with --cluster option
+                           to restrict the sort to that cluster)
+--cluster <clustername>    Specify the cluster name to work with
+--nodes                    List of nodes to works with (space separated)
+--allnodes|all             Applies to all nodes (valid only of enablenodes and disablenodes)
+--zero|z|0                 Force 0-indexing (do not insert dummy dead entry)
+                           (can be used with --cluster option to update it or
+                           when creating a cluster: --addcluster option or
+                           without specifying any cluster (will apply on all clusters))
+--nozero|noz|no0           Use dummy dead entry so indexing starts at 1.
+--dry-run|n                Output restult to stdout instead of updating config file.
+--file|f=<file>            Use alternative config file.
+EOF
+exit 0;
+}
+
+# Read the command.
+my $command = shift(@ARGV); # read the command.
+
+# Read the options.
+&GetOptions(
+    'allnodes|all'  => \$allnodes,
+    'refreshstate'  => \$refreshstate,
+    'sortnodes'     => \$sortnodes,
+    'cluster=s'     => \$target_cluster,
+    'nodes=s{,}'    => \@target_nodes,
+    'zero|0|z!'     => \$zero,
+    'file|f=s'      => \$file,
+    'help|h|?'      => \&usage,
+    'version|v'     => \&show_version,
+);
+
+#@nodes = @ARGV;  # ARGV will now have all node names
+
+if ($file && -f $file) {
+    $c3conf = $file;
+}
+
+################################################################################
+#
+# Load a c3.conf file in memory.
+#
+################################################################################
+sub parse_c3_conf() {
+
+    my @c3_conf = ();
+    my $cluster_def;
+
+    if (!open (C3CONF, $c3conf)) {
+        print "ERROR: Can't open $c3conf";
+        return -1;
+    }
+
+    my $head_found;
+    my $in_cluster_def;
+    my $line;
+    my $line_num=0;
+    my $cluster_index=0;
+    my $node_index;
+    my $current_node;
+    my $previous_range_start;
+    my $last_node_index = -1;
+    while(<C3CONF>) {
+        $line = $_;
+        chomp ($line);
+        $line =~ s/^\s*//;     # Remove spaces at the start of the line
+        $line =~ s/\s*$//;     # Remove spaces at the end of the line
+        $line_num++;
+        given ( $line ) {
+            #when (/:\(\w\)/) {
+            #    print $1
+            #}
+            when (/^exclude\s(([0-9]+)|(\[(\d+)-(\d+)\])?)\s*(#.*)?$/) { # match exclude
+                die "ERROR: exclude found outside cluster definition at line: $line_num [$line]\n" if($in_cluster_def==0);
+                die "ERROR: vlcuster definition do not include nodes at line: $line_num [$line]\n" if (exists $cluster_def->{'vcluster'});
+                die "ERROR: exclude does not follow a node range definition at line: $line_num [$line]\n" if ($previous_range_start == -1);
+                #print "exclude: $1, value:$2, range:$3, start:$4, end:$5 comment:$6\n";
+                my $exclude_comment = $6;
+                my $range_min=$4;
+                my $range_max=$5;
+                ($range_min=$2, $range_max=$2) if ($2 ne ""); # Single value => fake a range of one value.
+                die "ERROR: exclude points outside previous range definition at line: $line_num [$line]\n" if (($range_min < $previous_range_start) || ($range_max > $node_index-1));
+                for (my $nodeindex=$range_min; $nodeindex <= $range_max; $nodeindex++) {
+                    $cluster_def->{'nodes'}[$nodeindex]->{'status'} = "dead";
+                    $cluster_def->{'nodes'}[$nodeindex]->{'comment'} .= $exclude_comment if ($exclude_comment ne "");
+                    $exclude_comment = ""; # Clear $6 so comment is only assigned to 1st node of the range.
+                }
+            }
+            when (/^(dead\s+)?([a-zA-Z0-9_.-]+)\s*(#.*)?$/) { # match single node (dead or alive)
+                die "ERROR: dead found outside cluster definition at line: $line_num [$line]\n" if($in_cluster_def==0);
+                die "ERROR: vlcuster definition do not include nodes at line: $line_num [$line]\n" if (exists $cluster_def->{'vcluster'});
+                #print "dead: $1, comment: $2\n";
+                $previous_range_start=-1; # keep in mind that we forget about previous ranges for future "exclude" cmds.
+                my $node;
+                $node->{'name'} = $2;
+                $node->{'comment'} = $3 if ($3 ne "");
+                if( $head_found == 0 ) {
+                    $head_found=1;
+                    die "ERROR: dead head in cluster definition at line: $line_num [$line]\n" if($1 ne "");
+                    $cluster_def->{'head'} = $node;    
+                } else {
+                    $node->{'status'} = "online";
+                    $node->{'status'} = "dead" if ($1 ne ""); # if dead, $1="dead\s"
+                    $cluster_def->{'nodes'}[$node_index] = $node;
+                    $last_node_index = $node_index; # keep track of the last node entry in the cluster hash so we know were to append comments only lines
+                    $node_index++;
+                }
+            }
+            when (/^}\s*(#.*)?$/) { # match end cluster definition
+                die "ERROR: Unexpected '}' found: $line_num [$line]\n" if($in_cluster_def==0);
+                #print "end cluster, comment: $1\n";
+                $in_cluster_def=0;
+                $cluster_def->{'end_comment'} = $1 if ( $1 ne "" );
+                $c3_conf[$cluster_index]=$cluster_def;
+                $cluster_index++;
+                undef $cluster_def;
+                $last_node_index = -1; 
+            }
+            when (/^cluster\s+([a-zA-Z0-9_.]+)\s*{\s*(#.*)?$/) { # match begin cluster definition
+                #print "FOUND cluster:$1, comment:$2\n";
+                $in_cluster_def=1;
+                $head_found=0;
+                $node_index=0; # node index
+                $cluster_def->{'name'} = $1;
+                $cluster_def->{'start_comment'} = $2 if ( $2 ne "" );
+                $cluster_def->{'nodes'} = ();
+                $current_node=""; # last node name seen (needed to handle excludes)
+                $previous_range_start=-1; # No previous range.
+            }
+            when (/^([a-zA-Z0-9_.]+)?:([a-zA-Z0-9_.]+)\s*(#.*)?/) { # match complex head or vcluster (entry with ':')
+                if( $head_found == 0 ) {
+                    $head_found=1;
+                    my $node;
+                    die "ERROR: head already defined for cluster $cluster_def->{'name'} line: $line_num [$line]\n" if (exists $cluster_def->{'head'});
+                    $node->{'comment'} = $3 if ($3 ne "");
+                    if ($1 eq "") { # virtual cluster
+                        $node->{'name'} = $2;
+                        $cluster_def->{'vcluster'} = $node;
+                    } else {
+                        $node->{'name'} = $1;
+                        $node->{'private'} = $2;
+                        $cluster_def->{'head'} = $node;
+                    }
+                 } else {
+                    die "ERROR: head already defined: $line_num [$line]\n";
+                }
+            }
+            when (/^([a-zA-Z0-9_.]+)(\[(\d+)-(\d+)\])\s*(#.*)?$/) { # match node range
+                # node name: $1, complete range:$2, range start:$3, range end:$4, comment: $5
+                die "ERROR: node found outside cluster definition at line: $line_num [$line]\n" if($in_cluster_def==0);
+                die "ERROR: vlcuster definition do not include nodes at line: $line_num [$line]\n" if (exists $cluster_def->{'vcluster'});
+                $previous_range_start=$node_index; # keep in mind the lower limit of the range for future "exclude"
+                                                   # the upper limit is $node_index-1
+                my $range_comment = $5;
+
+                # exclude[0-9] is a node range. exclude [0-9] is an exclude range. (space before the range).
+                print "WARNING: node basename is 'exclude'. Is it what you want?" if( $1 eq "exclude" );
+
+                for (my $nodenum = $3; $nodenum <= $4; $nodenum++) {
+                    my $node;
+                    $node->{'comment'} = $range_comment if ($range_comment ne "");
+                    $range_comment = ""; # Clear comment after 1st node so comment is set on 1st node only.
+                    $node->{'name'} = $1.$nodenum;
+                    $node->{'status'} = "online";
+                    $cluster_def->{'nodes'}[$node_index] = $node;
+                    #$current_node=$1; # Don't keep this if head_node.
+                    $last_node_index = $node_index; # keep track of the last node entry in the cluster hash so we know were to append comments only lines
+                    $node_index++;
+                }
+            }
+            when (/(^#.*)|(^$)/) { # Match comment lines or empty lines
+                #print "COMMENT: $line\n";
+                if($in_cluster_def==1) {
+                    if($last_node_index > -1) { # we have a node definition in our hash, we can append this line to its comment
+                        $cluster_def->{'nodes'}[$last_node_index]->{'comment'} .= "\n\t".$line;
+                        # We do no increase the $node_index (it already points to the end of the nodes table)
+                    } else { # no nodes yet in the table; this line must be just above or below the head node definition.
+                        if ($head_found == 1) { # this comment is after head definition but before any node defs. Attach to head comment.
+                            if(exists $cluster_def->{'vcluster'}) {
+                                $cluster_def->{'vcluster'}->{'comment'} .= "\n\t".$line;
+                            } else {
+                                $cluster_def->{'head'}->{'comment'} .= "\n\t".$line;
+                            }
+                        } else { # This comment is before head definition. Attach to cluster begin comment.
+                            $cluster_def->{'start_comment'} .= "\n\t".$line;
+                        }
+#                        $cluster_def->{'nodes'}[$node_index] = $line;
+#                        $node_index++;
+                    }
+                } else {
+                    $c3_conf[$cluster_index]=$line;
+                    $cluster_index++;
+                }
+            }
+            default {
+                die "ERROR: UNMATCHED LINE: [$line]\n";
+            }
+
+        }
+    }
+    close(C3CONF);
+    return(@c3_conf);
+}
+
+################################################################################
+#
+# Write an exclude rule if $exclude_start > -1
+#
+################################################################################
+
+sub print_exclude_range($$) {
+    my($exclude_start,$exclude_end) = @_;
+    if($exclude_start>-1) {
+        if ($exclude_start == $exclude_end) { # Single entry
+             print "\texclude $exclude_start\n";
+        } else {
+             print "\texclude [$exclude_start-$exclude_end]\n";
+        }
+    }
+}
+
+################################################################################
+# 
+# Print previous node or node range including optional associated dead or
+# eacludes lines.
+# $cluster:     cluster hash reference describing the cluster we work on.
+# $element_idx_start: element in %cluster we start looking at.
+# $range_name:  common part of the node name (or node name if single node)
+# $range_start: node range start index
+# $range_end: node range last index
+# $range_comment: concatenation of all comments for that node(s).
+#
+################################################################################
+
+sub print_previous_node_range($$$$$$) {
+    my ($cluster, $element_idx_start, $range_name, $range_start, $range_end, $range_comment) = @_;
+    if($range_end-$range_start > 0) {
+
+        # We print the node range.
+        print "\t$range_name"."[".$range_start."-".$range_end."]".$range_comment."\n";
+
+        # scan this range to see if we have to write some ecxlude rules.
+        my $exclude_start=-1;
+        my $exclude_end=-1;
+        my $range_idx = $range_start;
+        my $idx = $element_idx_start-1; # Start the scan at the physical beginning of the range.
+        while () {
+            $idx++;
+            next if( ref($cluster->{'nodes'}[$idx]) ne 'HASH' ); # We skip omment or empty line.(already printed)
+#        for (my $idx=$range_end-$range_start+1; $idx > 0; $idx--) {
+            if($cluster->{'nodes'}[$idx]->{'status'} eq "dead" ) { # dead node in a range
+                if($exclude_start==-1) {
+                     $exclude_start=$range_idx;
+                     $exclude_end=$exclude_start;
+                } else {
+                     $exclude_end++;
+                }
+            } else { # online node in a range
+                     # check if an exclude rule was in progress.(this entry is not dead, but previous ones may be).
+                print_exclude_range($exclude_start,$exclude_end);
+                # reset the exclude rule (online node).
+                $exclude_start=-1;
+                $exclude_end=-1;
+            }
+            $range_idx++;
+            last if ($cluster->{'nodes'}[$idx]->{name} eq "$range_name"."$range_end");
+            last if ($idx >= scalar(@{$cluster->{'nodes'}})); # Should never occure, but who knows.
+        }
+        # eventualy print last exclude rule.
+        print_exclude_range($exclude_start,$exclude_end);
+        $exclude_start=-1;
+        $exclude_end=-1;
+    } else { # previous element was not in a range. print single element.
+             # still need to check if dead or online. (need to look for previous node status)
+        if ($range_name ne "") { # skip if name = "": either a comment (should not occure or empty node definition (splice when deleting node).
+            $range_name = "dead $range_name" if ($cluster->{'nodes'}[$element_idx_start]->{'status'} eq "dead");
+            my $number="";
+            $number = $range_start if ($range_start >= 0);
+            print "\t$range_name".$number." ".$range_comment."\n";
+        }
+    }
+
+}
+
+################################################################################
+# 
+# Write the c3.conf file from memory
+#
+################################################################################
+sub write_c3_conf (@) {
+    my @c3_conf = @_;
+    my $comment;
+    for my $element (@c3_conf) {
+        if (ref($element) eq 'HASH') { # A cluster definition
+            my %cluster = %{$element};
+            my $element_idx_start=-1;
+            my $range_start=-1;
+            my $range_end=-1;
+            my $range_name="";
+            my $range_comment="";
+
+            # Print the "cluster" line.
+            $comment = "";
+            $comment = " ".$cluster{'start_comment'} if (exists($cluster{'start_comment'}));
+            print "cluster $cluster{'name'} {$comment\n";
+
+            # Print the cluster head (or vlcuster definition).
+            if(exists $cluster{'vcluster'}) {
+                $comment = "";
+                $comment = " ".$cluster{'vcluster'}->{'comment'} if (exists($cluster{'vcluster'}->{'comment'}));
+                print "\t:".$cluster{'vcluster'}->{'name'}.$comment."\n";
+            } else { # normal cluster.
+                $comment = "";
+                $comment = " ".$cluster{'head'}->{'comment'} if (exists($cluster{'head'}->{'comment'}));
+                my $name = $cluster{'head'}->{'name'};
+                $name .= ":".$cluster{'head'}->{'private'} if(exists($cluster{'head'}->{'private'}));
+                print "\t".$name.$comment."\n";
+            }
+
+            # Print the nodes entries (or only comments in case of vcluster).
+            if(defined $cluster{'nodes'}) { # there are some nodes that are defined.
+                if (defined $sortnodes) { # need to sort nodes before working
+                    # 1st, check 1st element. If dead, it may be a dummy entry for avoiding 0 indexing.
+                    # Trick is to prepend a "!" to the name so it stays at the 1st place during the sort.
+                    if($cluster{'nodes'}[0]->{'status'} eq 'dead') {
+                        # get the basename of all other nodes.
+                        my @basenames = map { $_->{'name'}=~/^([a-zA-Z_.]+)[0-9]+$/ } @{$cluster{'nodes'}};
+                        #@{$cluster{'nodes'}}[1..scalar(@{$cluster{'nodes'}})-1]
+                        if (! ($basenames[0] ~~ @basenames[1..scalar(@basenames)-1])) { # basename of 1st node not found in other nodes. this is probably a dummy entry.
+                            # prepend a "!" to the name so it stay 1st after sorting.
+                            $cluster{'nodes'}[0]->{'name'} = "!".$cluster{'nodes'}[0]->{'name'}; # "!" is not allowed in hostname: we're sure it'll be uniq.
+                        }
+                    }
+                    # Sorting steps:
+                    # 1st: map {[$_,$_->{'name'}=~/^([a-zA-Z_.]+)([0-9]+)$/] } : create [$_, node basename, node number if any]
+                    # 2nd: sort {$a->[1] cmp $b->[1] || $a->[2] <=> $b->[2] }  : compare nodes basenames. If equals, compare nodes numbers.
+                    # 3rd: map  { $_->[0] } : get original element back.(drop basename and number we used to make the sort).
+                    @{$cluster{'nodes'}} = map  { $_->[0] }
+                                           sort {$a->[1] cmp $b->[1] || $a->[2] <=> $b->[2] }
+                                           map  {[$_,$_->{'name'}=~/^([a-zA-Z_.]+)([0-9]+)$/] }
+                                           @{$cluster{'nodes'}};
+                    # If 1st node name starts with a "!", we need to remove this prepending "!" used to trick the sort keeping in place the dummy entry.
+                    if( $cluster{'nodes'}[0]->{'name'} =~ /^!(.*)$/ ) {
+                        $cluster{'nodes'}[0]->{'name'} = $1;
+                    }
+                }
+                for (my $element_idx=0; $element_idx < scalar(@{$cluster{'nodes'}}); $element_idx++) { # need to work with indexes
+                   if(ref($cluster{'nodes'}[$element_idx]) eq 'HASH') { # not a comment
+                        my %node = %{$cluster{'nodes'}[$element_idx]};
+                        my $comment = "";
+                        $comment = " ".$node{'comment'} if(exists( $node{'comment'}));
+
+                        # check if node ends with a number (can we use a range?)
+                        if ( $node{'name'} =~ /^([A-Za-z_.-]+)((0*)([0-9]+[0-9]*))$/ ) { # in a node range. 
+                            # $1: node basename - $2:$3.$4 - $3: number of zeros to append to basename - $4: node number.
+                            if (($range_name eq $1.$3) && ($4-$range_end == 1)) { # still in same range name and indexes contiguous.
+                                $range_end++;
+                                if (exists ( $node{'comment'})) {
+                                    $range_comment .= "\n" if ($range_comment ne "");
+                                    $range_comment .= "\t".$node{'comment'};
+                                }
+                            } else { # not the same range name or indexes not contiguous. Time to print range and reset indexes.
+                                # 1st print previous range if any.
+                                print_previous_node_range(\%cluster, $element_idx_start, $range_name, $range_start, $range_end, $range_comment);
+                                # Reset the range to the new value.
+                                $element_idx_start = $element_idx; # Keep track of the starting element.
+                                $range_name = $1.$3;             # common name including index leading zeros.
+                                $range_start = $4;               # range start.
+                                $range_end = $range_start;       # range end (at this pont, start and end are the same.
+                                $range_comment = $comment;       # Keep track of comment if any.
+                            }
+                        } else { # current element is a simple node:
+                            # 1st print previous range or node if any.
+                            print_previous_node_range(\%cluster, $element_idx_start, $range_name, $range_start, $range_end, $range_comment);
+                            # Clear printed range.
+                            $element_idx_start=$element_idx;
+                            $range_start=-1;
+                            $range_end=-1;
+                            $range_name="";
+                            $range_comment="";
+                            # print the simple node:
+                            $range_comment=$cluster{'nodes'}[$element_idx]->{'comment'} if(defined($cluster{'nodes'}[$element_idx]->{'name'}));
+                            $range_name=$cluster{'nodes'}[$element_idx]->{'name'};
+                        }
+
+
+                    } else { # simple comment (not a node)
+                        print "\t".$cluster{'nodes'}[$element_idx]."\n";
+                    } # End node print
+                } # End cluster nodes or element print
+            } # end  print cluster content.
+
+            # Print last elements.
+            print_previous_node_range(\%cluster, $element_idx_start, $range_name, $range_start, $range_end, $range_comment);
+
+            # Print closing bracket.
+            if(exists $cluster{'end_comment'}) {
+                print "} ".$cluster{'end_comment'}."\n";
+            } else {
+                print "}\n";
+            }
+        } else { # comment
+            print $element."\n";
+        }
+    }
+}
+
+################################################################################
+#
+# returns an array of known clusters. takes the table of hash returned by parse_c3_conf.
+#
+################################################################################
+
+sub get_cluster_names() {
+    my @cluster_names = ();
+    for my $element (@clusters) {
+        if (ref($element) eq 'HASH') {
+            push(@cluster_names, $element->{'name'});
+        }
+    }
+    return(@cluster_names);
+}
+
+################################################################################
+#
+# expand ("node","range[0-2") to
+# ("node", "range0","range1","range2")
+#
+################################################################################
+
+sub expand_nodes(@) {
+    my @unexpanded_nodes = @_;
+    my @expanded_nodes = ();
+    for my $node (@unexpanded_nodes) {
+        chomp($node);
+        if ( $node =~ /^([a-zA-Z0-9_.]+)(\[(\d+)-(\d+)\])$/) { # match node range
+            # node name: $1, complete range:$2, range start:$3, range end:$4
+            for (my $i=$3; $i <= $4; $i++) {
+                push (@expanded_nodes, $1.$i);
+            }
+        } else { # simple node
+            push (@expanded_nodes, $node);
+        }
+    }
+    return(@expanded_nodes);
+}
+
+################################################################################
+#
+# Add a node to a given cluster.
+#
+#
+################################################################################
+
+sub add_node($$) {
+    my ($cluster, $node) = @_;
+    my %new_node;
+    $new_node{'name'} = $node;
+    $new_node{'status'} = "online";
+    for my $element (@clusters) {
+        if ((ref($element) eq 'HASH') && ($element->{'name'} eq $cluster)) {
+            if ( defined ($element->{'nodes'}) ) {
+                push($element->{'nodes'}, \%new_node);
+            } else {
+                # TODO: 1st element. need to honor zero indexing flag.
+                $element->{'nodes'} = ( \%new_node );
+            }
+            return 0; # Node added, no need to continue with remaining clusters.
+        }
+    }
+    return 1; # We didn't found the cluster... strange.
+}
+
+################################################################################
+#
+# get_cluster: Return a reference to cluster given its name (or undef)
+#
+################################################################################
+
+sub get_cluster($) {
+    my $cluster_name = shift;
+    for my $element (@clusters) {
+        if ((ref($element) eq 'HASH') && ($element->{'name'} eq $cluster_name)) { # Found
+            return \$element;
+        }
+    }
+    return undef; # Cluster not found.
+}
+
+################################################################################
+#
+# MAIN
+#
+################################################################################
+
+
+# Read the config file.
+@clusters = parse_c3_conf();
+
+# Prepare target_nodes table.
+@target_nodes = expand_nodes(@target_nodes);
+
+#for my $cluster (@clusters) {
+#    if (ref($cluster) eq 'HASH') {
+#        print Dumper($cluster);
+#    }
+#}
+
+# Check what must be done.
+given ($command) {
+    when ('addcluster') {
+        print "addcluster";
+    }
+    when ('delcluster') {
+        print "delcluster";
+    }
+    when ('addnodes') {
+        print "addnodes";
+        # 1st, check that we know the target cluster and that it exists.
+        die "ERROR: cluster not specified" if (! defined($target_cluster));
+        die "ERROR: unknown cluster" if ( $target_cluster ~~ get_cluster_names() );
+        die "ERROR: You need at least a node" if ( scalar(@target_nodes) < 1 );
+        for my $node (@target_nodes) {
+            add_node($target_cluster,$node)
+        }
+    }
+    when ('delnodes') {
+        print "delnodes";
+        # 1st, check that we know the target cluster and that it exists.
+        die "ERROR: cluster not specified" if (! defined($target_cluster));
+        die "ERROR: unknown cluster" if ( $target_cluster ~~ get_cluster_names() );
+        die "ERROR: You need at least a node" if ( scalar(@target_nodes) < 1 );
+        my $cluster_ref = get_cluster($target_cluster);
+        die "ERROR: This cluster has no nodes to delete" if (! defined ($$cluster_ref->{'nodes'})); # A vcluster.
+        my $cluster_nodes = $$cluster_ref->{'nodes'};
+        NODE: for my $node (@target_nodes) { # For each nodes specified on the cmd line
+            for (my $i=0; $i < scalar(@{$cluster_nodes}); $i++) { # Scan the cluster nodes
+                if($node eq @{$cluster_nodes}[$i]->{'name'}) { # Found a node to remove
+                    splice(@{$cluster_nodes},$i,1); # Remove the node.
+                    next NODE; # stop scanning cluster here, job done, move to next node
+                }
+            }
+            die "ERROR: node '$node' not found in '$target_cluster', aborting.";
+        }
+    }
+    when ('disablenodes') {
+        print "disablenodes";
+    }
+    when ('enablenodes') {
+        print "enablenodes";
+    }
+    when ('update') {
+        print "update";
+    }
+    when ('listnodes') {
+        print "listnodes";
+    }
+    when ('listclusters') {
+        print "listclusters";
+    }
+    default {
+        print "ERROR: $command";
+    }
+}
+
+write_c3_conf(@clusters);
+exit 0;
