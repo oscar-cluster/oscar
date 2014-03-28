@@ -24,7 +24,6 @@ my $sortnodes      = undef;
 my $target_cluster = undef;
 my @target_nodes   = ();
 my $zero           = undef; # 1 if use 0-indexing. (default is not to use zero indexing). undef means don't change.
-my $allnodes       = 0;
 my $default        = undef;
 my $file           = undef;
 
@@ -69,10 +68,11 @@ addnodes                   Add nodes to a cluster
 delnodes                   Remove a node from a cluster
                            (MUST BE USED WITH the --cluster and --nodes option)
 disablenodes               Mark nodes as dead (or excluded if part of a range)
-                           ( --allnodes can replace the --nodes <nodenames> )
+                           ( --cluster is optional --nodes <nodenames> is optional (requires --cluster if used).)
 enablenodes                Mark nodes back to life.
-                           ( --allnodes can replace the --nodes <nodenames> )
+                           ( --cluster is optional --nodes <nodenames> is optional (requires --cluster if used).)
 update                     Update config file (usefull to sort nodes or updating status)
+                           ( --cluster is optional --nodes <nodenames> is optional (requires --cluster if used).)
 listnodes                  Lists active nodes in cluster
                            (MUST BE USED WITH the --cluster option)
 listclusters               Lists defined clusters
@@ -87,7 +87,6 @@ OPTIONS:
 --default                  Set this cluster as default (update or addcluster)
 --cluster <clustername>    Specify the cluster name to work with
 --nodes                    List of nodes to works with (space separated)
---allnodes|all             Applies to all nodes (valid only of enablenodes and disablenodes)
 --zero|z|0                 Force 0-indexing (do not insert dummy dead entry)
                            (can be used with --cluster option to update it or
                            when creating a cluster: --addcluster option or
@@ -105,7 +104,6 @@ my $command = shift(@ARGV); # read the command.
 # Read the options.
 &GetOptions(
     'default'       => \$default,
-    'allnodes|all'  => \$allnodes,
     'refreshstate'  => \$refreshstate,
     'sortnodes'     => \$sortnodes,
     'cluster=s'     => \$target_cluster,
