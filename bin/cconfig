@@ -25,6 +25,7 @@ my $target_cluster = undef;
 my @target_nodes   = ();
 my $zero           = undef; # 1 if use 0-indexing. (default is not to use zero indexing). undef means don't change.
 my $allnodes       = 0;
+my $default        = undef;
 my $file           = undef;
 
 our @clusters;  # Table of clusters hashes (and comments)
@@ -72,7 +73,7 @@ disablenodes               Mark nodes as dead (or excluded if part of a range)
 enablenodes                Mark nodes back to life.
                            ( --allnodes can replace the --nodes <nodenames> )
 update                     Update config file (usefull to sort nodes or updating status)
-listnodes                  Lists nodes in cluster
+listnodes                  Lists active nodes in cluster
                            (MUST BE USED WITH the --cluster option)
 listclusters               Lists defined clusters
 
@@ -83,6 +84,7 @@ OPTIONS:
 --sortnodes                Sort the nodes in cluster definitions.
                            (can be used with --cluster option
                            to restrict the sort to that cluster)
+--default                  Set this cluster as default (update or addcluster)
 --cluster <clustername>    Specify the cluster name to work with
 --nodes                    List of nodes to works with (space separated)
 --allnodes|all             Applies to all nodes (valid only of enablenodes and disablenodes)
@@ -102,6 +104,7 @@ my $command = shift(@ARGV); # read the command.
 
 # Read the options.
 &GetOptions(
+    'default'       => \$default,
     'allnodes|all'  => \$allnodes,
     'refreshstate'  => \$refreshstate,
     'sortnodes'     => \$sortnodes,
@@ -402,13 +405,13 @@ sub write_c3_conf (@) {
 
             # Print the nodes entries (or only comments in case of vcluster).
             if(defined $cluster{'nodes'}) { # there are some nodes that are defined.
-                if (defined $sortnodes) { # need to sort nodes before working
+                if ((defined $sortnodes) && (! defined($target_cluster) || $cluster{'name'} eq $target_cluster)) { # need to sort nodes before working
+                    # We only sort of $target_cluster is not defined or if $cluster{'name'} is the defined $target_cluster.
                     # 1st, check 1st element. If dead, it may be a dummy entry for avoiding 0 indexing.
                     # Trick is to prepend a "!" to the name so it stays at the 1st place during the sort.
                     if($cluster{'nodes'}[0]->{'status'} eq 'dead') {
                         # get the basename of all other nodes.
-                        my @basenames = map { $_->{'name'}=~/^([a-zA-Z_.]+)[0-9]+$/ } @{$cluster{'nodes'}};
-                        #@{$cluster{'nodes'}}[1..scalar(@{$cluster{'nodes'}})-1]
+                        my @basenames = map { $_->{'name'}=~/^([a-zA-Z_.]+)[0-9]*$/ } @{$cluster{'nodes'}};
                         if (! ($basenames[0] ~~ @basenames[1..scalar(@basenames)-1])) { # basename of 1st node not found in other nodes. this is probably a dummy entry.
                             # prepend a "!" to the name so it stay 1st after sorting.
                             $cluster{'nodes'}[0]->{'name'} = "!".$cluster{'nodes'}[0]->{'name'}; # "!" is not allowed in hostname: we're sure it'll be uniq.
@@ -420,7 +423,7 @@ sub write_c3_conf (@) {
                     # 3rd: map  { $_->[0] } : get original element back.(drop basename and number we used to make the sort).
                     @{$cluster{'nodes'}} = map  { $_->[0] }
                                            sort {$a->[1] cmp $b->[1] || $a->[2] <=> $b->[2] }
-                                           map  {[$_,$_->{'name'}=~/^([a-zA-Z_.]+)([0-9]+)$/] }
+                                           map  {[$_,$_->{'name'}=~/^([a-zA-Z_.]+)([0-9]*)$/] }
                                            @{$cluster{'nodes'}};
                     # If 1st node name starts with a "!", we need to remove this prepending "!" used to trick the sort keeping in place the dummy entry.
                     if( $cluster{'nodes'}[0]->{'name'} =~ /^!(.*)$/ ) {
@@ -557,6 +560,63 @@ sub add_node($$;$$) {
 
 ################################################################################
 #
+# set_node_alive, set_node_dead, set_node_ping => Set the node ref status
+# respectively to: online, dead, ping result.
+#
+################################################################################
+
+sub set_node_alive($) {
+    my $node_ref = shift;
+    $$node_ref->{'status'} = "online";
+}
+
+sub set_node_dead($) {
+    my $node_ref = shift;
+    $$node_ref->{'status'} = "dead";
+}
+
+sub set_node_ping($) {
+    my $node_ref = shift;
+    my $node_name = $$node_ref->{'name'};
+    if(system("ping -c1 $node_name >/dev/null 2>&1")) { # Error.
+        $$node_ref->{'status'} = "dead";
+    } else {
+        $$node_ref->{'status'} = "online";
+    }
+}
+
+################################################################################
+#
+# set_nodes_status. given a function pointer to set the status.
+#
+################################################################################
+
+sub set_nodes_status($) {
+    my $sub_set_node_status = shift;
+    die "ERROR: Cannot restict to a node subset if cluster is not specified" if ((scalar(@target_nodes) > 0) && (! defined($target_cluster)));
+    for my $element (@clusters) { # Loop on @clusters
+        next if(ref($element) ne 'HASH'); # Ignore comments and empty lines.
+        next if(defined($target_cluster) && ($element->{'name'} ne $target_cluster)); # Ignore wrong clusters if --cluster was specified.
+        if ((defined ($element->{'nodes'})) && (scalar($element->{'nodes'}) > 0) ) { # If this cluster has some nodes (at least one).
+            my $start = 0;
+#            if(($element->{'nodes'}[0]->{'status'} eq 'dead') && ((scalar(@target_nodes) == 0) || !($element->{'nodes'}[0]->{'name'} ~~ @target_nodes))) { # If 1st node is dead (index 0, this may be a dummy entry). (If node exists in @target_nodes, we assume it's a normal node).
+            if(($element->{'nodes'}[0]->{'status'} eq 'dead') && (scalar(@target_nodes) == 0)) { # If 1st node is dead (index 0, this may be a dummy entry). (if @target_nodes is not specified, we try to guess..
+                my @basenames = map { $_->{'name'}=~/^([a-zA-Z_.]+)[0-9]*$/ } @{$element->{'nodes'}}; # get all basenames
+                if (! ($basenames[0] ~~ @basenames[1..scalar(@basenames)-1])) { # basename of 1st node not found in other nodes. this is probably a dummy entry.
+                    $start = 1; # Start at index 1.
+                }
+            }
+            for (my $i=$start; $i < scalar(@{$element->{'nodes'}}); $i++) { # Scan the cluster nodes
+                if((scalar(@target_nodes) == 0) || ((scalar(@target_nodes) > 0) && ($element->{'nodes'}[$i]->{'name'} ~~ @target_nodes))) { # Filter if @nodes filter exists.
+                    $sub_set_node_status->(\@{$element->{'nodes'}}[$i]);
+                }
+            }
+        }
+    }
+}
+
+################################################################################
+#
 # get_cluster: Return a reference to cluster given its name (or undef)
 #
 ################################################################################
@@ -653,19 +713,31 @@ write_c3_conf(@clusters);
     }
     when ('disablenodes') {
         print "disablenodes";
+        set_nodes_status(\&set_node_dead);
 write_c3_conf(@clusters);
     }
     when ('enablenodes') {
         print "enablenodes";
+        set_nodes_status(\&set_node_alive);
 write_c3_conf(@clusters);
     }
     when ('update') {
         print "update";
+        set_nodes_status(\&set_node_ping);
 write_c3_conf(@clusters);
     }
     when ('listnodes') {
-        print "listnodes";
-write_c3_conf(@clusters);
+        # print "listnodes";
+        die "ERROR: cluster not specified" if (! defined($target_cluster));
+        die "ERROR: unknown cluster" if ( $target_cluster ~~ get_cluster_names() );
+        my $cluster_ref = get_cluster($target_cluster);
+        die "ERROR: Unknown cluster: $target_cluster" if (! defined($cluster_ref));
+        my $cluster_nodes = $$cluster_ref->{'nodes'};
+        my @node_list = ();
+        for (my $i=0; $i < scalar(@{$cluster_nodes}); $i++) { # Scan the cluster nodes
+            push(@node_list, @{$cluster_nodes}[$i]->{'name'}) if (@{$cluster_nodes}[$i]->{'status'} eq "online");
+        }
+        print join(" ", @node_list)."\n";
     }
     when ('listclusters') {
         my @clusters_list = ();
