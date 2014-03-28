@@ -535,19 +535,20 @@ sub expand_nodes(@) {
 #
 ################################################################################
 
-sub add_node($$) {
-    my ($cluster, $node) = @_;
+sub add_node($$;$$) {
+    my ($cluster, $name, $status, $comment) = @_;
     my %new_node;
-    $new_node{'name'} = $node;
+    $new_node{'name'} = $name;
     $new_node{'status'} = "online";
+    $new_node{'status'} = $status if (defined($status));
+    $new_node{'comment'} = $comment if (defined($comment));
     for my $element (@clusters) {
         if ((ref($element) eq 'HASH') && ($element->{'name'} eq $cluster)) {
-            if ( defined ($element->{'nodes'}) ) {
-                push($element->{'nodes'}, \%new_node);
-            } else {
-                # TODO: 1st element. need to honor zero indexing flag.
-                $element->{'nodes'} = ( \%new_node );
+            if ( ! defined ($element->{'nodes'}) ) { # No nodes yet, need to initialise entry.
+                my @nodes = ();
+                $element->{'nodes'} = \@nodes;
             }
+            push($element->{'nodes'}, \%new_node);
             return 0; # Node added, no need to continue with remaining clusters.
         }
     }
@@ -587,6 +588,25 @@ sub get_cluster($) {
 given ($command) {
     when ('addcluster') {
         print "addcluster";
+        push (@clusters, ""); # Add an empty line before the new cluster.
+        my $new_cluster;
+        die "ERROR: cluster not specified" if (! defined($target_cluster));
+        $new_cluster->{'name'} = $target_cluster;
+        $new_cluster->{'start_comment'} = "# Created on: ".localtime();
+        die "ERROR: You need at least a head node" if ( scalar(@target_nodes) < 1 );
+        my $new_head;
+        $new_head->{'name'} = shift(@target_nodes);
+        $new_cluster->{'head'} = $new_head;
+        push (@clusters, $new_cluster); # Add the new cluster entry.(add_node needs that)
+        # If we do not use zero indexing. need to insert a dummy entry.
+        if (! $zero) {
+            add_node($target_cluster, "remove_for_0-indexing", "dead", "# remove this line for 0-indexing");
+        }
+        # Add the nodes.
+        for my $node (@target_nodes) {
+            add_node($target_cluster,$node);
+        }
+write_c3_conf(@clusters);
     }
     when ('delcluster') {
         print "delcluster";
@@ -598,7 +618,7 @@ given ($command) {
         die "ERROR: unknown cluster" if ( $target_cluster ~~ get_cluster_names() );
         die "ERROR: You need at least a node" if ( scalar(@target_nodes) < 1 );
         for my $node (@target_nodes) {
-            add_node($target_cluster,$node)
+            add_node($target_cluster,$node);
         }
 write_c3_conf(@clusters);
     }
