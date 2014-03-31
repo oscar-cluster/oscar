@@ -203,7 +203,7 @@ sub parse_c3_conf() {
                 $cluster_def->{'end_comment'} = $1 if ( $1 ne "" );
 #                $c3_conf[$cluster_index]=$cluster_def;
 #                $cluster_index++;
-                if ($default) {
+                if ($default && ($cluster_def->{'name'} eq $target_cluster)) {
                     unshift(@c3_conf, $cluster_def);
                 } else {
                     push (@c3_conf, $cluster_def);
