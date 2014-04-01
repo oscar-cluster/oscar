@@ -13,6 +13,7 @@ use Carp;
 use feature "switch";
 use Data::Dumper;
 
+use File::Copy;
 use Getopt::Long;
 Getopt::Long::Configure ("pass_through");
 
@@ -26,14 +27,15 @@ my @target_nodes   = ();
 my $zero           = undef; # 1 if use 0-indexing. (default is not to use zero indexing). undef means don't change.
 my $default        = undef;
 my $file           = undef;
+my $dryrun         = undef;
 
 our @clusters;  # Table of clusters hashes (and comments)
 my $hostname    = `hostname`;
 
 my $c3conf = '/etc/c3.conf';
-if (defined($ENV{C3_CONF})) {
-    # Override default "c3.conf" based on C3_CONF EnvVar
-    $c3conf = $ENV{C3_CONF};
+if (defined($ENV{NEW_C3_CONF})) {
+    # Override default "c3.conf" based on NEW_C3_CONF EnvVar
+    $c3conf = $ENV{NEW_C3_CONF};
 }
 
 sub show_version () {
@@ -104,6 +106,7 @@ my $command = shift(@ARGV); # read the command.
 # Read the options.
 &GetOptions(
     'default'       => \$default,
+    'dry-run'       => \$dryrun,
     'refreshstate'  => \$refreshstate,
     'sortnodes'     => \$sortnodes,
     'cluster=s'     => \$target_cluster,
@@ -114,7 +117,8 @@ my $command = shift(@ARGV); # read the command.
     'version|v'     => \&show_version,
 );
 
-#@nodes = @ARGV;  # ARGV will now have all node names
+# Check that we've registered everything on the command line.
+die "ERROR: Unknown remaining arguments: ".join(" ", @ARGV)."\n" if(scalar(@ARGV > 0));  # Nothing should remain in @ARGV.
 
 if ($file && -f $file) {
     $c3conf = $file;
@@ -153,14 +157,11 @@ sub parse_c3_conf() {
         $line =~ s/\s*$//;     # Remove spaces at the end of the line
         $line_num++;
         given ( $line ) {
-            #when (/:\(\w\)/) {
-            #    print $1
-            #}
             when (/^exclude\s(([0-9]+)|(\[(\d+)-(\d+)\])?)\s*(#.*)?$/) { # match exclude
                 die "ERROR: exclude found outside cluster definition at line: $line_num [$line]\n" if($in_cluster_def==0);
                 die "ERROR: vlcuster definition do not include nodes at line: $line_num [$line]\n" if (exists $cluster_def->{'vcluster'});
                 die "ERROR: exclude does not follow a node range definition at line: $line_num [$line]\n" if ($previous_range_start_index == -1);
-                #print "exclude: $1, value:$2, range:$3, start:$4, end:$5 comment:$6\n";
+                # exclude: $1, value:$2, range:$3, start:$4, end:$5 comment:$6
                 my $exclude_comment = $6;
                 my $range_min=$4;
                 my $range_max=$5;
@@ -175,10 +176,12 @@ sub parse_c3_conf() {
                 }
             }
             when (/^(dead\s+)?([a-zA-Z0-9_.-]+)\s*(#.*)?$/) { # match single node (dead or alive)
+                                                              # match also "_" eventhough it's forbidden in hostnames as we must match
+                                                              # the remove_for_0-indexing string that exists in many c3.conf files.
                 die "ERROR: dead found outside cluster definition at line: $line_num [$line]\n" if($in_cluster_def==0);
                 die "ERROR: vlcuster definition do not include nodes at line: $line_num [$line]\n" if (exists $cluster_def->{'vcluster'});
-                #print "dead: $1, comment: $2\n";
-                $previous_range_start_index=-1; # keep in mind that we forget about previous ranges for future "exclude" cmds.
+                # dead: $1, comment: $2
+                $previous_range_start_index=-1; # keep track that we forget about previous ranges for future "exclude" cmds.
                 $previous_range_start=-1;
                 $previous_range_end=-1;
                 my $node;
@@ -198,11 +201,10 @@ sub parse_c3_conf() {
             }
             when (/^}\s*(#.*)?$/) { # match end cluster definition
                 die "ERROR: Unexpected '}' found: $line_num [$line]\n" if($in_cluster_def==0);
-                #print "end cluster, comment: $1\n";
+                die "ERROR: Incomplete cluster definition. Missing head $line_num [$line]\n" if(! exists($cluster_def->{'name'}));
+                # comment: $1
                 $in_cluster_def=0;
                 $cluster_def->{'end_comment'} = $1 if ( $1 ne "" );
-#                $c3_conf[$cluster_index]=$cluster_def;
-#                $cluster_index++;
                 if ($default && ($cluster_def->{'name'} eq $target_cluster)) {
                     unshift(@c3_conf, $cluster_def);
                 } else {
@@ -211,8 +213,8 @@ sub parse_c3_conf() {
                 undef $cluster_def;
                 $last_node_index = -1; 
             }
-            when (/^cluster\s+([a-zA-Z0-9_.]+)\s*{\s*(#.*)?$/) { # match begin cluster definition
-                #print "FOUND cluster:$1, comment:$2\n";
+            when (/^cluster\s+([a-zA-Z0-9_-]+)\s*{\s*(#.*)?$/) { # match begin cluster definition
+                # cluster:$1, comment:$2
                 $in_cluster_def=1;
                 $head_found=0;
                 $node_index=0; # node index
@@ -224,7 +226,7 @@ sub parse_c3_conf() {
                 $previous_range_start = -1;
                 $previous_range_end = -1;
             }
-            when (/^([a-zA-Z0-9_.]+)?:([a-zA-Z0-9_.]+)\s*(#.*)?/) { # match complex head or vcluster (entry with ':')
+            when (/^([a-zA-Z0-9.-]+)?:([a-zA-Z0-9.-]+)\s*(#.*)?/) { # match complex head or vcluster (entry with ':')
                 if( $head_found == 0 ) {
                     $head_found=1;
                     my $node;
@@ -242,7 +244,7 @@ sub parse_c3_conf() {
                     die "ERROR: head already defined: $line_num [$line]\n";
                 }
             }
-            when (/^([a-zA-Z0-9_.]+)(\[(\d+)-(\d+)\])\s*(#.*)?$/) { # match node range
+            when (/^([a-zA-Z0-9.-]+)(\[(\d+)-(\d+)\])\s*(#.*)?$/) { # match node range
                 # node name: $1, complete range:$2, range start:$3, range end:$4, comment: $5
                 die "ERROR: node found outside cluster definition at line: $line_num [$line]\n" if($in_cluster_def==0);
                 die "ERROR: vlcuster definition do not include nodes at line: $line_num [$line]\n" if (exists $cluster_def->{'vcluster'});
@@ -253,7 +255,7 @@ sub parse_c3_conf() {
                 my $range_comment = $5;
 
                 # exclude[0-9] is a node range. exclude [0-9] is an exclude range. (space before the range).
-                print "WARNING: node basename is 'exclude'. Is it what you want?" if( $1 eq "exclude" );
+                warn "WARNING: node basename is 'exclude' in cluster at line $line_num. Is it what you want?" if( $1 eq "exclude" );
 
                 for (my $nodenum = $3; $nodenum <= $4; $nodenum++) {
                     my $node;
@@ -262,12 +264,16 @@ sub parse_c3_conf() {
                     $node->{'name'} = $1.$nodenum;
                     $node->{'status'} = "online";
                     $cluster_def->{'nodes'}[$node_index] = $node;
-                    #$current_node=$1; # Don't keep this if head_node.
                     $last_node_index = $node_index; # keep track of the last node entry in the cluster hash so we know were to append comments only lines
                     $node_index++;
                 }
             }
-            when (/(^#.*)|(^$)/) { # Match comment lines or empty lines
+            when (/^$/) {
+                die "ERROR: Empty line found within cluster definition at line ".$line_num if($in_cluster_def==1);
+                push (@c3_conf, $line);
+            }
+            #when (/(^#.*)|(^$)/) { # Match comment lines or empty lines
+            when (/(^#.*)/) { # Match comment lines
                 #print "COMMENT: $line\n";
                 if($in_cluster_def==1) {
                     if($last_node_index > -1) { # we have a node definition in our hash, we can append this line to its comment
@@ -283,17 +289,13 @@ sub parse_c3_conf() {
                         } else { # This comment is before head definition. Attach to cluster begin comment.
                             $cluster_def->{'start_comment'} .= "\n\t".$line;
                         }
-#                        $cluster_def->{'nodes'}[$node_index] = $line;
-#                        $node_index++;
                     }
                 } else {
-#                    $c3_conf[$cluster_index]=$line;
-#                    $cluster_index++;
                     push (@c3_conf, $line);
                 }
             }
             default {
-                die "ERROR: UNMATCHED LINE: [$line]\n";
+                die "ERROR: Unexpected content at line: $line_num [$line]\n";
             }
 
         }
@@ -312,9 +314,9 @@ sub print_exclude_range($$) {
     my($exclude_start,$exclude_end) = @_;
     if($exclude_start>-1) {
         if ($exclude_start == $exclude_end) { # Single entry
-             print "\texclude $exclude_start\n";
+             print NEW_C3_CONF "\texclude $exclude_start\n";
         } else {
-             print "\texclude [$exclude_start-$exclude_end]\n";
+             print NEW_C3_CONF "\texclude [$exclude_start-$exclude_end]\n";
         }
     }
 }
@@ -337,7 +339,7 @@ sub print_previous_node_range($$$$$$) {
     if($range_end-$range_start > 0) {
 
         # We print the node range.
-        print "\t$range_name"."[".$range_start."-".$range_end."]".$range_comment."\n";
+        print NEW_C3_CONF "\t$range_name"."[".$range_start."-".$range_end."]".$range_comment."\n";
 
         # scan this range to see if we have to write some ecxlude rules.
         my $exclude_start=-1;
@@ -376,7 +378,7 @@ sub print_previous_node_range($$$$$$) {
             $range_name = "dead $range_name" if ($cluster->{'nodes'}[$element_idx_start]->{'status'} eq "dead");
             my $number="";
             $number = $range_start if ($range_start >= 0);
-            print "\t$range_name".$number." ".$range_comment."\n";
+            print NEW_C3_CONF "\t$range_name".$number." ".$range_comment."\n";
         }
     }
 
@@ -390,6 +392,15 @@ sub print_previous_node_range($$$$$$) {
 sub write_c3_conf (@) {
     my @c3_conf = @_;
     my $comment;
+
+    # 1st Open the File for overwriting.
+    if($dryrun) { # Dry Run => print to stdout.
+        *NEW_C3_CONF = *STDOUT;
+    } else {
+        die "ERROR: Can't create $c3conf~ backup: ".$!."\n" if ( ! copy($c3conf,$c3conf."~"));
+        open(NEW_C3_CONF, ">", $c3conf) or die "Can't open config file $c3conf for writing: $!";
+    }
+
     for my $element (@c3_conf) {
         if (ref($element) eq 'HASH') { # A cluster definition
             my %cluster = %{$element};
@@ -402,19 +413,19 @@ sub write_c3_conf (@) {
             # Print the "cluster" line.
             $comment = "";
             $comment = " ".$cluster{'start_comment'} if (exists($cluster{'start_comment'}));
-            print "cluster $cluster{'name'} {$comment\n";
+            print NEW_C3_CONF "cluster $cluster{'name'} {$comment\n";
 
             # Print the cluster head (or vlcuster definition).
             if(exists $cluster{'vcluster'}) {
                 $comment = "";
                 $comment = " ".$cluster{'vcluster'}->{'comment'} if (exists($cluster{'vcluster'}->{'comment'}));
-                print "\t:".$cluster{'vcluster'}->{'name'}.$comment."\n";
+                print NEW_C3_CONF "\t:".$cluster{'vcluster'}->{'name'}.$comment."\n";
             } else { # normal cluster.
                 $comment = "";
                 $comment = " ".$cluster{'head'}->{'comment'} if (exists($cluster{'head'}->{'comment'}));
                 my $name = $cluster{'head'}->{'name'};
                 $name .= ":".$cluster{'head'}->{'private'} if(exists($cluster{'head'}->{'private'}));
-                print "\t".$name.$comment."\n";
+                print NEW_C3_CONF "\t".$name.$comment."\n";
             }
 
             # Print the nodes entries (or only comments in case of vcluster).
@@ -425,7 +436,7 @@ sub write_c3_conf (@) {
                     # Trick is to prepend a "!" to the name so it stays at the 1st place during the sort.
                     if($cluster{'nodes'}[0]->{'status'} eq 'dead') {
                         # get the basename of all other nodes.
-                        my @basenames = map { $_->{'name'}=~/^([a-zA-Z_.]+)[0-9]*$/ } @{$cluster{'nodes'}};
+                        my @basenames = map { $_->{'name'}=~/^([a-zA-Z-.]+)[0-9]*$/ } @{$cluster{'nodes'}};
                         if (! ($basenames[0] ~~ @basenames[1..scalar(@basenames)-1])) { # basename of 1st node not found in other nodes. this is probably a dummy entry.
                             # prepend a "!" to the name so it stay 1st after sorting.
                             $cluster{'nodes'}[0]->{'name'} = "!".$cluster{'nodes'}[0]->{'name'}; # "!" is not allowed in hostname: we're sure it'll be uniq.
@@ -437,56 +448,57 @@ sub write_c3_conf (@) {
                     # 3rd: map  { $_->[0] } : get original element back.(drop basename and number we used to make the sort).
                     @{$cluster{'nodes'}} = map  { $_->[0] }
                                            sort {$a->[1] cmp $b->[1] || $a->[2] <=> $b->[2] }
-                                           map  {[$_,$_->{'name'}=~/^([a-zA-Z_.]+)([0-9]*)$/] }
+                                           map  {[$_,$_->{'name'}=~/^([a-zA-Z-.]+)([0-9]*)$/] }
                                            @{$cluster{'nodes'}};
                     # If 1st node name starts with a "!", we need to remove this prepending "!" used to trick the sort keeping in place the dummy entry.
                     if( $cluster{'nodes'}[0]->{'name'} =~ /^!(.*)$/ ) {
                         $cluster{'nodes'}[0]->{'name'} = $1;
                     }
                 }
+#                my $last_comment="";
                 for (my $element_idx=0; $element_idx < scalar(@{$cluster{'nodes'}}); $element_idx++) { # need to work with indexes
-                   if(ref($cluster{'nodes'}[$element_idx]) eq 'HASH') { # not a comment
-                        my %node = %{$cluster{'nodes'}[$element_idx]};
-                        my $comment = "";
-                        $comment = " ".$node{'comment'} if(exists( $node{'comment'}));
+                    my %node = %{$cluster{'nodes'}[$element_idx]};
+                    my $comment = "";
+                    $comment = " ".$node{'comment'} if(exists( $node{'comment'}));
 
-                        # check if node ends with a number (can we use a range?)
-                        if ( $node{'name'} =~ /^([A-Za-z_.-]+)((0*)([0-9]+[0-9]*))$/ ) { # in a node range. 
-                            # $1: node basename - $2:$3.$4 - $3: number of zeros to append to basename - $4: node number.
-                            if (($range_name eq $1.$3) && ($4-$range_end == 1)) { # still in same range name and indexes contiguous.
-                                $range_end++;
-                                if (exists ( $node{'comment'})) {
-                                    $range_comment .= "\n" if ($range_comment ne "");
-                                    $range_comment .= "\t".$node{'comment'};
-                                }
-                            } else { # not the same range name or indexes not contiguous. Time to print range and reset indexes.
-                                # 1st print previous range if any.
-                                print_previous_node_range(\%cluster, $element_idx_start, $range_name, $range_start, $range_end, $range_comment);
-                                # Reset the range to the new value.
-                                $element_idx_start = $element_idx; # Keep track of the starting element.
-                                $range_name = $1.$3;             # common name including index leading zeros.
-                                $range_start = $4;               # range start.
-                                $range_end = $range_start;       # range end (at this pont, start and end are the same.
-                                $range_comment = $comment;       # Keep track of comment if any.
+                    # check if node ends with a number (can we use a range?)
+                    if ( $node{'name'} =~ /^([A-Za-z.-]+)((0*)([0-9]+[0-9]*))$/ ) { # in a node range. 
+                        # $1: node basename - $2:$3.$4 - $3: number of zeros to append to basename - $4: node number.
+                        if (($range_name eq $1.$3) && ($4-$range_end == 1)) { # still in same range name and indexes contiguous.
+                            $range_end++;
+                            if (exists ( $node{'comment'})) {
+                                $range_comment .= "\n" if (($range_comment ne "") && ($node{'comment'} !~ /^\n.*/));
+                                $range_comment .= "\t".$node{'comment'};
+#                                $last_comment = $node{'comment'};
                             }
-                        } else { # current element is a simple node:
-                            # 1st print previous range or node if any.
+                        } else { # not the same range name or indexes not contiguous. Time to print range and reset indexes.
+#                            if($range_comment ne $last_comment) {
+#                                # Remove the 1st \n so comments start aside range
+#                                $range_comment =~ s/^\n//;
+#                                print "FOUND [$range_comment] [$last_comment]\n";
+#                            }
+                            # 1st print previous range if any.
                             print_previous_node_range(\%cluster, $element_idx_start, $range_name, $range_start, $range_end, $range_comment);
-                            # Clear printed range.
-                            $element_idx_start=$element_idx;
-                            $range_start=-1;
-                            $range_end=-1;
-                            $range_name="";
-                            $range_comment="";
-                            # print the simple node:
-                            $range_comment=$cluster{'nodes'}[$element_idx]->{'comment'} if(defined($cluster{'nodes'}[$element_idx]->{'name'}));
-                            $range_name=$cluster{'nodes'}[$element_idx]->{'name'};
+                            # Reset the range to the new value.
+                            $element_idx_start = $element_idx; # Keep track of the starting element.
+                            $range_name = $1.$3;             # common name including index leading zeros.
+                            $range_start = $4;               # range start.
+                            $range_end = $range_start;       # range end (at this pont, start and end are the same.
+                            $range_comment = $comment;       # Keep track of comment if any.
                         }
-
-
-                    } else { # simple comment (not a node)
-                        print "\t".$cluster{'nodes'}[$element_idx]."\n";
-                    } # End node print
+                    } else { # current element is a simple node:
+                        # 1st print previous range or node if any.
+                        print_previous_node_range(\%cluster, $element_idx_start, $range_name, $range_start, $range_end, $range_comment);
+                        # Clear printed range.
+                        $element_idx_start=$element_idx;
+                        $range_start=-1;
+                        $range_end=-1;
+                        $range_name="";
+                        $range_comment="";
+                        # print the simple node:
+                        $range_comment=$cluster{'nodes'}[$element_idx]->{'comment'} if(defined($cluster{'nodes'}[$element_idx]->{'name'}));
+                        $range_name=$cluster{'nodes'}[$element_idx]->{'name'};
+                    }
                 } # End cluster nodes or element print
             } # end  print cluster content.
 
@@ -495,12 +507,12 @@ sub write_c3_conf (@) {
 
             # Print closing bracket.
             if(exists $cluster{'end_comment'}) {
-                print "} ".$cluster{'end_comment'}."\n";
+                print NEW_C3_CONF "} ".$cluster{'end_comment'}."\n";
             } else {
-                print "}\n";
+                print NEW_C3_CONF "}\n";
             }
         } else { # comment
-            print $element."\n";
+            print NEW_C3_CONF $element."\n";
         }
     }
 }
@@ -533,7 +545,7 @@ sub expand_nodes(@) {
     my @expanded_nodes = ();
     for my $node (@unexpanded_nodes) {
         chomp($node);
-        if ( $node =~ /^([a-zA-Z0-9_.]+)(\[(\d+)-(\d+)\])$/) { # match node range
+        if ( $node =~ /^([a-zA-Z0-9.-]+)(\[(\d+)-(\d+)\])$/) { # match node range
             # node name: $1, complete range:$2, range start:$3, range end:$4
             for (my $i=$3; $i <= $4; $i++) {
                 push (@expanded_nodes, $1.$i);
@@ -651,7 +663,6 @@ sub get_cluster($) {
 #
 ################################################################################
 
-
 # Read the config file.
 @clusters = parse_c3_conf();
 
@@ -683,7 +694,7 @@ given ($command) {
 write_c3_conf(@clusters);
     }
     when ('delcluster') {
-        print "delcluster";
+        # print "delcluster";
         die "ERROR: cluster not specified" if (! defined($target_cluster));
         die "ERROR: unknown cluster" if ( $target_cluster ~~ get_cluster_names() );
         for (my $i; $i < scalar(@clusters); $i++) {
@@ -726,17 +737,17 @@ write_c3_conf(@clusters);
 write_c3_conf(@clusters);
     }
     when ('disablenodes') {
-        print "disablenodes";
+        # print "disablenodes";
         set_nodes_status(\&set_node_dead);
 write_c3_conf(@clusters);
     }
     when ('enablenodes') {
-        print "enablenodes";
+        # print "enablenodes";
         set_nodes_status(\&set_node_alive);
 write_c3_conf(@clusters);
     }
     when ('update') {
-        print "update";
+        # print "update";
         set_nodes_status(\&set_node_ping);
 write_c3_conf(@clusters);
     }
