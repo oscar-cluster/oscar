@@ -334,10 +334,23 @@ sub print_exclude_range($$) {
 #
 ################################################################################
 
-sub print_previous_node_range($$$$$$) {
-    my ($cluster, $element_idx_start, $range_name, $range_start, $range_end, $range_comment) = @_;
-    if($range_end-$range_start > 0) {
+sub print_previous_node_range($$$$$$$) {
+    my ($cluster, $element_idx_start, $range_name, $range_start, $range_end, $range_comment, $last_node_comment) = @_;
 
+    # We want to print all nodes comments aside the range.
+    # If a comment was just after the last node in the range it'll be attached to that node.
+    # At this point, the only thing we can do is:
+    # If range_comment doesn't exists and last node comment starts with a \n (chencked before this call)
+    # Then it was below the last node, so we keep the \n
+    if(($range_comment ne $last_node_comment) && ($range_start >= 0)) {
+        # Remove the leading \s*\n\s* so comments start aside range
+        $range_comment =~ s/^\s*#/ #/; # Clean leading trash.
+    } else {
+        $range_comment =~ s/^[ \t]*#/ #/; # Keep just one space before comment.(keep \n)
+    }
+
+    if($range_end-$range_start > 0) {
+        $range_comment = $range_comment if ($range_comment ne "");
         # We print the node range.
         print NEW_C3_CONF "\t$range_name"."[".$range_start."-".$range_end."]".$range_comment."\n";
 
@@ -409,6 +422,7 @@ sub write_c3_conf (@) {
             my $range_end=-1;
             my $range_name="";
             my $range_comment="";
+            my $last_comment="";
 
             # Print the "cluster" line.
             $comment = "";
@@ -455,11 +469,10 @@ sub write_c3_conf (@) {
                         $cluster{'nodes'}[0]->{'name'} = $1;
                     }
                 }
-#                my $last_comment="";
                 for (my $element_idx=0; $element_idx < scalar(@{$cluster{'nodes'}}); $element_idx++) { # need to work with indexes
                     my %node = %{$cluster{'nodes'}[$element_idx]};
                     my $comment = "";
-                    $comment = " ".$node{'comment'} if(exists( $node{'comment'}));
+                    $comment = $node{'comment'} if(exists( $node{'comment'})); # BUG (leading space)
 
                     # check if node ends with a number (can we use a range?)
                     if ( $node{'name'} =~ /^([A-Za-z.-]+)((0*)([0-9]+[0-9]*))$/ ) { # in a node range. 
@@ -469,16 +482,11 @@ sub write_c3_conf (@) {
                             if (exists ( $node{'comment'})) {
                                 $range_comment .= "\n" if (($range_comment ne "") && ($node{'comment'} !~ /^\n.*/));
                                 $range_comment .= "\t".$node{'comment'};
-#                                $last_comment = $node{'comment'};
+                                $last_comment = $node{'comment'};
                             }
                         } else { # not the same range name or indexes not contiguous. Time to print range and reset indexes.
-#                            if($range_comment ne $last_comment) {
-#                                # Remove the 1st \n so comments start aside range
-#                                $range_comment =~ s/^\n//;
-#                                print "FOUND [$range_comment] [$last_comment]\n";
-#                            }
                             # 1st print previous range if any.
-                            print_previous_node_range(\%cluster, $element_idx_start, $range_name, $range_start, $range_end, $range_comment);
+                            print_previous_node_range(\%cluster, $element_idx_start, $range_name, $range_start, $range_end, $range_comment, $last_comment);
                             # Reset the range to the new value.
                             $element_idx_start = $element_idx; # Keep track of the starting element.
                             $range_name = $1.$3;             # common name including index leading zeros.
@@ -488,7 +496,7 @@ sub write_c3_conf (@) {
                         }
                     } else { # current element is a simple node:
                         # 1st print previous range or node if any.
-                        print_previous_node_range(\%cluster, $element_idx_start, $range_name, $range_start, $range_end, $range_comment);
+                        print_previous_node_range(\%cluster, $element_idx_start, $range_name, $range_start, $range_end, $range_comment, $last_comment);
                         # Clear printed range.
                         $element_idx_start=$element_idx;
                         $range_start=-1;
@@ -503,7 +511,7 @@ sub write_c3_conf (@) {
             } # end  print cluster content.
 
             # Print last elements.
-            print_previous_node_range(\%cluster, $element_idx_start, $range_name, $range_start, $range_end, $range_comment);
+            print_previous_node_range(\%cluster, $element_idx_start, $range_name, $range_start, $range_end, $range_comment, $last_comment);
 
             # Print closing bracket.
             if(exists $cluster{'end_comment'}) {
