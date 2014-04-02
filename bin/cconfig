@@ -266,6 +266,7 @@ sub parse_c3_conf() {
                     $range_comment = ""; # Clear comment after 1st node so comment is set on 1st node only.
                     $node->{'name'} = $1.$nodenum;
                     $node->{'status'} = "online";
+                    refresh_node_status_if_needed(\$node, $cluster_def->{'name'});
                     $cluster_def->{'nodes'}[$node_index] = $node;
                     $last_node_index = $node_index; # keep track of the last node entry in the cluster hash so we know were to append comments only lines
                     $node_index++;
@@ -305,6 +306,29 @@ sub parse_c3_conf() {
     }
     close(C3CONF);
     return(@c3_conf);
+}
+
+################################################################################
+#
+# refresh_node_status_if_needed. Refresh the node status if all conditions are met:
+#  1/ --refreshstate is used
+#  2/ cluster name matches $target_cluster if $target_cluster is defined
+#  3/ node name is part of @target_nodes if @target_nodes is defined.
+#
+#  input:
+#    $node: a hash node ref
+#    $cluster_name: the name of the cluster that needs to be matched against $target_cluster
+#
+################################################################################
+
+sub refresh_node_status_if_needed($$) {
+    my $node = shift;
+    my $cluster_name = shift;
+    return if (! defined($refreshstate)); # Don't do anything, the option is not set.
+    return if (defined($target_cluster) && ($cluster_name !~ /$target_cluster/i)); # doesn't match --cluster
+    return if ((scalar(@target_nodes) > 0) && !(lc($$node->{'name'}) ~~ @target_nodes)); # doesn't match --nodes
+    die "ERROR: --nodes used without --cluster" if (!defined($target_cluster) && (scalar(@target_nodes) > 0));
+    set_node_ping($node);
 }
 
 ################################################################################
@@ -451,14 +475,12 @@ sub write_c3_conf (@) {
                     # We only sort of $target_cluster is not defined or if $cluster{'name'} is the defined $target_cluster.
                     # 1st, check 1st element. If dead, it may be a dummy entry for avoiding 0 indexing.
                     # Trick is to prepend a "!" to the name so it stays at the 1st place during the sort.
-                    if($cluster{'nodes'}[0]->{'status'} eq 'dead') {
-                        # get the basename of all other nodes.
-                        my @basenames = map { $_->{'name'}=~/^([a-zA-Z.-]+)[0-9]*$/ } @{$cluster{'nodes'}};
-                        if (! ($basenames[0] ~~ @basenames[1..scalar(@basenames)-1])) { # basename of 1st node not found in other nodes. this is probably a dummy entry.
-                            # prepend a "!" to the name so it stay 1st after sorting.
-                            $cluster{'nodes'}[0]->{'name'} = "!".$cluster{'nodes'}[0]->{'name'}; # "!" is not allowed in hostname: we're sure it'll be uniq.
-                        }
+
+                    if( ! using_zero_indexing(@{$cluster{'nodes'}}) ) {
+                        # prepend a "!" to the name so it stay 1st after sorting.
+                        $cluster{'nodes'}[0]->{'name'} = "!".$cluster{'nodes'}[0]->{'name'}; # "!" is not allowed in hostname: we're sure it'll be uniq.
                     }
+
                     # Sorting steps:
                     # 1st: map {[$_,$_->{'name'}=~/^([a-zA-Z_.]+)([0-9]+)$/] } : create [$_, node basename, node number if any]
                     # 2nd: sort {$a->[1] cmp $b->[1] || $a->[2] <=> $b->[2] }  : compare nodes basenames. If equals, compare nodes numbers.
@@ -475,7 +497,7 @@ sub write_c3_conf (@) {
                 for (my $element_idx=0; $element_idx < scalar(@{$cluster{'nodes'}}); $element_idx++) { # need to work with indexes
                     my %node = %{$cluster{'nodes'}[$element_idx]};
                     my $comment = "";
-                    $comment = $node{'comment'} if(exists( $node{'comment'})); # BUG (leading space)
+                    $comment = $node{'comment'} if(exists( $node{'comment'}));
 
                     # check if node ends with a number (can we use a range?)
                     if ( $node{'name'} =~ /^([A-Za-z.-]+)((0*)([0-9]+[0-9]*))$/ ) { # in a node range. 
@@ -526,6 +548,30 @@ sub write_c3_conf (@) {
             print NEW_C3_CONF $element."\n";
         }
     }
+}
+
+################################################################################
+#
+# using_zero_indexing: Check if index 0 of a given node hash array is a dummy entry
+# => return 1 if we use 0-indexing (no fake entry).
+#
+################################################################################
+
+sub using_zero_indexing(@) {
+    my @nodes = @_;
+    if($nodes[0]->{'status'} eq 'dead') {
+        # get the basename of all other nodes.
+        my @basenames = map { $_->{'name'}=~/^([a-zA-Z.-]+)[0-9]*$/ } @nodes;
+        if (! ($basenames[0] ~~ @basenames[1..scalar(@basenames)-1])) { # basename of 1st node not found in other nodes. this is probably a dummy entry.
+             if( ! defined(gethostbyname($basenames[0])) ) { # if it resolvs, then we assume it's a normal node anyway.
+                 return 0; # 1st entry is 1:dead, 2:uniq basename, 3:doesn't resolv
+                           # => fake entry to avoid 0-indexing.
+             } # else, it resolves, this is a normal node.
+        } # else, other nodes have the same basename, this is a normal node.
+    } # else, status is not dead, this is a normal node.
+    return 1; # At least, one of 1:dead, 2:uniq basename, 3:doesn't resolv
+              # condition is not met => Assume node index 0 is a normal node.
+              # We are in a 0-indexing situation.
 }
 
 ################################################################################
@@ -601,10 +647,10 @@ sub expand_nodes(@) {
         if ( $node =~ /^([a-zA-Z0-9.-]+)(\[(\d+)-(\d+)\])$/) { # match node range
             # node name: $1, complete range:$2, range start:$3, range end:$4
             for (my $i=$3; $i <= $4; $i++) {
-                push (@expanded_nodes, $1.$i);
+                push (@expanded_nodes, lc($1.$i)); # lowercase the node at the same time
             }
         } else { # simple node
-            push (@expanded_nodes, $node);
+            push (@expanded_nodes, lc($node));
         }
     }
     return(@expanded_nodes);
@@ -631,17 +677,20 @@ sub add_node($$;$$) {
             if($name ~~ @nodenames) { # Node already exists in this cluster.
                 for my $node (@{$element->{'nodes'}}) { # Find the node
                     if($node->{'name'} =~ /$name/i) {
-                        set_node_alive(\$node); # enable it
+                        set_node_alive(\$node) if (! defined($refreshstate)); # enable it (except if --refreshstate
+                                                                              # is used as the status has already been
+                                                                              #  updated when parsing c3.conf)
                         last;
                     }
                 }
             } else { # This s a new node. Adding it.
-                my %new_node;
-                $new_node{'name'} = $name;
-                $new_node{'status'} = "online";
-                $new_node{'status'} = $status if (defined($status));
-                $new_node{'comment'} = $comment if (defined($comment));
-                push($element->{'nodes'}, \%new_node);
+                my $new_node;
+                $new_node->{'name'} = $name;
+                $new_node->{'status'} = "online";
+                $new_node->{'status'} = $status if (defined($status));
+                $new_node->{'comment'} = $comment if (defined($comment));
+                refresh_node_status_if_needed(\$new_node, $element->{'name'}); # if --refreshstate is used, update status.
+                push($element->{'nodes'}, $new_node);
             }
             return 0; # Node added, no need to continue with remaining clusters.
         }
@@ -735,16 +784,33 @@ sub check_host_resolvs_or_die($) {
 }
 
 ################################################################################
+# 
+# nodes_in_cluster_or_die: Check that @target_nodes are part of $target_cluster.
+#
+################################################################################
+sub nodes_in_cluster_or_die() {
+    my $cluster_ref = get_cluster($target_cluster);
+    my @cluster_node_names = map { $_->{'name'} } @{$$cluster_ref->{'nodes'}};
+    my @unknown_nodes = ();
+    for my $node (@target_nodes) {
+        if (!($node ~~ @cluster_node_names)) { # Node unknown.
+            push(@unknown_nodes, $node);
+        }
+    }
+    die "ERROR: Nodes [ ".join(" ",@unknown_nodes)." ] do not belong to cluster [$target_cluster]\n" if(scalar(@unknown_nodes) > 0);
+}
+
+################################################################################
 #
 # MAIN
 #
 ################################################################################
 
-# Read the config file.
-@clusters = parse_c3_conf();
-
 # Prepare target_nodes table.
 @target_nodes = expand_nodes(@target_nodes);
+
+# Read the config file.
+@clusters = parse_c3_conf();
 
 # Check what must be done.
 given ($command) {
@@ -837,19 +903,28 @@ write_c3_conf(@clusters);
     when ('disablenodes') {
         # print "disablenodes";
         check_options_or_die('disablenodes', 'zero', 'noresolv');
+        die "ERROR: --nodes used without --cluster" if (scalar(@target_nodes)> 0 && !defined($target_cluster));
+        die "ERROR: unknown cluster [$target_cluster]" if (defined($target_cluster) && !defined(get_cluster($target_cluster)));
         set_nodes_status(\&set_node_dead);
 write_c3_conf(@clusters);
     }
     when ('enablenodes') {
         # print "enablenodes";
         check_options_or_die('enablenodes', 'zero');
+        die "ERROR: --nodes used without --cluster" if (scalar(@target_nodes)> 0 && !defined($target_cluster));
+        die "ERROR: unknown cluster [$target_cluster]" if (defined($target_cluster) && !defined(get_cluster($target_cluster)));
         set_nodes_status(\&set_node_alive);
 write_c3_conf(@clusters);
     }
     when ('update') {
         # print "update";
         # check_options_or_die('update', ); # => Accept all options.
-        set_nodes_status(\&set_node_ping);
+        #set_nodes_status(\&set_node_ping);
+        # => Do nothing! all relevant options are used by c3.conf parser and writer.
+        # FIXME: check that --nodes doesn't specify nodes that are not relevant for the specified cluster.
+        die "ERROR: --nodes used without --cluster" if (scalar(@target_nodes)> 0 && !defined($target_cluster));
+        die "ERROR: unknown cluster [$target_cluster]" if (defined($target_cluster) && !defined(get_cluster($target_cluster)));
+        nodes_in_cluster_or_die() if (scalar(@target_nodes)> 0);
 write_c3_conf(@clusters);
     }
     when ('listnodes') {
