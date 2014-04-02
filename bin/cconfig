@@ -575,6 +575,8 @@ sub expand_nodes(@) {
 sub add_node($$;$$) {
     my ($cluster, $name, $status, $comment) = @_;
     my %new_node;
+    $name = lc $name;
+    die "ERROR: Invalid node name: [$name]\n" if ($name !~ /^[a-z]+[a-z0-9.-]*$/) # Check for valid hostname
     $new_node{'name'} = $name;
     $new_node{'status'} = "online";
     $new_node{'status'} = $status if (defined($status));
@@ -788,3 +790,178 @@ write_c3_conf(@clusters);
 
 #write_c3_conf(@clusters);
 exit 0;
+
+__END__
+
+=head1 NAME
+
+cconfig, a command line tool for managing c3 configuration file.
+
+=head1 SYNOPSIS
+
+cconfig COMMAND OPTIONS
+
+=head1 DESCRIPTION
+
+cconfig is a command line tool for managing c3 configuration file from
+adding nodes or cluster to node status update or syntax optimisation. 
+
+=head1 SYNTAX
+
+cconfig command [options]
+
+=head1 COMMANDS
+
+Available commands are:
+
+=over 8
+
+=item addcluster
+
+Adds a cluster to the c3 configuration file in last position by default.
+Must be used with the --cluster and --nodes options.
+
+Ranges in the form basename[#min-#max] are accepted.
+padding is not yet supported. For a padding of 3 digit for a 500 nodes
+cluster, you need to use: node00[0-9] node0[10-99] node[100-499]
+
+example: cconfig addcluster --cluster my_cluster --nodes nodes0[0-9] nodes[10-49]
+
+=item delcluster
+
+Removes a cluster from the c3 configuration file.
+Must be used with the --cluster option.
+
+example: cconfig delcluster --cluster my_cluster
+
+=item addnodes
+
+Add node(s) to a cluster.
+If a node was marked dead, the node is marked back to alive.
+Requires the --cluster and --nodes options.
+
+example: cconfig addnodes --cluster my_cluster --nodes foo bar rack1-[1-22] rack2-[1-22]
+
+=item delnodes
+
+Remove node(s) from a cluster
+Requires the --cluster and --nodes option.
+
+example: cconfig delnodes --cluster my_cluster --nodes foo bar
+
+=item disablenodes
+
+Mark nodes as dead (or excluded if part of a range)
+--cluster is optional
+--nodes <nodenames> is optional (requires --cluster if used).
+
+example:
+    cconfig disablenodes --cluster my_cluster --nodes rack1-[1-22]
+
+=item enablenodes
+
+Mark nodes back to life.
+--cluster is optional (usefull to re-enable all nodes for all clusters)
+--nodes <nodenames> is optional (requires --cluster if used).
+
+example:
+    cconfig enablenodes --cluster my_cluster --nodes rack1-[1-22]
+
+=item update
+
+Update config file (usefull to sort nodes or update status)
+--cluster is optional
+--nodes <nodenames> is optional (requires --cluster if used).)
+
+example: Sorting all nodes in clusters definitions:
+    cconfig update --sortnodes
+
+=item listnodes
+
+Lists active nodes in cluster
+Requires the --cluster option
+
+example:
+    cconfig listnodes --cluster my_cluster
+
+=item listclusters
+
+Lists defined clusters
+
+example:
+    cconfig listclusters
+
+=item --version
+
+Print version information
+
+=item --help|h|?
+
+Print usage Information (this)
+
+=back
+
+=head1 OPTIONS
+
+Recognized options are:
+
+=over 8
+
+=item --cluster <clustername>
+
+Specify the cluster name to work with.
+
+=item --default
+
+Set this cluster as default cluster. (Move it to the top of c3.conf).
+Only available for update or addcluster.
+
+=item --dry-run -n
+
+Output restult to stdout instead of updating config file.
+
+=item --file -f <file>
+
+Use alternative config file.
+
+
+=item --refreshstate
+
+Update each nodes status (dead or alive) using ping -c1.
+
+=item --sortnodes
+
+Sort the nodes in cluster definitions.
+(Can be used with --cluster option to restrict the sort to that cluster)
+
+=item --nodes
+
+List of nodes to works with (space separated)
+
+Ranges in the form basename[#min-#max] are accepted.
+padding is not yet supported. For a padding of 3 digit for a 500 nodes
+cluster, you need to use: node00[0-9] node0[10-99] node[100-499]
+
+=item --zero|z|0
+
+Force 0-indexing (do not insert dummy dead entry)
+Can be used with update and addcluster commands.
+(can be used with --cluster option to restrict the change to that cluster.
+without specifying any cluster, the change affects all clusters.
+
+=item --nozero|noz|no0
+
+Use dummy dead entry for node index 0 so indexing starts at 1.
+
+=back
+
+=head1 AUTHOR
+
+Olivier LAHAYE <olivier.lahaye@cea.fr>
+
+=head1 SEE ALSO
+
+c3.conf(5) c3(1) perl(1)
+
+=cut
+
