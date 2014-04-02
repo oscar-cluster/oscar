@@ -450,7 +450,7 @@ sub write_c3_conf (@) {
                     # Trick is to prepend a "!" to the name so it stays at the 1st place during the sort.
                     if($cluster{'nodes'}[0]->{'status'} eq 'dead') {
                         # get the basename of all other nodes.
-                        my @basenames = map { $_->{'name'}=~/^([a-zA-Z-.]+)[0-9]*$/ } @{$cluster{'nodes'}};
+                        my @basenames = map { $_->{'name'}=~/^([a-zA-Z.-]+)[0-9]*$/ } @{$cluster{'nodes'}};
                         if (! ($basenames[0] ~~ @basenames[1..scalar(@basenames)-1])) { # basename of 1st node not found in other nodes. this is probably a dummy entry.
                             # prepend a "!" to the name so it stay 1st after sorting.
                             $cluster{'nodes'}[0]->{'name'} = "!".$cluster{'nodes'}[0]->{'name'}; # "!" is not allowed in hostname: we're sure it'll be uniq.
@@ -462,7 +462,7 @@ sub write_c3_conf (@) {
                     # 3rd: map  { $_->[0] } : get original element back.(drop basename and number we used to make the sort).
                     @{$cluster{'nodes'}} = map  { $_->[0] }
                                            sort {$a->[1] cmp $b->[1] || $a->[2] <=> $b->[2] }
-                                           map  {[$_,$_->{'name'}=~/^([a-zA-Z-.]+)([0-9]*)$/] }
+                                           map  {[$_,$_->{'name'}=~/^([a-zA-Z.-]+)([0-9]*)$/] }
                                            @{$cluster{'nodes'}};
                     # If 1st node name starts with a "!", we need to remove this prepending "!" used to trick the sort keeping in place the dummy entry.
                     if( $cluster{'nodes'}[0]->{'name'} =~ /^!(.*)$/ ) {
@@ -574,20 +574,30 @@ sub expand_nodes(@) {
 
 sub add_node($$;$$) {
     my ($cluster, $name, $status, $comment) = @_;
-    my %new_node;
     $name = lc $name;
-    die "ERROR: Invalid node name: [$name]\n" if ($name !~ /^[a-z]+[a-z0-9.-]*$/) # Check for valid hostname
-    $new_node{'name'} = $name;
-    $new_node{'status'} = "online";
-    $new_node{'status'} = $status if (defined($status));
-    $new_node{'comment'} = $comment if (defined($comment));
+    die "ERROR: Invalid node name: [$name]\n" if ($name !~ /^[a-z]+[a-z0-9.-]*$/); # Check for valid hostname
     for my $element (@clusters) {
         if ((ref($element) eq 'HASH') && ($element->{'name'} eq $cluster)) {
             if ( ! defined ($element->{'nodes'}) ) { # No nodes yet, need to initialise entry.
                 my @nodes = ();
                 $element->{'nodes'} = \@nodes;
             }
-            push($element->{'nodes'}, \%new_node);
+            my @nodenames = map { $_->{'name'} } @{$element->{'nodes'}};
+            if($name ~~ @nodenames) { # Node already exists in this cluster.
+                for my $node (@{$element->{'nodes'}}) { # Find the node
+                    if($node->{'name'} eq $name) {
+                        set_node_alive(\$node); # enable it
+                        last;
+                    }
+                }
+            } else { # This s a new node. Adding it.
+                my %new_node;
+                $new_node{'name'} = $name;
+                $new_node{'status'} = "online";
+                $new_node{'status'} = $status if (defined($status));
+                $new_node{'comment'} = $comment if (defined($comment));
+                push($element->{'nodes'}, \%new_node);
+            }
             return 0; # Node added, no need to continue with remaining clusters.
         }
     }
@@ -637,7 +647,7 @@ sub set_nodes_status($) {
             my $start = 0;
 #            if(($element->{'nodes'}[0]->{'status'} eq 'dead') && ((scalar(@target_nodes) == 0) || !($element->{'nodes'}[0]->{'name'} ~~ @target_nodes))) { # If 1st node is dead (index 0, this may be a dummy entry). (If node exists in @target_nodes, we assume it's a normal node).
             if(($element->{'nodes'}[0]->{'status'} eq 'dead') && (scalar(@target_nodes) == 0)) { # If 1st node is dead (index 0, this may be a dummy entry). (if @target_nodes is not specified, we try to guess..
-                my @basenames = map { $_->{'name'}=~/^([a-zA-Z_.]+)[0-9]*$/ } @{$element->{'nodes'}}; # get all basenames
+                my @basenames = map { $_->{'name'}=~/^([a-zA-Z-.]+)[0-9]*$/ } @{$element->{'nodes'}}; # get all basenames
                 if (! ($basenames[0] ~~ @basenames[1..scalar(@basenames)-1])) { # basename of 1st node not found in other nodes. this is probably a dummy entry.
                     $start = 1; # Start at index 1.
                 }
