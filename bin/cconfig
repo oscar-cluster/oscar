@@ -205,7 +205,7 @@ sub parse_c3_conf() {
                 # comment: $1
                 $in_cluster_def=0;
                 $cluster_def->{'end_comment'} = $1 if ( $1 ne "" );
-                if ($default && ($cluster_def->{'name'} eq $target_cluster)) {
+                if ($default && ($cluster_def->{'name'} =~ /$target_cluster/i)) {
                     unshift(@c3_conf, $cluster_def);
                 } else {
                     push (@c3_conf, $cluster_def);
@@ -444,7 +444,7 @@ sub write_c3_conf (@) {
 
             # Print the nodes entries (or only comments in case of vcluster).
             if(defined $cluster{'nodes'}) { # there are some nodes that are defined.
-                if ((defined $sortnodes) && (! defined($target_cluster) || $cluster{'name'} eq $target_cluster)) { # need to sort nodes before working
+                if ((defined $sortnodes) && (! defined($target_cluster) || $cluster{'name'} =~ /$target_cluster/i)) { # need to sort nodes before working
                     # We only sort of $target_cluster is not defined or if $cluster{'name'} is the defined $target_cluster.
                     # 1st, check 1st element. If dead, it may be a dummy entry for avoiding 0 indexing.
                     # Trick is to prepend a "!" to the name so it stays at the 1st place during the sort.
@@ -577,7 +577,7 @@ sub add_node($$;$$) {
     $name = lc $name;
     die "ERROR: Invalid node name: [$name]\n" if ($name !~ /^[a-z]+[a-z0-9.-]*$/); # Check for valid hostname
     for my $element (@clusters) {
-        if ((ref($element) eq 'HASH') && ($element->{'name'} eq $cluster)) {
+        if ((ref($element) eq 'HASH') && ($element->{'name'} =~ /$cluster/i)) {
             if ( ! defined ($element->{'nodes'}) ) { # No nodes yet, need to initialise entry.
                 my @nodes = ();
                 $element->{'nodes'} = \@nodes;
@@ -585,7 +585,7 @@ sub add_node($$;$$) {
             my @nodenames = map { $_->{'name'} } @{$element->{'nodes'}};
             if($name ~~ @nodenames) { # Node already exists in this cluster.
                 for my $node (@{$element->{'nodes'}}) { # Find the node
-                    if($node->{'name'} eq $name) {
+                    if($node->{'name'} =~ /$name/i) {
                         set_node_alive(\$node); # enable it
                         last;
                     }
@@ -642,10 +642,9 @@ sub set_nodes_status($) {
     die "ERROR: Cannot restict to a node subset if cluster is not specified" if ((scalar(@target_nodes) > 0) && (! defined($target_cluster)));
     for my $element (@clusters) { # Loop on @clusters
         next if(ref($element) ne 'HASH'); # Ignore comments and empty lines.
-        next if(defined($target_cluster) && ($element->{'name'} ne $target_cluster)); # Ignore wrong clusters if --cluster was specified.
+        next if(defined($target_cluster) && ($element->{'name'} !~ /$target_cluster/i)); # Ignore wrong clusters if --cluster was specified.
         if ((defined ($element->{'nodes'})) && (scalar($element->{'nodes'}) > 0) ) { # If this cluster has some nodes (at least one).
             my $start = 0;
-#            if(($element->{'nodes'}[0]->{'status'} eq 'dead') && ((scalar(@target_nodes) == 0) || !($element->{'nodes'}[0]->{'name'} ~~ @target_nodes))) { # If 1st node is dead (index 0, this may be a dummy entry). (If node exists in @target_nodes, we assume it's a normal node).
             if(($element->{'nodes'}[0]->{'status'} eq 'dead') && (scalar(@target_nodes) == 0)) { # If 1st node is dead (index 0, this may be a dummy entry). (if @target_nodes is not specified, we try to guess..
                 my @basenames = map { $_->{'name'}=~/^([a-zA-Z-.]+)[0-9]*$/ } @{$element->{'nodes'}}; # get all basenames
                 if (! ($basenames[0] ~~ @basenames[1..scalar(@basenames)-1])) { # basename of 1st node not found in other nodes. this is probably a dummy entry.
@@ -653,7 +652,7 @@ sub set_nodes_status($) {
                 }
             }
             for (my $i=$start; $i < scalar(@{$element->{'nodes'}}); $i++) { # Scan the cluster nodes
-                if((scalar(@target_nodes) == 0) || ((scalar(@target_nodes) > 0) && ($element->{'nodes'}[$i]->{'name'} ~~ @target_nodes))) { # Filter if @nodes filter exists.
+                if((scalar(@target_nodes) == 0) || ((scalar(@target_nodes) > 0) && (lc($element->{'nodes'}[$i]->{'name'}) ~~ @target_nodes))) { # Filter if @nodes filter exists.
                     $sub_set_node_status->(\@{$element->{'nodes'}}[$i]);
                 }
             }
@@ -670,7 +669,7 @@ sub set_nodes_status($) {
 sub get_cluster($) {
     my $cluster_name = shift;
     for my $element (@clusters) {
-        if ((ref($element) eq 'HASH') && ($element->{'name'} eq $cluster_name)) { # Found
+        if ((ref($element) eq 'HASH') && ($element->{'name'} =~ /$cluster_name/i)) { # Found (cluster names are case insensitive)
             return \$element;
         }
     }
@@ -692,24 +691,37 @@ sub get_cluster($) {
 # Check what must be done.
 given ($command) {
     when ('addcluster') {
-        print "addcluster";
+        # print "addcluster";
+        die "ERROR: Invalid cluster name [$target_cluster]" if ($target_cluster !~ /\w+/);
+        die "ERROR: Cluster [$target_cluster] already exists!" if(get_cluster($target_cluster));
         push (@clusters, ""); # Add an empty line before the new cluster.
         my $new_cluster;
         die "ERROR: cluster not specified" if (! defined($target_cluster));
         $new_cluster->{'name'} = $target_cluster;
         $new_cluster->{'start_comment'} = "# Created on: ".localtime();
         die "ERROR: You need at least a head node" if ( scalar(@target_nodes) < 1 );
-        my $new_head;
-        $new_head->{'name'} = shift(@target_nodes);
-        $new_cluster->{'head'} = $new_head;
-        push (@clusters, $new_cluster); # Add the new cluster entry.(add_node needs that)
-        # If we do not use zero indexing. need to insert a dummy entry.
-        if (! $zero) {
-            add_node($target_cluster, "remove_for_0-indexing", "dead", "# remove this line for 0-indexing");
-        }
-        # Add the nodes.
-        for my $node (@target_nodes) {
-            add_node($target_cluster,$node);
+        if(@target_nodes[0] =~ /^:/) { # vcluster !!!
+            warn "WARNING: Ignoring zero/nozero option. This has no meaning for a virtual cluster" if (defined($zero));
+            die "ERROR: vclusters don't have nodes. Did you prepend 1st node with a colon inadvertently?" if (scalar(@target_nodes) > 1);
+            my $new_vcluster;
+            $new_vcluster->{'name'} = shift(@target_nodes);
+            $new_vcluster->{'name'} =~ s/^://;
+            die "ERROR: invalide remote cluster name: [$new_vcluster->{'name'}]" if ($new_vcluster->{'name'} !~ /^[a-z0-9.-]+$/i);
+            $new_cluster->{'vcluster'} = $new_vcluster;
+            push (@clusters, $new_cluster); # Add the new cluster entry.
+        } else {
+            my $new_head;
+            $new_head->{'name'} = shift(@target_nodes);
+            $new_cluster->{'head'} = $new_head;
+            push (@clusters, $new_cluster); # Add the new cluster entry.(add_node needs that)
+            # If we do not use zero indexing. need to insert a dummy entry.
+            if (! $zero) {
+                add_node($target_cluster, "remove_for_0-indexing", "dead", "# remove this line for 0-indexing");
+            }
+            # Add the nodes.
+            for my $node (@target_nodes) {
+                add_node($target_cluster,$node);
+            }
         }
 write_c3_conf(@clusters);
     }
@@ -718,7 +730,7 @@ write_c3_conf(@clusters);
         die "ERROR: cluster not specified" if (! defined($target_cluster));
         die "ERROR: unknown cluster" if ( $target_cluster ~~ get_cluster_names() );
         for (my $i; $i < scalar(@clusters); $i++) {
-            if ((ref($clusters[$i]) eq 'HASH') && ($clusters[$i]->{'name'} eq $target_cluster)) { # Found
+            if ((ref($clusters[$i]) eq 'HASH') && ($clusters[$i]->{'name'} =~ /$target_cluster/i)) { # Found
                 splice(@clusters,$i,1); # Kill it.
             }
         }
@@ -728,7 +740,7 @@ write_c3_conf(@clusters);
         # print "addnodes";
         # 1st, check that we know the target cluster and that it exists.
         die "ERROR: cluster not specified" if (! defined($target_cluster));
-        die "ERROR: unknown cluster" if ( $target_cluster ~~ get_cluster_names() );
+        die "ERROR: Unknown cluster: $target_cluster" if (! defined(get_cluster($target_cluster)));
         die "ERROR: You need at least a node" if ( scalar(@target_nodes) < 1 );
         for my $node (@target_nodes) {
             add_node($target_cluster,$node);
@@ -739,7 +751,6 @@ write_c3_conf(@clusters);
         # print "delnodes";
         # 1st, check that we know the target cluster and that it exists.
         die "ERROR: cluster not specified" if (! defined($target_cluster));
-        die "ERROR: unknown cluster" if ( $target_cluster ~~ get_cluster_names() );
         die "ERROR: You need at least a node" if ( scalar(@target_nodes) < 1 );
         my $cluster_ref = get_cluster($target_cluster);
         die "ERROR: Unknown cluster: $target_cluster" if (! defined($cluster_ref));
@@ -747,7 +758,7 @@ write_c3_conf(@clusters);
         my $cluster_nodes = $$cluster_ref->{'nodes'};
         NODE: for my $node (@target_nodes) { # For each nodes specified on the cmd line
             for (my $i=0; $i < scalar(@{$cluster_nodes}); $i++) { # Scan the cluster nodes
-                if($node eq @{$cluster_nodes}[$i]->{'name'}) { # Found a node to remove
+                if($node =~ /@{$cluster_nodes}[$i]->{'name'}/i) { # Found a node to remove
                     splice(@{$cluster_nodes},$i,1); # Remove the node.
                     next NODE; # stop scanning cluster here, job done, move to next node
                 }
