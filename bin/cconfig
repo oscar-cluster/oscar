@@ -20,14 +20,15 @@ Getopt::Long::Configure ("pass_through");
 my $SCRIPT      = "cconfig";
 my $SVN_VERSION = sprintf "r%d", q$Revision: 1 $ =~ /(\d+)/g;
 my $VERSION     = "v1.0 ($SVN_VERSION)";
-my $refreshstate   = undef;
-my $sortnodes      = undef;
+my $refreshstate   = undef; # If set, nodes are pinged and status (dead/online) is updated accordingly.
+my $sortnodes      = undef; # If set, nodes are sorted.
 my $target_cluster = undef;
 my @target_nodes   = ();
 my $zero           = undef; # 1 if use 0-indexing. (default is not to use zero indexing). undef means don't change.
-my $default        = undef;
-my $file           = undef;
-my $dryrun         = undef;
+my $default        = undef; # if set, the current cluster is moved at 1st position so it becomes default.
+my $file           = undef; # Alternate config file.
+my $dryrun         = undef; # If set: write result to stdout instead of the c3.conf file.
+my $noresolv       = undef; # If defined: doesn't try to resolv hostnames.
 
 our @clusters;  # Table of clusters hashes (and comments)
 my $hostname    = `hostname`;
@@ -89,6 +90,7 @@ OPTIONS:
 --default                  Set this cluster as default (update or addcluster)
 --cluster <clustername>    Specify the cluster name to work with
 --nodes                    List of nodes to works with (space separated)
+--noresolv                 Don't try to check if hostnames resolv.
 --zero|z|0                 Force 0-indexing (do not insert dummy dead entry)
                            (can be used with --cluster option to update it or
                            when creating a cluster: --addcluster option or
@@ -111,6 +113,7 @@ my $command = shift(@ARGV); # read the command.
     'sortnodes'     => \$sortnodes,
     'cluster=s'     => \$target_cluster,
     'nodes=s{,}'    => \@target_nodes,
+    'noresolv'      => \$noresolv,
     'zero|0|z!'     => \$zero,
     'file|f=s'      => \$file,
     'help|h|?'      => \&usage,
@@ -527,6 +530,48 @@ sub write_c3_conf (@) {
 
 ################################################################################
 #
+# check_options_or_die: Check for unwanted options. If some are found: abort.
+#
+################################################################################
+
+sub check_options_or_die($@) {
+    my $command = shift;
+    my @options = @_;
+    my @bad_options = ();
+    my $error_message = "ERROR, command [$command] doesn't understand options [ ";
+    for my $option (@options) {
+        given($option) {
+            when('default') {
+                push (@bad_options,$option) if (defined($default));
+            }
+            when('dry-run') {
+                push (@bad_options,$option) if (defined($dryrun));
+            }
+            when('refreshstate') {
+                push (@bad_options,$option) if (defined($refreshstate));
+            }
+            when('sortnodes') {
+                push (@bad_options,$option) if (defined($sortnodes));
+            }
+            when('cluster') {
+                push (@bad_options,$option) if (defined($target_cluster));
+            }
+            when('nodes') {
+                push (@bad_options,$option) if (scalar(@target_nodes) > 0);
+            }
+            when('noresolv') {
+                push (@bad_options,$option) if (defined($noresolv));
+            }
+            when('zero') {
+                push (@bad_options,$option) if (defined($zero));
+            }
+        }
+    }
+    die $error_message.join(", ",map { "--".$_ } @bad_options)." ]. Aborting.\n" if(scalar(@bad_options)>0);
+}
+
+################################################################################
+#
 # returns an array of known clusters. takes the table of hash returned by parse_c3_conf.
 #
 ################################################################################
@@ -575,7 +620,7 @@ sub expand_nodes(@) {
 sub add_node($$;$$) {
     my ($cluster, $name, $status, $comment) = @_;
     $name = lc $name;
-    die "ERROR: Invalid node name: [$name]\n" if ($name !~ /^[a-z]+[a-z0-9.-]*$/); # Check for valid hostname
+    die "ERROR: Invalid node name: [$name]\n" if ($name !~ /^[a-z]+[a-z0-9_.-]*$/); # Check for valid hostname
     for my $element (@clusters) {
         if ((ref($element) eq 'HASH') && ($element->{'name'} =~ /$cluster/i)) {
             if ( ! defined ($element->{'nodes'}) ) { # No nodes yet, need to initialise entry.
@@ -678,6 +723,19 @@ sub get_cluster($) {
 
 ################################################################################
 #
+# check_host_resolvs_or_die: Checks that a given hostnames resolvs (we can get its ip address)
+#
+################################################################################
+
+sub check_host_resolvs_or_die($) {
+    my $name = shift;
+    if(! ($noresolv || defined(gethostbyname($name)))) {
+        die "ERROR: unknown host: [$name]\n";
+    }
+}
+
+################################################################################
+#
 # MAIN
 #
 ################################################################################
@@ -692,6 +750,7 @@ sub get_cluster($) {
 given ($command) {
     when ('addcluster') {
         # print "addcluster";
+        # check_options_or_die => We acept all options
         die "ERROR: Invalid cluster name [$target_cluster]" if ($target_cluster !~ /\w+/);
         die "ERROR: Cluster [$target_cluster] already exists!" if(get_cluster($target_cluster));
         push (@clusters, ""); # Add an empty line before the new cluster.
@@ -707,11 +766,14 @@ given ($command) {
             $new_vcluster->{'name'} = shift(@target_nodes);
             $new_vcluster->{'name'} =~ s/^://;
             die "ERROR: invalide remote cluster name: [$new_vcluster->{'name'}]" if ($new_vcluster->{'name'} !~ /^[a-z0-9.-]+$/i);
+            check_host_resolvs_or_die($new_vcluster->{'name'});
             $new_cluster->{'vcluster'} = $new_vcluster;
             push (@clusters, $new_cluster); # Add the new cluster entry.
         } else {
             my $new_head;
             $new_head->{'name'} = shift(@target_nodes);
+            die "ERROR: invalide head name: [$new_head->{'name'}]" if ($new_head->{'name'} !~ /^[a-z0-9.-]+$/i);
+            check_host_resolvs_or_die($new_head->{'name'});
             $new_cluster->{'head'} = $new_head;
             push (@clusters, $new_cluster); # Add the new cluster entry.(add_node needs that)
             # If we do not use zero indexing. need to insert a dummy entry.
@@ -720,6 +782,7 @@ given ($command) {
             }
             # Add the nodes.
             for my $node (@target_nodes) {
+                check_host_resolvs_or_die($node);
                 add_node($target_cluster,$node);
             }
         }
@@ -727,6 +790,7 @@ write_c3_conf(@clusters);
     }
     when ('delcluster') {
         # print "delcluster";
+        check_options_or_die('delcluster','default', 'refreshstate', 'sortnodes', 'nodes', 'noresolv', 'zero');
         die "ERROR: cluster not specified" if (! defined($target_cluster));
         die "ERROR: unknown cluster" if ( $target_cluster ~~ get_cluster_names() );
         for (my $i; $i < scalar(@clusters); $i++) {
@@ -738,17 +802,20 @@ write_c3_conf(@clusters);
     }
     when ('addnodes') {
         # print "addnodes";
+        check_options_or_die('addnodes', 'zero');
         # 1st, check that we know the target cluster and that it exists.
         die "ERROR: cluster not specified" if (! defined($target_cluster));
         die "ERROR: Unknown cluster: $target_cluster" if (! defined(get_cluster($target_cluster)));
         die "ERROR: You need at least a node" if ( scalar(@target_nodes) < 1 );
         for my $node (@target_nodes) {
+            check_host_resolvs_or_die($node);
             add_node($target_cluster,$node);
         }
 write_c3_conf(@clusters);
     }
     when ('delnodes') {
         # print "delnodes";
+        check_options_or_die('delnodes', 'zero', 'noresolv');
         # 1st, check that we know the target cluster and that it exists.
         die "ERROR: cluster not specified" if (! defined($target_cluster));
         die "ERROR: You need at least a node" if ( scalar(@target_nodes) < 1 );
@@ -769,21 +836,25 @@ write_c3_conf(@clusters);
     }
     when ('disablenodes') {
         # print "disablenodes";
+        check_options_or_die('disablenodes', 'zero', 'noresolv');
         set_nodes_status(\&set_node_dead);
 write_c3_conf(@clusters);
     }
     when ('enablenodes') {
         # print "enablenodes";
+        check_options_or_die('enablenodes', 'zero');
         set_nodes_status(\&set_node_alive);
 write_c3_conf(@clusters);
     }
     when ('update') {
         # print "update";
+        # check_options_or_die('update', ); # => Accept all options.
         set_nodes_status(\&set_node_ping);
 write_c3_conf(@clusters);
     }
     when ('listnodes') {
         # print "listnodes";
+        check_options_or_die('listnodes', 'default', 'dry-run', 'refreshstate', 'nodes', 'noresolv', 'zero');
         die "ERROR: cluster not specified" if (! defined($target_cluster));
         die "ERROR: unknown cluster" if ( $target_cluster ~~ get_cluster_names() );
         my $cluster_ref = get_cluster($target_cluster);
@@ -793,9 +864,20 @@ write_c3_conf(@clusters);
         for (my $i=0; $i < scalar(@{$cluster_nodes}); $i++) { # Scan the cluster nodes
             push(@node_list, @{$cluster_nodes}[$i]->{'name'}) if (@{$cluster_nodes}[$i]->{'status'} eq "online");
         }
+        if (defined($sortnodes)) {
+            # Sorting steps:
+            # 1st: map {[$_,$_=~/^([a-zA-Z_.]+)([0-9]+)$/] } : create [$_, node basename, node number if any]
+            # 2nd: sort {$a->[1] cmp $b->[1] || $a->[2] <=> $b->[2] }  : compare nodes basenames. If equals, compare nodes numbers.
+            # 3rd: map  { $_->[0] } : get original element back.(drop basename and number we used to make the sort).
+            @node_list = map  { $_->[0] }
+                           sort {$a->[1] cmp $b->[1] || $a->[2] <=> $b->[2] }
+                           map  {[$_,$_ =~ /^([a-zA-Z.-]+)([0-9]*)$/] }
+                           @node_list;
+        }
         print join(" ", @node_list)."\n";
     }
     when ('listclusters') {
+        check_options_or_die('listclusters', 'cluster', 'default', 'dry-run', 'refreshstate', 'nodes', 'sortnodes', 'noresolv', 'zero');
         my @clusters_list = ();
         for my $element (@clusters) {
             if (ref($element) eq 'HASH') { # Found
@@ -962,6 +1044,13 @@ List of nodes to works with (space separated)
 Ranges in the form basename[#min-#max] are accepted.
 padding is not yet supported. For a padding of 3 digit for a 500 nodes
 cluster, you need to use: node00[0-9] node0[10-99] node[100-499]
+
+=item --noresolv
+
+Doesn't try to resolve hostnames.
+
+This permits to add nodes/heads/vclusters that are not yet defined
+in any host database or DNS.
 
 =item --zero|z|0
 
