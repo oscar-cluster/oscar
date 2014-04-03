@@ -34,9 +34,9 @@ our @clusters;  # Table of clusters hashes (and comments)
 my $hostname    = `hostname`;
 
 my $c3conf = '/etc/c3.conf';
-if (defined($ENV{NEW_C3_CONF})) {
+if (defined($ENV{C3_CONF})) {
     # Override default "c3.conf" based on NEW_C3_CONF EnvVar
-    $c3conf = $ENV{NEW_C3_CONF};
+    $c3conf = $ENV{C3_CONF};
 }
 
 sub show_version () {
@@ -392,8 +392,7 @@ sub print_previous_node_range($$$$$$$) {
         my $idx = $element_idx_start-1; # Start the scan at the physical beginning of the range.
         while () {
             $idx++;
-            next if( ref($cluster->{'nodes'}[$idx]) ne 'HASH' ); # We skip omment or empty line.(already printed)
-#        for (my $idx=$range_end-$range_start+1; $idx > 0; $idx--) {
+            next if( ref($cluster->{'nodes'}[$idx]) ne 'HASH' ); # We skip comment or empty line.(already printed)
             if($cluster->{'nodes'}[$idx]->{'status'} eq "dead" ) { # dead node in a range
                 if($exclude_start==-1) {
                      $exclude_start=$range_idx;
