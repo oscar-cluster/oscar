@@ -753,11 +753,26 @@ sub set_nodes_status($) {
             if(! using_zero_indexing(@{$element->{'nodes'}})) {
                 $start = 1; # Start at index 1.
             }
-            for (my $i=$start; $i < scalar(@{$element->{'nodes'}}); $i++) { # Scan the cluster nodes
-                if((scalar(@target_nodes) == 0) || ((scalar(@target_nodes) > 0) && (lc($element->{'nodes'}[$i]->{'name'}) ~~ @target_nodes))) { # Filter if @nodes filter exists.
+
+            my @rejected_nodes = (); # nodes from @target_nodes that are not found in cluster.
+
+            if (scalar(@target_nodes) > 0) { # If some target nodes have been specified
+                my @nodenames = map { $_->{'name'} } @{$element->{'nodes'}}; # Get all the nodenames. (FIXME: need to sort it)
+                TARGET_NODE: for my $target_node (@target_nodes) {
+                    for (my $i=$start; $i < scalar(@{$element->{'nodes'}}); $i++) { # Scan the cluster nodes
+                        if (@{$element->{'nodes'}}[$i]->{'name'} eq $target_node) { # Node found
+                            $sub_set_node_status->(\@{$element->{'nodes'}}[$i]); # Update status
+                            next TARGET_NODE; # go to next target_node, avoiding to push this target_node in rejected.
+                        }
+                    }
+                    push(@rejected_nodes, $target_node); # Node not found after scanning cluster.
+                }
+            } else { # No node filter. Update all nodes.
+                for (my $i=$start; $i < scalar(@{$element->{'nodes'}}); $i++) { # Scan the cluster nodes
                     $sub_set_node_status->(\@{$element->{'nodes'}}[$i]);
                 }
             }
+            die "ERROR: The following nodes are not part of cluster [$element->{'name'}]:\n".join(" ", @rejected_nodes)."\n" if(scalar(@rejected_nodes) > 0);
         }
     }
 }
