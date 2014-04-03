@@ -20,7 +20,7 @@ Getopt::Long::Configure ("pass_through");
 my $SCRIPT      = "cconfig";
 my $SVN_VERSION = sprintf "r%d", q$Revision: 1 $ =~ /(\d+)/g;
 my $VERSION     = "v1.0 ($SVN_VERSION)";
-my $refreshstate   = undef; # If set, nodes are pinged and status (dead/online) is updated accordingly.
+my $refreshstatuses   = undef; # If set, nodes are pinged and status (dead/online) is updated accordingly.
 my $sortnodes      = undef; # If set, nodes are sorted.
 my $target_cluster = undef;
 my @target_nodes   = ();
@@ -58,8 +58,8 @@ Usage: $0 [command] [options]
 
 COMMANDS:
 
---version                  Print version information
---help|h|?                 Usage Information (this)
+--version|-v               Print version information
+--help|-h|-?               Usage Information (this)
 addcluster                 Adds cluster with given name
                            (MUST BE USED WITH the --cluster and --nodes options if not a virtual cluster.)
 delcluster                 Removes cluster with given name
@@ -83,21 +83,21 @@ listclusters               Lists defined clusters
 
 OPTIONS:
 
---refreshstate             Update nodes states (dead or alive) using ping -c1.
---sortnodes                Sort the nodes in cluster definitions.
+--refreshstatuses|r        Update nodes statuses (dead or alive) using ping -c1.
+--sortnodes|s              Sort the nodes in cluster definitions.
                            (can be used with --cluster option
                            to restrict the sort to that cluster)
---default                  Set this cluster as default (update or addcluster)
---cluster <clustername>    Specify the cluster name to work with
---nodes                    List of nodes to works with (space separated)
---noresolv                 Don't try to check if hostnames resolv.
+--default|d                Set this cluster as default (update or addcluster)
+--cluster|c <clustername>  Specify the cluster name to work with
+--nodes|n <node ...>       List of nodes or nodes ranges to works with (space separated)
+--noresolv|l               Don't try to check if hostnames resolv.
 --zero|z|0                 Force 0-indexing (do not insert dummy dead entry)
                            (can be used with --cluster option to update it or
                            when creating a cluster: --addcluster option or
                            without specifying any cluster (will apply on all clusters))
 --nozero|noz|no0           Use dummy dead entry so indexing starts at 1.
---dry-run|n                Output restult to stdout instead of updating config file.
---file|f=<file>            Use alternative config file.
+--dry-run|u                Output restult to stdout instead of updating config file.
+--file|f <file>            Use alternative config file.
 EOF
 exit 0;
 }
@@ -107,17 +107,17 @@ my $command = shift(@ARGV); # read the command.
 
 # Read the options.
 &GetOptions(
-    'default'       => \$default,
-    'dry-run'       => \$dryrun,
-    'refreshstate'  => \$refreshstate,
-    'sortnodes'     => \$sortnodes,
-    'cluster=s'     => \$target_cluster,
-    'nodes=s{,}'    => \@target_nodes,
-    'noresolv'      => \$noresolv,
-    'zero|0|z!'     => \$zero,
-    'file|f=s'      => \$file,
-    'help|h|?'      => \&usage,
-    'version|v'     => \&show_version,
+    'default|d'          => \$default,
+    'dry-run|u'          => \$dryrun,
+    'refreshstatuses|r'  => \$refreshstatuses,
+    'sortnodes|s'        => \$sortnodes,
+    'cluster|c=s'        => \$target_cluster,
+    'nodes|n=s{,}'       => \@target_nodes,
+    'noresolv|l'         => \$noresolv,
+    'zero|0|z!'          => \$zero,
+    'file|f=s'           => \$file,
+    'help|h|?'           => \&usage,
+    'version|v'          => \&show_version,
 );
 
 # Check that we've registered everything on the command line.
@@ -326,7 +326,7 @@ sub parse_c3_conf() {
 sub refresh_node_status_if_needed($$) {
     my $node = shift;
     my $cluster_name = shift;
-    return if (! defined($refreshstate)); # Don't do anything, the option is not set.
+    return if (! defined($refreshstatuses)); # Don't do anything, the option is not set.
     return if (defined($target_cluster) && ($cluster_name !~ /$target_cluster/i)); # doesn't match --cluster
     return if ((scalar(@target_nodes) > 0) && !(lc($$node->{'name'}) ~~ @target_nodes)); # doesn't match --nodes
     die "ERROR: --nodes used without --cluster" if (!defined($target_cluster) && (scalar(@target_nodes) > 0));
@@ -596,7 +596,7 @@ sub check_options_or_die($@) {
                 push (@bad_options,$option) if (defined($dryrun));
             }
             when('refreshstate') {
-                push (@bad_options,$option) if (defined($refreshstate));
+                push (@bad_options,$option) if (defined($refreshstatuses));
             }
             when('sortnodes') {
                 push (@bad_options,$option) if (defined($sortnodes));
@@ -655,7 +655,6 @@ sub expand_nodes(@) {
             my ($name, $start, $stop) = ($1, $3, $4);
             my $pad_size = length $start;
             die "ERROR: Inconsistent padding in node range [$start-$stop]!\n" if ( ($start =~ /^0[0-9]*$/) && ( $pad_size != length $stop));
-
             for (my $i=$start; $i <= $stop; $i++) {
                 push (@expanded_nodes, lc($name.sprintf("%0*d",$pad_size,$i))); # lowercase the node at the same time
             }
@@ -687,7 +686,7 @@ sub add_node($$;$$) {
             if($name ~~ @nodenames) { # Node already exists in this cluster.
                 for my $node (@{$element->{'nodes'}}) { # Find the node
                     if($node->{'name'} =~ /$name/i) {
-                        set_node_alive(\$node) if (! defined($refreshstate)); # enable it (except if --refreshstate
+                        set_node_alive(\$node) if (! defined($refreshstatuses)); # enable it (except if --refreshstate
                                                                               # is used as the status has already been
                                                                               #  updated when parsing c3.conf)
                         last;
@@ -875,7 +874,7 @@ given ($command) {
                 add_node($target_cluster,$node);
             }
         }
-write_c3_conf(@clusters);
+        write_c3_conf(@clusters);
     }
     when ('delcluster') {
         # print "delcluster";
@@ -887,7 +886,7 @@ write_c3_conf(@clusters);
                 splice(@clusters,$i,1); # Kill it.
             }
         }
-write_c3_conf(@clusters);
+        write_c3_conf(@clusters);
     }
     when ('addnodes') {
         # print "addnodes";
@@ -900,7 +899,7 @@ write_c3_conf(@clusters);
             check_host_resolvs_or_die($node);
             add_node($target_cluster,$node);
         }
-write_c3_conf(@clusters);
+        write_c3_conf(@clusters);
     }
     when ('delnodes') {
         # print "delnodes";
@@ -921,7 +920,7 @@ write_c3_conf(@clusters);
             }
             die "ERROR: node '$node' not found in '$target_cluster', aborting.";
         }
-write_c3_conf(@clusters);
+        write_c3_conf(@clusters);
     }
     when ('disablenodes') {
         # print "disablenodes";
@@ -929,7 +928,7 @@ write_c3_conf(@clusters);
         die "ERROR: --nodes used without --cluster" if (scalar(@target_nodes)> 0 && !defined($target_cluster));
         die "ERROR: unknown cluster [$target_cluster]" if (defined($target_cluster) && !defined(get_cluster($target_cluster)));
         set_nodes_status(\&set_node_dead);
-write_c3_conf(@clusters);
+        write_c3_conf(@clusters);
     }
     when ('enablenodes') {
         # print "enablenodes";
@@ -937,7 +936,7 @@ write_c3_conf(@clusters);
         die "ERROR: --nodes used without --cluster" if (scalar(@target_nodes)> 0 && !defined($target_cluster));
         die "ERROR: unknown cluster [$target_cluster]" if (defined($target_cluster) && !defined(get_cluster($target_cluster)));
         set_nodes_status(\&set_node_alive);
-write_c3_conf(@clusters);
+        write_c3_conf(@clusters);
     }
     when ('update') {
         # print "update";
@@ -947,7 +946,7 @@ write_c3_conf(@clusters);
         die "ERROR: --nodes used without --cluster" if (scalar(@target_nodes)> 0 && !defined($target_cluster));
         die "ERROR: unknown cluster [$target_cluster]" if (defined($target_cluster) && !defined(get_cluster($target_cluster)));
         nodes_in_cluster_or_die() if (scalar(@target_nodes)> 0);
-write_c3_conf(@clusters);
+        write_c3_conf(@clusters);
     }
     when ('check') {
        # print "check"
@@ -1178,34 +1177,34 @@ Recognized options are:
 
 =over 8
 
-=item --cluster <clustername>
+=item --cluster|-c <clustername>
 
 Specify the cluster name to work with.
 
-=item --default
+=item --default|-d
 
 Set this cluster as default cluster. (Move it to the top of c3.conf).
 Only available for update or addcluster.
 
-=item --dry-run -n
+=item --dry-run|-u
 
 Output restult to stdout instead of updating config file.
 
-=item --file -f <file>
+=item --file|-f <file>
 
 Use alternative config file.
 
 
-=item --refreshstate
+=item --refreshstate|-r
 
 Update each nodes status (dead or alive) using ping -c1.
 
-=item --sortnodes
+=item --sortnodes|-s
 
 Sort the nodes in cluster definitions.
 (Can be used with --cluster option to restrict the sort to that cluster)
 
-=item --nodes
+=item --nodes|-n
 
 List of nodes to works with (space separated)
 
@@ -1213,7 +1212,7 @@ Ranges in the form basename[#min-#max] are accepted.
 padding is supported. For a padding of 3 digit for a 500 nodes
 cluster, you need to use: node[000-499]
 
-=item --noresolv
+=item --noresolv|-l
 
 Doesn't try to resolve hostnames.
 
@@ -1230,6 +1229,20 @@ without specifying any cluster, the change affects all clusters.
 =item --nozero|noz|no0
 
 Use dummy dead entry for node index 0 so indexing starts at 1.
+
+=back
+
+=head1 TODO
+
+=over 8
+
+=item Support to update zero-indexing in update command
+
+=item Support for checking port $C3_RSH on alive nodes
+
+=item List clusters with ending colon
+
+=item Cleanup the check output error messages
 
 =back
 
