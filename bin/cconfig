@@ -944,7 +944,7 @@ write_c3_conf(@clusters);
            my $cluster_ref = get_cluster($cluster);
            my $cluster_nodes = $$cluster_ref->{'nodes'};
            if (! using_zero_indexing(@{$cluster_nodes})) {
-               shift($cluster_nodes);
+               shift($cluster_nodes); # remove 1st dummy entry
            }
            for my $node (@{$cluster_nodes}) {
                lc($node->{'name'});
@@ -972,7 +972,7 @@ write_c3_conf(@clusters);
            my @heads = ();
            push (@heads, {'head' => $$cluster_ref->{'head'}->{'name'}}) if(exists($$cluster_ref->{'head'}->{'name'}));
            push (@heads, {'private head' => $$cluster_ref->{'head'}->{'private'}}) if(exists($$cluster_ref->{'head'}->{'private'}));
-           push (@heads, {'remote cluster head' => $$cluster_ref->{'vcluster'}->{'name'}}) if(exists($$cluster_ref->{'vcluster'}->{'name'}));
+           push (@heads, {'virtual cluster head' => $$cluster_ref->{'vcluster'}->{'name'}}) if(exists($$cluster_ref->{'vcluster'}->{'name'}));
            for my $h (@heads) {
                 my @head_type = keys($h);
                 my @head_hostname = values($h);
