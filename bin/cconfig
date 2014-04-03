@@ -639,8 +639,9 @@ sub get_cluster_names() {
 
 ################################################################################
 #
-# expand ("node","range[0-2") to
+# expand ("node","range[00-02") to
 # ("node", "range0","range1","range2")
+# Supports padding with "0".
 #
 ################################################################################
 
@@ -651,8 +652,12 @@ sub expand_nodes(@) {
         chomp($node);
         if ( $node =~ /^([a-zA-Z0-9.-]+)(\[(\d+)-(\d+)\])$/) { # match node range
             # node name: $1, complete range:$2, range start:$3, range end:$4
-            for (my $i=$3; $i <= $4; $i++) {
-                push (@expanded_nodes, lc($1.$i)); # lowercase the node at the same time
+            my ($name, $start, $stop) = ($1, $3, $4);
+            my $pad_size = length $start;
+            die "ERROR: Inconsistent padding in node range [$start-$stop]!\n" if ( ($start =~ /^0[0-9]*$/) && ( $pad_size != length $stop));
+
+            for (my $i=$start; $i <= $stop; $i++) {
+                push (@expanded_nodes, lc($name.sprintf("%0*d",$pad_size,$i))); # lowercase the node at the same time
             }
         } else { # simple node
             push (@expanded_nodes, lc($node));
@@ -1063,8 +1068,8 @@ Adds a cluster to the c3 configuration file in last position by default.
 Must be used with the --cluster and --nodes options.
 
 Ranges in the form basename[#min-#max] are accepted.
-padding is not yet supported. For a padding of 3 digit for a 500 nodes
-cluster, you need to use: node00[0-9] node0[10-99] node[100-499]
+padding is supported. For a padding of 3 digit for a 500 nodes
+cluster, you need to use: node[000-499]
 
 example: cconfig addcluster --cluster my_cluster --nodes nodes0[0-9] nodes[10-49]
 
@@ -1190,8 +1195,8 @@ Sort the nodes in cluster definitions.
 List of nodes to works with (space separated)
 
 Ranges in the form basename[#min-#max] are accepted.
-padding is not yet supported. For a padding of 3 digit for a 500 nodes
-cluster, you need to use: node00[0-9] node0[10-99] node[100-499]
+padding is supported. For a padding of 3 digit for a 500 nodes
+cluster, you need to use: node[000-499]
 
 =item --noresolv
 
