@@ -182,7 +182,7 @@ sub parse_c3_conf() {
                     $exclude_comment = ""; # Clear $6 so comment is only assigned to 1st node of the range.
                 }
             }
-            when (/^(dead\s+)?([a-zA-Z0-9_.-]+)\s*(#.*)?$/) { # match single node (dead or alive)
+            when (/^(dead\s+)?([a-z0-9_.-]+)\s*(#.*)?$/i) { # match single node (dead or alive)
                                                               # match also "_" eventhough it's forbidden in hostnames as we must match
                                                               # the remove_for_0-indexing string that exists in many c3.conf files.
                 die "ERROR: dead found outside cluster definition at line: $line_num [$line]\n" if($in_cluster_def==0);
@@ -192,7 +192,7 @@ sub parse_c3_conf() {
                 $previous_range_start=-1;
                 $previous_range_end=-1;
                 my $node;
-                $node->{'name'} = $2;
+                $node->{'name'} = lc($2);
                 $node->{'comment'} = $3 if ($3 ne "");
                 if( $head_found == 0 ) {
                     $head_found=1;
@@ -233,25 +233,25 @@ sub parse_c3_conf() {
                 $previous_range_start = -1;
                 $previous_range_end = -1;
             }
-            when (/^([a-zA-Z0-9.-]+)?:([a-zA-Z0-9.-]+)\s*(#.*)?/) { # match complex head or vcluster (entry with ':')
+            when (/^([a-z0-9.-]+)?:([a-z0-9.-]+)\s*(#.*)?/i) { # match complex head or vcluster (entry with ':')
                 if( $head_found == 0 ) {
                     $head_found=1;
                     my $node;
                     die "ERROR: head already defined for cluster $cluster_def->{'name'} line: $line_num [$line]\n" if (exists $cluster_def->{'head'});
                     $node->{'comment'} = $3 if ($3 ne "");
                     if ($1 eq "") { # virtual cluster
-                        $node->{'name'} = $2;
+                        $node->{'name'} = lc($2);
                         $cluster_def->{'vcluster'} = $node;
                     } else {
-                        $node->{'name'} = $1;
-                        $node->{'private'} = $2;
+                        $node->{'name'} = lc($1);
+                        $node->{'private'} = lc($2);
                         $cluster_def->{'head'} = $node;
                     }
                  } else {
                     die "ERROR: head already defined: $line_num [$line]\n";
                 }
             }
-            when (/^([a-zA-Z0-9.-]+)(\[(\d+)-(\d+)\])\s*(#.*)?$/) { # match node range
+            when (/^([a-z0-9.-]+)(\[(\d+)-(\d+)\])\s*(#.*)?$/i) { # match node range
                 # node name: $1, complete range:$2, range start:$3, range end:$4, comment: $5
                 die "ERROR: node found outside cluster definition at line: $line_num [$line]\n" if($in_cluster_def==0);
                 die "ERROR: vlcuster definition do not include nodes at line: $line_num [$line]\n" if (exists $cluster_def->{'vcluster'});
@@ -268,7 +268,7 @@ sub parse_c3_conf() {
                     my $node;
                     $node->{'comment'} = $range_comment if ($range_comment ne "");
                     $range_comment = ""; # Clear comment after 1st node so comment is set on 1st node only.
-                    $node->{'name'} = $1.$nodenum;
+                    $node->{'name'} = lc($1.$nodenum);
                     $node->{'status'} = "online";
                     refresh_node_status_if_needed(\$node, $cluster_def->{'name'});
                     $cluster_def->{'nodes'}[$node_index] = $node;
@@ -280,7 +280,6 @@ sub parse_c3_conf() {
                 die "ERROR: Empty line found within cluster definition at line ".$line_num if($in_cluster_def==1);
                 push (@c3_conf, $line);
             }
-            #when (/(^#.*)|(^$)/) { # Match comment lines or empty lines
             when (/(^#.*)/) { # Match comment lines
                 #print "COMMENT: $line\n";
                 if($in_cluster_def==1) {
@@ -305,7 +304,6 @@ sub parse_c3_conf() {
             default {
                 die "ERROR: Unexpected content at line: $line_num [$line]\n";
             }
-
         }
     }
     close(C3CONF);
@@ -485,12 +483,12 @@ sub write_c3_conf (@) {
                     }
 
                     # Sorting steps:
-                    # 1st: map {[$_,$_->{'name'}=~/^([a-zA-Z_.]+)([0-9]+)$/] } : create [$_, node basename, node number if any]
+                    # 1st: map {[$_,$_->{'name'}=~/^([a-z0-9.-]*[a-z.-]+)([0-9]+)$/] } : create [$_, node basename, node number if any]
                     # 2nd: sort {$a->[1] cmp $b->[1] || $a->[2] <=> $b->[2] }  : compare nodes basenames. If equals, compare nodes numbers.
                     # 3rd: map  { $_->[0] } : get original element back.(drop basename and number we used to make the sort).
                     @{$cluster{'nodes'}} = map  { $_->[0] }
                                            sort {$a->[1] cmp $b->[1] || $a->[2] <=> $b->[2] }
-                                           map  {[$_,$_->{'name'}=~/^([a-zA-Z.-]+)([0-9]*)$/] }
+                                           map  {[$_,$_->{'name'}=~/^([a-z0-9.-]*[a-z.-]+)([0-9]*)$/i] }
                                            @{$cluster{'nodes'}};
                     # If 1st node name starts with a "!", we need to remove this prepending "!" used to trick the sort keeping in place the dummy entry.
                     if( $cluster{'nodes'}[0]->{'name'} =~ /^!(.*)$/ ) {
@@ -503,7 +501,7 @@ sub write_c3_conf (@) {
                     $comment = $node{'comment'} if(exists( $node{'comment'}));
 
                     # check if node ends with a number (can we use a range?)
-                    if ( $node{'name'} =~ /^([A-Za-z.-]+)((0*)([0-9]+[0-9]*))$/ ) { # in a node range. 
+                    if ( $node{'name'} =~ /^([a-z0-9.-]*[a-z.-]+)((0*)([0-9]+[0-9]*))$/i ) { # in a node range. 
                         # $1: node basename - $2:$3.$4 - $3: number of zeros to append to basename - $4: node number.
                         if (($range_name eq $1.$3) && ($4-$range_end == 1)) { # still in same range name and indexes contiguous.
                             $range_end++;
@@ -564,7 +562,8 @@ sub using_zero_indexing(@) {
     my @nodes = @_;
     if($nodes[0]->{'status'} eq 'dead') {
         # get the basename of all other nodes.
-        my @basenames = map { $_->{'name'}=~/^([a-zA-Z.-]+)[0-9]*$/ } @nodes;
+        return 0 if ( $nodes[0]->{'name'} !~ /^([a-z0-9.-]*[a-z.-]+)[0-9]*$/); # Node 0 doesn't match a hostname
+        my @basenames = map { $_->{'name'}=~/^([a-z0-9.-]*[a-z.-]+)[0-9]*$/ } @nodes;
         if (! ($basenames[0] ~~ @basenames[1..scalar(@basenames)-1])) { # basename of 1st node not found in other nodes. this is probably a dummy entry.
              if( ! defined(gethostbyname($basenames[0])) ) { # if it resolvs, then we assume it's a normal node anyway.
                  return 0; # 1st entry is 1:dead, 2:uniq basename, 3:doesn't resolv
@@ -696,7 +695,7 @@ sub add_node($$;$$) {
                 $new_node->{'status'} = $status if (defined($status));
                 $new_node->{'comment'} = $comment if (defined($comment));
                 refresh_node_status_if_needed(\$new_node, $element->{'name'}); # if --refreshstate is used, update status.
-                push($element->{'nodes'}, $new_node);
+                push(@{$element->{'nodes'}}, $new_node);
             }
             return 0; # Node added, no need to continue with remaining clusters.
         }
@@ -745,11 +744,9 @@ sub set_nodes_status($) {
         next if(defined($target_cluster) && ($element->{'name'} !~ /$target_cluster/i)); # Ignore wrong clusters if --cluster was specified.
         if ((defined ($element->{'nodes'})) && (scalar($element->{'nodes'}) > 0) ) { # If this cluster has some nodes (at least one).
             my $start = 0;
-            if(($element->{'nodes'}[0]->{'status'} eq 'dead') && (scalar(@target_nodes) == 0)) { # If 1st node is dead (index 0, this may be a dummy entry). (if @target_nodes is not specified, we try to guess..
-                my @basenames = map { $_->{'name'}=~/^([a-zA-Z-.]+)[0-9]*$/ } @{$element->{'nodes'}}; # get all basenames
-                if (! ($basenames[0] ~~ @basenames[1..scalar(@basenames)-1])) { # basename of 1st node not found in other nodes. this is probably a dummy entry.
-                    $start = 1; # Start at index 1.
-                }
+
+            if(! using_zero_indexing(@{$element->{'nodes'}})) {
+                $start = 1; # Start at index 1.
             }
             for (my $i=$start; $i < scalar(@{$element->{'nodes'}}); $i++) { # Scan the cluster nodes
                 if((scalar(@target_nodes) == 0) || ((scalar(@target_nodes) > 0) && (lc($element->{'nodes'}[$i]->{'name'}) ~~ @target_nodes))) { # Filter if @nodes filter exists.
@@ -944,7 +941,7 @@ write_c3_conf(@clusters);
            my $cluster_ref = get_cluster($cluster);
            my $cluster_nodes = $$cluster_ref->{'nodes'};
            if (! using_zero_indexing(@{$cluster_nodes})) {
-               shift($cluster_nodes); # remove 1st dummy entry
+               shift(@{$cluster_nodes}); # remove 1st dummy entry
            }
            for my $node (@{$cluster_nodes}) {
                lc($node->{'name'});
@@ -974,8 +971,8 @@ write_c3_conf(@clusters);
            push (@heads, {'private head' => $$cluster_ref->{'head'}->{'private'}}) if(exists($$cluster_ref->{'head'}->{'private'}));
            push (@heads, {'virtual cluster head' => $$cluster_ref->{'vcluster'}->{'name'}}) if(exists($$cluster_ref->{'vcluster'}->{'name'}));
            for my $h (@heads) {
-                my @head_type = keys($h);
-                my @head_hostname = values($h);
+                my @head_type = keys(%{$h});
+                my @head_hostname = values(%{$h});
                 if($head_hostname[0] ~~ @seen_nodes) { # Head exists in nodes???
                     print "ERROR: $head_type[0]: [$head_hostname[0]] found in nodes for cluster [$cluster]\n";
                     $rc++;
@@ -1012,7 +1009,7 @@ write_c3_conf(@clusters);
             # 3rd: map  { $_->[0] } : get original element back.(drop basename and number we used to make the sort).
             @node_list = map  { $_->[0] }
                            sort {$a->[1] cmp $b->[1] || $a->[2] <=> $b->[2] }
-                           map  {[$_,$_ =~ /^([a-zA-Z.-]+)([0-9]*)$/] }
+                           map  {[$_,$_ =~ /^([a-z0-9.-]*[a-z.-]+)([0-9]*)$/] }
                            @node_list;
         }
         print join(" ", @node_list)."\n";
