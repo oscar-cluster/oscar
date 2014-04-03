@@ -560,6 +560,7 @@ sub write_c3_conf (@) {
 
 sub using_zero_indexing(@) {
     my @nodes = @_;
+    return 1 if ($nodes[0]->{'name'} ~~ @target_nodes); # 1st node is part to target_nodes, we assume that it's a normal node
     if($nodes[0]->{'status'} eq 'dead') {
         # get the basename of all other nodes.
         return 0 if ( $nodes[0]->{'name'} !~ /^([a-z0-9.-]*[a-z.-]+)[0-9]*$/); # Node 0 doesn't match a hostname
@@ -859,9 +860,18 @@ given ($command) {
             push (@clusters, $new_cluster); # Add the new cluster entry.
         } else {
             my $new_head;
-            $new_head->{'name'} = shift(@target_nodes);
-            die "ERROR: invalide head name: [$new_head->{'name'}]" if ($new_head->{'name'} !~ /^[a-z0-9.-]+$/i);
-            check_host_resolvs_or_die($new_head->{'name'});
+            my $raw_head = shift(@target_nodes);
+            if($raw_head =~ /^([a-z0-9.-]+):([a-z0-9.-]+)$/i) { # public:private head
+                $new_head->{'name'} = $1;
+                check_host_resolvs_or_die($new_head->{'name'});
+                $new_head->{'private'} = $2;
+                check_host_resolvs_or_die($new_head->{'private'});
+            } elsif($raw_head =~ /^([a-z0-9.-]+)$/i) {
+                $new_head->{'name'} = $1;
+                check_host_resolvs_or_die($new_head->{'name'});
+            } else {
+                die "ERROR: invalide head name: [$new_head->{'name'}]\n";
+            }
             $new_cluster->{'head'} = $new_head;
             push (@clusters, $new_cluster); # Add the new cluster entry.(add_node needs that)
             # If we do not use zero indexing. need to insert a dummy entry.
