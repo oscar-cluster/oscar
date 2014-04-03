@@ -123,8 +123,12 @@ my $command = shift(@ARGV); # read the command.
 # Check that we've registered everything on the command line.
 die "ERROR: Unknown remaining arguments: ".join(" ", @ARGV)."\n" if(scalar(@ARGV > 0));  # Nothing should remain in @ARGV.
 
-if ($file && -f $file) {
-    $c3conf = $file;
+if ($file) {
+    if (-f $file) {
+        $c3conf = $file;
+    } else {
+        die "ERROR: Cannot open $file\n";
+    }
 }
 
 ################################################################################
@@ -611,6 +615,9 @@ sub check_options_or_die($@) {
             when('zero') {
                 push (@bad_options,$option) if (defined($zero));
             }
+            default {
+                die "API Error: [--$option] not handeled by check_options_or_die()\n";
+            }
         }
     }
     die $error_message.join(", ",map { "--".$_ } @bad_options)." ]. Aborting.\n" if(scalar(@bad_options)>0);
@@ -666,7 +673,7 @@ sub expand_nodes(@) {
 sub add_node($$;$$) {
     my ($cluster, $name, $status, $comment) = @_;
     $name = lc $name;
-    die "ERROR: Invalid node name: [$name]\n" if ($name !~ /^[a-z]+[a-z0-9_.-]*$/); # Check for valid hostname
+    die "ERROR: Invalid node name: [$name]\n" if ($name !~ /^[a-z]+[a-z0-9_.-]*$/); # Check for valid hostname (includes '_' for dummy entry compat)
     for my $element (@clusters) {
         if ((ref($element) eq 'HASH') && ($element->{'name'} =~ /$cluster/i)) {
             if ( ! defined ($element->{'nodes'}) ) { # No nodes yet, need to initialise entry.
@@ -921,11 +928,71 @@ write_c3_conf(@clusters);
         # check_options_or_die('update', ); # => Accept all options.
         #set_nodes_status(\&set_node_ping);
         # => Do nothing! all relevant options are used by c3.conf parser and writer.
-        # FIXME: check that --nodes doesn't specify nodes that are not relevant for the specified cluster.
         die "ERROR: --nodes used without --cluster" if (scalar(@target_nodes)> 0 && !defined($target_cluster));
         die "ERROR: unknown cluster [$target_cluster]" if (defined($target_cluster) && !defined(get_cluster($target_cluster)));
         nodes_in_cluster_or_die() if (scalar(@target_nodes)> 0);
 write_c3_conf(@clusters);
+    }
+    when ('check') {
+       # print "check"
+       # At this point, the config file was parsed succesfully, just need a little more checking.
+       my $rc = 0;
+       # Forbid the following unwanted/unhandled options
+       check_options_or_die('check', 'default', 'dry-run', 'refreshstate', 'sortnodes', 'cluster', 'nodes', 'zero');
+       for my $cluster (get_cluster_names()) {
+           # Check nodes.
+           my @seen_nodes = ();
+           my $cluster_ref = get_cluster($cluster);
+           my $cluster_nodes = $$cluster_ref->{'nodes'};
+           if (! using_zero_indexing(@{$cluster_nodes})) {
+               shift($cluster_nodes);
+           }
+           for my $node (@{$cluster_nodes}) {
+               lc($node->{'name'});
+               # Check for duplicate node.
+               if ($node->{'name'} ~~ @seen_nodes) { # Duplicate node?
+                   print "ERROR: Duplicate node: [$node->{'name'}] in cluster [$cluster]\n";
+                   $rc++;
+               } else {
+                   push (@seen_nodes, $node->{'name'});
+               }
+               # Check for hosname resolution failure.
+               if(! ($noresolv || defined(gethostbyname($node->{'name'})))) {
+                   print "ERROR: Unknown hostname: [$node->{'name'}] in cluster [$cluster]\n";
+                   $rc++;
+                   next; # If error, no need to test ping (unknown host won't ping).
+               }
+               # Check if alive node does ping.
+               if(($node->{'status'} eq "online") && (system("ping -c1 $node->{'name'} >/dev/null 2>&1"))) {
+                   print "ERROR: node [$node->{'name'}] in cluster [$cluster] is down while being 'alive' in c3 config\n";
+                   $rc++;
+               }
+               # Check that ssh port is open?
+           }
+           # Check head or vcluster (we are sure that at leas one exists otherwize the parser would have failed)
+           my @heads = ();
+           push (@heads, {'head' => $$cluster_ref->{'head'}->{'name'}}) if(exists($$cluster_ref->{'head'}->{'name'}));
+           push (@heads, {'private head' => $$cluster_ref->{'head'}->{'private'}}) if(exists($$cluster_ref->{'head'}->{'private'}));
+           push (@heads, {'remote cluster head' => $$cluster_ref->{'vcluster'}->{'name'}}) if(exists($$cluster_ref->{'vcluster'}->{'name'}));
+           for my $h (@heads) {
+                my @head_type = keys($h);
+                my @head_hostname = values($h);
+                if($head_hostname[0] ~~ @seen_nodes) { # Head exists in nodes???
+                    print "ERROR: $head_type[0]: [$head_hostname[0]] found in nodes for cluster [$cluster]\n";
+                    $rc++;
+                }
+                if(! ($noresolv || defined(gethostbyname($head_hostname[0])))) {
+                    print "ERROR: $head_type[0]: unknown hostname: [$head_hostname[0]] in cluster [$cluster]\n";
+                    $rc++;
+                    next; # If error, no need to test ping.
+                }
+                if(system("ping -c1 $head_hostname[0] >/dev/null 2>&1")) {
+                    print "ERROR: $head_type[0]: [$head_hostname[0]] in cluster [$cluster] is down\n";
+                    $rc++;
+                }
+           }
+       }
+       die "$rc errors found in $c3conf\n" if($rc);
     }
     when ('listnodes') {
         # print "listnodes";
@@ -1068,6 +1135,16 @@ Lists defined clusters
 
 example:
     cconfig listclusters
+
+=item check
+
+Check validity of the c3 configuration file.
+The following checks are done:
+- c3.conf syntax
+- Duplicate nodes within a cluster
+- names that do not resolv (unknown hosts)
+  (can be ignored using the --noresolv)
+- alive nodes that do not respond to ping
 
 =item --version
 
