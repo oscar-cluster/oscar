@@ -95,8 +95,9 @@ OPTIONS:
 --cluster|c <clustername>  Specify the cluster name to work with
 --nodes|n <node ...>       List of nodes or nodes ranges to works with (space separated)
 --noresolv|l               Don't try to check if hostnames resolv.
---service <service nmae>   Name of service to use to test that a remote node is alive or not.
-                           The service name can be any tcp service in /etc/services or 'ping'.
+--service <service name>   Name of service to use to test that a remote node is alive or not.
+                           The service name can be any tcp service in /etc/services or a port number.
+                           Special values are: ping, resolv, none (see cconfig(1) manpage).
 --zero|z|0                 Force 0-indexing (do not insert dummy dead entry)
                            (can be used with --cluster option to update it or
                            when creating a cluster: --addcluster option or
@@ -219,6 +220,16 @@ sub parse_c3_conf() {
                 # comment: $1
                 $in_cluster_def=0;
                 $cluster_def->{'end_comment'} = $1 if ( $1 ne "" );
+
+                # Update nodes statuses if needed:
+                # Note, this can't be done when reading nodes as the status is then overridden by
+                # following exclude ranges. Thus we do that at the end.
+                if(exists $cluster_def->{'nodes'} && defined($refreshstatuses)) {
+                    for my $node (@{$cluster_def->{'nodes'}}) {
+                        refresh_node_status_if_needed(\$node, $cluster_def->{'name'});
+                    }
+                }
+
                 if ($default && ($cluster_def->{'name'} =~ /$target_cluster/i)) {
                     unshift(@c3_conf, $cluster_def);
                 } else {
@@ -277,7 +288,7 @@ sub parse_c3_conf() {
                     $range_comment = ""; # Clear comment after 1st node so comment is set on 1st node only.
                     $node->{'name'} = lc($1.$nodenum);
                     $node->{'status'} = "online";
-                    refresh_node_status_if_needed(\$node, $cluster_def->{'name'});
+                    #refresh_node_status_if_needed(\$node, $cluster_def->{'name'}); # BUG: Overridden by following exclude ranges.
                     $cluster_def->{'nodes'}[$node_index] = $node;
                     $last_node_index = $node_index; # keep track of the last node entry in the cluster hash so we know were to append comments only lines
                     $node_index++;
@@ -781,14 +792,28 @@ sub get_c3_remote_service() {
 sub check_remote_service($$) {
     my $hostname = shift;
     my $service_name = shift;
+    my $port;
+
+    # Special case: if service is "none", always true.
+    return 1 if($service_name =~ /^none$/i);
+
+    # Special case: if service is "resolv", just check that hostname resolvs
+    return (defined(gethostbyname($hostname))?1:0) if ($service_name =~ /^resolv$/i);
 
     # Special case: if service is ping (not a real service) do specific test
     return (system("ping -c1 -q -W1 $hostname >/dev/null 2>&1")?0:1) if($service_name eq 'ping');
+
     # Get the service port: (service name, service aliases, service port, protocol)
-    my @service = getservbyname($service_name, 'tcp');
-    my $port = 22;
+    if($service_name =~ /^[0-9]+$/) {
+        $port = $service_name;
+    } else {
+        my @service = getservbyname($service_name, 'tcp');
+        return 0 if(!@service);
+        $port = $service[2];
+    }
+
     my $socket = IO::Socket::INET->new(PeerHost => "$hostname",
-                                       PeerPort => "$service[2]",
+                                       PeerPort => "$port",
                                        Proto => 'tcp',
                                        Timeout => '1');
     if(defined $socket) { # port is open
@@ -1054,7 +1079,9 @@ given ($command) {
                }
                # Check if alive node has remote service up (default ssh) or ping.
                if(($node->{'status'} eq "online") && (!check_remote_service($node->{'name'},get_c3_remote_service()))) {
-                   print "ERROR: [".(defined($target_service)?$target_service:"ssh")."] test on node [$node->{'name'}] in cluster [$cluster] failed, but node is 'alive' in c3 config\n";
+                   my $service = defined($target_service)?$target_service:"ssh";
+                   $service = "port $service" if ($service =~ /^[0-9]+$/);
+                   print "ERROR: [$service] test on node [$node->{'name'}] in cluster [$cluster] failed, but node is 'alive' in c3 config\n";
                    $rc++;
                }
            }
@@ -1297,7 +1324,18 @@ in any host database or DNS.
 =item --service
 
 Name of service to use to test that a remote node is alive or not.
-The service name can be any tcp service in /etc/services or 'ping'.
+The service name can be any tcp service in /etc/services or a port number.
+Special values:
+
+=over 4
+
+=item * ping: Check if remote host responf to ping
+
+=item * resolv:	Check if remote host resolvs using gethostbyname
+
+=item * none: Check on remote host is always true. used to check only syntax of config file.
+
+=back
 
 =item --zero|z|0
 
@@ -1318,11 +1356,7 @@ Use dummy dead entry for node index 0 so indexing starts at 1.
 
 =item Support to update zero-indexing in update command
 
-=item Support for checking port $C3_RSH on alive nodes
-
-=item List clusters with ending colon
-
-=item Cleanup the check output error messages
+=item Cleanup the 'check' command output error messages
 
 =back
 
@@ -1332,7 +1366,7 @@ Olivier LAHAYE <olivier.lahaye@cea.fr>
 
 =head1 SEE ALSO
 
-c3.conf(5) c3(1) perl(1)
+L<c3.conf(5)> L<c3(1)> L<perl(1)>
 
 =cut
 
