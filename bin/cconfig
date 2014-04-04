@@ -15,6 +15,8 @@ use Data::Dumper;
 
 use File::Copy;
 use Getopt::Long;
+use IO::Socket::INET;
+
 Getopt::Long::Configure ("pass_through");
 
 my $SCRIPT      = "cconfig";
@@ -24,6 +26,7 @@ my $refreshstatuses   = undef; # If set, nodes are pinged and status (dead/onli
 my $sortnodes      = undef; # If set, nodes are sorted.
 my $target_cluster = undef;
 my @target_nodes   = ();
+my $target_service = undef; # Name of service to check for remote node being alive. (set using --service)
 my $zero           = undef; # 1 if use 0-indexing. (default is not to use zero indexing). undef means don't change.
 my $default        = undef; # if set, the current cluster is moved at 1st position so it becomes default.
 my $file           = undef; # Alternate config file.
@@ -39,12 +42,12 @@ if (defined($ENV{C3_CONF})) {
     $c3conf = $ENV{C3_CONF};
 }
 
-sub show_version () {
+sub show_version {
   print "$SCRIPT $VERSION\n";
   exit 0;
 }
 
-sub usage () {
+sub usage {
   print <<EOF;
 $SCRIPT $VERSION
 $0
@@ -79,6 +82,7 @@ update                     Update config file (usefull to sort nodes or updating
 listnodes                  Lists active nodes in cluster
                            (MUST BE USED WITH the --cluster option)
 listclusters               Lists defined clusters
+check                      Check validity of the c3 configuration file.
 
 
 OPTIONS:
@@ -91,6 +95,8 @@ OPTIONS:
 --cluster|c <clustername>  Specify the cluster name to work with
 --nodes|n <node ...>       List of nodes or nodes ranges to works with (space separated)
 --noresolv|l               Don't try to check if hostnames resolv.
+--service <service nmae>   Name of service to use to test that a remote node is alive or not.
+                           The service name can be any tcp service in /etc/services or 'ping'.
 --zero|z|0                 Force 0-indexing (do not insert dummy dead entry)
                            (can be used with --cluster option to update it or
                            when creating a cluster: --addcluster option or
@@ -102,11 +108,8 @@ EOF
 exit 0;
 }
 
-# Read the command.
-my $command = shift(@ARGV); # read the command.
-
 # Read the options.
-&GetOptions(
+Getopt::Long::GetOptions(
     'default|d'          => \$default,
     'dry-run|u'          => \$dryrun,
     'refreshstatuses|r'  => \$refreshstatuses,
@@ -116,9 +119,13 @@ my $command = shift(@ARGV); # read the command.
     'noresolv|l'         => \$noresolv,
     'zero|0|z!'          => \$zero,
     'file|f=s'           => \$file,
+    'service|r=s'        => \$target_service,
     'help|h|?'           => \&usage,
     'version|v'          => \&show_version,
 );
+
+# Read the command.
+my $command = shift(@ARGV); # read the command.
 
 # Check that we've registered everything on the command line.
 die "ERROR: Unknown remaining arguments: ".join(" ", @ARGV)."\n" if(scalar(@ARGV > 0));  # Nothing should remain in @ARGV.
@@ -728,10 +735,68 @@ sub set_node_dead($) {
 sub set_node_ping($) {
     my $node_ref = shift;
     my $node_name = $$node_ref->{'name'};
-    if(system("ping -c1 $node_name >/dev/null 2>&1")) { # Error.
-        $$node_ref->{'status'} = "dead";
+
+    $$node_ref->{'status'} = check_remote_service($node_name,get_c3_remote_service())?"online":"dead";
+
+#    $$node_ref->{'status'} = "dead"; # By default node is dead.
+#    $$node_ref->{'status'} = "online" if(check_remote_service($node_name,get_c3_remote_service()));
+}
+
+################################################################################
+#
+# get_c3_remote_service():
+#      return the service name (as in /etc/services) to use to check remote nodes.
+#
+#      - if --service is used, use that value (overrides any other prefs)
+#      - if $ENV{C3_RSH} is set, use that to determine the service name.
+#        only support ssh (ssh) and rsh (shell).
+#      - defaults to ssh.
+#
+################################################################################
+
+sub get_c3_remote_service() {
+    # Services hash: 'command' => service name from /etc/services
+    my %services = (
+        'ssh' => 'ssh',
+        'rsh' => 'shell'
+    );
+    return $target_service if (defined($target_service));
+    my $service = $services{$ENV{C3_RSH}} if (defined($ENV{C3_RSH}));
+    if(! defined($service)) {
+        warn "WARNING: C3_RSH=".$ENV{C3_RSH}." is not supported. using ssh as default.\n" if (defined($ENV{C3_RSH}));
+        $service = 'ssh';
+    }
+    return $service;
+}
+################################################################################
+#
+# check_remote_service: check if remote service is listening for connections.
+#    $hostname: the remote host
+#    $service: the name of the service as in /etc/services (e.g.: ssh, shell)
+#
+#    return: 1 upon succes, 0 otherwise.
+#
+################################################################################
+
+sub check_remote_service($$) {
+    my $hostname = shift;
+    my $service_name = shift;
+
+    # Special case: if service is ping (not a real service) do specific test
+    return (system("ping -c1 -q -W1 $hostname >/dev/null 2>&1")?0:1) if($service_name eq 'ping');
+    # Get the service port: (service name, service aliases, service port, protocol)
+    my @service = getservbyname($service_name, 'tcp');
+    my $port = 22;
+    my $socket = IO::Socket::INET->new(PeerHost => "$hostname",
+                                       PeerPort => "$service[2]",
+                                       Proto => 'tcp',
+                                       Timeout => '1');
+    if(defined $socket) { # port is open
+        shutdown($socket,2);
+        close $socket;
+        return 1;
     } else {
-        $$node_ref->{'status'} = "online";
+        return 0;
     }
 }
 
@@ -888,7 +953,7 @@ given ($command) {
     }
     when ('delcluster') {
         # print "delcluster";
-        check_options_or_die('delcluster','default', 'refreshstate', 'sortnodes', 'nodes', 'noresolv', 'zero');
+        check_options_or_die('delcluster','default', 'refreshstate', 'sortnodes', 'nodes', 'noresolv', 'service', 'zero');
         die "ERROR: cluster not specified" if (! defined($target_cluster));
         die "ERROR: unknown cluster" if ( $target_cluster ~~ get_cluster_names() );
         for (my $i; $i < scalar(@clusters); $i++) {
@@ -913,7 +978,7 @@ given ($command) {
     }
     when ('delnodes') {
         # print "delnodes";
-        check_options_or_die('delnodes', 'zero', 'noresolv');
+        check_options_or_die('delnodes', 'zero', 'noresolv', 'service');
         # 1st, check that we know the target cluster and that it exists.
         die "ERROR: cluster not specified" if (! defined($target_cluster));
         die "ERROR: You need at least a node" if ( scalar(@target_nodes) < 1 );
@@ -934,7 +999,7 @@ given ($command) {
     }
     when ('disablenodes') {
         # print "disablenodes";
-        check_options_or_die('disablenodes', 'zero', 'noresolv');
+        check_options_or_die('disablenodes', 'zero', 'noresolv', 'service');
         die "ERROR: --nodes used without --cluster" if (scalar(@target_nodes)> 0 && !defined($target_cluster));
         die "ERROR: unknown cluster [$target_cluster]" if (defined($target_cluster) && !defined(get_cluster($target_cluster)));
         set_nodes_status(\&set_node_dead);
@@ -987,12 +1052,11 @@ given ($command) {
                    $rc++;
                    next; # If error, no need to test ping (unknown host won't ping).
                }
-               # Check if alive node does ping.
-               if(($node->{'status'} eq "online") && (system("ping -c1 $node->{'name'} >/dev/null 2>&1"))) {
-                   print "ERROR: node [$node->{'name'}] in cluster [$cluster] is down while being 'alive' in c3 config\n";
+               # Check if alive node has remote service up (default ssh) or ping.
+               if(($node->{'status'} eq "online") && (!check_remote_service($node->{'name'},get_c3_remote_service()))) {
+                   print "ERROR: [".(defined($target_service)?$target_service:"ssh")."] test on node [$node->{'name'}] in cluster [$cluster] failed, but node is 'alive' in c3 config\n";
                    $rc++;
                }
-               # Check that ssh port is open?
            }
            # Check head or vcluster (we are sure that at leas one exists otherwize the parser would have failed)
            my @heads = ();
@@ -1018,10 +1082,11 @@ given ($command) {
            }
        }
        die "$rc errors found in $c3conf\n" if($rc);
+       print "$c3conf checks successfull.\n";
     }
     when ('listnodes') {
         # print "listnodes";
-        check_options_or_die('listnodes', 'default', 'dry-run', 'refreshstate', 'nodes', 'noresolv', 'zero');
+        check_options_or_die('listnodes', 'default', 'dry-run', 'refreshstate', 'nodes', 'noresolv', 'service', 'zero');
         die "ERROR: cluster not specified" if (! defined($target_cluster));
         die "ERROR: unknown cluster" if ( $target_cluster ~~ get_cluster_names() );
         my $cluster_ref = get_cluster($target_cluster);
@@ -1044,7 +1109,7 @@ given ($command) {
         print join(" ", @node_list)."\n";
     }
     when ('listclusters') {
-        check_options_or_die('listclusters', 'cluster', 'default', 'dry-run', 'refreshstate', 'nodes', 'sortnodes', 'noresolv', 'zero');
+        check_options_or_die('listclusters', 'cluster', 'default', 'dry-run', 'refreshstate', 'nodes', 'sortnodes', 'noresolv', 'service', 'zero');
         my @clusters_list = ();
         for my $element (@clusters) {
             if (ref($element) eq 'HASH') { # Found
@@ -1169,7 +1234,7 @@ The following checks are done:
 - Duplicate nodes within a cluster
 - names that do not resolv (unknown hosts)
   (can be ignored using the --noresolv)
-- alive nodes that do not respond to ping
+- alive nodes that do not respond to ssh or specific service.
 
 =item --version
 
@@ -1228,6 +1293,11 @@ Doesn't try to resolve hostnames.
 
 This permits to add nodes/heads/vclusters that are not yet defined
 in any host database or DNS.
+
+=item --service
+
+Name of service to use to test that a remote node is alive or not.
+The service name can be any tcp service in /etc/services or 'ping'.
 
 =item --zero|z|0
 
