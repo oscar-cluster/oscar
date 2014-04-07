@@ -35,8 +35,7 @@ use IO::Socket::INET;
 Getopt::Long::Configure ("pass_through");
 
 my $SCRIPT      = "cconfig";
-my $SVN_VERSION = sprintf "r%d", q$Revision$ =~ /(\d+)/g;
-my $VERSION     = "v1.0 svn($SVN_VERSION)";
+my $VERSION     = "v1.0";
 my $refreshstatuses   = undef; # If set, nodes are pinged and status (dead/online) is updated accordingly.
 my $sortnodes      = undef; # If set, nodes are sorted.
 my $target_cluster = undef;
