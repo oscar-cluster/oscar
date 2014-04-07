@@ -9,39 +9,48 @@
 # Copyright (c) 2008 Geoffroy Vallee <valleegr@ornl.gov>
 #                    Oak Ridge National Laboratory
 #                    All rights reserved.# Last Updated: 10/10/2000, 5/15/2002
+# Copyright (c) 2014 Olivier LAHAYE <olivier.lahaye@cea.fr>
+#                    Commissariat a l'Energie Atomique et aux Energies Alternatives.
+#                    All Rights reserved.
+#                    => major rewrite relying on cconfig instead of c3_conf_manager.
 #
 
 use strict;
-use lib '/usr/lib/systeminstaller';
 use SystemInstaller::Machine;
 use OSCAR::ConfigFile;
+use Sys::Hostname;
 use Carp;
+
+my $c3conf = "/etc/c3.conf";
 
 my $image_name = shift;
 
 my %hash = SystemInstaller::Machine::get_machine_listing($image_name);
 
-# TODO: make sure we feed the c3_conf_manager script with a correctly sorted
-# list of nodes. Typically the sorting function has to be revisited to handle
-# fancy schemes like the one described in ticket #143
-my @hosts = sortnodes( keys %hash );
-
 my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
                                                   undef,
                                                   "OSCAR_SCRIPTS_PATH");
-my $c3mgr = "$binaries_path/c3_conf_manager";
+my $c3mgr = "$binaries_path/cconfig";
 
-# TODO: We should ALWAYS specify the conf file we target.
-!system("$c3mgr --rm oscar_cluster && $c3mgr --add oscar_cluster " . join(' ', @hosts)) or 
-	die ("ERROR: I couldn't manage to update the C3 configuration!\n");
-
-# Use Schwartzian transform to sort node names alphabetically and numerically.
-# Names w/o numeric suffix preceed those with numeric suffix.
-sub sortnodes (@) {
-    my (@nodes) = @_;
-    @nodes = ( sort { $a cmp $b; } @nodes);
-    return @nodes;
+# Remove any old oscar_cluster definition
+if(-f $c3conf) {
+    # remove old oscar_cluster definition in c3.conf if present.
+    system("$c3mgr delcluster --cluster oscar_cluster --file $c3conf");
 }
+
+# Add the new oscar_cluster to c3.conf file.
+
+#1st init the config file if it does not yet exists.
+if (! -f $c3conf) {
+    open C3_CONF, '>', $c3conf and close C3_CONF
+        or die "ERROR: Can't create $c3conf.\n";
+}
+
+# use hostname as head. if using pbs_oscar, c3 tools will think it's a remote cluster.
+my $head = hostname;
+# Now create the oscar_cluster. Set it as default. Sort nodes.
+!system("$c3mgr addcluster --cluster oscar_cluster --default --nozero --file $c3conf --sortnodes --nodes $head ". join(' ', keys %hash))
+    or die ("ERROR: Couldn't add new oscar_cluster definition to $c3conf\n");
 
 exit 0;
 
