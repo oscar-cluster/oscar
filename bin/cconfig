@@ -139,6 +139,8 @@ if ($file) {
     }
 }
 
+die "ERROR: --zero/--nozero needs --cluster option.\n" if(defined($zero) && !defined($target_cluster));
+
 ################################################################################
 #
 # Load a c3.conf file in memory.
@@ -230,11 +232,27 @@ sub parse_c3_conf() {
                     }
                 }
 
+                # Handle option --nozero: $zero==0 / --zero: $zero=1 / option not used: $zero is undefined.
+                if(defined($zero) && $zero==0 && $target_cluster eq $cluster_def->{'name'}) { # Force non-zero indexing on selected cluster.
+                    my $dummy_node;
+                    $dummy_node->{'status'} = "dead";
+                    $dummy_node->{'name'} = "remove_for_0-indexing";
+                    $dummy_node->{'comment'} = "# remove this line for 0-indexing";
+                    unshift(@{$cluster_def->{'nodes'}}, $dummy_node); # Add a prepending dummy node.
+                }
+
+                # Handle option --zero
+                if(defined($zero) && $zero==1 && $target_cluster eq $cluster_def->{'name'} && !using_zero_indexing(@{$cluster_def->{'nodes'}})) {
+                    shift(@{$cluster_def->{'nodes'}}); # Remove 1st dead dummy node.
+                }
+
+                # Handle --default option.
                 if ($default && ($cluster_def->{'name'} =~ /$target_cluster/i)) {
                     unshift(@c3_conf, $cluster_def);
                 } else {
                     push (@c3_conf, $cluster_def);
                 }
+
                 undef $cluster_def;
                 $last_node_index = -1; 
             }
@@ -1354,9 +1372,10 @@ Use dummy dead entry for node index 0 so indexing starts at 1.
 
 =over 8
 
-=item Support to update zero-indexing in update command
-
 =item Cleanup the 'check' command output error messages
+
+=item check if a default cluster can be used if no --cluster is used
+listnodes?
 
 =back
 

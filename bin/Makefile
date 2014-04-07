@@ -2,7 +2,7 @@ DESTDIR=
 TOP_DIR = ..
 include $(TOP_DIR)/Config.mk
 
-SCRIPTS := oscar-config oscar_image_cleanup oscar_wizard repo-update setup_pxe
+SCRIPTS := oscar-config oscar_image_cleanup oscar_wizard repo-update setup_pxe cconfig
 
 doc:
 	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1/
