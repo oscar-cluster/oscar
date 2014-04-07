@@ -3,10 +3,25 @@
 # cconfig (replacement for c3_conf_manager)
 #
 # Written by Olivier Lahaye 14/03/2014
-
+#
 # Copyright (C) 2014        CEA - Commissariat a l'Energie Atomique
 #                           Olivier LAHAYE <olivier dot lahaye at cea dot fr>
 #                           All rights reserved.
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
 
 use strict;
 use Carp;
@@ -20,18 +35,20 @@ use IO::Socket::INET;
 Getopt::Long::Configure ("pass_through");
 
 my $SCRIPT      = "cconfig";
-my $SVN_VERSION = sprintf "r%d", q$Revision: 1 $ =~ /(\d+)/g;
-my $VERSION     = "v1.0 ($SVN_VERSION)";
+my $SVN_VERSION = sprintf "r%d", q$Revision$ =~ /(\d+)/g;
+my $VERSION     = "v1.0 svn($SVN_VERSION)";
 my $refreshstatuses   = undef; # If set, nodes are pinged and status (dead/online) is updated accordingly.
 my $sortnodes      = undef; # If set, nodes are sorted.
 my $target_cluster = undef;
 my @target_nodes   = ();
 my $target_service = undef; # Name of service to check for remote node being alive. (set using --service)
 my $zero           = undef; # 1 if use 0-indexing. (default is not to use zero indexing). undef means don't change.
+my $one            = undef; # 1 if force to no using 0-indexing. (option -1)
 my $default        = undef; # if set, the current cluster is moved at 1st position so it becomes default.
 my $file           = undef; # Alternate config file.
 my $dryrun         = undef; # If set: write result to stdout instead of the c3.conf file.
 my $noresolv       = undef; # If defined: doesn't try to resolv hostnames.
+my $default_cluster= undef; # 1st cluster seen.
 
 our @clusters;  # Table of clusters hashes (and comments)
 my $hostname    = `hostname`;
@@ -95,14 +112,13 @@ OPTIONS:
 --cluster|c <clustername>  Specify the cluster name to work with
 --nodes|n <node ...>       List of nodes or nodes ranges to works with (space separated)
 --noresolv|l               Don't try to check if hostnames resolv.
---service <service name>   Name of service to use to test that a remote node is alive or not.
+--service|e <service name> Name of service to use to test that a remote node is alive or not.
                            The service name can be any tcp service in /etc/services or a port number.
                            Special values are: ping, resolv, none (see cconfig(1) manpage).
---zero|z|0                 Force 0-indexing (do not insert dummy dead entry)
-                           (can be used with --cluster option to update it or
-                           when creating a cluster: --addcluster option or
-                           without specifying any cluster (will apply on all clusters))
---nozero|noz|no0           Use dummy dead entry so indexing starts at 1.
+--zero|z|0                 Force 0-indexing (do not insert or remove dummy dead entry)
+                           Only valid for addcluster and update commands. Must be used with
+                           --cluster option.
+--nozero|noz|no0|1         Use dummy dead entry so indexing starts at 1.
 --dry-run|u                Output restult to stdout instead of updating config file.
 --file|f <file>            Use alternative config file.
 EOF
@@ -119,8 +135,9 @@ Getopt::Long::GetOptions(
     'nodes|n=s{,}'       => \@target_nodes,
     'noresolv|l'         => \$noresolv,
     'zero|0|z!'          => \$zero,
+    '1'                  => \$one,
     'file|f=s'           => \$file,
-    'service|r=s'        => \$target_service,
+    'service|e=s'        => \$target_service,
     'help|h|?'           => \&usage,
     'version|v'          => \&show_version,
 );
@@ -131,6 +148,11 @@ my $command = shift(@ARGV); # read the command.
 # Check that we've registered everything on the command line.
 die "ERROR: Unknown remaining arguments: ".join(" ", @ARGV)."\n" if(scalar(@ARGV > 0));  # Nothing should remain in @ARGV.
 
+# Handle -1 shortcut.
+if (defined($one)) {
+    die "ERROR: -0 and -1 options cannot be used at the same time." if(defined($zero) && $zero==0);
+    $zero = 0;
+}
 if ($file) {
     if (-f $file) {
         $c3conf = $file;
@@ -248,6 +270,7 @@ sub parse_c3_conf() {
 
                 # Handle --default option.
                 if ($default && ($cluster_def->{'name'} =~ /$target_cluster/i)) {
+                    $default_cluster = $target_cluster; # new default cluster.
                     unshift(@c3_conf, $cluster_def);
                 } else {
                     push (@c3_conf, $cluster_def);
@@ -262,6 +285,7 @@ sub parse_c3_conf() {
                 $head_found=0;
                 $node_index=0; # node index
                 $cluster_def->{'name'} = $1;
+                $default_cluster = $1 if(! defined($default_cluster)); # Keep track of default cluster.
                 $cluster_def->{'start_comment'} = $2 if ( $2 ne "" );
                 $cluster_def->{'nodes'} = ();
                 $current_node=""; # last node name seen (needed to handle excludes)
@@ -647,6 +671,9 @@ sub check_options_or_die($@) {
             when('noresolv') {
                 push (@bad_options,$option) if (defined($noresolv));
             }
+            when('service') {
+                push (@bad_options,$option) if (defined($target_service));
+            }
             when('zero') {
                 push (@bad_options,$option) if (defined($zero));
             }
@@ -965,7 +992,12 @@ given ($command) {
             die "ERROR: invalide remote cluster name: [$new_vcluster->{'name'}]" if ($new_vcluster->{'name'} !~ /^[a-z0-9.-]+$/i);
             check_host_resolvs_or_die($new_vcluster->{'name'});
             $new_cluster->{'vcluster'} = $new_vcluster;
-            push (@clusters, $new_cluster); # Add the new cluster entry.
+            if ($default) {
+                $default_cluster = $target_cluster; # new default cluster.
+                unshift(@clusters, $new_cluster);
+            } else {
+                push (@clusters, $new_cluster); # Add the new cluster entry.
+            }
         } else {
             my $new_head;
             my $raw_head = shift(@target_nodes);
@@ -981,7 +1013,15 @@ given ($command) {
                 die "ERROR: invalide head name: [$new_head->{'name'}]\n";
             }
             $new_cluster->{'head'} = $new_head;
-            push (@clusters, $new_cluster); # Add the new cluster entry.(add_node needs that)
+
+            if ($default) {
+                $default_cluster = $target_cluster; # new default cluster.
+                unshift(@clusters, "") if(scalar(@clusters)>0); # Add blank line after default cluster.
+                unshift(@clusters, $new_cluster);
+            } else {
+                push (@clusters, $new_cluster); # Add the new cluster entry.(add_node needs that)
+            }
+
             # If we do not use zero indexing. need to insert a dummy entry.
             if (! $zero) {
                 add_node($target_cluster, "remove_for_0-indexing", "dead", "# remove this line for 0-indexing");
@@ -1132,7 +1172,8 @@ given ($command) {
     when ('listnodes') {
         # print "listnodes";
         check_options_or_die('listnodes', 'default', 'dry-run', 'refreshstate', 'nodes', 'noresolv', 'service', 'zero');
-        die "ERROR: cluster not specified" if (! defined($target_cluster));
+        $target_cluster = $default_cluster if (! defined($target_cluster) && defined($default_cluster));
+        die "ERROR: cluster not specified (and no default cluster)" if (! defined($target_cluster));
         die "ERROR: unknown cluster" if ( $target_cluster ~~ get_cluster_names() );
         my $cluster_ref = get_cluster($target_cluster);
         die "ERROR: Unknown cluster: $target_cluster" if (! defined($cluster_ref));
@@ -1259,7 +1300,7 @@ example: Sorting all nodes in clusters definitions:
 =item listnodes
 
 Lists active nodes in cluster
-Requires the --cluster option
+If no --cluster option is used, then it lists the default cluster nodes (1st one).
 
 example:
     cconfig listnodes --cluster my_cluster
@@ -1372,10 +1413,7 @@ Use dummy dead entry for node index 0 so indexing starts at 1.
 
 =over 8
 
-=item Cleanup the 'check' command output error messages
-
-=item check if a default cluster can be used if no --cluster is used
-listnodes?
+=item Nothing so far.
 
 =back
 
