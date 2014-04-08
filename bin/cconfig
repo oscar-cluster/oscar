@@ -83,8 +83,7 @@ addcluster                 Adds cluster with given name
                            (MUST BE USED WITH the --cluster and --nodes options if not a virtual cluster.)
 delcluster                 Removes cluster with given name
 addnodes                   Add nodes to a cluster
-                           If a node was marked dead, the node is
-                           marked back to alive.
+                           Refuses to add an already existing node.
                            (MUST BE USED WITH the --cluster and --nodes options)
                            ranges are accepted.
 delnodes                   Remove a node from a cluster
@@ -731,7 +730,14 @@ sub expand_nodes(@) {
 ################################################################################
 #
 # Add a node to a given cluster.
+# 
+# Mandatory arguments:
+#     $cluster: cluster name
+#     $name: node name to add
 #
+# Optional arguments:
+#     $status: node status
+#     $comment: node comment
 #
 ################################################################################
 
@@ -747,14 +753,15 @@ sub add_node($$;$$) {
             }
             my @nodenames = map { $_->{'name'} } @{$element->{'nodes'}};
             if($name ~~ @nodenames) { # Node already exists in this cluster.
-                for my $node (@{$element->{'nodes'}}) { # Find the node
-                    if($node->{'name'} =~ /$name/i) {
-                        set_node_alive(\$node) if (! defined($refreshstatuses)); # enable it (except if --refreshstate
-                                                                              # is used as the status has already been
-                                                                              #  updated when parsing c3.conf)
-                        last;
-                    }
-                }
+                 return 1; # Failed to add node: node already exists.
+#                for my $node (@{$element->{'nodes'}}) { # Find the node
+#                    if($node->{'name'} =~ /$name/i) {
+#                        set_node_alive(\$node) if (! defined($refreshstatuses)); # enable it (except if --refreshstate
+#                                                                              # is used as the status has already been
+#                                                                              #  updated when parsing c3.conf)
+#                        last;
+#                    }
+#                }
             } else { # This s a new node. Adding it.
                 my $new_node;
                 $new_node->{'name'} = $name;
@@ -767,7 +774,8 @@ sub add_node($$;$$) {
             return 0; # Node added, no need to continue with remaining clusters.
         }
     }
-    return 1; # We didn't found the cluster... strange.
+    die "ERROR: Unknown cluster: $cluster.\n";
+    #return 1; # We didn't found the cluster... strange.
 }
 
 ################################################################################
@@ -1026,10 +1034,12 @@ given ($command) {
                 add_node($target_cluster, "remove_for_0-indexing", "dead", "# remove this line for 0-indexing");
             }
             # Add the nodes.
+            my @duplicate_nodes = ();
             for my $node (@target_nodes) {
                 check_host_resolvs_or_die($node);
-                add_node($target_cluster,$node);
+                push (@duplicate_nodes, $node) if add_node($target_cluster,$node); # add_node returns 1 if duplicate node.
             }
+            die "ERROR: Duplicate nodes: ".join(" ", @duplicate_nodes)."\n";
         }
         write_c3_conf(@clusters);
     }
@@ -1057,10 +1067,12 @@ given ($command) {
         die "ERROR: cluster not specified" if (! defined($target_cluster));
         die "ERROR: Unknown cluster: $target_cluster" if (! defined(get_cluster($target_cluster)));
         die "ERROR: You need at least a node" if ( scalar(@target_nodes) < 1 );
+        my @duplicate_nodes = ();
         for my $node (@target_nodes) {
             check_host_resolvs_or_die($node);
-            add_node($target_cluster,$node);
+            push (@duplicate_nodes, $node) if add_node($target_cluster,$node); # add_node returns 1 if duplicate node.
         }
+        die "ERROR: Duplicate nodes: ".join(" ", @duplicate_nodes)."\n";
         write_c3_conf(@clusters);
     }
     when ('delnodes') {
@@ -1262,7 +1274,7 @@ example: cconfig delcluster --cluster my_cluster
 =item addnodes
 
 Add node(s) to a cluster.
-If a node was marked dead, the node is marked back to alive.
+Refuses to add an already existing node.
 Requires the --cluster and --nodes options.
 
 example: cconfig addnodes --cluster my_cluster --nodes foo bar rack1-[1-22] rack2-[1-22]
