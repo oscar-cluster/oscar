@@ -36,6 +36,8 @@ my $c3mgr = "$binaries_path/cconfig";
 if(-f $c3conf) {
     # remove old oscar_cluster definition in c3.conf if present.
     system("$c3mgr delcluster --cluster oscar_cluster --file $c3conf");
+} else {
+    die "ERROR: cannot open $c3conf.\n");
 }
 
 # Add the new oscar_cluster to c3.conf file.
