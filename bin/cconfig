@@ -1040,10 +1040,15 @@ given ($command) {
         die "ERROR: unknown cluster" if ( $target_cluster ~~ get_cluster_names() );
         for (my $i; $i < scalar(@clusters); $i++) {
             if ((ref($clusters[$i]) eq 'HASH') && ($clusters[$i]->{'name'} =~ /$target_cluster/i)) { # Found
-                splice(@clusters,$i,1); # Kill it.
+                my $count = 1; # remove at least one element.
+                $count++ if((ref($clusters[$i+1]) ne 'HASH') && ($clusters[$i+1] eq "")); # Add the following blank line if it exists.
+                splice(@clusters,$i,$count); # Kill it.
+                write_c3_conf(@clusters);
+                exit 0; # job done.
             }
         }
-        write_c3_conf(@clusters);
+        # IF we're here, then it means we didn't find $target_cluster in $c3conf.
+        die "ERROR: cluster $target_cluster not found in $c3conf.\n";
     }
     when ('addnodes') {
         # print "addnodes";
@@ -1412,7 +1417,7 @@ Use dummy dead entry for node index 0 so indexing starts at 1.
 
 =over 8
 
-=item Nothing so far.
+=item rais error when trying to delete non existent nodes or cluster.
 
 =back
 
