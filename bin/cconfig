@@ -1039,7 +1039,7 @@ given ($command) {
                 check_host_resolvs_or_die($node);
                 push (@duplicate_nodes, $node) if add_node($target_cluster,$node); # add_node returns 1 if duplicate node.
             }
-            die "ERROR: Duplicate nodes: ".join(" ", @duplicate_nodes)."\n";
+            die "ERROR: Duplicate nodes: ".join(" ", @duplicate_nodes)."\n" if (scalar(@duplicate_nodes) > 0);
         }
         write_c3_conf(@clusters);
     }
@@ -1072,7 +1072,7 @@ given ($command) {
             check_host_resolvs_or_die($node);
             push (@duplicate_nodes, $node) if add_node($target_cluster,$node); # add_node returns 1 if duplicate node.
         }
-        die "ERROR: Duplicate nodes: ".join(" ", @duplicate_nodes)."\n";
+        die "ERROR: Duplicate nodes: ".join(" ", @duplicate_nodes)."\n" if (scalar(@duplicate_nodes) > 0);
         write_c3_conf(@clusters);
     }
     when ('delnodes') {
