@@ -677,22 +677,38 @@ sub c3_hosts_up () {
     }
 }
 
+################################################################################
+#
+# Update the list of nodes that are able to effectively execute some remote commands.
+# This is more sofisticated than "cconfig check" that only test that ssh port is
+# open on nodes.
+#
+################################################################################
+
 sub update_list_alive_nodes () {
     my @down_nodes;
-    my $pos;
+#    my $pos;
 
     @down_nodes = get_list_of_down_nodes ();
-        
-    foreach my $node (@down_nodes) {
-        # TODO: c3_conf_manager should support that
-        $pos = OSCAR::FileUtils::line_in_file ("\t$node", "/etc/c3.conf");
-        if ($pos == -1) {
-            oscar_log(5, ERROR, "Impossible to find an entry for $node in /etc/c3.conf");
-            return -1;
-        }
-        oscar_log(5, WARNING, "Disabling node $node in /etc/c3.conf as it seems down.");
-        OSCAR::FileUtils::replace_line_in_file ("/etc/c3.conf", $pos, "\tdead $node"); 
-    }
+
+    # Enable all nodes for oscar_cluster in c3.conf
+    !oscar_system("/usr/bin/cconfig  enablenodes --cluster oscar_cluster --file /etc/c3.conf")
+        or return -1;
+
+    # Disable the nodes that we found as dead.
+    !oscar_system("/usr/bin/cconfig disablenodes --cluster oscar_cluster --file /etc/c3.conf --nodes ".join(" ",@down_nodes))
+        or return -1;
+
+#    foreach my $node (@down_nodes) {
+#        # TODO: c3_conf_manager should support that
+#        $pos = OSCAR::FileUtils::line_in_file ("\t$node", "/etc/c3.conf");
+#        if ($pos == -1) {
+#            oscar_log(5, ERROR, "Impossible to find an entry for $node in /etc/c3.conf");
+#            return -1;
+#        }
+#        oscar_log(5, WARNING, "Disabling node $node in /etc/c3.conf as it seems down.");
+#        OSCAR::FileUtils::replace_line_in_file ("/etc/c3.conf", $pos, "\tdead $node"); 
+#    }
 
     return 0;
 }
