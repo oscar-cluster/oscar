@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<package_set>
+    <name>Experimental</name>
+    <packages>
+        <opkg>apitest</opkg>
+        <opkg>base</opkg>
+        <opkg>blcr</opkg>
+        <opkg>c3</opkg>
+        <opkg>diskless</opkg>
+        <opkg>disable-services</opkg>
+        <opkg>ganglia</opkg>
+        <opkg>jobmonarch</opkg>
+        <opkg>lam</opkg>
+        <opkg>linux-ha</opkg>
+        <opkg>loghost</opkg>
+        <opkg>maui</opkg>
+        <opkg>mpich</opkg>
+        <opkg>mtaconfig</opkg>
+        <opkg>munge</opkg>
+        <opkg>netbootmgr</opkg>
+        <opkg>networking</opkg>
+        <opkg>ntpconfig</opkg>
+        <opkg>oda</opkg>
+        <opkg>openmpi</opkg>
+        <opkg>opium</opkg>
+        <opkg>pfilter</opkg>
+        <opkg>pvm</opkg>
+        <opkg>sc3</opkg>
+        <opkg>selinux</opkg>
+        <opkg>sge</opkg>
+        <opkg>sis</opkg>
+        <opkg>slurm</opkg>
+        <opkg>switcher</opkg>
+        <opkg>sync-files</opkg>
+        <opkg>torque</opkg>
+        <opkg>yume</opkg>
+    </packages>
+</package_set>
