@@ -46,6 +46,8 @@ use File::Basename;
 use Carp;
 use v5.10.1;
 use Switch 'Perl5', 'Perl6';
+# Avoid smartmatch warnings when using given
+no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 
 use vars qw(@EXPORT);
 use base qw(Exporter);

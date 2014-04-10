@@ -30,6 +30,8 @@ use OSCAR::Env;
 use OSCAR::LoggerDefs;
 use OSCAR::Utils;
 use Switch 'Perl5', 'Perl6';
+# Avoid smartmatch warnings when using given
+no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 
 our @EXPORT = qw(
              oscar_log_section

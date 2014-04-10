@@ -32,6 +32,8 @@ use File::Copy;
 use Getopt::Long;
 use IO::Socket::INET;
 
+no if $] >= 5.017011, warnings => 'experimental::smartmatch';
+
 Getopt::Long::Configure ("pass_through");
 
 my $SCRIPT      = "cconfig";

@@ -53,6 +53,8 @@ use OSCAR::OCA::OS_Settings;
 use OSCAR::Database;
 use OSCAR::Configurator_backend;
 use feature "switch";
+# Avoid smartmatch warnings when using given
+no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 
 my $configurator = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 
