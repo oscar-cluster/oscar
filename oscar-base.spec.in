@@ -199,7 +199,7 @@ GPG keys used to sign them.
 #{_sysconfdir}/pki/rpm-gpg/*
 
 %changelog
-* Fri Dec 3 2013 Olivier Lahaye <olivier.lahaye@cea.fr>
+* Fri Dec 06 2013 Olivier Lahaye <olivier.lahaye@cea.fr>
 - Added missing deps on iproute, oscarbase for scripts and so on.
 * Tue Dec 03 2013 Olivier Lahaye <olivier.lahaye@cea.fr>
 - Fixed packaging for FHS

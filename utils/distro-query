@@ -206,4 +206,15 @@ Detect distro and architecture of a node.
 
 Display this help text.
 
+=back
+
+=head1 AUTHORS
+
+Erich Focht <efocht@hpce.nec.com>
+Geoffroy Vallee <valleegr@ornl.gov>
+
+=head1 SEE ALSO
+
+L<oscar(1)>
+
 =cut
