@@ -1,28 +1,15 @@
 #!/usr/bin/perl
 # (C)opyright Paul Greidanus <paul.greidanus@ualberta.ca>
 
-use Data::Dumper;
- # Likely too many includes.. 
 use strict;
 use lib "$ENV{OSCAR_HOME}/lib";
-use POSIX; # gives us uname function
-use File::Path;
-use File::Copy;
-use File::Basename;
-use OSCAR::Network;
-use OSCAR::Logger;
-use OSCAR::Database;
-use OSCAR::Package;
-use OSCAR::PackMan;
-use OSCAR::PackageSmart;
-use OSCAR::Configbox;
+#use POSIX; # gives us uname function
+#use File::Path;
+#use File::Copy;
+#use File::Basename;
 use OSCAR::Configurator_backend;
 use Carp;
-use Data::Dumper;
-use OSCAR::OCA::OS_Detect;
-use OSCAR::OCA::OS_Settings;
 use OSCAR::Env qw ( oscar_home_env);
-use OSCAR::Opkg;
 use Getopt::Long;
 use Cwd qw(chdir cwd);
 
@@ -49,7 +36,7 @@ open ( SCRIPT, "> $script");
 
 open( NFS_FSTAB, "> $nfs_fstab");
 
-printf NFS_FSTAB "# NFS entries created by 90".$image.".add_nfs\n";
+printf NFS_FSTAB "# NFS entries created by 90".$image.".add_nfs\n";
 
 #iterare through available mounts from ODA and setup fstab
 while ( $mount_counter <= $max_counter ) {
@@ -66,16 +53,16 @@ while ( $mount_counter <= $max_counter ) {
     if ($nfs_local ne "" and $nfs_remote ne "" and $nfs_server ne "") {
 	    # Add lines into script to create mountpoint directories if they do not exist
         printf SCRIPT "mkdir -p $nfs_local\n";
-        # Add lines to the fstab.nfs related to mountpoint
+        # Add lines to the fstab.nfs related to mountpoint
 	    printf NFS_FSTAB "$nfs_server:$nfs_remote\t$nfs_local\tnfs\trw\t0\t0\n";
     }
 	$mount_counter++;
 	}
 
-printf NFS_FSTAB "# End entries added by 90".$image.".add_nfs\n";
+printf NFS_FSTAB "# End entries added by 90".$image.".add_nfs\n";
 close NFS_FSTAB;
 
-# Once all mkdir are successfull, append fstab.nfs to fstab.
+# Once all mkdir are successfull, append fstab.nfs to fstab.
 printf( SCRIPT "cat /etc/fstab.nfs >> /etc/fstab\n");
 close SCRIPT;
 chmod 0755, $script;
