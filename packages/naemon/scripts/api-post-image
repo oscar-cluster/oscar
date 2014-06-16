@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# Run after image creation. Fix config files inside image.
+
+IMAGEDIR=$1
+
+# FIXME: rewrite this in perl and use OS_Settings to get correct nrpe conf
+# file and nagios plugins dir.
+# Note: image can be for another OS: be carefull.
+
+# FIXME: Check that nrpe.cfg DOES includes /etc/nrpe.d/*.cfg (on SuSE, it is commented out!)
+
+if test -d ${IMAGEDIR}/usr/lib/nagios/plugins
+then
+  NAGIOS_PLUGINS=/usr/lib/nagios/plugins
+elif test -d ${IMAGEDIR}/usr/lib64/nagios/plugins
+  NAGIOS_PLUGINS=/usr/lib64/nagios/plugins
+else
+  echo "ERROR: Can't locate nagios plugins in image ${IMAGEDIR}."
+  exit 1
+fi
+
+
+# Set OSCAR nrpe configuration in image.
+
+cat >> ${IMAGEDIR}/etc/nrpe.d/oscar.cfg <<EOF
+#############################################################################
+# OSCAR NRPE Config File 
+# Written by: Olivier Lahaye <olivier.lahaye@cea.fr>
+# 
+# Last Modified: 26 May 2014
+#
+#############################################################################
+
+allowed_hosts=127.0.0.1,oscar_server
+dont_blame_nrpe=1
+
+command[check_smart]=${NAGIOS_PLUGINS}/check_ide_smart -n /dev/sda
+command[check_home]=${NAGIOS_PLUGINS}/check_disk -w 10% -c 5% -p /home
+command[check_pbsnode]=${NAGIOS_PLUGINS}/check_pbsnode $ARG1$
+
+EOF
+
+# Write the correct sudoers file.
+# FIXME: Check that sudoers config includes /etc/sudoers.d/*
+
+cat >> ${IMAGEDIR}/etc/sudoers.d/oscar <<EOF
+Defaults:nagios !requiretty
+nagios          ALL=(ALL) NOPASSWD: /usr/lib64/nagios/plugins/,/usr/lib/nagios/plugins/
+
+Defaults:nrpe   !requiretty
+nrpe            ALL=(ALL) NOPASSWD: /usr/lib64/nagios/plugins/,/usr/lib/nagios/plugins/
+
+EOF
+
+exit 0

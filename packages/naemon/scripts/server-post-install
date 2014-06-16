@@ -1,0 +1,70 @@
+#!/usr/bin/env perl
+                                                                                
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+# If the ntpconfig package has been configured to use a particular ntp server
+# then this script will update /etc/ntp.conf with the new server settings,
+# otherwise, it simply sets up the headnode to act as a time server for the
+# client nodes                                                                                
+# (C)opyright Olivier Lahaye <olivier.lahaye@cea.fr>
+
+use lib "$ENV{OSCAR_HOME}/lib";
+use OSCAR::Opkg;
+use OSCAR::Network;
+use OSCAR::Database;
+use OSCAR::Configurator_backend;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
+use OSCAR::FileUtils;
+use OSCAR::MonitoringConfig;
+use Carp;
+
+my $naemon_conf_dir = OSCAR::OCA::OS_Settings::getitem(NTP()."_configdir");
+my $configurator = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
+
+# Create an oscarback directory to store original config files.
+!system("mkdir $naemon_conf_dir/oscarback") or croak("Failed to mkdir $ntp_dir/oscarback") if !(-d "$ntp_dir/oscarback");
+
+# TODO: Move following fils to oscarback directory:
+# contacts.cfg  localhost.cfg  printer.cfg  switch.cfg  windows.cfg => oscarback/
+
+if (-e $configurator) { # else, user has not configured the package. do nothing then.
+    my $ref = OSCAR::Configurator_backend::readInConfigValues($configurator,
+        "naemon", "", noarray=>1);
+
+    # Values:
+    # $ref->{admin_mail} => contact mail for OSCAR Cluster system administrator.
+    #
+
+    # TODO:
+    # Write contacts.cfg
+    # Write oscar_commands.cfg (check_mysql, check_nrpe, check_nrpe_head)
+    # Write oscar_<service>.cfg (ping, ssh, (HTTP-ganlia:ganglia), HTTP-naemon, MySQL-oscar, (DISK-export:nfs), PBSNODE, SATA Disk smart status)
+    # Write oscar_hosts.cfg (nodes + head + hostgroups)
+    # Write Switches.cfg (empty with service defined and a commented out switch)
+    #
+
+}
+
+opkg_print("enabling naemon service at boot time on server\n");
+!enable_system_services( (NAEMON) )
+    or (carp "ERROR: Couldn't enable naemon service.\n", exit 1);
+
+# Better start naemon after cluster deployment.
+#opkg_print("restarting NAEMON service\n");
+#!system_service(NAEMON,RESTART)
+#    or die "ERROR: Couldn't restart naemon service on server.";
+
+exit(0);

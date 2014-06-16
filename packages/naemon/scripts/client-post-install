@@ -1,0 +1,34 @@
+#!/usr/bin/env perl
+                                                                                
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+# Copyright (C) 2005-2006 Bernard Li <bli@bcgsc.ca>
+#               All rights reserved
+
+# This script sets the nrpe service for the client nodes (via the image in the
+# chroot environment) to be the OSCAR headnode signified by the alias
+# oscar_server
+
+use Carp;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
+use OSCAR::OCA::OS_Settings;
+
+# Enable nrpe service in client image.
+print("[INFO] enabling nrpe service at boot time in image\n");
+!enable_system_services( (NRPE) )
+    or (carp "ERROR: Couldn't enable nrpe service.\n", exit 1);
+
+exit(0);

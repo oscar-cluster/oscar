@@ -1,0 +1,21 @@
+#!/usr/bin/env perl
+
+# Copyright (C) 2014 Olivier Lahaye <olivier.lahaye@cea.fr>
+#                    All rights reserved
+
+# Post install action to start naemon service. We can't start it before
+# otherwize, non yet deployed nodes would trigger some alarms.
+
+use Carp;
+# use OSCAR::Opkg;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
+# use OSCAR::Package;
+
+# my $naemon_options = getConfigurationValues('naemon');
+
+opkg_print("starting naemon service on head-node\n");
+!system_service(NAEMON,START)
+    or croak "ERROR: Couldn't start naemon service on head-node.";
+
+exit 0;
