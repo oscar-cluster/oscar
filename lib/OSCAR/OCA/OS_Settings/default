@@ -48,6 +48,8 @@ monitor_service=systemimager-server-monitord
 munge_service=munged
 mysql_service=mysqld
 nfs_service=nfs-server
+naemon_service=naemon
+nrpe_service=nrpe
 ntp_service=ntpd
 pbs_sched_service=pbs_sched
 pbs_mom_service=pbs_mom
@@ -90,6 +92,8 @@ pxe_bootbin=pxelinux.0
 # Specifies a few directories
 http_configdir=/etc/httpd/conf.d/
 munge_configdir=/etc/munge/
+naemon_configdir=/etc/naemon/
+nrpe_configdir=/etc/nrpe.d/
 ntp_dir=/etc/ntp
 postgresql_datadir=/var/lib/pgsql/data
 postgresql_bindir=/usr/bin

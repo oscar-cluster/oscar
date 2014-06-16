@@ -27,7 +27,9 @@ use constant JOBMONITOR     => 'jobmonitor';
 use constant MAUI           => 'maui';
 use constant MUNGE          => 'munge';
 use constant MYSQL          => 'mysql';
+use constant NAEMON         => 'naemon';
 use constant NFS            => 'nfs';
+use constant NRPE           => 'nrpe';
 use constant NTP            => 'ntp';
 use constant PBS_MOM        => 'pbs_mom';
 use constant PBS_SCHED      => 'pbs_sched';
@@ -80,7 +82,9 @@ our @EXPORT = qw(
                 MAUI
                 MUNGE
                 MYSQL
+                NAEMON
                 NFS
+                NRPE
                 NTP
                 PBS_MOM
                 PBS_SCHED
