@@ -28,7 +28,7 @@ use OSCAR::Configurator_backend;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
 use OSCAR::FileUtils;
-use OSCAR::MonitoringConfig;
+use OSCAR::MonitoringMgt;
 use Carp;
 
 my $naemon_conf_dir = OSCAR::OCA::OS_Settings::getitem(NTP()."_configdir");
