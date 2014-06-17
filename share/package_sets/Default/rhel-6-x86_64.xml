@@ -13,7 +13,7 @@
         <opkg>mpich-oscar</opkg>
         <opkg>mtaconfig</opkg>
         <opkg>munge</opkg>
-        <opkg>naemon</naemon>
+        <opkg>naemon</opkg>
         <opkg>netbootmgr</opkg>
         <opkg>nfs</opkg>
         <opkg>ntpconfig</opkg>
