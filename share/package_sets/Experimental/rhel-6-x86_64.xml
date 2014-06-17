@@ -7,6 +7,7 @@
         <opkg>blcr</opkg>
         <opkg>c3</opkg>
         <opkg>disable-services</opkg>
+        <opkg>diskless</opkg>
         <opkg>ganglia</opkg>
         <opkg>jobmonarch</opkg>
         <opkg>lam-oscar</opkg>
@@ -16,6 +17,7 @@
         <opkg>mpich-oscar</opkg>
         <opkg>mtaconfig</opkg>
         <opkg>munge</opkg>
+        <opkg>naemon</naemon>
         <opkg>netbootmgr</opkg>
         <opkg>networking</opkg>
         <opkg>nfs</opkg>

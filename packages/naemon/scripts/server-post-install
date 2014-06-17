@@ -37,7 +37,7 @@ my $configurator = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 # Create an oscarback directory to store original config files.
 !system("mkdir $naemon_conf_dir/oscarback") or croak("Failed to mkdir $ntp_dir/oscarback") if !(-d "$ntp_dir/oscarback");
 
-# TODO: Move following fils to oscarback directory:
+# TODO: Move following files to oscarback directory:
 # contacts.cfg  localhost.cfg  printer.cfg  switch.cfg  windows.cfg => oscarback/
 
 if (-e $configurator) { # else, user has not configured the package. do nothing then.

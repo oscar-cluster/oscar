@@ -6,19 +6,21 @@
         <opkg>base</opkg>
         <opkg>blcr</opkg>
         <opkg>c3</opkg>
-        <opkg>diskless</opkg>
         <opkg>disable-services</opkg>
+        <opkg>diskless</opkg>
         <opkg>ganglia</opkg>
         <opkg>jobmonarch</opkg>
-        <opkg>lam</opkg>
+        <opkg>lam-oscar</opkg>
         <opkg>linux-ha</opkg>
         <opkg>loghost</opkg>
         <opkg>maui</opkg>
-        <opkg>mpich</opkg>
+        <opkg>mpich-oscar</opkg>
         <opkg>mtaconfig</opkg>
         <opkg>munge</opkg>
+        <opkg>naemon</naemon>
         <opkg>netbootmgr</opkg>
         <opkg>networking</opkg>
+        <opkg>nfs</opkg>
         <opkg>ntpconfig</opkg>
         <opkg>oda</opkg>
         <opkg>openmpi</opkg>
@@ -29,8 +31,10 @@
         <opkg>selinux</opkg>
         <opkg>sge</opkg>
         <opkg>sis</opkg>
+        <opkg>slurm</opkg>
         <opkg>switcher</opkg>
         <opkg>sync-files</opkg>
+        <opkg>system-update</opkg>
         <opkg>torque</opkg>
         <opkg>yume</opkg>
     </packages>
