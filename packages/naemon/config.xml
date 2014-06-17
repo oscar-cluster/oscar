@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <oscar>
-  <name>mtaconfig</name>
+  <name>naemon</name>
   <class>included</class>
-  <summary>Configure naemon monitoring system on headnode</summary>
-  <description>OSCAR-specific scritps to configure naemon on head node.</description>
+  <summary>Configure naemon monitoring system</summary>
+  <description>OSCAR-specific scritps to configure naemon.</description>
   <license>Freely distributable</license>
   <group>System Environment/Base</group>
   <uri>http://oscar.openclustergroup.org/</uri>
@@ -17,7 +17,6 @@
   <clientDeps/>
   <apiDeps/>
   <changelog>
-    </versionEntry>
     <versionEntry version="1.0.0-1">
       <changelogEntry authorName="Olivier Lahaye" date="2014-05-28T18:00:56+02:00">
         <item>Initial package.</item>
