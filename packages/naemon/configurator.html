@@ -1,5 +1,7 @@
 <!--
-Copyright (c) 2013, CEA - Commissariat à l'Énergie Atomique. All rights reserved.
+Copyright (c) 2014 CEA
+Commissariat A l'Energie Atomique et aux Energies Alternatives.
+All rights reserved.
 Author: Olivier LAHAYE olivier.lahaye@cea.fr
 $Id: $
 -->
@@ -10,10 +12,36 @@ $Id: $
 <body>
 	<form>
 		<p order="1">
-			<h2>Admin email address</h2>
+			<h2>Naemon adminitrator informations</h2>
 		</p>
-                <input name="admin_email" value="admin@localhost.localdomain"/>
+                <table>
+                <tr>
+                        <td><input size="40" name="admin_fullname" value="Naemon Administrator"/></td>
+                        <td>Full&nbsp;name</td>
+                </tr>
+                <tr>
+                        <td><input size="40" name="admin_login" value="admin"/></td>
+                        <td>Login&nbsp;name</td>
+                </tr>
+                <tr>
+                        <td><input size="40" name="admin_email" value="admin@localhost.localdomain"/></td>
+                        <td>Contact&nbsp;email</td>
+                </tr>
+                <tr>
+                        <td><input size="40" type="password" name="admin_passwd" value="oscar"/></td>
+                        <td>Web&nbsp;UI&nbsp;Password&nbsp;(*)</td>
+                </tr>
+                <tr>
+                        <td><input size="40" type="password" name="admin_passwd2" value="oscar"/></td>
+                        <td>Password&nbsp;confirm&nbsp;(*)</td>
+                </tr>
+                </table>
 	</form>
 	<hr/>
+(*)&nbsp;Password are stored in clear text in oscar database. Use a specific password for this occasion and change it after oscar deployment using the following command:<br>
+<br/>
+&nbsp;&nbsp;<b><pre>htpasswd /etc/naemon/htpasswd <i>&lt;admin&gt;</i></pre></b>
+<br/>
+where &lt;admin&gt; is the login name you've chosen above.
 </body>
 </html>

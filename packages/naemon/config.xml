@@ -13,10 +13,24 @@
       <email>olivier.lahaye@cea.fr</email>
     </author>
   </authors>
-  <serverDeps/>
-  <clientDeps/>
+  <serverDeps>
+    <requires>
+      <pkg>naemon</pkg>
+    </requires>
+  </serverDeps>
+  <clientDeps>
+    <requires>
+      <pkg>nrpe</pkg>
+    </requires>
+  </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.0.1-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-06-18T10:26:52+02:00">
+        <item>Updated configuration GUI.</item>
+        <item>Added specfiic deps for client and server.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.0-1">
       <changelogEntry authorName="Olivier Lahaye" date="2014-05-28T18:00:56+02:00">
         <item>Initial package.</item>
