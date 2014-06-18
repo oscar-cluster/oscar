@@ -137,7 +137,7 @@ Mid-term they should be removed
 =cut
 
 ###############################################################################
-=item get_script_dir($pkg,$phase)
+=item get_scripts_dir($pkg,$phase)
 
 Returns directory where scripts can be found for a given package and phase
 
@@ -149,15 +149,14 @@ Return: directory where scripts can be found
 =cut 
 ###############################################################################
 
-# OL: FIXME: scriptdir in test_* phase is wrong.
-# OL: Obsolete?
 sub get_scripts_dir ($$) {
     my ($pkg, $phase) = @_;
-    my $testing_path=OSCAR::OCA::OS_Settings::getitem('oscar_testing_path');
     if ($phase eq 'test_root' || $phase eq 'test_user') {
+        my $testing_path=OSCAR::OCA::OS_Settings::getitem('oscar_testing_path');
         return "$testing_path/$pkg";
     } else {
-        return "$testing_path/$pkg";
+        my $packages_path=OSCAR::OCA::OS_Settings::getitem('oscar_packages_path');
+        return "$packages_path/$pkg";
     }
 }
 
@@ -391,7 +390,7 @@ TODO: - extend to any systems, not only the headnode (warning for that
 
 sub get_excluded_opkg () {
     my $os = OSCAR::OCA::OS_Detect::open();
-    exit -1 if(!$os);
+    exit(-1) if(!$os);
     my $filename = $ENV{OSCAR_HOME} . "/share/exclude_pkg_set/";
     $filename .= $os->{compat_distro} . "-" . $os->{compat_distrover} . "-" 
                 . $os->{arch} . ".txt";
