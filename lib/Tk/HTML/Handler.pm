@@ -344,7 +344,7 @@ sub hr
  my $w = $h->{widget};
  my $r = $w->Frame(-height => 2, 
                    # -width => $w->cget('-width')*140,
-                   -width => $w->cget('-width')*9,
+                   -width => $w->cget('-width')*8,
                    -borderwidth => 1, -relief => 'sunken',
                   );
  $h->nl(1);
