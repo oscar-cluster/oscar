@@ -31,11 +31,11 @@ use OSCAR::FileUtils;
 use OSCAR::MonitoringMgt;
 use Carp;
 
-my $naemon_conf_dir = OSCAR::OCA::OS_Settings::getitem(NTP()."_configdir");
+my $naemon_configdir = OSCAR::OCA::OS_Settings::getitem(NTP()."_configdir");
 my $configurator = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 
 # Create an oscarback directory to store original config files.
-!system("mkdir $naemon_conf_dir/oscarback") or croak("Failed to mkdir $ntp_dir/oscarback") if !(-d "$ntp_dir/oscarback");
+!system("mkdir $naemon_configdir/oscarback") or croak("Failed to mkdir $naemon_configdir/oscarback") if !(-d "$naemon_configdir/oscarback");
 
 # TODO: Move following files to oscarback directory:
 # contacts.cfg  localhost.cfg  printer.cfg  switch.cfg  windows.cfg => oscarback/

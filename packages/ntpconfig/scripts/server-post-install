@@ -32,7 +32,7 @@ use Carp;
 
 my $ntpBuffer = "";
 my $ntp_conf = OSCAR::OCA::OS_Settings::getitem(NTP()."_configfile");
-my $ntp_dir = OSCAR::OCA::OS_Settings::getitem(NTP()."_dir");;
+my $ntp_dir = OSCAR::OCA::OS_Settings::getitem(NTP()."_configdir");;
 my $step_tickers = "$ntp_dir/step-tickers";
 my $configurator = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 

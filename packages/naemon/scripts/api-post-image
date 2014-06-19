@@ -4,8 +4,8 @@
 
 IMAGEDIR=$1
 
-# FIXME: rewrite this in perl and use OS_Settings to get correct nrpe conf
-# file and nagios plugins dir.
+# FIXME: rewrite this in perl and use OS_Settings to get correct
+# nrpe conf file and nagios plugins dir.
 # Note: image can be for another OS: be carefull.
 
 # FIXME: Check that nrpe.cfg DOES includes /etc/nrpe.d/*.cfg (on SuSE, it is commented out!)
