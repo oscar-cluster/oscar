@@ -55,6 +55,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.0.7-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-06-19T09:40:28+02:00">
+        <item>Fixed ntp_configdir.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.0.6-1">
       <changelogEntry authorName="Olivier Lahaye" date="2014-01-14T11:59:37+01:00">
         <item>Fixed missing "use FileUtils;" in server-post-install.</item>
