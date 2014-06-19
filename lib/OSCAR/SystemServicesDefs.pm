@@ -39,6 +39,7 @@ use constant POSTFIX        => 'postfix';
 use constant POSTGRESQL     => 'postgresql';
 use constant RPC            => 'rpc';
 use constant TFTP           => 'tftp';
+use constant THRUK          => 'thruk';
 use constant SENDMAIL       => 'sendmail';
 use constant SI_MONITOR     => 'monitor';
 use constant SI_RSYNC       => 'rsync';
@@ -101,6 +102,7 @@ our @EXPORT = qw(
                 STOP
                 SYSLOG
                 TFTP
+                THRUK
                 RESTART
                 RELOAD
                 SENDMAIL
