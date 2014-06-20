@@ -12,10 +12,15 @@ use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
 # use OSCAR::Package;
 
-# my $naemon_options = getConfigurationValues('naemon');
 
+opkg_print("starting httpd service on head-node\n");
+!system_service(HTTP,START)
+    or croak "ERROR: Couldn't start naemon service on head-node.";
 opkg_print("starting naemon service on head-node\n");
 !system_service(NAEMON,START)
+    or croak "ERROR: Couldn't start naemon service on head-node.";
+opkg_print("starting thruk service on head-node\n");
+!system_service(THRUK,START)
     or croak "ERROR: Couldn't start naemon service on head-node.";
 
 exit 0;

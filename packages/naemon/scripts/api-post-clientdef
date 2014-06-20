@@ -1,0 +1,81 @@
+#!/usr/bin/env perl
+
+# Copyright (C) 2014 Olivier Lahaye <olivier.lahaye@cea.fr>
+#                    All rights reserved
+
+# Post install action to start naemon service. We can't start it before
+# otherwize, non yet deployed nodes would trigger some alarms.
+
+use Carp;
+# use OSCAR::Opkg;
+# use OSCAR::Package;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
+use OSCAR::OCA::OS_Settings;
+use OSCAR::MonitoringMgt;
+use SystemInstaller::Machine;
+
+my $image_name = shift;
+    
+if (! defined ($image_name)) {
+    oscar_log(1, ERROR, "Missing image name. Can't continue.");
+    exit 1;
+}
+
+my $naemon_configdir = OSCAR::OCA::OS_Settings::getitem(NAEMON()."_configdir");
+if (! -d $naemon_configdir) {
+    oscar_log(1, ERROR, "Naemon configuration directory not found!");
+    exit 1;
+}
+
+my %hash = SystemInstaller::Machine::get_machine_listing($image_name);
+# TODO: test that %hash exists
+
+oscar_log(2, INFO, "Creating naemon nodes configs");
+
+for my $node (keys %hash) {
+    my $name = $node; # Try to use DNS name
+    my $alias = $node;
+    my $ip = $hash{oscarnode1}->{IPADDR};
+    # TODO: valid string and valid ip.
+    write_oscar_hosts_cfg($name, $alias, $ip);
+}
+
+oscar_log(2, INFO,"Creating Oscar hostgroup");
+
+my $image_nodes = join(',',keys(%hash));
+
+# TODO: BUG: BROKEN if more than one image. need to enumerate images and rewrite:
+# 1 file per hostgroup
+# 1 file for oscar_cluster hostgroup whith localhost as head and all images host groups as hostgroup_members
+
+open OSCAR_HOSTGROUP, ">>", "$naemon_configdir/oscar_contacts.cfg"
+    or (oscar_log(1, ERROR, "Can't open $naemon_configdir/oscar_contacts.cfg for writing."), exit 1);
+
+print OSCAR_HOSTGROUP <<EOF;
+###############################################################################
+##
+## HOST GROUP DEFINITION
+##
+################################################################################
+################################################################################
+## Define an optional hostgroup for Linux machines
+define hostgroup {
+  hostgroup_name                 oscar_cluster                       ; The name of the hostgroup
+  alias                          OSCAR Cluster                       ; Long name of the group
+  members                        localhost                           ; Comma separated list of hosts that belong to this group
+  hostgroup_members              ${image_name}_oscar_nodes           ; Comma separated list of hostgroups that belong to this group
+}
+
+define hostgroup {
+  hostgroup_name                 ${image_name}_oscar_nodes         ; The name of the hostgroup
+  alias                          OSCAR Nodes                       ; Long name of the group
+  members                        $image_nodes
+}
+
+
+EOF
+
+close OSCAR_HOSTGROUP;
+
+exit 0;
