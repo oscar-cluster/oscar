@@ -192,7 +192,7 @@ Exported: YES
 =cut
 ###############################################################################
 
-sub write_oscar_host_cfg ($@) {
+sub write_oscar_host_cfg ($$$) {
     my ($host_name,$host_alias, $host_ip) = @_;
     # TODO: Check valid string and valid IP.
     my $naemon_configdir = OSCAR::OCA::OS_Settings::getitem(NAEMON()."_configdir");
