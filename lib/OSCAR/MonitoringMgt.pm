@@ -50,7 +50,7 @@ use base qw(Exporter);
 
 @EXPORT = qw (
              write_oscar_contacts_cfg
-             write_oscar_commands_cfg
+             write_oscar_command_cfg
              write_oscar_service_cfg
              write_oscar_hosts_cfg
              );
@@ -92,7 +92,7 @@ sub write_oscar_contacts_cfg (%) {
 }
 
 ###############################################################################
-=item write_oscar_commands_cfg($command_name, command_line)
+=item write_oscar_command_cfg($command_name, command_line)
 
 Write an oscar command file in the following format:
 
@@ -107,9 +107,26 @@ Exported: YES
 =cut
 ###############################################################################
 
-sub write_oscar_commands_cfg ($$) {
+sub write_oscar_command_cfg ($$) {
     my ($command_name,$command_line) = @_;
+    # TODO: Check valid string.
+    my $naemon_configdir = OSCAR::OCA::OS_Settings::getitem(NAEMON()."_configdir");
+    if (! -d $naemon_configdir) {
+        oscar_log(1, ERROR, "Naemon configuration directory not found!");
+        exit 1;
+    }
+    my $command_cfg = "$naemon_configdir/oscar_command_$command_name.cfg";
+    open CMD, ">", $command_cfg
+        or (oscar_log(1, ERROR, "Can't create $$command_cfg"), return 1);
 
+    print CMD <<EOF;
+# $command_name command definition
+define command {
+  command_name                   $command_name
+  command_line                   $command_line
+}
+EOF
+    close CMD;
     return 0;
 }
 
@@ -131,15 +148,34 @@ Exported: YES
 =cut
 ###############################################################################
 
-sub write_oscar_service_cfg ($$$) {
-    my ($service_description,$hostgroup_name,$check_command) = @_;
+sub write_oscar_service_cfg ($$$$) {
+    my ($service_name,$type, $hostgroup_name,$check_command) = @_;
+    # TODO: Check valid string.
+    my $naemon_configdir = OSCAR::OCA::OS_Settings::getitem(NAEMON()."_configdir");
+    if (! -d $naemon_configdir) {
+        oscar_log(1, ERROR, "Naemon configuration directory not found!");
+        exit 1;
+    }
+    my $service_cfg = "$naemon_configdir/oscar_service_$service_name.cfg";
+    open CMD, ">", $service_cfg
+        or (oscar_log(1, ERROR, "Can't create $service_cfg"), return 1);
 
+    print CMD <<EOF;
+# $service_name service definition
+define service {
+  service_description            $service_name
+  ${type}_name                   $hostgroup_name
+  use                            local-service
+  check_command                  $check_command
+}
+EOF
+    close CMD;
     return 0;
 }
 
 
 ###############################################################################
-=item write_oscar_hosts_cfg($server,@nodename)
+=item write_oscar_hosts_cfg($host_name,$host_alias, $host_ip)
 
 Write an oscar host file in the following format:
 
@@ -156,10 +192,28 @@ Exported: YES
 =cut
 ###############################################################################
 
-sub write_oscar_hosts_cfg ($@) {
-    my $server = shift;
-    my @nodename = @_;
+sub write_oscar_host_cfg ($@) {
+    my ($host_name,$host_alias, $host_ip) = @_;
+    # TODO: Check valid string and valid IP.
+    my $naemon_configdir = OSCAR::OCA::OS_Settings::getitem(NAEMON()."_configdir");
+    if (! -d $naemon_configdir) {
+        oscar_log(1, ERROR, "Naemon configuration directory not found!");
+        exit 1;
+    }
+    my $host_cfg = "$naemon_configdir/oscar_host_$host_name.cfg";
+    open CMD, ">", $host_cfg
+        or (oscar_log(1, ERROR, "Can't create $host_cfg"), return 1);
 
+    print CMD <<EOF;
+# $host_name host definition
+define host {
+  host_name                      $host_name
+  alias                          $host_alias
+  address                        $host_ip
+  use                            linux-server
+  notification_period            24x7
+EOF
+    close CMD;
     return 0;
 }
 
