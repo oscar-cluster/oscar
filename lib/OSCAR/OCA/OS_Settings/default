@@ -63,6 +63,7 @@ sendmail_service=sendmail
 ssh_service=sshd
 syslog_service=rsyslog
 tftp_service=tftp
+thruk_service=thruk
 trqauthd_service=trqauthd
 xinetd_service=xinetd
 
