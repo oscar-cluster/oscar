@@ -23,7 +23,10 @@ for my $sis_node (SIS::NewDB::list_client()) {
     push @{$sis_nodes{$i->{imagename}}}, $i->{name}
 }
 
-my @hostgroups = ( 'oscar_switches' ); # Empty group for ease of use.
+# Write usefull hostgroups.
+write_oscar_hostgroup_cfg('switches_hostgroup', 'OSCAR Switches', undef, undef); # For end user ease.
+
+my @hostgroups = ( 'switches_hostgroup' ); # Empty group for ease of use.
 
 # For each image, create the correspondig hostgroup
 for my $img (keys(%sis_nodes)) {

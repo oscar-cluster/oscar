@@ -149,17 +149,6 @@ $errors += write_oscar_service_cfg ('MySQL-oscar', 'host', 'localhost', 'check_m
 # 1st, write localhost which is the head. (we use 127.0.0.1 for local check).
 $errors += write_oscar_host_cfg('localhost', 'localhost', '127.0.0.1');
 
-# Create the hostgroup regrouping all hosts with an @IP and that can be ssh-ed into.
-#my @members = ( 'localhost' ); # head.
-#my @hostgroups = ( 'oscar_nodes', 'oscar_switches' );
-#$errors += write_oscar_hostgroup_cfg('oscar_cluster', 'OSCAR Cluster', \@members, \@hostgroups);
-
-# Write usefull hostgroups. (oscar_nodes will be overwritten later). IT is here for coherence.
-$errors += write_oscar_hostgroup_cfg('oscar_nodes', 'OSCAR Nodes', undef, undef);       # No nodes yet.
-$errors += write_oscar_hostgroup_cfg('oscar_switches', 'OSCAR Switches', undef, undef); # For end user ease.
-
-# Write Switches.cfg (empty with service defined and a commented out switch)
-
 # Now, set the admin password to web interface access.
 !oscar_system("htpasswd -b -p -d /etc/naemon/htpasswd admin '$ref->{admin_passwd}'")
     or (oscar_log(1, ERROR, "Failed to set passwd for naemon web interface."), exit 1);
