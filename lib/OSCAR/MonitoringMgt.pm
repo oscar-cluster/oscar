@@ -49,10 +49,12 @@ use vars qw(@EXPORT);
 use base qw(Exporter);
 
 @EXPORT = qw (
-             write_oscar_contacts_cfg
+             write_oscar_contact_cfg
+             write_oscar_contactgroup_cfg
              write_oscar_command_cfg
              write_oscar_service_cfg
-             write_oscar_hosts_cfg
+             write_oscar_host_cfg
+             write_oscar_hostgroup_cfg
              );
 
 =encoding utf8
@@ -76,20 +78,84 @@ files.
 
 =cut
 ###############################################################################
-=item write_oscar_contacts_cfg (%contacts)
+=item write_oscar_contact_cfg ($name, $alias, $email)
 
-Write the contacts.cfg file and the contact groups.
+Write the contact.cfg file and the contact groups.
 
 Exported: YES
 
 =cut 
 ###############################################################################
 
-sub write_oscar_contacts_cfg (%) {
-    my %contacts = shift;
+sub write_oscar_contact_cfg ($$$) {
+    my ($contact_name,$contact_alias, $contact_email) = @_;
+    # TODO: Check valid string and valid IP.
+    my $naemon_configdir = OSCAR::OCA::OS_Settings::getitem(NAEMON()."_configdir");
+    my $contact_cfg = "$naemon_configdir/conf.d/oscar/contacts/contact_$contact_name.cfg";
+    open CMD, ">", $contact_cfg
+        or (oscar_log(1, ERROR, "Can't create $contact_cfg"), return 1);
+
+# Trick to avoid rhel6 buggy rpm automatic dep  generator to require: perl();
+my $use = "use";
+
+    print CMD <<EOF;
+# $contact_name contact definition
+define contact {
+  contact_name                   $contact_name
+  alias                          $contact_alias
+  ${use}                            generic-contact
+  email                          $contact_email
+}
+EOF
+    close CMD;
 
     return 0;
 }
+#
+###############################################################################
+=item write_oscar_contactgroup_cfg($contactgroup_name, $contactgroup_description, $members_ref)
+
+Write an oscar command file in the following format:
+
+# '$contact_group_description' contactgroup definition
+define contactgroup {
+  contactgroup_name              $contactgroup_name
+  alias                          $contactgroup_description
+  members                        @members
+}
+
+Exported: YES
+
+=cut
+###############################################################################
+
+sub write_oscar_contactgroup_cfg ($$$) {
+    my ($contactgroup_name, $contactgroup_description, $members_ref) = @_;
+    # TODO: Check valid string.
+    my $naemon_configdir = OSCAR::OCA::OS_Settings::getitem(NAEMON()."_configdir");
+
+    my $members="";
+    if(defined($members_ref)) {
+        if(scalar(@{$members_ref}) > 0) {
+           $members = "  members                        ".join(',',@{$members_ref})."\n";
+        }
+    }
+
+    my $contactgroup_cfg = "$naemon_configdir/conf.d/oscar/contacts/contactgroup_$contactgroup_name.cfg";
+    open CMD, ">", $contactgroup_cfg
+        or (oscar_log(1, ERROR, "Can't create $contactgroup_cfg"), return 1);
+
+    print CMD <<EOF;
+# $contactgroup_name contactgroup definition
+define contactgroup {
+  contactgroup_name              $contactgroup_name
+  alias                          $contactgroup_description
+$members}
+EOF
+    close CMD;
+    return 0;
+}
+
 
 ###############################################################################
 =item write_oscar_command_cfg($command_name, command_line)
@@ -111,11 +177,7 @@ sub write_oscar_command_cfg ($$) {
     my ($command_name,$command_line) = @_;
     # TODO: Check valid string.
     my $naemon_configdir = OSCAR::OCA::OS_Settings::getitem(NAEMON()."_configdir");
-    if (! -d $naemon_configdir) {
-        oscar_log(1, ERROR, "Naemon configuration directory not found!");
-        exit 1;
-    }
-    my $command_cfg = "$naemon_configdir/oscar_command_$command_name.cfg";
+    my $command_cfg = "$naemon_configdir/conf.d/oscar/commands/command_$command_name.cfg";
     open CMD, ">", $command_cfg
         or (oscar_log(1, ERROR, "Can't create $$command_cfg"), return 1);
 
@@ -152,11 +214,7 @@ sub write_oscar_service_cfg ($$$$) {
     my ($service_name,$type, $hostgroup_name,$check_command) = @_;
     # TODO: Check valid string.
     my $naemon_configdir = OSCAR::OCA::OS_Settings::getitem(NAEMON()."_configdir");
-    if (! -d $naemon_configdir) {
-        oscar_log(1, ERROR, "Naemon configuration directory not found!");
-        exit 1;
-    }
-    my $service_cfg = "$naemon_configdir/oscar_service_$service_name.cfg";
+    my $service_cfg = "$naemon_configdir/conf.d/oscar/services/service_$service_name.cfg";
     open CMD, ">", $service_cfg
         or (oscar_log(1, ERROR, "Can't create $service_cfg"), return 1);
 
@@ -167,7 +225,7 @@ my $use = "use";
 # $service_name service definition
 define service {
   service_description            $service_name
-  ${type}_name                   $hostgroup_name
+  ${type}_name                 $hostgroup_name
   ${use}                            local-service
   check_command                  $check_command
 }
@@ -176,9 +234,61 @@ EOF
     return 0;
 }
 
+###############################################################################
+=item write_oscar_hostgroup_cfg($hostgroup_name, $hostgroup_description, $members_ref, $hostgroup_members_ref)
+
+Write an oscar command file in the following format:
+
+# '$hostgroup_description' hostgroup definition
+define hostgroup {
+  hostgroup_name                 $hostgroup_name
+  alias                          $hostgroup_description
+  members                        @members
+  hostgroup_members              @hostgroup
+}
+
+Exported: YES
+
+=cut
+###############################################################################
+
+sub write_oscar_hostgroup_cfg ($$$$) {
+    my ($hostgroup_name, $hostgroup_description, $members_ref, $hostgroup_members_ref) = @_;
+    # TODO: Check valid string.
+    my $naemon_configdir = OSCAR::OCA::OS_Settings::getitem(NAEMON()."_configdir");
+
+    my $members="";
+    if(defined($members_ref)) {
+        if(scalar(@{$members_ref}) > 0) {
+           $members = "  members                        ".join(',',@{$members_ref})."\n";
+        }
+    }
+    if(defined($hostgroup_members_ref)) {
+        if(scalar(@{$hostgroup_members_ref})) {
+           $members .= "  hostgroup_members              ".join(',',@{$hostgroup_members_ref})."\n";
+        }
+    }
+
+    my $hostgroup_cfg = "$naemon_configdir/conf.d/oscar/hosts/hostgroup_$hostgroup_name.cfg";
+    open CMD, ">", $hostgroup_cfg
+        or (oscar_log(1, ERROR, "Can't create $hostgroup_cfg"), return 1);
+
+    print CMD <<EOF;
+# $hostgroup_name hostgroup definition
+define hostgroup {
+  hostgroup_name                 $hostgroup_name
+  alias                          $hostgroup_description
+$members}
+EOF
+    close CMD;
+    return 0;
+}
+
+
+
 
 ###############################################################################
-=item write_oscar_hosts_cfg($host_name,$host_alias, $host_ip)
+=item write_oscar_host_cfg($host_name,$host_alias, $host_ip)
 
 Write an oscar host file in the following format:
 
@@ -199,11 +309,8 @@ sub write_oscar_host_cfg ($$$) {
     my ($host_name,$host_alias, $host_ip) = @_;
     # TODO: Check valid string and valid IP.
     my $naemon_configdir = OSCAR::OCA::OS_Settings::getitem(NAEMON()."_configdir");
-    if (! -d $naemon_configdir) {
-        oscar_log(1, ERROR, "Naemon configuration directory not found!");
-        exit 1;
-    }
-    my $host_cfg = "$naemon_configdir/oscar_host_$host_name.cfg";
+
+    my $host_cfg = "$naemon_configdir/conf.d/oscar/hosts/host_$host_name.cfg";
     open CMD, ">", $host_cfg
         or (oscar_log(1, ERROR, "Can't create $host_cfg"), return 1);
 
@@ -218,6 +325,7 @@ define host {
   address                        $host_ip
   ${use}                            linux-server
   notification_period            24x7
+}
 EOF
     close CMD;
     return 0;
