@@ -106,6 +106,9 @@ if ($ref->{admin_passwd} ne $ref->{admin_passwd2}) {
 open my $CONTACTS, ">>", "$naemon_configdir/oscar_contacts.cfg"
     or (oscar_log(1, ERROR, "Can't open $naemon_configdir/oscar_contacts.cfg for writing."), exit 1);
 
+# Trick to avoid rhel6 buggy rpm automatic dep  generator to require: perl();
+my $use = "use";
+
 print $CONTACTS <<EOF;
 ###############################################################################
 ##
@@ -120,7 +123,7 @@ print $CONTACTS <<EOF;
 define contact {
   contact_name                   $ref->{admin_login}
   alias                          $ref->{admin_fullname}
-  use                            generic-contact
+  ${use}                            generic-contact
   email                          $ref->{admin_mail}
 }
 
