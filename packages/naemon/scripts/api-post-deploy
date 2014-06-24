@@ -14,24 +14,26 @@ use OSCAR::Logger;
 use OSCAR::LoggerDefs;
 # use OSCAR::Package;
 use SIS::NewDB;
+use OSCAR::MonitoringMgt;
+use OSCAR::Opkg;
 
 oscar_log(2, INFO,"Creating Oscar hostgroup");
 
 # Get the images with associated nodes.
 my %sis_nodes;
-for my $sis_node (SIS::NewDB::list_client()) {
-    push @{$sis_nodes{$i->{imagename}}}, $i->{name}
+for my $client (SIS::NewDB::list_client()) {
+    push @{$sis_nodes{$client->{imagename}}}, $client->{name}
 }
 
 # Write usefull hostgroups.
-write_oscar_hostgroup_cfg('switches_hostgroup', 'OSCAR Switches', undef, undef); # For end user ease.
+write_oscar_hostgroup_cfg('switches', 'OSCAR Switches', undef, undef); # For end user ease.
 
-my @hostgroups = ( 'switches_hostgroup' ); # Empty group for ease of use.
+my @hostgroups = ( 'switches' ); # Empty group for ease of use.
 
 # For each image, create the correspondig hostgroup
 for my $img (keys(%sis_nodes)) {
-    write_oscar_hostgroup_cfg("${img}_nodes_hostgroup", "${img} Nodes", \@{$sis_node{$img}}, undef);
-    push (@hostgroups, "${img}_nodes_hostgroup");
+    write_oscar_hostgroup_cfg("${img}_nodes", "${img} Nodes", \@{$sis_nodes{$img}}, undef);
+    push (@hostgroups, "${img}_nodes");
 }
 
 # Create the oscar_cluster hostgroup that regroups all nodes and switches that we can ping and ssh to.
