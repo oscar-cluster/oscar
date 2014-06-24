@@ -29,6 +29,10 @@ use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
 use OSCAR::FileUtils;
 use OSCAR::MonitoringMgt;
+use OSCAR::Package; # get_script_dir()
+use OSCAR::Utils;   # oscar_system()
+use OSCAR::Logger;  # oscar_log()
+use OSCAR::LoggerDefs;
 use Carp;
 
 my $naemon_configdir = OSCAR::OCA::OS_Settings::getitem(NAEMON()."_configdir");
@@ -36,6 +40,14 @@ if (! -d $naemon_configdir) {
     oscar_log(1, ERROR, "Naemon configuration directory not found!");
     exit 1;
 }
+
+# Create oscar configuration directories.
+
+mkdir "$naemon_configdir/conf.d/oscar";
+mkdir "$naemon_configdir/conf.d/oscar/hosts";
+mkdir "$naemon_configdir/conf.d/oscar/contacts";
+mkdir "$naemon_configdir/conf.d/oscar/services";
+mkdir "$naemon_configdir/conf.d/oscar/commands";
 
 #my $configurator = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 my $scripts_dir = OSCAR::Package::get_scripts_dir("naemon", 'server-post-install');
@@ -46,20 +58,16 @@ if (! -f $configurator) {
     exit 1;
 }
 
-# Create an oscarback directory to store original config files.
-if (! -d "$naemon_configdir/oscarback") {
-    !system("mkdir $naemon_configdir/oscarback")
-        or (oscar_log(1, ERROR, "Failed to create oscarback directory $naemon_configdir/oscarback."), exit 1);
-}
-
-# Move unwanted default configuration files to oscarback directory.
+# Rename default configuration files to oscarbak.
 foreach ('contacts.cfg', 'localhost.cfg', 'printer.cfg', 'switch.cfg', 'windows.cfg') {
-    !system("mv -f $_ $naemon_configdir/oscarback")
-        or (oscar_log(1, ERROR, "Failed to move default config file $_ to $naemon_configdir/oscarback."), exit 1);
+    if ( -f "$naemon_configdir/conf.d/$_" ) {
+        !system("mv -f $naemon_configdir/conf.d/$_ $naemon_configdir/conf.d/$_.oscarbak")
+            or (oscar_log(1, ERROR, "Failed to move default config file $naemon_configdir/conf.d/$_ to $naemon_configdir/conf.d/$_.oscarback."), exit 1);
+    }
 }
 
 # Now, fix /etc/naemon/resource.cfg (naemon still uses nagios plugins)
-!oscar_system("sed -i -e 's|naemon/plugins$|nagios/plugins|g' /etc/naemon/resource.cfg")
+!oscar_system('sed -i -e "s|naemon/plugins$|nagios/plugins|g" /etc/naemon/resource.cfg')
     or (oscar_log(1, ERROR, "Failed to update plugin path in /etc/naemon/resource.cfg."), exit 1);
 
 # Now, enable the needed services.
@@ -71,7 +79,7 @@ opkg_print("Enabling  httpd, naemon, thruk services on head-node\n");
 my $ref = OSCAR::Configurator_backend::readInConfigValues($configurator, "naemon", "", noarray=>1);
 
 # Configurator Values:
-# $ref->{admin_mail}     => Contact mail for OSCAR Cluster system administrator.
+# $ref->{admin_email}     => Contact mail for OSCAR Cluster system administrator.
 # $ref->{admin_fullname} => Contact description (full name).
 # $ref->{admin_passwd}   => Password for web interface access.
 # $ref->{admin_passwd2}  => Password confirmation.
@@ -79,8 +87,8 @@ my $ref = OSCAR::Configurator_backend::readInConfigValues($configurator, "naemon
 
 # Basic tests for valid values:
 # Check for valid email address.
-if ($ref->{admin_mail} !~ /^[\w\-\_\.]+\@([\w\-\.]+\.)+[a-zA-Z]+$/) {
-    oscar_log(1, ERROR, "admin mail is invalid! ($ref->{admin_mail})");
+if ($ref->{admin_email} !~ /^[\w\-\_\.]+\@([\w\-\.]+\.)+[a-zA-Z]+$/) {
+    oscar_log(1, ERROR, "admin mail is invalid! ($ref->{admin_email})");
     exit 1;
 }
 
@@ -102,56 +110,20 @@ if ($ref->{admin_passwd} ne $ref->{admin_passwd2}) {
     exit 1;
 }
 
-# Write contacts.cfg
-open my $CONTACTS, ">>", "$naemon_configdir/oscar_contacts.cfg"
-    or (oscar_log(1, ERROR, "Can't open $naemon_configdir/oscar_contacts.cfg for writing."), exit 1);
+my $errors = 0;
+# Write OSCAR admin contact and admins contactgroup.
+$errors += write_oscar_contact_cfg ($ref->{admin_login}, $ref->{admin_fullname}, $ref->{admin_email});
 
-# Trick to avoid rhel6 buggy rpm automatic dep  generator to require: perl();
-my $use = "use";
-
-print $CONTACTS <<EOF;
-###############################################################################
-##
-## CONTACTS
-##
-###############################################################################
-###############################################################################
-## Just one contact defined by default - the Naemon admin (that's you)
-## This contact definition inherits a lot of default values from the 'generic-contact'
-## template which is defined elsewhere.
-
-define contact {
-  contact_name                   $ref->{admin_login}
-  alias                          $ref->{admin_fullname}
-  ${use}                            generic-contact
-  email                          $ref->{admin_mail}
-}
-
-###############################################################################
-##
-## CONTACT GROUPS
-##
-###############################################################################
-###############################################################################
-## We only have one contact in this simple configuration file, so there is
-## no need to create more than one contact group.
-define contactgroup {
-  contactgroup_name              admins
-  alias                          Naemon Administrators
-  members                        $ref->{admin_login}
-}
-
-EOF
-
-close $CONTACTS;
+my @constacts = ( $ref->{admin_email} );
+$errors += write_oscar_contactgroup_cfg ('admins', 'Naemon Administrators', \@contacts);
 
 # Write oscar_commands.cfg (check_mysql, check_nrpe, check_nrpe_head)
 
 # Define the check_mysql command.
-write_oscar_command_cfg ('check_mysql', '$USER1$/check_mysql -H $HOSTADDRESS$ $ARG1$');
+$errors += write_oscar_command_cfg ('check_mysql', '$USER1$/check_mysql -H $HOSTADDRESS$ $ARG1$');
 
 # Define the check nrpe command.
-write_oscar_command_cfg ('check_nrpe', '$USER1$/check_nrpe -H $HOSTADDRESS$ $ARG1$');
+$errors += write_oscar_command_cfg ('check_nrpe', '$USER1$/check_nrpe -H $HOSTADDRESS$ $ARG1$');
 
 # Define the check nrpe for head only.
 #write_oscar_command_cfg ('check_nrpe_head', '$USER1$/check_nrpe -H oscar_server $ARG1$');
@@ -159,28 +131,37 @@ write_oscar_command_cfg ('check_nrpe', '$USER1$/check_nrpe -H $HOSTADDRESS$ $ARG
 # Write oscar_<service>.cfg (ping, ssh, (HTTP-ganlia:ganglia), HTTP-naemon, MySQL-oscar, (DISK-export:nfs), PBSNODE, SATA Disk smart status)
 
 # Check that all cluster hosts are responding to ping.
-write_oscar_service_cfg ('PING', 'hostgroup', 'oscar_cluster', 'check_ping!100.0,20%!500.0,60%');
+$errors += write_oscar_service_cfg ('PING', 'hostgroup', 'oscar_cluster', 'check_ping!100.0,20%!500.0,60%');
 
 # Check that ssh service is running on all cluster hosts.
-write_oscar_service_cfg ('SSH', 'hostgroup', 'oscar_cluster', 'check_ssh');
+$errors += write_oscar_service_cfg ('SSH', 'hostgroup', 'oscar_cluster', 'check_ssh');
 
 # Check that naemon web interface is working. We assume that naemon runs on head and that head is localhost.
-write_oscar_service_cfg ('HTTP-naemon', 'host', 'localhost', 'check_http!-u/naemon');
+$errors += write_oscar_service_cfg ('HTTP-naemon', 'host', 'localhost', 'check_http!-u/naemon');
 
 # Check that / filesystem is not full (/var/tmp /tmp ...).
-write_oscar_service_cfg ('Root-Partition', 'host', 'localhost', 'check_local_disk!20%!10%!/');
+$errors += write_oscar_service_cfg ('Root-Partition', 'host', 'localhost', 'check_local_disk!20%!10%!/');
 
 # Check that OSCAR MySQL database is up.
-write_oscar_service_cfg ('MySQL-oscar', 'host', 'localhost', 'check_mysql!-d oscar -u root');
+$errors += write_oscar_service_cfg ('MySQL-oscar', 'host', 'localhost', 'check_mysql!-d oscar -u root');
 
 # Write oscar_hosts.cfg (nodes + head + hostgroups) OL: don't know nodes yet. should be done in api post deploy.
 # 1st, write localhost which is the head. (we use 127.0.0.1 for local check).
-write_oscar_host_cfg('localhost', 'localhost', '127.0.0.1');
+$errors += write_oscar_host_cfg('localhost', 'localhost', '127.0.0.1');
+
+# Create the hostgroup regrouping all hosts with an @IP and that can be ssh-ed into.
+#my @members = ( 'localhost' ); # head.
+#my @hostgroups = ( 'oscar_nodes', 'oscar_switches' );
+#$errors += write_oscar_hostgroup_cfg('oscar_cluster', 'OSCAR Cluster', \@members, \@hostgroups);
+
+# Write usefull hostgroups. (oscar_nodes will be overwritten later). IT is here for coherence.
+$errors += write_oscar_hostgroup_cfg('oscar_nodes', 'OSCAR Nodes', undef, undef);       # No nodes yet.
+$errors += write_oscar_hostgroup_cfg('oscar_switches', 'OSCAR Switches', undef, undef); # For end user ease.
 
 # Write Switches.cfg (empty with service defined and a commented out switch)
 
 # Now, set the admin password to web interface access.
-!oscar_system("htpasswd -b -p /etc/naemon/htpasswd admin '$ref->{admin_passwd}'")
+!oscar_system("htpasswd -b -p -d /etc/naemon/htpasswd admin '$ref->{admin_passwd}'")
     or (oscar_log(1, ERROR, "Failed to set passwd for naemon web interface."), exit 1);
 
-exit(0);
+exit($errors);
