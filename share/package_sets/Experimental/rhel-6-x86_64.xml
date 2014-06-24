@@ -17,7 +17,7 @@
         <opkg>mpich-oscar</opkg>
         <opkg>mtaconfig</opkg>
         <opkg>munge</opkg>
-        <opkg>naemon</naemon>
+        <opkg>naemon</opkg>
         <opkg>netbootmgr</opkg>
         <opkg>networking</opkg>
         <opkg>nfs</opkg>
