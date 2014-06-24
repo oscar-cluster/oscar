@@ -160,12 +160,15 @@ sub write_oscar_service_cfg ($$$$) {
     open CMD, ">", $service_cfg
         or (oscar_log(1, ERROR, "Can't create $service_cfg"), return 1);
 
+# Trick to avoid rhel6 buggy rpm automatic dep  generator to require: perl();
+my $use = "use";
+
     print CMD <<EOF;
 # $service_name service definition
 define service {
   service_description            $service_name
   ${type}_name                   $hostgroup_name
-  use                            local-service
+  ${use}                            local-service
   check_command                  $check_command
 }
 EOF
@@ -204,13 +207,16 @@ sub write_oscar_host_cfg ($$$) {
     open CMD, ">", $host_cfg
         or (oscar_log(1, ERROR, "Can't create $host_cfg"), return 1);
 
+# Trick to avoid rhel6 buggy rpm automatic dep  generator to require: perl();
+my $use = "use";
+
     print CMD <<EOF;
 # $host_name host definition
 define host {
   host_name                      $host_name
   alias                          $host_alias
   address                        $host_ip
-  use                            linux-server
+  ${use}                            linux-server
   notification_period            24x7
 EOF
     close CMD;
