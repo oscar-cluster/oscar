@@ -136,18 +136,19 @@ $errors += write_oscar_service_cfg ('PING', 'hostgroup', 'oscar_cluster', 'check
 # Check that ssh service is running on all cluster hosts.
 $errors += write_oscar_service_cfg ('SSH', 'hostgroup', 'oscar_cluster', 'check_ssh');
 
-# Check that naemon web interface is working. We assume that naemon runs on head and that head is localhost.
-$errors += write_oscar_service_cfg ('HTTP-naemon', 'host', 'localhost', 'check_http!-u/naemon');
+# Check that naemon web interface is working. We assume that naemon runs on head.
+$errors += write_oscar_service_cfg ('HTTP-naemon', 'host', 'oscar_server', 'check_http!-u/naemon');
 
 # Check that / filesystem is not full (/var/tmp /tmp ...).
-$errors += write_oscar_service_cfg ('Root-Partition', 'host', 'localhost', 'check_local_disk!20%!10%!/');
+$errors += write_oscar_service_cfg ('Root-Partition', 'host', 'oscar_server', 'check_local_disk!20%!10%!/');
 
 # Check that OSCAR MySQL database is up.
-$errors += write_oscar_service_cfg ('MySQL-oscar', 'host', 'localhost', 'check_mysql!-d oscar -u root');
+$errors += write_oscar_service_cfg ('MySQL-oscar', 'host', 'oscar_server', 'check_mysql!-d oscar -u root');
 
 # Write oscar_hosts.cfg (nodes + head + hostgroups) OL: don't know nodes yet. should be done in api post deploy.
-# 1st, write localhost which is the head. (we use 127.0.0.1 for local check).
-$errors += write_oscar_host_cfg('localhost', 'localhost', '127.0.0.1');
+# 1st, write oscar_server which is the head. (we use 127.0.0.1 for local check).
+# TODO: use real IP addr from Nics+Nodes oscar DB.
+$errors += write_oscar_host_cfg('oscar_server', 'oscar_server', '127.0.0.1');
 
 # Now, set the admin password to web interface access.
 !oscar_system("htpasswd -b -p -d /etc/naemon/htpasswd admin '$ref->{admin_passwd}'")

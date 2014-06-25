@@ -14,6 +14,7 @@ if test -d ${IMAGEDIR}/usr/lib/nagios/plugins
 then
   NAGIOS_PLUGINS=/usr/lib/nagios/plugins
 elif test -d ${IMAGEDIR}/usr/lib64/nagios/plugins
+then
   NAGIOS_PLUGINS=/usr/lib64/nagios/plugins
 else
   echo "ERROR: Can't locate nagios plugins in image ${IMAGEDIR}."
