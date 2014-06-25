@@ -144,7 +144,7 @@ $errors += write_oscar_service_cfg ('HTTP-naemon', 'host', 'oscar_server', 'chec
 $errors += write_oscar_service_cfg ('Root-Partition', 'host', 'oscar_server', 'check_local_disk!20%!10%!/');
 
 # Check that OSCAR MySQL database is up.
-$errors += write_oscar_service_cfg ('MySQL-oscar', 'host', 'oscar_server', 'check_mysql!-d oscar -u root');
+$errors += write_oscar_service_cfg ('MySQL-oscar', 'host', 'localhost', 'check_mysql!-d oscar -u root');
 
 # Write oscar_hosts.cfg (nodes + head + hostgroups) OL: don't know nodes yet. will be done in api post deploy.
 # 1st, write oscar_server which is the head.
@@ -155,6 +155,7 @@ OSCAR::oda::do_query(undef, $sql, \@internal_results);
 my $oscar_server_ip = "127.0.0.1"; # Fallback default value.
 $oscar_server_ip = "$internal_results[0]->{'ip'}" if (scalar(@internal_results) ==1);
 $errors += write_oscar_host_cfg('oscar_server', 'oscar_server', $oscar_server_ip);
+$errors += write_oscar_host_cfg('localhost', 'localhost', "127.0.0.1"); # Required for local only testing like MySQL.
 
 # Now, set the admin password to web interface access.
 !oscar_system("htpasswd -b -p -d /etc/naemon/htpasswd admin '$ref->{admin_passwd}'")
