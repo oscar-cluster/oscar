@@ -29,6 +29,12 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.0.4-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-06-245T10:44:56+02:00">
+        <item>Added oscar_computers hostgroup.</item>
+        <item>Added oscar_nodes hostgroup.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.3-1">
       <changelogEntry authorName="Olivier Lahaye" date="2014-06-24T19:26:17+02:00">
         <item>Added api-post-clientdef for nodes definition.</item>

@@ -25,10 +25,10 @@ for my $client (SIS::NewDB::list_client()) {
     push @{$sis_nodes{$client->{imagename}}}, $client->{name}
 }
 
-# Write usefull hostgroups.
+# Create usefull hostgroups.
 write_oscar_hostgroup_cfg('switches', 'OSCAR Switches', undef, undef); # For end user ease.
 
-my @hostgroups = ( 'switches' ); # Empty group for ease of use.
+my @hostgroups = ();
 
 # For each image, create the correspondig hostgroup
 for my $img (keys(%sis_nodes)) {
@@ -36,9 +36,17 @@ for my $img (keys(%sis_nodes)) {
     push (@hostgroups, "${img}_nodes");
 }
 
-# Create the oscar_cluster hostgroup that regroups all nodes and switches that we can ping and ssh to.
-my @oscar_cluster_members = ( 'localhost' ); # head.
-write_oscar_hostgroup_cfg('oscar_cluster', 'OSCAR Cluster', \@oscar_cluster_members, \@hostgroups);
+# Create the oscar_nodes hostgroup regrouping all nodes whatever the image they're attached to.
+write_oscar_hostgroup_cfg("oscar_nodes", "OSCAR Nodes", undef, \@hostgroups);
+
+# Create the oscar_computers hostgroup that regroups all nodes and heads we can ssh to.
+my @oscar_cluster_heads = ( 'localhost' ); # heads (list of hosts). (only one hardcoded head for the moment)
+my @oscar_cluster_nodes = ( 'oscar_nodes' ); # nodes (list of hostgroup(s)
+my @complete_oscar_cluster =  ( 'oscar_nodes', 'switches' ); # Used for ping, ...
+write_oscar_hostgroup_cfg('oscar_computers', 'OSCAR Cluster', \@oscar_cluster_heads, \@oscar_cluster_nodes);
+
+# Create the oscar_cluster hostgroup that regroups all nodes, heads and switches we can ping.
+write_oscar_hostgroup_cfg('oscar_cluster', 'OSCAR Cluster', \@oscar_cluster_heads, \@complete_oscar_cluster);
 
 
 opkg_print("starting httpd service on head-node\n");
