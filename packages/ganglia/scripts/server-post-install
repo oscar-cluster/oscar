@@ -64,8 +64,8 @@ my $naemon_configurator = "$naemon_scripts_dir/configurator.html";
 my $naemon_config_ref = OSCAR::Configurator_backend::readInConfigValues($naemon_configurator, "naemon", "", noarray=>1);
 my $errors = 0;
 if (defined ($naemon_config_ref)) { # If defined, it means that naemon is configured. (we don't care for values)
-    # Check that ganglia web interface is working. We assume that ganglia runs on head and that head is localhost.
-    $errors += write_oscar_service_cfg ('HTTP-ganglia', 'host', 'localhost', 'check_http!-u/ganglia');
+    # Check that ganglia web interface is working on oscar_server.
+    $errors += write_oscar_service_cfg ('HTTP-ganglia', 'host', 'oscar_server', 'check_http!-u/ganglia');
 
     # Get ganglia gmond port configuration.
     my $gmond_port = 8649;
@@ -74,8 +74,8 @@ if (defined ($naemon_config_ref)) { # If defined, it means that naemon is config
     my $ganglia_config_ref = OSCAR::Configurator_backend::readInConfigValues($ganglia_configurator, "ganglia", "", noarray=>1);
     $gmond_port = $ganglia_config_ref->{udp_send_channel__port} if (defined ($ganglia_config_ref->{udp_send_channel__port}));
 
-    # Check that gmetad in listenning on  the head (localhost) node.
-    $errors += write_oscar_service_cfg ('gmetad', 'host', 'localhost', "check_tcp!$gmetad_port -w 1.0 -c 1.5");
+    # Check that gmetad in listenning on  the head node.
+    $errors += write_oscar_service_cfg ('gmetad', 'host', 'oscar_server', "check_tcp!$gmetad_port -w 1.0 -c 1.5");
 
     # Check that gmond is listenning on oscar computers (head + nodes).
     $errors += write_oscar_service_cfg ('gmond', 'hostgroup', 'oscar_computers', "check_tcp!$gmond_port -w 1.0 -c 1.5");
