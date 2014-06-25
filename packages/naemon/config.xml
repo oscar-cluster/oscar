@@ -29,8 +29,13 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.0.5-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-06-25T15:52:45+02:00">
+        <item>Now use oscar_server with real ip instead of local_host and 127.0.0.1.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.4-1">
-      <changelogEntry authorName="Olivier Lahaye" date="2014-06-245T10:44:56+02:00">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-06-25T10:44:56+02:00">
         <item>Added oscar_computers hostgroup.</item>
         <item>Added oscar_nodes hostgroup.</item>
       </changelogEntry>

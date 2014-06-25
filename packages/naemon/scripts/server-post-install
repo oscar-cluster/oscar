@@ -33,6 +33,7 @@ use OSCAR::Package; # get_script_dir()
 use OSCAR::Utils;   # oscar_system()
 use OSCAR::Logger;  # oscar_log()
 use OSCAR::LoggerDefs;
+use OSCAR::oda;
 use Carp;
 
 my $naemon_configdir = OSCAR::OCA::OS_Settings::getitem(NAEMON()."_configdir");
@@ -148,7 +149,12 @@ $errors += write_oscar_service_cfg ('MySQL-oscar', 'host', 'oscar_server', 'chec
 # Write oscar_hosts.cfg (nodes + head + hostgroups) OL: don't know nodes yet. should be done in api post deploy.
 # 1st, write oscar_server which is the head. (we use 127.0.0.1 for local check).
 # TODO: use real IP addr from Nics+Nodes oscar DB.
-$errors += write_oscar_host_cfg('oscar_server', 'oscar_server', '127.0.0.1');
+# Get IP of oscar_server from ODA.
+my @internal_results = ();
+my $sql = "select Nics.ip from Nodes,Nics where Nodes.name='oscar_server' AND Nodes.id=Nics.node_id";
+OSCAR::oda::do_query(undef, $sql, \@internal_results);
+my $oscar_server_ip = "$internal_results[0]->{'ip'}";
+$errors += write_oscar_host_cfg('oscar_server', 'oscar_server', $oscar_server_ip);
 
 # Now, set the admin password to web interface access.
 !oscar_system("htpasswd -b -p -d /etc/naemon/htpasswd admin '$ref->{admin_passwd}'")
