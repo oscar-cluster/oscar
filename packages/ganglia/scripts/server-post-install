@@ -38,20 +38,47 @@ use OSCAR::SystemServicesDefs;
 use OSCAR::Logger;
 use OSCAR::LoggerDefs;
 use OSCAR::Utils;
+use OSCAR::Configurator_backend;
+use OSCAR::MonitoringMgt;
 
 # Note that we do not care if "stop" does not work, we just want to be sure the service is stopped.
 system_service(GANGLIA_GMOND,STOP);
 
-my $pkgdir = OSCAR::Package::get_scripts_dir("ganglia", "post_server_install");
+my $ganglia_scripts_dir = OSCAR::Package::get_scripts_dir("ganglia", "server-post-install");
 
-my $cmd = "$pkgdir/edit_ganglia_conf --gmond --verbose";
+my $cmd = "$ganglia_scripts_dir/edit_ganglia_conf --gmond --verbose";
 if (oscar_system($cmd)) {
     exit 1;
 }
 
-$cmd = "$pkgdir/edit_ganglia_conf --gmetad --verbose";
+$cmd = "$ganglia_scripts_dir/edit_ganglia_conf --gmetad --verbose";
 if (oscar_system($cmd)) {
     exit 1;
 }
 
-exit 0;
+# NAEMON specific part: Add monitoring to ganglia if naemon is used.
+
+my $naemon_scripts_dir = OSCAR::Package::get_scripts_dir("naemon", 'server-post-install');
+my $naemon_configurator = "$naemon_scripts_dir/configurator.html";
+
+my $naemon_config_ref = OSCAR::Configurator_backend::readInConfigValues($naemon_configurator, "naemon", "", noarray=>1);
+my $errors = 0;
+if (defined ($naemon_config_ref)) { # If defined, it means that naemon is configured. (we don't care for values)
+    # Check that ganglia web interface is working. We assume that ganglia runs on head and that head is localhost.
+    $errors += write_oscar_service_cfg ('HTTP-ganglia', 'host', 'localhost', 'check_http!-u/ganglia');
+
+    # Get ganglia gmond port configuration.
+    my $gmond_port = 8649;
+    my $gmetad_port = 8651; # or 8652.
+    my $ganglia_configurator = "$ganglia_scripts_dir/configurator.html";
+    my $ganglia_config_ref = OSCAR::Configurator_backend::readInConfigValues($ganglia_configurator, "ganglia", "", noarray=>1);
+    $gmond_port = $ganglia_config_ref->{udp_send_channel__port} if (defined ($ganglia_config_ref->{udp_send_channel__port}));
+
+    # Check that gmetad in listenning on  the head (localhost) node.
+    $errors += write_oscar_service_cfg ('gmetad', 'host', 'localhost', "check_tcp!$gmetad_port -w 1.0 -c 1.5");
+
+    # Check that gmond is listenning on oscar computers (head + nodes).
+    $errors += write_oscar_service_cfg ('gmond', 'hostgroup', 'oscar_computers', "check_tcp!$gmond_port -w 1.0 -c 1.5");
+}
+
+exit $errors;

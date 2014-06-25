@@ -96,6 +96,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="3.6.1-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-06-25T10:17:32+02:00">
+        <item>Add support for intagrating ganglia into naemon monitoring.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="3.5.2-1">
       <changelogEntry authorName="Olivier Lahaye" date="2014-02-18T13:03:24+01:00">
         <item>Migration to new OSCAR::Logger + bugfixes.</item>
