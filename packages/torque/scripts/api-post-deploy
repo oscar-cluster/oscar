@@ -194,8 +194,9 @@ if ($loglevel eq "") {
 
 # Call the update TORQUE mom config script
 #print `../packages/torque/scripts/update_mom_config`;
-!oscar_system("../packages/torque/scripts/update_mom_config")
-    or ($rc++, oscar_log(5, ERROR, "There were problems running update_mom_config"));
+my $torque_scripts_dir = OSCAR::Package::get_scripts_dir("torque", 'api-post-deploy');
+!oscar_system("$torque_scripts_dir/update_mom_config")
+    or ($rc++, oscar_log(5, ERROR, "There were problems running $torque_scripts_dir/update_mom_config"));
 
 if (startPBSserver()) {
     $rc++;
