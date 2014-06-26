@@ -696,8 +696,10 @@ sub update_list_alive_nodes () {
         or return -1;
 
     # Disable the nodes that we found as dead.
-    !oscar_system("/usr/bin/cconfig disablenodes --cluster oscar_cluster --file /etc/c3.conf --nodes ".join(" ",@down_nodes))
-        or return -1;
+    if(@down_nodes) {
+        !oscar_system("/usr/bin/cconfig disablenodes --cluster oscar_cluster --file /etc/c3.conf --nodes ".join(" ",@down_nodes))
+            or return -1;
+    }
 
 #    foreach my $node (@down_nodes) {
 #        # TODO: c3_conf_manager should support that
