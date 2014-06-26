@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 #
-# Copyright (c) 2013 CEA Commissariat à l'Énergie Atomique
+# Copyright (c) 2013 CEA Commissariat A l'Energie Atomique
 #                    All rights reserved.
 #
-# Previous deprecated version written in bash is
+# Previous deprecated version written in bash is
 # Copyright (c) 2004 The Trustees of Indiana University.  
 #                    All rights reserved.
 # 
@@ -76,12 +76,12 @@ my $mta_package = OSCAR::OCA::OS_Settings::getitem($mta_service."_package");
 !system("/usr/bin/packman install $mta_package")
             or (carp "ERROR: Couldn't install $mta_package package (provides a mail transfert agent).\n", return 0);
 #
-# FIXME: OL: Shoul we use the install_mta (install_postfix) script instead. or maybe yume?
+# FIXME: OL: Should we use the install_mta (install_postfix) script instead. or maybe yume?
 #
 
 given ($mta_service) {
     when (/postfix/) {
-        # FIXME: check that /etc/postfix/main.cf /etc/main.cf /usr/lib/postfix/main.cf
+        # FIXME: check that /etc/postfix/main.cf /etc/main.cf /usr/lib/postfix/main.cf
         #        is correctly setup in OS_Settings/*
         my $config_file = OSCAR::OCA::OS_Settings::getitem(POSTFIX()."_configfile");
         if (not -e $config_file) {
