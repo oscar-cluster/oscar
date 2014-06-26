@@ -578,5 +578,6 @@ Alias /ganglia $ganglia_root/
 EOI
         close C;
     }
+    unlink "$confdir/ganglia.conf" if ( -f "$confdir/ganglia-web.conf" ); # Make sure that an old config file won't overlaps ganglia-web.conf
     return 0;
 }

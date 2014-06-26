@@ -96,6 +96,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="3.6.2-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-06-26T15:11:47+02:00">
+        <item>Now use ganglia-web.conf for apache config file (and remove old config file).</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="3.6.1-1">
       <changelogEntry authorName="Olivier Lahaye" date="2014-06-25T10:17:32+02:00">
         <item>Add support for intagrating ganglia into naemon monitoring.</item>
