@@ -60,6 +60,12 @@ tasks on a cluster.</description>
   <apiDeps>
   </apiDeps>
   <changelog>
+    <versionEntry version="4.1.7-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-06-26T16:14:19+02:00">
+        <item>Fixed bug in api-post-clientdef that failed</item>
+        <item>if /etc/c3.conf was missing (Thanks to DongInn for reporting this)</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="4.1.6-2">
       <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
         <item>Rebuild for FHS compliance</item>
