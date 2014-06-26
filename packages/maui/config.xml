@@ -29,6 +29,12 @@ OSCAR cluster software system.</description>
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="3.4.0-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-06-26T11:32:17+02:00">
+        <item>server-post-install rewritten in perl.</item>
+        <item>Added support for naemon monitoring.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="3.3.2-2">
       <changelogEntry authorName="Olivier Lahaye" date="2013-12-23T14:30:40+01:00">
         <item>Full scripts update (not run at the correct stage)</item>

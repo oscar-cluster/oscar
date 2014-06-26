@@ -1,18 +1,43 @@
-#!/bin/bash
+#!/usr/bin/perl
 # Updates maui config file with real PBS server hostname
 # 
 
-. /etc/profile
-maui_config=/opt/maui/maui.cfg
-maui_config_tmp=/tmp/maui_config_tmp
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
+use OSCAR::Utils;
+use OSCAR::MonitoringMgt;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
+use OSCAR::Database;
 
-if [ -f $maui_config ] ; then
-  cat $maui_config |sed s/pbs_oscar/$HOSTNAME/g > $maui_config_tmp
-  /bin/mv -f $maui_config_tmp $maui_config
-  echo "Maui config file updated with PBS server set to: $HOSTNAME"
-else
-  echo "Error:  Not updating Maui config file."
-  echo "$maui_config not found."
-  exit 1
-fi
+# Avoid smartmatch warnings when using given
+no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 
+# Load list of selected packages.
+my @pkgs = OSCAR::Database::list_selected_packages();
+
+# Keep in mind if naemon is selected.
+my $use_naemon=1 if ( 'naemon' ~~ @pkgs );
+
+my $maui_config="/opt/maui/maui.cfg";
+
+my $rc = 0;
+
+if ( -f $maui_config ) {
+  my $cmd = "sed -i -e 's/pbs_oscar/".$ENV{HOSTNAME}."/g' $maui_config";
+  oscar_log(2, INFO, "Maui config file updated with PBS server set to: $ENV{HOSTNAME}");
+} else {
+  oscar_log(1, ERROR, "Not updating Maui config file: $maui_config not found.");
+  $rc++;
+}
+
+# Enable MAUI service.
+!enable_system_services( MAUI )
+    or ($rc++, oscar_log(1, ERROR, "Couldn't enable maui on head."));
+
+# enable monitoring of service if naemon is part of selected packages.
+if (defined($use_naemon)) {
+    # Check that MAUI server is listenning on default port 42559.
+    $rc += write_oscar_command_cfg ('check_maui', '$USER1$/check_tcp -H $HOSTADDRESS$ -p $ARG1$ -w $ARG2$ -c $ARG3$');
+    $rc += write_oscar_service_cfg ('maui', 'host', 'oscar_server', 'check_maui!42559!1.0!1.5');
+}
