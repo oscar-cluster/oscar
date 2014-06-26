@@ -544,7 +544,7 @@ sub add_multicast_route () {
 
 # Return: 0 if success, -1 else.
 sub add_httpd_conf() {
-    # Get httpd config directory.
+    # Get httpd config directory.
     my $confdir=OSCAR::OCA::OS_Settings::getitem(HTTP()."_configdir");
 
     if (!$confdir) {
@@ -553,8 +553,8 @@ sub add_httpd_conf() {
     }
 
     # If no ganglia config present for httpd, create it. (otherwise, do nothing)
-    if (! -f "$confdir/ganglia.conf") {
-        open C, "> $confdir/ganglia.conf" 
+    if (! -f "$confdir/ganglia-web.conf") {
+        open C, "> $confdir/ganglia-web.conf" 
             or (oscar_log(5, ERROR, "Could not open ganglia.conf: $!"),
                 return -1);
 
