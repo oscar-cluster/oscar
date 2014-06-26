@@ -36,6 +36,12 @@ use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
 use SystemInstaller::Machine;
 use OSCAR::Database;
+use OSCAR::Configurator_backend;
+use OSCAR::MonitoringMgt;
+use v5.10.1;
+#use Switch 'Perl5', 'Perl6';
+# Avoid smartmatch warnings when using given
+no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 
 my $rc=0;
 
@@ -43,7 +49,7 @@ my $rc=0;
 #  BEGIN MAIN PROGRAM  #
 ########################
 
-# Set server_name
+# Set server_name
 my $pbs_server = hostname;
 my @server_name=('/etc/torque/server_name', '/var/lib/torque/server_name', '/var/spool/pbs/server_name');
 for my $server_name_configfile (@server_name) {
@@ -89,7 +95,11 @@ if(!-f '/var/lib/torque/server_priv/serverdb' && !-f '/var/spool/pbs/server_priv
 # In order to prevent a conflict when Maui is to be used,
 # 'pbs_sched' is disabled, then.
 
+# Load list of selected packages.
 my @pkgs = OSCAR::Database::list_selected_packages();
+
+# Keep in mind if naemon is selected.
+my $use_naemon=1 if ( 'naemon' ~~ @pkgs );
 
 if ( 'maui' ~~ @pkgs ) {
     # Using MAUI: need to disable pbs_sched
@@ -101,6 +111,7 @@ if ( 'maui' ~~ @pkgs ) {
             or ($rc++, oscar_log(5, ERROR, "Couldn't stop pbs scheduler service."));
     }
     # We could enable maui here, but it's better to let maui post-scripts do that.
+    # We could write naemon maui config here, but it's also better to let maui post-scripts do that.
 } else {
     # Using PBS_SCHED: need to disable maui
     if ( system_service_status(MAUI) == SERVICE_ENABLED ) {
@@ -166,5 +177,34 @@ $rm_detect_dir .= "/OSCAR/OCA/RM_Detect";
 my $rm_file = "/usr/lib/oscar/packages/torque/TORQUE.pm";
 oscar_system("cp -a $rm_file $rm_detect_dir") == 0 
     or ($rc++, oscar_log(5, ERROR, "Failed to copy $rm_file to $rm_detect_dir"), exit 1);
+
+# NAEMON specific part: Add monitoring to torque if naemon is used.
+if (defined ($use_naemon)) {
+    # Check that pbsnodes doesn't report any problem from oscar_server for each compute node.
+    $rc += write_oscar_command_cfg ('check_pbsnode', '$USER1$/check_pbsnode $HOSTALIAS$');
+    # Now we need to know if we compute on head (do we need to monitor pbs_mom on head?)
+    my $torque_scripts_dir = OSCAR::Package::get_scripts_dir("torque", 'server-post-install');
+    my $torque_configurator = "$torque_scripts_dir/configurator.html";
+    my $torque_config_ref = OSCAR::Configurator_backend::readInConfigValues($torque_configurator, "torque", "", noarray=>1);
+    if ($torque_config_ref->{compute_on_head}>0) { # Compute on head: hostgroup is oscar_computers (heads + nodes)
+        $rc += write_oscar_service_cfg ('pbs_mom', 'hostgroup', 'oscar_computers', 'check_pbsnode');
+    } else { # Don't compute on head. hostgroup is oscar_nodes only)
+        $rc += write_oscar_service_cfg ('pbs_mom', 'hostgroup', 'oscar_nodes', 'check_pbsnode');
+    }
+
+    # Check that pbs_server is listenning on port 15001.
+    $rc += write_oscar_command_cfg ('check_pbsserver', '$USER1$/check_tcp -H $HOSTADDRESS$ -p $ARG1$ -w $ARG2$ -c $ARG3$');
+    $rc += write_oscar_service_cfg ('pbs_server', 'host', 'oscar_server', 'check_pbsserver!15001!1.0!1.5');
+
+    # Check that trqauthd is listenning on port 15005 (on all oscar computers, heads + nodes).
+    # OL: BUG: Can't monitor this way as trqauthd use loopback interface. need nrpe
+    #$rc += write_oscar_command_cfg ('check_trqauthd', '$USER1$/check_tcp -H $HOSTADDRESS$ -p $ARG1$ -w $ARG2$ -c $ARG3$');
+    #$rc += write_oscar_service_cfg ('trqauthd', 'hostgroup', 'oscar_computers', 'check_trqauthd!15005!1.0!1.5');
+
+    if (!('maui' ~~ @pkgs)) { # If we're not using MAUI, we need to monitor pbs_sched.
+        $rc += write_oscar_command_cfg ('check_pbssched', '$USER1$/check_tcp -H $HOSTADDRESS$ -p $ARG1$ -w $ARG2$ -c $ARG3$');
+        $rc += write_oscar_service_cfg ('pbs_sched', 'host', 'oscar_server', 'check_pbssched!15004!1.0!1.5');
+    }
+}
 
 exit $rc;
