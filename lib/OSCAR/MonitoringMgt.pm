@@ -40,8 +40,7 @@ use OSCAR::SystemServicesDefs;
 use OSCAR::Utils;
 use File::Basename;
 use Carp;
-use v5.10.1;
-use Switch 'Perl5', 'Perl6';
+use v5.10.1; # Switch
 # Avoid smartmatch warnings when using given
 no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 

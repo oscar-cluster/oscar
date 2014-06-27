@@ -25,6 +25,7 @@ package OSCAR::PackageSmart;
 # Build repository paths depending on distro, version, etc...
 
 use strict;
+use v5.10.1; # Switch
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use OSCAR::Env;
@@ -34,7 +35,6 @@ use OSCAR::Logger;
 use OSCAR::LoggerDefs;
 use OSCAR::Utils;
 use File::Basename;
-use Switch;
 use Cwd;
 use Carp;
 

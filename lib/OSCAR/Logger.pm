@@ -29,7 +29,7 @@ use File::Basename;
 use OSCAR::Env;
 use OSCAR::LoggerDefs;
 use OSCAR::Utils;
-use Switch 'Perl5', 'Perl6';
+use v5.10.1; # Switch
 # Avoid smartmatch warnings when using given
 no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 

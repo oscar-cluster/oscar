@@ -27,7 +27,9 @@
 #                       All rights reserved.
 
 use strict;
-use Switch;
+use v5.10.1; # Switch
+# Avoid smartmatch warnings when using given
+no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 use Carp;
 use Cwd qw(chdir cwd);
 use Getopt::Long;
@@ -180,14 +182,14 @@ foreach my $head (@ganglia_head_aliases) {
         OSCAR::Logger::oscar_log_subsection ("[$label]: Found valid head alias in gstat report: $head");
     }
 }
-switch ($head_found) {
-    case 0 {
+given ($head_found) {
+    case (0) {
         OSCAR::Logger::oscar_log_subsection ("ERROR: [$label]: headnode missing from gstat report!");
         $error_count += 1; }
-    case 1 {
+    case (1) {
         OSCAR::Logger::oscar_log_subsection ("SUCCESS: [$label]: Found one uniq head in gstat report.");
         $valid_nodes_found += 1; }
-    else {
+    default {
         OSCAR::Logger::oscar_log_subsection ("ERROR: [$label]: multiple aliases of headnode in gstat report!");
         $error_count += 1; }
 }

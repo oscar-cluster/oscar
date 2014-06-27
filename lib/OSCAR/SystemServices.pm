@@ -45,7 +45,6 @@ use OSCAR::Utils;
 use File::Basename;
 use Carp;
 use v5.10.1;
-use Switch 'Perl5', 'Perl6';
 # Avoid smartmatch warnings when using given
 no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 
@@ -433,6 +432,10 @@ sub set_system_services ($@) {
             }
             last;
         }
+        default {
+            oscar_log(1, ERROR, "Unknown service management: $service_mgt");
+            return -1;
+        }
     }
 
     if (scalar(@failed_services) > 0) {
@@ -473,7 +476,7 @@ sub set_system_sockets ($@) {
     my $os = OSCAR::OCA::OS_Detect::open();
     my $service_mgt = $os->{service_mgt}; # (systemd, initscripts, manual)
     given ($service_mgt) {
-        when "systemd" {
+        when ( "systemd" ) {
             my $command = "disable";
             $command = "enable" if ($config eq SERVICE_ENABLED());
             foreach my $service (@services) {
@@ -495,7 +498,7 @@ sub set_system_sockets ($@) {
             }
             last;
         }
-        when "initscripts" {
+        when ( "initscripts" ) {
             my $command = "off";
             if ($config eq SERVICE_ENABLED()) {
                 $command = "on";
@@ -543,6 +546,10 @@ sub set_system_sockets ($@) {
                 # FIXME: what about checking return code?
             }
             last;
+        }
+        default {
+            oscar_log(1, ERROR, "Unknown service management: $service_mgt");
+            return -1;
         }
     }
 }
@@ -674,21 +681,25 @@ sub remote_system_service($$$) {
 
 #    OSCAR::Logger::oscar_log_subsection ("Performing '$cmd_action' on service $service_name ($service)... ");
     given ($service_mgt) {
-        when "systemd" {
+        when ( "systemd" ) {
             $cmd = "LC_ALL=C /bin/systemctl ".$cmd_action." ".$service_name.".service";
             last
         }
-        when "initscripts" {
+        when ( "initscripts" ) {
             $cmd = "LC_ALL=C /sbin/service ".$service_name." ".$cmd_action;
             last
         }
-        when "upstart" {
+        when ( "upstart" ) {
             $cmd = "LC_ALL=C /sbin/initctl ".$cmd_action." ".$service_name;
             last
         }
-        when "manual" {
+        when ( "manual" ) {
             $cmd = OSCAR::OCA::OS_Settings::getitem('init')." ".$service_name." "..$cmd_action;
             last
+        }
+        default {
+            oscar_log(1, ERROR, "Unknown service management: $service_mgt");
+            return -1;
         }
     }
 
@@ -769,30 +780,34 @@ sub remote_system_socket($$$) {
 
 #    OSCAR::Logger::oscar_log_subsection ("Performing '$cmd_action' on socket service $service_name ($service)... ");
     given ($service_mgt) {
-        when "systemd" {
+        when ( "systemd" ) {
             $cmd = "LC_ALL=C /bin/systemctl ".$cmd_action." ".$service_name.".socket ; /bin/systemctl daemon-reload";
             last
         }
-        when "initscripts" {
+        when ( "initscripts" ) {
             $service_name = OSCAR::OCA::OS_Settings::getitem (XINETD() . "_service");
             # we won't stop xinetd as it would stop all xinetd services.
             system_service($service_name, $cmd_action) if ($cmd_action ne STOP());
             $cmd="";
             last
         }
-        when "upstart" {
+        when ( "upstart" ) {
             $service_name = OSCAR::OCA::OS_Settings::getitem (XINETD() . "_service");
             # we won't stop xinetd as it would stop all xinetd services.
             system_service($service_name, $cmd_action) if ($cmd_action ne STOP());
             $cmd="";
             last
         }
-        when "manual" {
+        when ( "manual" ) {
             $service_name = OSCAR::OCA::OS_Settings::getitem (XINETD() . "_service");
             # we won't stop xinetd as it would stop all xinetd services.
             system_service($service_name, $cmd_action) if ($cmd_action ne STOP());
             $cmd="";
             last
+        }
+        default {
+            oscar_log(1, ERROR, "Unknown service management: $service_mgt");
+            return -1;
         }
     }
 
