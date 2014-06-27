@@ -79,7 +79,8 @@ foreach my $name (sort keys %newmacs) {
     if (scalar(@mach)) {
 
 	# get adapter info
-	my @adap=list_adapter(devname=>"eth0",client=>$mach[0]->name);
+    my %h = (client=>$mach[0]->name, devname=>"eth0");
+	my @adap=list_adapter(\%h);
 
 	#print "name $name mac: db_mac: " . $adap[0]->mac .
 	#    " new_mac: " . $newmacs{$name} . "\n";
