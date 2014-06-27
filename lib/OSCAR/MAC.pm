@@ -190,7 +190,8 @@ sub __setup_dhcpd ($) {
     oscar_log(5, ACTION, "Creating dhcp config file for $interface.");
     my $cmd = "mkdhcpconf -o $dhcpd_configfile ".
                          "--interface=$interface ".
-                         "--gateway=$ip";
+                         "--gateway=$ip ".
+                         "--imageserver=oscar_server";
 
     if ($install_mode eq "systemimager-multicast") {
        $cmd = $cmd . " --multicast=yes";

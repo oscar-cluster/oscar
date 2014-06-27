@@ -387,8 +387,7 @@ sub delete_clients (@) {
     #        or (carp "ERROR: Couldn't backup dhcpd.conf file", return -1);
     #}
 
-    $cmd = "mkdhcpconf -o $dhcpd_configfile --interface=$interface ".
-           "--gateway=$ip";
+    $cmd = "mkdhcpconf -o $dhcpd_configfile --interface=$interface --gateway=$ip --imageserver=oscar_server";
     if ($install_mode eq "systemimager-multicast") {
        $cmd = $cmd . " --multicast=yes";
     }

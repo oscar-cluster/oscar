@@ -35,6 +35,10 @@ use SystemInstaller::Machine qw(synchosts linkscript);
 use SystemInstaller::Log qw(start_verbose stop_verbose verbose logger_file);
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
+use OSCAR::OCA::OS_Settings;
+use OSCAR::FileUtils;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
 use Data::Dumper;
 
 
@@ -102,15 +106,10 @@ if (!$changed) {
 # rebuild dhcpd.conf if needed
 
 #   find default gateway in /etc/dhcpd.conf
-# TODO: We should use OS_Settings here
-my $dhcpd_configfile = "/etc/dhcpd.conf";
-# Under RHEL6 like, the dhcpd config file is in /etc/dhcp
-$dhcpd_configfile = "/etc/dhcp/dhcpd.conf" if -x "/etc/dhcp";
-# Under Debian the dhcpd config file is in /etc/dhcp3
-$dhcpd_configfile = "/etc/dhcp3/dhcpd.conf" if -x "/etc/dhcp3";
+my $dhcpd_configfile = OSCAR::OCA::OS_Settings::getitem(DHCP()."_configfile"); #location of the dhcpd.conf
+# 1st, create a backup of the config file if not already done.
 if(-e $dhcpd_configfile) {
-    copy($dhcpd_configfile, $dhcpd_configfile.".oscarbak")
-        or (die "ERROR: Couldn't backup $dhcpd_configfile file");
+    backup_file_if_not_exist($dhcpd_configfile) or (oscar_log(2, ERROR, "Failed to setup DHCP service."), exit -1);
 }
 
 open IN, "$dhcpd_configfile" or die "ERROR: Could not open $dhcpd_configfile!";
@@ -147,7 +146,7 @@ my @line = split /\s+/, $l;
 my $interface = $line[$#line];
 print "internal interface = $interface\n";
 
-my $cmd = "mkdhcpconf -o $dhcpd_configfile --interface=$interface --gateway=$gwip";
+my $cmd = "mkdhcpconf -o $dhcpd_configfile --interface=$interface --gateway=$gwip --imageserver=oscar_server";
 if (system($cmd)) {
     die "ERROR: Impossible to successfully execute $cmd";
 }
