@@ -225,7 +225,7 @@ backup_file_if_not_exist($file)
 # GSSAPIAuthentication: not used.
 my %sshd_config = (
     Protocol => '2',
-    AuthorizedKeysFile => '.ssh/authorized_keys .ssh/authorized_keys2',
+    AuthorizedKeysFile => '.ssh/authorized_keys,.ssh/authorized_keys2',
     X11Forwarding => 'yes',
     PermitRootLogin => 'yes',
     IgnoreRhosts => 'yes',
