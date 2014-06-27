@@ -38,7 +38,7 @@ fi
 # Create the /var/run/munge directory
 /bin/mkdir -p ${ROOT_DIR}/var/run/munge
 
-# Get the munge UID and GID from the ${ROOT_DIR}/etc/passwd
+# Get the munge UID and GID from the ${ROOT_DIR}/etc/passwd
 # (Can differs from head if dynamicaly assigned by munge package post install)
 if test -z "$(grep munge ${ROOT_DIR}/etc/passwd)"
 then

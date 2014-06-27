@@ -30,7 +30,7 @@ if [ -z "$IMAGEDIR" -o ! -d "$IMAGEDIR" ]; then
     exit 1
 fi
 
-# Get helper path: fix-munge-config
+# Get helper path: fix-munge-config
 MUNGE_OPKG_DIR=$(basename $0)
 if test -x ${MUNGE_OPKG_DIR}/fix-munge-config
 then
