@@ -8,7 +8,7 @@
 Summary: 	OSCAR package
 Name: 		oscar
 Version: 	OSCARVERSION
-Release: 	1
+Release: 	1%{?dist}
 License: 	GPL
 URL: 		http://oscar.openclustergroup.org
 Group: 		Applications/System
