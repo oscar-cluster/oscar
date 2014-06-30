@@ -27,44 +27,47 @@ sub detect_dir {
 
     # If /etc/redhat-release exists, continue, otherwise, quit.
     if (-f "$root/etc/redhat-release") {
-	$release_string = `cat $root/etc/redhat-release`;
+        $release_string = `cat $root/etc/redhat-release`;
     } else {
-	return undef;
+        return undef;
     }
 
     # this hash contains all info necessary for identifying the OS
     my $id = {
-	os => "linux",
-	chroot => $root,
+         os => "linux",
+         chroot => $root,
     };
 
-    if ( $release_string =~ /CentOS release (\d+)\.(\d+) \((\S+)\)/ || $release_string =~ /CentOS release (\d+) \((\S+)\)/ ) {
-	my $os_release = $1;
-	my $os_update;
+    if ($release_string =~ /CentOS release (\d+)\.(\d+) \((\S+)\)/ ||
+        $release_string =~ /CentOS release (\d+) \((\S+)\)/ ||
+        $release_string =~ /CentOS Linux release (\d+)\.(\d+) \(.+\)/ ||
+        $release_string =~ /CentOS Linux release (\d+) \(\D+\d+\.(\d+)\)/) {
+        my $os_release = $1;
+        my $os_update;
 
-	# CentOS's major number release does not have a minor number (eg. 5 vs 5.0), set $os_update to 0 by default
-	my $b = $2;
-	if ( $b =~ /^[0-9]$/ ) {
-		$os_update = $b;
-	} else {
-		$os_update = 0;
-	}
+        # CentOS's major number release does not have a minor number (eg. 5 vs 5.0), set $os_update to 0 by default
+        my $b = $2;
+        if ( $b =~ /^[0-9]$/ ) {
+            $os_update = $b;
+        } else {
+            $os_update = 0;
+        }
 
-	# OL: Code below makes wrong assumption and fails on CentOS-5.9 wich is NOT a beta version.
+        # OL: Code below makes wrong assumption and fails on CentOS-5.9 wich is NOT a beta version.
         # Support CentOS Beta releases
         #if ($os_update =~ 9) {
         #    $os_release++;
         #    $os_update = 0;
         #}
 
-	$id->{distro} = $distro;
-	$id->{distro_version} = $os_release;
-	$id->{distro_update} = $os_update;
-	$id->{compat_distro} = $compat_distro;
-	$id->{compat_distrover} = $os_release;
-	$id->{pkg} = $pkg;
+        $id->{distro} = $distro;
+        $id->{distro_version} = $os_release;
+        $id->{distro_update} = $os_update;
+        $id->{compat_distro} = $compat_distro;
+        $id->{compat_distrover} = $os_release;
+        $id->{pkg} = $pkg;
     } else {
-	return undef;
+        return undef;
     }
 
     # determine architecture
@@ -73,9 +76,9 @@ sub detect_dir {
 
     # Determine services management subsystem (systemd, initscripts, manual)
     if ($id->{distro_version} <= 6) {
-        $id->{service_mgt} = "initscripts";
+       $id->{service_mgt} = "initscripts";
     } else {
-        $id->{service_mgt} = "systemd";
+       $id->{service_mgt} = "systemd";
     }
 
     # Make final string
@@ -87,9 +90,9 @@ sub detect_pool {
     my ($pool) = @_;
 
     my $id = main::OSCAR::OCA::OS_Detect::detect_pool_rpm($pool,
-							  $detect_package,
-							  $distro,
-							  $compat_distro);
+        $detect_package,
+        $distro,
+        $compat_distro);
 
     return $id;
 }
@@ -97,10 +100,10 @@ sub detect_pool {
 sub detect_fake {
     my ($fake) = @_;
     my $id = main::OSCAR::OCA::OS_Detect::detect_fake_common($fake,
-							     $distro,
-							     $compat_distro,
-                                 undef,
-							     $pkg);
+        $distro,
+        $compat_distro,
+        undef,
+        $pkg);
     return $id;
 }
 
