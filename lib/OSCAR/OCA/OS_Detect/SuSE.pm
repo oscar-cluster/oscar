@@ -18,7 +18,7 @@
 # $Id$
 #
 
-package OCA::OS_Detect::SuSE;
+package OSCAR::OCA::OS_Detect::SuSE;
 
 use strict;
 
@@ -34,20 +34,20 @@ sub detect_dir {
 
     # If /etc/SuSE-release exists, continue, otherwise, quit.
     if (-f "$root/etc/SuSE-release") {
-	$release_string = `cat $root/etc/SuSE-release`;
+        $release_string = `cat $root/etc/SuSE-release`;
     } else {
-	return undef;
+        return undef;
     }
 
     my $id = {
-	os => "linux",
-	chroot => $root,
+        os => "linux",
+        chroot => $root,
     };
 
     if (($release_string =~ /SUSE LINUX (\d+)\.(\d+)/) ||
-	($release_string =~ /openSUSE (\d+)\.(\d+) /)) {
-	my $os_version = $1;
-	my $os_update = $2;
+        ($release_string =~ /openSUSE (\d+)\.(\d+) /)) {
+        my $os_version = $1;
+        my $os_update = $2;
         $id->{distro} = $distro;
         $id->{distro_upgrade} = $os_update;
         $id->{distro_version} = $os_version;
@@ -55,7 +55,7 @@ sub detect_dir {
         $id->{compat_distrover} = $os_version;
         $id->{pkg} = $pkg;
     } else {
-	return undef;
+        return undef;
     }
 
     # this hash contains all info necessary for identifying the OS
@@ -81,9 +81,9 @@ sub detect_pool {
     my ($pool) = @_;
 
     my $id = main::OSCAR::OCA::OS_Detect::detect_pool_rpm($pool,
-							  $detect_package,
-							  $distro,
-							  $compat_distro);
+                                                          $detect_package,
+                                                          $distro,
+                                                          $compat_distro);
 
     return $id;
 }
@@ -91,10 +91,10 @@ sub detect_pool {
 sub detect_fake {
     my ($fake) = @_;
     my $id = main::OSCAR::OCA::OS_Detect::detect_fake_common($fake,
-							     $distro,
-							     $compat_distro,
-                                 undef,
-							     $pkg);
+                                                             $distro,
+                                                             $compat_distro,
+                                                             undef,
+                                                             $pkg);
     return $id;
 }
 

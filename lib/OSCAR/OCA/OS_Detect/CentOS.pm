@@ -11,7 +11,7 @@
 # $Id$
 #
 
-package OCA::OS_Detect::CentOS;
+package OSCAR::OCA::OS_Detect::CentOS;
 
 use strict;
 

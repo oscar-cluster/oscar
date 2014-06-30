@@ -11,7 +11,7 @@
 # $Id$
 #
 
-package OCA::OS_Detect::SLES;
+package OSCAR::OCA::OS_Detect::SLES;
 
 use strict;
 
@@ -26,28 +26,28 @@ sub detect_dir {
     my $release_string;
 
     if (-f "$root/etc/SuSE-release") {
-	$release_string = `cat $root/etc/SuSE-release`;
+        $release_string = `cat $root/etc/SuSE-release`;
     } else {
-	return undef;
+        return undef;
     }
 
     # this hash contains all info necessary for identifying the OS
     my $id = {
-	os => "linux",
-	chroot => $root,
+        os => "linux",
+        chroot => $root,
     };
 
     # match strings for SLES
     if ($release_string =~ m/SUSE Linux Enterprise Server (\d+) \((\S+)\)/) {
-	my $os_release = $1;
-	$id->{distro} = $distro;
-	$id->{distro_version} = $os_release;
-	#$id->{distro_update} = $os_update;
-	$id->{compat_distro} = $compat_distro;
-	$id->{compat_distrover} = $os_release;
-	$id->{pkg} = $pkg;
+        my $os_release = $1;
+        $id->{distro} = $distro;
+        $id->{distro_version} = $os_release;
+        #$id->{distro_update} = $os_update;
+        $id->{compat_distro} = $compat_distro;
+        $id->{compat_distrover} = $os_release;
+        $id->{pkg} = $pkg;
     } else {
-	return undef;
+        return undef;
     }
 
     # determine architecture
@@ -70,9 +70,9 @@ sub detect_pool {
     my ($pool) = @_;
 
     my $id = main::OSCAR::OCA::OS_Detect::detect_pool_rpm($pool,
-							  $detect_package,
-							  $distro,
-							  $compat_distro);
+                                                          $detect_package,
+                                                          $distro,
+                                                          $compat_distro);
 
     return $id;
 }
@@ -80,10 +80,10 @@ sub detect_pool {
 sub detect_fake {
     my ($fake) = @_;
     my $id = main::OSCAR::OCA::OS_Detect::detect_fake_common($fake,
-							     $distro,
-							     $compat_distro,
-                                 undef,
-							     $pkg);
+                                                             $distro,
+                                                             $compat_distro,
+                                                             undef,
+                                                             $pkg);
     return $id;
 }
 

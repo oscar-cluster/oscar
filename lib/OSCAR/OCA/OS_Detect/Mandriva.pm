@@ -18,7 +18,7 @@
 # $Id$
 #
 
-package OCA::OS_Detect::Mandriva;
+package OSCAR::OCA::OS_Detect::Mandriva;
 
 use strict;
 
@@ -34,19 +34,19 @@ sub detect_dir {
 
     # If /etc/mandriva-release exists, continue, otherwise, quit.
     if (-f "/etc/mandriva-release") {
-	$release_string = `cat /etc/mandriva-release`;
+        $release_string = `cat /etc/mandriva-release`;
     } else {
-	return undef;
+        return undef;
     }
 
     my $id = {
-	os => "linux",
-	chroot => $root,
+        os => "linux",
+        chroot => $root,
     };
 
     if ($release_string =~ /Mandriva Linux release (\d+)\.(\d+) /) {
-	my $os_version = $1;
-	my $os_release = $2;
+        my $os_version = $1;
+        my $os_release = $2;
         $id->{distro} = $distro;
         $id->{distro_version} = $os_version;
         $id->{distro_release} = $os_release;
@@ -54,8 +54,8 @@ sub detect_dir {
         $id->{compat_distrover} = $os_version;
         $id->{pkg} = $pkg;
     } else {
-	print "Mandriva returning indef";
-	return undef;
+        print "Mandriva returning indef";
+        return undef;
     }
 
     # this hash contains all info necessary for identifying the OS
@@ -81,9 +81,9 @@ sub detect_pool {
     my ($pool) = @_;
 
     my $id = main::OSCAR::OCA::OS_Detect::detect_pool_rpm($pool,
-							  $detect_package,
-							  $distro,
-							  $compat_distro);
+                                                          $detect_package,
+                                                          $distro,
+                                                          $compat_distro);
 
     return $id;
 }
@@ -91,10 +91,10 @@ sub detect_pool {
 sub detect_fake {
     my ($fake) = @_;
     my $id = main::OSCAR::OCA::OS_Detect::detect_fake_common($fake,
-							     $distro,
-							     $compat_distro,
-                                 undef,
-							     $pkg);
+                                                             $distro,
+                                                             $compat_distro,
+                                                             undef,
+                                                             $pkg);
     return $id;
 }
 

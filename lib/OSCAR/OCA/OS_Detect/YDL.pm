@@ -10,7 +10,7 @@
 # $Id$
 #
 
-package OCA::OS_Detect::YDL;
+package OSCAR::OCA::OS_Detect::YDL;
 
 use strict;
 
@@ -30,21 +30,21 @@ sub detect_dir {
 
     # If /etc/yellowdog-release exists, continue, otherwise, quit.
     if (-f "$root$dfile") {
-	$release_string = `cat $root$dfile`;
+        $release_string = `cat $root$dfile`;
     } else {
-	return undef;
+        return undef;
     }
 
     # this hash contains all info necessary for identifying the OS
     my $id = {
-	os => "linux",
-	chroot => $root,
+        os => "linux",
+        chroot => $root,
     };
 
     if ($release_string =~ /Yellow Dog Linux release (\d+)/) {
-	$ydl_release = $1;
+        $ydl_release = $1;
     } else {
-	return undef;
+        return undef;
     }
 
     $id->{distro} = $distro;
@@ -70,9 +70,9 @@ sub detect_pool {
     my ($pool) = @_;
 
     my $id = main::OSCAR::OCA::OS_Detect::detect_pool_rpm($pool,
-							  $detect_package,
-							  $distro,
-							  $compat_distro);
+                                                          $detect_package,
+                                                          $distro,
+                                                          $compat_distro);
 
     return $id;
 }
@@ -80,10 +80,10 @@ sub detect_pool {
 sub detect_fake {
     my ($fake) = @_;
     my $id = main::OSCAR::OCA::OS_Detect::detect_fake_common($fake,
-							     $distro,
-							     $compat_distro,
-                                 undef,
-							     $pkg);
+                                                             $distro,
+                                                             $compat_distro,
+                                                             undef,
+                                                             $pkg);
     return $id;
 }
 

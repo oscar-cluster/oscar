@@ -15,7 +15,7 @@
 # $Id$
 #
 
-package OCA::OS_Detect::RedHat;
+package OSCAR::OCA::OS_Detect::RedHat;
 
 use strict;
 
@@ -50,7 +50,7 @@ sub detect_dir {
     # complex match strings
     if ($release_string =~
         /Red Hat Enterprise Linux (\S+) release (\d+) \((\S+) Update (\d+)\)/ 
-	    or $release_string =~
+            or $release_string =~
         /Red Hat Enterprise Linux (\S+) release (\d+|\d+\.\d+) \((\S+)\)/) {
         my $flavor = $1; # AS, WS, ES? This information is irrelevant for OSCAR
         my $os_release = $2;
@@ -104,9 +104,9 @@ sub detect_pool {
     my ($pool) = @_;
 
     my $id = main::OSCAR::OCA::OS_Detect::detect_pool_rpm($pool,
-							  $detect_package,
-							  $distro,
-							  $compat_distro);
+                                                          $detect_package,
+                                                          $distro,
+                                                          $compat_distro);
 
     return $id;
 }
@@ -114,10 +114,10 @@ sub detect_pool {
 sub detect_fake {
     my ($fake) = @_;
     my $id = main::OSCAR::OCA::OS_Detect::detect_fake_common($fake,
-							     $distro,
-							     $compat_distro,
-                                 undef,
-							     $pkg);
+                                                             $distro,
+                                                             $compat_distro,
+                                                             undef,
+                                                             $pkg);
     return $id;
 }
 

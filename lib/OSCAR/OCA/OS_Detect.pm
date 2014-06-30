@@ -123,13 +123,13 @@ sub open {
         my $str;
 #         print "Comp $comp\n";
         if ($path) {
-            $str = "\$ret = \&OCA::OS_Detect::".$comp."::detect_dir(\$path)";
+            $str = "\$ret = \&OSCAR::OCA::OS_Detect::".$comp."::detect_dir(\$path)";
         } elsif ($pool) {
-            $str = "\$ret = \&OCA::OS_Detect::".$comp."::detect_pool(\$pool)";
+            $str = "\$ret = \&OSCAR::OCA::OS_Detect::".$comp."::detect_pool(\$pool)";
         } elsif ($oscar_pool) {
-            $str = "\$ret = \&OCA::OS_Detect::".$comp."::detect_oscar_pool(\$oscar_pool)";
+            $str = "\$ret = \&OSCAR::OCA::OS_Detect::".$comp."::detect_oscar_pool(\$oscar_pool)";
         } elsif ($fake) {
-            $str = "\$ret = \&OCA::OS_Detect::".$comp."::detect_fake(\$fake)";
+            $str = "\$ret = \&OSCAR::OCA::OS_Detect::".$comp."::detect_fake(\$fake)";
         }
         my $res = eval $str;
         if (defined($ret) && (ref($ret) eq "HASH")) {

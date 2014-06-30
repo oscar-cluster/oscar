@@ -10,7 +10,7 @@
 # $Id$
 #
 
-package OCA::OS_Detect::Ubuntu;
+package OSCAR::OCA::OS_Detect::Ubuntu;
 
 BEGIN {
     if (defined $ENV{OSCAR_HOME}) {
@@ -157,9 +157,9 @@ sub detect_pool {
     my ($pool) = @_;
 
     my $id = main::OSCAR::OCA::OS_Detect::detect_pool_rpm($pool,
-							  $detect_package,
-							  $distro,
-							  $compat_distro);
+                              $detect_package,
+                              $distro,
+                              $compat_distro);
 
     return $id;
 }
@@ -176,10 +176,10 @@ sub detect_fake {
     $fake->{'codename'} = $codenames{$l_version};
 
     my $id = main::OSCAR::OCA::OS_Detect::detect_fake_common($fake,
-							     $distro,
-							     $compat_distro,
+                                 $distro,
+                                 $compat_distro,
                                  $compat_version_mapping{$l_version},
-							     $pkg);
+                                 $pkg);
     return $id;
 }
 

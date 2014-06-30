@@ -13,7 +13,7 @@
 # $Id$
 #
 
-package OCA::OS_Detect::Debian;
+package OSCAR::OCA::OS_Detect::Debian;
 
 BEGIN {
     if (defined $ENV{OSCAR_HOME}) {
@@ -85,13 +85,13 @@ sub detect_dir {
         }
 
 
-	# GV (2009/04/22): this is completely stupid (yes it is!) to use
-	# the version of the base-files package since developers may trick
-	# the version number as a work around to packaging issues. As a
-	# result, it is a nigthmare to get the actual version from it,
-	# especially when at the same time, a file (/etc/debian-version)
-	# is there to give the version (even if the file may store a codename
-	# or a version, it is still simpler).
+        # GV (2009/04/22): this is completely stupid (yes it is!) to use
+        # the version of the base-files package since developers may trick
+        # the version number as a work around to packaging issues. As a
+        # result, it is a nigthmare to get the actual version from it,
+        # especially when at the same time, a file (/etc/debian-version)
+        # is there to give the version (even if the file may store a codename
+        # or a version, it is still simpler).
         my $cmd = "$dpkg_bin --show $detect_pkg 2>&1";
         open(CMD, "$cmd|") or die "Error: unable to open $cmd - $!\n";
         my $rslt = <CMD>;
@@ -124,7 +124,7 @@ sub detect_dir {
         $deb_ver = $1;
         $deb_update = 0;
     } else {
-    	$deb_update = 0;
+            $deb_update = 0;
     }
 
     # determine architecture
@@ -162,9 +162,9 @@ sub detect_pool {
     my ($pool) = @_;
 
     my $id = main::OSCAR::OCA::OS_Detect::detect_pool_rpm($pool,
-							  $detect_package,
-							  $distro,
-							  $compat_distro);
+                                                          $detect_package,
+                                                          $distro,
+                                                          $compat_distro);
 
     return $id;
 }
@@ -183,10 +183,10 @@ sub detect_fake ($) {
     $fake->{'codename'} = $codenames{$l_version};
 
     my $id = main::OSCAR::OCA::OS_Detect::detect_fake_common($fake,
-							     $distro,
-							     $compat_distro,
-                                 undef,
-							     $pkg);
+                                                             $distro,
+                                                             $compat_distro,
+                                                             undef,
+                                                             $pkg);
     return $id;
 }
 
