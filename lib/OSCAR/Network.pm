@@ -439,14 +439,14 @@ sub get_host_ip ($) {
 #         print " ERROR: the hostname $id is used more than one time \n";
 #         print " in /etc/hosts                                      \n";
 #         print " ---------------------------------------------------\n";
-        return -1;
+        return "";
     }
     if ($count == 0) {
 # 	print " ---------------------------------------------------\n";
 # 	print " ERROR: the hostname $id could not be found         \n";
 # 	print " in /etc/hosts                                      \n";
 # 	print " ---------------------------------------------------\n";
-        return -1;
+        return "";
     }
     return $my_ip;
 }

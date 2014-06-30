@@ -81,7 +81,7 @@ if (! ($oscar_if and exists $nics{$oscar_if}) ) {
 
 # we check now the IP assgned to the interface used by OSCAR
 my $oscar_ip = get_host_ip ("oscar_server");
-if ($oscar_ip eq FAILURE) {
+if ($oscar_ip eq "" || $hostname_ip eq "0.0.0.0") {
     print " ----------------------------------------------------\n";
     print " WARNING: oscar_server is not defined in $host_file. \n";
     print " This may be normal if this is the first time you \n";

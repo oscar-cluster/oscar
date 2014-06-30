@@ -71,7 +71,7 @@ if ($shorthostname eq "localhost") {
 # the value of hostname should not to be assigned to the loopback
 # interface
 my $hostname_ip = get_host_ip ($hostname);
-if ($hostname_ip eq "" || $hostname_ip eq FAILURE) {
+if ($hostname_ip eq "" || $hostname_ip eq "0.0.0.0") {
     print " ----------------------------------------------\n";
     print " ERROR: Impossible get the IP for the hostname ($hostname) \n";
     print " ----------------------------------------------\n";
