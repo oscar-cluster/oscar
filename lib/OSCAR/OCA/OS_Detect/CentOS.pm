@@ -71,7 +71,7 @@ sub detect_dir {
     my $arch = main::OSCAR::OCA::OS_Detect::detect_arch_file($root,$detect_file);
     $id->{arch} = $arch;
 
-    # determine services management subsystem (systemd, initscripts, manual)
+    # Determine services management subsystem (systemd, initscripts, manual)
     if ($id->{distro_version} <= 6) {
         $id->{service_mgt} = "initscripts";
     } else {
