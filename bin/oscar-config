@@ -375,20 +375,47 @@ if ($headnode_nic) {
 
 if ($sanity_check) {
 
-    force_run_as_root();
+    # force_run_as_root(); # Already tested by bootstrap-sanity.apb
 
-    require OSCAR::ConfigFile;
-    my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
-                                                      undef,
-                                                      "OSCAR_SCRIPTS_PATH");
-    if (oscar_system ("$binaries_path/system-sanity")) {
-        oscar_log(1, ERROR, "Failed to successfully execute system-sanity");
+    # Checking system sanity.
+    my $sys_sanity_output="";
+    my $sys_sanity_rc=0;
+
+    oscar_log(5, INFO, "Checking system-sanity...");
+    ($sys_sanity_output,$sys_sanity_rc) = run_apitest("system-sanity.apb");
+    if($sys_sanity_rc > 0) {
+        oscar_log(1, SUBSECTION, "Please fix error(s) before retrying.");
+        exit 1;
+    } else {
+        oscar_log(2, INFO, "system-sanity OK.");
     }
+
+
+#    require OSCAR::ConfigFile;
+#    my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
+#                                                      undef,
+#                                                      "OSCAR_SCRIPTS_PATH");
+#    if (oscar_system ("$binaries_path/system-sanity")) {
+#        oscar_log(1, ERROR, "Failed to successfully execute system-sanity");
+#    }
 }
 
 if ($bootstrap) {
 
-    force_run_as_root();
+    # force_run_as_root(); # Already tested by system-sanity.apb
+
+    # Checking system sanity before going further.
+    my $sys_sanity_output="";
+    my $sys_sanity_rc=0;
+
+    oscar_log(5, INFO, "Checking bootstrap-sanity...");
+    ($sys_sanity_output,$sys_sanity_rc) = run_apitest("bootstrap-sanity.apb");
+    if($sys_sanity_rc > 0) {
+        oscar_log(1, SUBSECTION, "Please fix error(s) before retrying.");
+        exit 1;
+    } else {
+        oscar_log(2, INFO, "bootstrap-sanity OK.");
+    }
 
     if (bootstrap()) {
         oscar_log(1, ERROR, "Unable to bootstrap OSCAR");

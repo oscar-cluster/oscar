@@ -208,7 +208,7 @@ open(LOCKFILE, ">$lockfile");
 print LOCKFILE $$;
 close(LOCKFILE);
 
-# Checking system sanity before going further.
+# Checking system sanity before going further.
 my $sys_sanity_output="";
 my $sys_sanity_rc=0;
 
