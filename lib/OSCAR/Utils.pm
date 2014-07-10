@@ -359,39 +359,43 @@ sub is_a_comment ($) {
 
 __END__
 
-=head1 Exported Functions
+=back
+
+=head1 TODO
+
+Write inline documentation for the following functions:
 
 =over 4
 
-=item compactSpaces
+=item is_element_in_array
+
+=item print_array
 
 =item get_oscar_version
 
-=item get_local_arch
-
-=item get_path_perl_modules
-
-=item is_a_comment ($my_string)
-
 =item is_a_valid_string
 
-=item is_element_in_array ($elt, @my_array)
-
-returns 1 if $elt is in the @my_array array, 0 else.
-
-=item merge_arrays
-
-=item print_array
+=item print_hash
 
 =item print_hash
 
 =item print_error_strings
+
+=item get_local_arch
 
 =item trim
 
 =item ltrim
 
 =item rtrim
+
+=item merge_arrays
+
+=item get_path_perl_modules
+
+=item compactSpaces
+
+=item is_a_comment
 
 =back
 
@@ -400,6 +404,8 @@ returns 1 if $elt is in the @my_array array, 0 else.
 =over 4
 
 =item Geoffroy Vallee <valleegr at ornl dot gov>
+
+=item Olivier Lahaye <olivier dot lahaye at cea dot fr>
 
 =back
 

@@ -2,11 +2,14 @@ package OSCAR::MAC;
 
 # Copyright (c) 2004 	The Board of Trustees of the University of Illinois.
 #                     	All rights reserved.
-#			Jason Brechin <brechin@ncsa.uiuc.edu>
+#			            Jason Brechin <brechin@ncsa.uiuc.edu>
 # Copyright (C) 2006,2007 Bernard Li <bernard@vanhpc.org>
-#                    All rights reserved.
+#                         All rights reserved.
 # Copyright (C) 2006-2008 Oak Ridge National Laboratory
 #                         Geoffroy Vallee <valleegr@ornl.gov>
+#                         All rights reserved.
+# Copyright (C) 2013-2014 Commissariat a l'Enargie Atomique et aux Energies Alternatives
+#                         Olivier Lahaye <olivier.lahaye@cea.fr>
 #                         All rights reserved.
 
 #   $Id$
@@ -114,6 +117,26 @@ our $install_mode = $install_mode_options[0];
                 $stopcoll
                 $install_mode
              );
+
+=encoding utf8
+
+=head1 NAME
+
+OSCAR::MAC - A set of usefull functions for the manipulation MAC Adresses.
+
+=head1 SYNOPSIS
+
+use OSCAR::MAC;
+
+=head1 DESCRIPTION
+
+A set of usefull functions for the manipulation of MAC Addresses.
+
+=head2 Functions
+
+=over 4
+
+=cut
 
 # Subroutines below here...
 
@@ -961,7 +984,49 @@ sub __run_setup_pxe ($) {
     return 0;
 }
 
+=back
+
+=head1 AUTHORS
+
+=over 4
+
+=item Main coding:
+
+    (c) 2004      Jason Brechin <brechin@ncsa.uiuc.edu>
+                  The Board of Trustees of the University of Illinois.
+                  All rights reserved.
+    (c) 2006-2007 Bernard Li <bernard@vanhpc.org>
+                  All rights reserved.
+    (c) 2006-2008 Geoffroy Vallee <valleegr@ornl.gov>
+                  Oak Ridge National Laboratory
+                  All rights reserved.
+
+=item Fixed, enhanced and documented by:
+
+    (c) 2013-2014 Olivier Lahaye C<< <olivier.lahaye@cea.fr> >>
+                  CEA (Commissariat A l'Energie Atomique)
+                  All rights reserved
+
+=back
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+=cut
+
 1;
 
 __END__
-:

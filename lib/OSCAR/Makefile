@@ -19,10 +19,16 @@ FILES := AddNode.pm Help.pm Prereqs.pm Bootstrap.pm ImageMgt.pm \
          SystemServicesDefs.pm Defs.pm Startover.pm PrereqsDefs.pm \
          Testing.pm MonitoringMgt.pm
 
+FILES_WITH_MAN = $(shell grep '^=cut' *.pm|cut -d: -f1|sort|uniq)
+
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done
 
-install:
+doc:
+	install -d -m 0755 $(DESTDIR)$(MANDIR)/man3/
+	for script in $(FILES_WITH_MAN) ; do ( pod2man --section=3 $$script $(DESTDIR)$(MANDIR)/man3/OSCAR::`basename $$script .pm`.3pm ) ; done
+
+install: doc
 	@echo Creating $(DESTDIR)$(LIBDIR)/OSCAR
 	install -d -m 0755 $(DESTDIR)$(LIBDIR)/OSCAR
 	install    -m 0755 ${FILES} $(DESTDIR)$(LIBDIR)/OSCAR

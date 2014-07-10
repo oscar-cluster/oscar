@@ -68,7 +68,7 @@ use OSCAR::Testing;
 
 =head1 DESCRIPTION
 
-This module provides a collection of fuctions to easy OSCAR testing.
+This module provides a collection of fuctions to ease OSCAR testing.
 
 It is based on APItest, a portable testing framework developed at
 Sandia National Laboratories to address some of the development challenges
@@ -165,7 +165,6 @@ sub display_ANSI_results($$$$) {
     OSCAR::Tk::center_window( $apitestwin );
 }
 
-=cut
 ################################################################################
 =item get_failed_tests_from_batch_log($test_full_name)
 
@@ -200,7 +199,6 @@ sub get_failed_tests_from_batch_log($)
     return(@failed_tests);
 }
 
-=cut
 ################################################################################
 =item apitest_xml_to_text($test_full_name)
 
@@ -486,7 +484,7 @@ sub step_test($$) {
 ##############################################################################
 =item get_user_home ($user)
 
-Return return the home directory for a giver user.
+Return the home directory for a giver user.
 
 Input:  The name of the user
 
@@ -530,7 +528,7 @@ sub get_test_user () {
 
 =back
 
-=head1 TO DO
+=head1 TODO
 
  * Add color support in output (display window)
  * Add HTML or XML browser for diagnostics instead of launching a web browser.

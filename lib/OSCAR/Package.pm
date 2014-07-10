@@ -104,6 +104,8 @@ Mid-term they should be removed
 * test_root           test_root               DEPRECATED (step 8)
 * test_user           test_user               DEPRECATED (step 8)
 
+=back
+
 =cut
 %PHASES = (
            setup => ['api-pre-install',
