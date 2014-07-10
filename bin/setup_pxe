@@ -140,6 +140,14 @@ verbose("Enabling atftpd");
 !enable_system_sockets( (TFTP()) )
     or croak("Failed to enable atftpd");
 
+verbose("Restarting si_netbootmond");
+!system_service(SI_NETBOOTMOND,RESTART)
+    or croak "ERROR: Couldn't restart si_netbootmond service.";
+
+verbose("Enabling si_netbootmond");
+!enable_system_services( SI_NETBOOTMOND )
+    or croak("Failed to enable si_netbootmond");
+
 verbose("Creating directories.");
 #my $netboot_cfg_d = "/tftpboot/pxelinux.cfg";
 my $netboot_cfg_d = OSCAR::OCA::OS_Settings::getitem("pxe_configdir");
@@ -409,6 +417,6 @@ Michael Chase-Salerno, mchasal@users.sf.net
 
 =head1 SEE ALSO
 
-perl(1)
+L<perl(1)>
 
 =cut

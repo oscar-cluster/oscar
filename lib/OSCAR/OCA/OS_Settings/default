@@ -48,6 +48,7 @@ maui_service=maui
 monitor_service=systemimager-server-monitord
 munge_service=munged
 mysql_service=mysqld
+netbootmond=systemimager-server-netbootmond
 nfs_service=nfs-server
 naemon_service=naemon
 nrpe_service=nrpe
@@ -91,7 +92,7 @@ ntp_configfile=/etc/ntp.conf
 syslog_configfile=/etc/rsyslog.conf
 pxe_bootbin=pxelinux.0
 
-# Specifies a few directories
+# Specifies a few directories
 http_configdir=/etc/httpd/conf.d/
 munge_configdir=/etc/munge/
 naemon_configdir=/etc/naemon/

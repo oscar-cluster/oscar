@@ -42,6 +42,7 @@ use constant TFTP           => 'tftp';
 use constant THRUK          => 'thruk';
 use constant SENDMAIL       => 'sendmail';
 use constant SI_MONITOR     => 'monitor';
+use constant SI_NETBOOTMOND => 'netbootmond';
 use constant SI_RSYNC       => 'rsync';
 use constant SI_FLAMETHROWER => 'flamethrower';
 use constant SI_BITTORRENT  => 'bittorrent';
@@ -95,6 +96,7 @@ our @EXPORT = qw(
                 POSTFIX
                 RPC
                 SI_MONITOR
+                SI_NETBOOTMOND
                 SI_RSYNC
                 SI_FLAMETHROWER
                 SI_BITTORRENT
