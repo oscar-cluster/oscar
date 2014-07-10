@@ -181,6 +181,7 @@ Everything needed for OSCAR related developments.
 %defattr(-,root,root)
 %{_sysconfdir}/rpm/macros.oscar
 %{_prefix}/lib/oscar/build/Config.mk
+%{_mandir}/man3/*
 
 %package -n oscar-release
 Summary: OSCAR release file and RPM repository configuration
