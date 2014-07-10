@@ -9,12 +9,15 @@ portmap_package=rpcbind
 
 # Overwrite the name of few deamons
 
-# Overwrite the name of few services
+# Overwrite the name of few services
 munge_service=munge
+mysql_service=mariadb
 nfs_service=nfs
 
 # Overwrite the name of few configuration files
 dhcp_leases=/var/lib/dhcpd/dhcpd.leases
+mysql_configfile=/etc/my.cnf.d/galera.cnf
 
-# Overwrite the name of few directories
+# Overwrite the name of few directories
+mysql_configdir=/etc/my.cnf.d/
 pxe_dir=/usr/share/syslinux/

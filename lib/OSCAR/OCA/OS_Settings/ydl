@@ -1,6 +1,5 @@
 # Yellow Dog Linux specific settings
 # Overwrite few deamons
-mysql_daemon=/etc/init.d/mysql
 
 # Overwrite few services
 mysql_service=mysql

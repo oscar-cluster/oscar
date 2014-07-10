@@ -27,7 +27,6 @@ sendmail_package=sendmail
 # Specifies the name of few deamons (obsolete)
 ssh_daemon=/etc/init.d/sshd
 dhcp_daemon=/etc/init.d/dhcpd
-mysql_daemon=/etc/init.d/mysqld
 monitord_daemon=/etc/init.d/systemimager-server-monitord
 rsyncd_daemon=/etc/init.d/systemimager-server-rsyncd
 
@@ -95,6 +94,7 @@ pxe_bootbin=pxelinux.0
 # Specifies a few directories
 http_configdir=/etc/httpd/conf.d/
 munge_configdir=/etc/munge/
+mysql_configdir=
 naemon_configdir=/etc/naemon/
 nrpe_configdir=/etc/nrpe.d/
 ntp_configdir=/etc/ntp
