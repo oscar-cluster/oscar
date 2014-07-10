@@ -439,7 +439,7 @@ if ( $mode eq "manage" ) {
 }
 
 if ( $mode eq "install" ) {
-   # Add Clients to OSCAR Image
+   # STEP 5: Add Clients to OSCAR Image
    $step_number++;
    oscar_button($window, "Step $step_number:", "Define OSCAR Clients...", 
                 [sub { return if (step_test($window,"add_del_node"));
@@ -447,7 +447,7 @@ if ( $mode eq "install" ) {
                 }],
                'addclients');
 
-   # Setup Network Booting
+   # STEP 6: Setup Network Booting
    $step_number++;
    oscar_button($window, "Step $step_number:", "Setup Networking...", 
                 [sub { return if (step_test($window,"netboot_setup"));
@@ -480,7 +480,7 @@ if ( $mode eq "install" ) {
    adaptors are up, move on to the next step.",-relief=>"groove");
    $boot->grid("-","-",-sticky=>"nsew");
 
-   # OSCAR post install script
+   # STEP 7: Complete Cluster Setup (OSCAR post install script)
    $step_number++;
    oscar_button($window, "Step $step_number:", "Complete Cluster Setup", 
                 [sub { return if (step_test($window,"complete_cluster_setup"));
@@ -499,6 +499,7 @@ if ( $mode eq "install" ) {
 }
 
 # NOTE: no step_test for this button as it is itself a full test.
+# STEP 8: Test Cluster Setup.
 oscar_button($window, $step_string, "Test Cluster Setup", 
             [\&run_tests, $window, $step_number], 'test_install');
 
