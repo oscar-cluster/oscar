@@ -23,6 +23,7 @@ use Getopt::Long;
 use OSCAR::Utils;
 use OSCAR::Logger;
 use OSCAR::LoggerDefs;
+use OSCAR::Testing;
 use warnings "all";
 
 BEGIN {
