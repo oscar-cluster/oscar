@@ -43,7 +43,7 @@ Desired result : PASS
 # Don't forget to make sure exit codes are consistent
     </command>
 
-    <output name="stdout" format="regexp"></output>
+    <output name="stdout" format="regexp">.*</output>
     <output name="stderr" format="literal"></output>
     <output name="status" format="literal">0</output>
 

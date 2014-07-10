@@ -41,7 +41,7 @@ Desired result : PASS
   
     <command interpreter="perl" wdir="/tmp">tests.d/oscar_network_check.pl</command>
 
-    <output name="stdout" format="regexp"></output>
+    <output name="stdout" format="literal"></output>
     <output name="stderr" format="literal"></output>
     <output name="status" format="literal">0</output>
 
