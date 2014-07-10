@@ -1,4 +1,4 @@
-package NextIp;
+package OSCAR::NextIp;
 
 # $Id$
 # 
