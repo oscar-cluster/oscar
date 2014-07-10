@@ -65,6 +65,7 @@ if ($shorthostname eq "localhost") {
     print " -----------------------------------\n";
     print " ERROR: hostname cannot be localhost\n";
     print " -----------------------------------\n";
+    exit 1; # Don't need to continue; next tests will fail.
     $rc++;
 }
 
