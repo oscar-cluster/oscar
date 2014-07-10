@@ -68,7 +68,7 @@ if (! ($oscar_if and exists $nics{$oscar_if}) ) {
         $oscar_if = "<None>";
     }
     my $valid_nics=join( ", ", sort keys %nics );
-    print <<'EOF';
+    print <<EOF;
  ------------------------------------------------------
  ERROR: A valid NIC must be specified for the cluster
  private network.

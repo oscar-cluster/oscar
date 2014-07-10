@@ -57,7 +57,7 @@ $oscar_if = $ENV{OSCAR_HEAD_INTERNAL_INTERFACE}
 # we check now the IP assgned to the interface used by OSCAR
 my $oscar_ip = get_host_ip ("oscar_server");
 if ($oscar_ip eq "" || $oscar_ip eq "0.0.0.0") {
-    print <<'EOF';
+    print <<EOF;
  ----------------------------------------------------
  ERROR: oscar_server is not defined in $host_file.
  Please run "oscar-config --bootstrap"
@@ -71,7 +71,7 @@ chomp ($oscar_if_ip);
 #
 #if ($oscar_ip ne "" and ($oscar_ip ne $oscar_if_ip)) {
 if ($oscar_ip ne "" and ($oscar_if_ip eq "")) {
-    print <<'EOF';
+    print <<EOF;
  ----------------------------------------------------
  ERROR: it seems the interface used ($oscar_if) is not
  configured with oscar_server ip in $host_file.

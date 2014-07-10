@@ -241,6 +241,7 @@ sub apitest_xml_to_text($) {
            my $xml = new XML::Simple;
            my $parsed_hash = $xml->XMLin($result_file[0]);
            if ($parsed_hash->{status} eq "FAIL") {
+               $error_output .= "\n================================================================================\n";
                $error_output .= "[FAILED TEST] $test_name.apt\n";
                if ($parsed_hash->{output}->{ERROR}) {
                    chomp($parsed_hash->{output}->{ERROR}->{actual});
@@ -258,7 +259,6 @@ sub apitest_xml_to_text($) {
                    chomp($parsed_hash->{output}->{stderr}->{actual});
                    $error_output .= "=> Unexpected stderr:\n$parsed_hash->{output}->{stderr}->{actual}\n";
                }
-               $error_output .= "================================================================================\n\n";
            } # Else FAILDEP (no error to display (done before) and no usefull things to tell to user).
        }
     } else {
