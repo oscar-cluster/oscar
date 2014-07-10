@@ -226,8 +226,11 @@ sub __setup_dhcpd ($) {
         }
     }
 
-    # We restart the DHCP server.
+    # We enable the DHCP server so it is reboot persistent.
+    !enable_system_services(DHCP)
+        or oscar_log(2, ERROR, "Failed to enable DHCP service.");
 
+    # We restart the DHCP server.
     !system_service(DHCP,RESTART)
         or (oscar_log(2, ERROR, "Failed to setup DHCP service."), return -1);
 
