@@ -16,27 +16,37 @@
   #   along with this program; if not, write to the Free Software
   #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   #
-  #   Copyright (c) 2013 CEA - Commissariat a l'Energie Atomique et
-  #                            aux Energies alternatives
+  #   Copyright (c) 2013-2014 CEA - Commissariat a l'Energie Atomique et
+  #                            aux Energies Alternatives
   #                      All rights reserved.
-  #   Copyright (C) 2013 Olivier LAHAYE <olivier.lahaye@cea.fr>
+  #   Copyright (C) 2013-2014 Olivier LAHAYE <olivier.lahaye@cea.fr>
   #                      All rights reserved.
   #
   # $Id: $
   #
   #############################################################################
   -->
+<testDef>
 
-<testBatch>
   <info>
-    This batch checks if the network configuration on the headnode satifies OSCAR
+This script checks if the network configuration on the headnode satifies OSCAR
 requirements.
-  </info>
 
-  <shortDescription>System-Sanity: Check head network config.</shortDescription>
-  <test name="hostname_check.apt"/>
-  <test name="oscar_interface_check.apt"/>
-  <test name="oscar_network_check.apt"/>
+Desired result : PASS
+</info>
 
+  <shortDescription>System-Sanity: Does network config satisfies OSCAR requirements?</shortDescription>
 
-</testBatch>
+  <test type="cmd">
+  
+    <command interpreter="perl" wdir="/tmp">tests.d/oscar_network_check.pl</command>
+
+    <output name="stdout" format="regexp"></output>
+    <output name="stderr" format="literal"></output>
+    <output name="status" format="literal">0</output>
+
+  </test>
+
+</testDef>
+
+<!-- EOF -->

@@ -60,7 +60,7 @@ if ($shorthostname eq "") {
     $rc++;
 }
 my $dnsdomainname = `dnsdomainname`;
-chomp ($dnsdomainname);
+chomp ($dnsdomainname); # FIXME: OL: Incomplete code here.
 if ($shorthostname eq "localhost") {
     print " -----------------------------------\n";
     print " ERROR: hostname cannot be localhost\n";

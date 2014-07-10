@@ -34,7 +34,8 @@
 
   <shortDescription>Bootstrap-Sanity: Performs bootstrap sanity checks.</shortDescription>
   <test name="repos_check.apt"/>
-  <test name="network-check.apb"/>
+  <test name="hostname_check.apt"/>
+  <test name="oscar_interface_check.apt"/>
   <test name="SELinux_disabled.apt"/>
   <test name="IPV6_disabled.apt"/>
   <test name="su_check.apt"/>

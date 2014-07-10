@@ -25,7 +25,7 @@
 #   Copyright (C) 2013-2014 Olivier LAHAYE <olivier.lahaye@cea.fr>
 #                      All rights reserved.
 #
-# $Id:$
+# $Id: $
 #
 #############################################################################
 
@@ -42,6 +42,7 @@ use OSCAR::Network;
 use OSCAR::ConfigFile;
 
 my $rc = 0;
+my $host_file = "/etc/hosts";
 
 $ENV{LANG}="C";
 
@@ -49,34 +50,34 @@ my $oscar_if;
 $oscar_if = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
                                           undef,
                                           "OSCAR_NETWORK_INTERFACE");
-# if a env variable is set, it overwrites the value from the config file.
+# If an env variable is set, it overwrites the value from the config file.
 $oscar_if = $ENV{OSCAR_HEAD_INTERNAL_INTERFACE} 
     if defined $ENV{OSCAR_HEAD_INTERNAL_INTERFACE};
-my %nics;
-open IN, "netstat -nr | awk \'/\\./{print \$NF}\' | uniq |"
-    || die "ERROR: Unable to query NICs\n";
-while( <IN> ) {
-    next if /^\s/ || /^lo\W/;
-    chomp;
-    s/\s.*$//;
-    $nics{$_} = 1;
-}
-close IN;
 
-if (! ($oscar_if and exists $nics{$oscar_if}) ) {
-    if (!defined($oscar_if) || $oscar_if eq "") {
-        $oscar_if = "<None>";
-    }
-    my $valid_nics=join( ", ", sort keys %nics );
+# we check now the IP assgned to the interface used by OSCAR
+my $oscar_ip = get_host_ip ("oscar_server");
+if ($oscar_ip eq "" || $oscar_ip eq "0.0.0.0") {
     print <<'EOF';
- ------------------------------------------------------
- ERROR: A valid NIC must be specified for the cluster
- private network.
- Valid NICs: $valid_nics
- You tried to use: $oscar_if
- Please set a valid NIC for OSCAR_NETWORK_INTERFACE
- in /etc/oscar/oscar.conf
- ------------------------------------------------------
+ ----------------------------------------------------
+ ERROR: oscar_server is not defined in $host_file.
+ Please run "oscar-config --bootstrap"
+ ----------------------------------------------------
+EOF
+    $rc++;
+}
+
+my $oscar_if_ip = `env LC_ALL=C /sbin/ip addr show $oscar_if | grep '$oscar_ip'`;
+chomp ($oscar_if_ip);
+#
+#if ($oscar_ip ne "" and ($oscar_ip ne $oscar_if_ip)) {
+if ($oscar_ip ne "" and ($oscar_if_ip eq "")) {
+    print <<'EOF';
+ ----------------------------------------------------
+ ERROR: it seems the interface used ($oscar_if) is not
+ configured with oscar_server ip in $host_file.
+ Please check your network configuration and
+ /etc/oscar/oscar.conf before retrying.
+ ----------------------------------------------------
 EOF
     $rc++;
 }
