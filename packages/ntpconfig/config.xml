@@ -55,6 +55,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.0.7-1.1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-07-11T15:25:17+02:00">
+        <item>Rebuild to avoid conflicts with new disttag in rpm distros</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.0.7-1">
       <changelogEntry authorName="Olivier Lahaye" date="2014-06-19T09:40:28+02:00">
         <item>Fixed ntp_configdir.</item>

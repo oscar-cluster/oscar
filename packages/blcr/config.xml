@@ -43,6 +43,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.1.0-1.1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-07-11T15:25:17+02:00">
+        <item>Rebuild to avoid conflicts with new disttag in rpm distros</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.1.0-1">
       <changelogEntry authorName="Olivier Lahaye" date="2013-12-21T23:21:34+01:00">
         <item>Major update. Added server-post-install and api-post-deploy.</item>

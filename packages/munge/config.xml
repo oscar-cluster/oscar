@@ -25,6 +25,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.1.1-1.1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-07-11T15:25:17+02:00">
+        <item>Rebuild to avoid conflicts with new disttag in rpm distros</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.1.1-1">
       <changelogEntry authorName="Olivier Lahaye" date="2014-02-26T10:31:42+01:00">
         <item>Fix munge_to_nodes.apt: now works even if 1st time ssh warnig for adding key to known_hosts</item>

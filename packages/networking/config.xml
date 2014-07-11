@@ -35,6 +35,11 @@
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.0.1-2.1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-07-11T15:25:17+02:00">
+        <item>Rebuild to avoid conflicts with new disttag in rpm distros</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.1-2">
       <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
         <item>Rebuild for FHS compliance</item>
