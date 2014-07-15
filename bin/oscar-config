@@ -348,7 +348,7 @@ if ($distro_to_setup) {
     oscar_log(1, INFO, "$distro_to_setup successfully set up.");
 
 #    goto EXIT_SUCCESS;
-    return 0;
+    exit 0;
 }
 
 # if ($network) {
@@ -361,23 +361,23 @@ if ($distro_to_setup) {
 
 if ($headnode_nic) {
 
-    return 1 if (force_run_as_root());
+    exit 1 if (force_run_as_root());
 
     oscar_log(2, SUBSECTION, "Updating the NIC used on the ".
         "headnode for cluster management");
     require OSCAR::Network;
     if (OSCAR::Network::update_head_nic ()) {
         oscar_log(1, ERROR, "Failed to update the headnode NIC data");
-        return 1;
+        exit 1;
     }
     oscar_log(1, INFO, "Successfully updated the NIC used on the headnode ".
         "headnode for cluster management");
-    return 0;
+    exit 0;
 }
 
 if ($sanity_check) {
 
-    return 1 if (force_run_as_root());
+    exit 1 if (force_run_as_root());
 
     # Checking system sanity.
     my $sys_sanity_output="";
@@ -387,11 +387,10 @@ if ($sanity_check) {
     ($sys_sanity_output,$sys_sanity_rc) = run_apitest("system-sanity.apb");
     if($sys_sanity_rc > 0) {
         oscar_log(1, SUBSECTION, "Please fix error(s) before retrying.");
-        return 1;
-    } else {
-        oscar_log(2, INFO, "system-sanity OK.");
+        exit 1;
     }
-
+    oscar_log(2, INFO, "system-sanity OK.");
+    exit 0;
 
 #    require OSCAR::ConfigFile;
 #    my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
@@ -401,12 +400,11 @@ if ($sanity_check) {
 #        oscar_log(1, ERROR, "Failed to successfully execute system-sanity");
 #    }
 
-     return 0;
 }
 
 if ($bootstrap) {
 
-    return 1 if (force_run_as_root());
+    exit 1 if (force_run_as_root());
 
     # Checking system sanity before going further.
     my $sys_sanity_output="";
@@ -416,17 +414,17 @@ if ($bootstrap) {
     ($sys_sanity_output,$sys_sanity_rc) = run_apitest("bootstrap-sanity.apb");
     if($sys_sanity_rc > 0) {
         oscar_log(1, SUBSECTION, "Please fix error(s) before retrying.");
-        return 1;
+        exit 1;
     } else {
         oscar_log(2, INFO, "bootstrap-sanity OK.");
     }
 
     if (bootstrap()) {
         oscar_log(1, ERROR, "Unable to bootstrap OSCAR");
-        return 1;
+        exit 1;
     }
 
-    return 0;
+    exit 0;
 }
 
 #EXIT_SUCCESS:
