@@ -47,6 +47,14 @@ my ($distro_to_setup,
     $verbose,
     $debug);
 
+if ($debug) {
+    $ENV{OSCAR_VERBOSE} = 10;
+    $OSCAR::Env::oscar_verbose=10;
+} elsif ($verbose) {
+    $ENV{OSCAR_VERBOSE} = 5;
+    $OSCAR::Env::oscar_verbose=5;
+}
+
 GetOptions(
         "bootstrap|b"                     => \$bootstrap,
         "debug|d"                         => \$debug,
@@ -67,22 +75,14 @@ GetOptions(
         ) || help_and_exit();
 
 
-if ($debug) {
-    $ENV{OSCAR_VERBOSE} = 10;
-    $OSCAR::Env::oscar_verbose=10;
-} elsif ($verbose) {
-    $ENV{OSCAR_VERBOSE} = 5;
-    $OSCAR::Env::oscar_verbose=5;
-}
-
-
 # Enforce that the user running this script is 'root'
 sub force_run_as_root() {
     if($< != 0) {
         oscar_log(1, ERROR, "You must be 'root' to use these options. Aborting.");
-        exit 1;
+        return 1;
     }
     oscar_log(5, INFO, "We run as 'root'. Ok.");
+    return 0;
 }
 
 
@@ -181,7 +181,7 @@ sub display_list_setup_distros () {
 # Return: exit 0 if success, exit 1 else.                                      #
 ################################################################################
 sub generate_config_file () {
-    force_run_as_root();
+    return 1 if (force_run_as_root());
     if (! -d "/etc/oscar/") {
         mkdir "/etc/oscar";
     }
@@ -207,13 +207,13 @@ sub generate_config_file () {
         }
     } else {
         if ( -f "/etc/oscar/oscar.conf") {
-            oscar_log(5, INFO, "Configuration file already exists, no updating");
-            exit 0;
+            print(1, INFO, "Configuration file already exists, no updating\.n");
+            return 0;
         }
         print "Not yet implemented\n";
-        exit 1;
+        return 1;
     }
-    exit 0;
+    return 0;
 }
 
 sub help {
@@ -240,15 +240,15 @@ if ($verbose) {
 }
 
 if ($startover) {
-    force_run_as_root();
+    return 1 if (force_run_as_root());
     require OSCAR::Startover;
     if (OSCAR::Startover::start_over()) {
         oscar_log(1, ERROR, "Failed to start over, please bootstrap OSCAR again ".
             "to try to recover");
-        exit 1;
+        return 1;
         }
 #    goto EXIT_SUCCESS;
-    exit 0;
+    return 0;
 }
 
 if ($distro_repo) {
@@ -289,7 +289,7 @@ if ($distro_to_setup) {
     require OSCAR::Logger;
     require OSCAR::Utils;
 
-    force_run_as_root();
+    return 1 if (force_run_as_root());
 
     oscar_log(2, SUBSECTION, "Setting $distro_to_setup...");
 
@@ -348,7 +348,7 @@ if ($distro_to_setup) {
     oscar_log(1, INFO, "$distro_to_setup successfully set up.");
 
 #    goto EXIT_SUCCESS;
-    exit 0;
+    return 0;
 }
 
 # if ($network) {
@@ -361,22 +361,23 @@ if ($distro_to_setup) {
 
 if ($headnode_nic) {
 
-    force_run_as_root();
+    return 1 if (force_run_as_root());
 
     oscar_log(2, SUBSECTION, "Updating the NIC used on the ".
         "headnode for cluster management");
     require OSCAR::Network;
     if (OSCAR::Network::update_head_nic ()) {
         oscar_log(1, ERROR, "Failed to update the headnode NIC data");
-        exit 1;
+        return 1;
     }
     oscar_log(1, INFO, "Successfully updated the NIC used on the headnode ".
         "headnode for cluster management");
+    return 0;
 }
 
 if ($sanity_check) {
 
-    # force_run_as_root(); # Already tested by bootstrap-sanity.apb
+    return 1 if (force_run_as_root());
 
     # Checking system sanity.
     my $sys_sanity_output="";
@@ -386,7 +387,7 @@ if ($sanity_check) {
     ($sys_sanity_output,$sys_sanity_rc) = run_apitest("system-sanity.apb");
     if($sys_sanity_rc > 0) {
         oscar_log(1, SUBSECTION, "Please fix error(s) before retrying.");
-        exit 1;
+        return 1;
     } else {
         oscar_log(2, INFO, "system-sanity OK.");
     }
@@ -399,11 +400,13 @@ if ($sanity_check) {
 #    if (oscar_system ("$binaries_path/system-sanity")) {
 #        oscar_log(1, ERROR, "Failed to successfully execute system-sanity");
 #    }
+
+     return 0;
 }
 
 if ($bootstrap) {
 
-    # force_run_as_root(); # Already tested by system-sanity.apb
+    return 1 if (force_run_as_root());
 
     # Checking system sanity before going further.
     my $sys_sanity_output="";
@@ -413,15 +416,17 @@ if ($bootstrap) {
     ($sys_sanity_output,$sys_sanity_rc) = run_apitest("bootstrap-sanity.apb");
     if($sys_sanity_rc > 0) {
         oscar_log(1, SUBSECTION, "Please fix error(s) before retrying.");
-        exit 1;
+        return 1;
     } else {
         oscar_log(2, INFO, "bootstrap-sanity OK.");
     }
 
     if (bootstrap()) {
         oscar_log(1, ERROR, "Unable to bootstrap OSCAR");
-        exit 1;
+        return 1;
     }
+
+    return 0;
 }
 
 #EXIT_SUCCESS:
