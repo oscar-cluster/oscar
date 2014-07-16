@@ -36,7 +36,7 @@ Desired result : PASS
 
   <shortDescription>CORE: Is OSCAR db up?</shortDescription>
 
-  <test type="script">
+  <test type="cmd">
   
     <command wdir="/tmp" uname="root">tests.d/oscar_db_check.pl</command>
 
