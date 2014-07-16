@@ -15,3 +15,5 @@ share/prereqs/perl-XML-Simple
 share/prereqs/perl-HTML-Tree
 share/prereqs/perl-Tk
 share/prereqs/perl-Qt
+share/prereqs/Selector
+share/prereqs/Configurator

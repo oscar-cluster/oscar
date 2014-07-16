@@ -7,7 +7,6 @@
         <opkg>c3</opkg>
         <opkg>ganglia</opkg>
         <opkg>jobmonarch</opkg>
-        <opkg>lam</opkg>
         <opkg>mtaconfig</opkg>
         <opkg>munge</opkg>
         <opkg>oda</opkg>

@@ -8,7 +8,6 @@
         <opkg>disable-services</opkg>
         <opkg>ganglia</opkg>
         <opkg>jobmonarch</opkg>
-        <opkg>lam</opkg>
         <opkg>linux-ha</opkg>
         <opkg>loghost</opkg>
         <opkg>maui</opkg>

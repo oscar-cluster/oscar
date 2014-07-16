@@ -8,7 +8,6 @@
         <opkg>c3</opkg>
         <opkg>ganglia</opkg>
         <opkg>jobmonarch</opkg>
-        <opkg>lam-oscar</opkg>
         <opkg>maui</opkg>
         <opkg>mpich-oscar</opkg>
         <opkg>mtaconfig</opkg>

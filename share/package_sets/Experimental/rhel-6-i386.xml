@@ -10,7 +10,6 @@
         <opkg>diskless</opkg>
         <opkg>ganglia</opkg>
         <opkg>jobmonarch</opkg>
-        <opkg>lam-oscar</opkg>
         <opkg>linux-ha</opkg>
         <opkg>loghost</opkg>
         <opkg>maui</opkg>
