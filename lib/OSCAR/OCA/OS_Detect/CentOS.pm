@@ -41,6 +41,7 @@ sub detect_dir {
     if ($release_string =~ /CentOS release (\d+)\.(\d+) \((\S+)\)/ ||
         $release_string =~ /CentOS release (\d+) \((\S+)\)/ ||
         $release_string =~ /CentOS Linux release (\d+)\.(\d+) \(.+\)/ ||
+        $release_string =~ /CentOS Linux release (\d+)\.(\d+)\.(\d+) \(.+\)/ ||
         $release_string =~ /CentOS Linux release (\d+) \(\D+\d+\.(\d+)\)/) {
         my $os_release = $1;
         my $os_update;
