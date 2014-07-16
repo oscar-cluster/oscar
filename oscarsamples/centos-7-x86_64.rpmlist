@@ -116,7 +116,7 @@ man-pages
 mingetty
 module-init-tools
 mtools
-mysql
+mariadb
 ncurses
 net-tools
 newt
