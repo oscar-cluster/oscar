@@ -1,0 +1,12 @@
+# Fedora specific settings (valid for Fedora-19)
+
+# Overwrite the name of few deamons
+
+# Overwrite the name of few services
+mysql_service=mariadb
+
+# Overwrite the name of few configuration files
+mysql_configfile=/etc/my.cnf.d/galera.cnf
+
+# Overwrite the name of few directories
+mysql_configdir=/etc/my.cnf.d/

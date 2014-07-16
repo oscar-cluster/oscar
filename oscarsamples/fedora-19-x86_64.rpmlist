@@ -125,7 +125,7 @@ man
 man-pages
 mingetty
 mtools
-mysql
+mariadb
 ncurses
 NetworkManager
 net-tools

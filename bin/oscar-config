@@ -47,14 +47,6 @@ my ($distro_to_setup,
     $verbose,
     $debug);
 
-if ($debug) {
-    $ENV{OSCAR_VERBOSE} = 10;
-    $OSCAR::Env::oscar_verbose=10;
-} elsif ($verbose) {
-    $ENV{OSCAR_VERBOSE} = 5;
-    $OSCAR::Env::oscar_verbose=5;
-}
-
 GetOptions(
         "bootstrap|b"                     => \$bootstrap,
         "debug|d"                         => \$debug,
@@ -73,6 +65,14 @@ GetOptions(
         "verbose|v"                       => \$verbose,
         "help|h"                          => \&help,
         ) || help_and_exit();
+
+if ($debug) {
+    $ENV{OSCAR_VERBOSE} = 10;
+    $OSCAR::Env::oscar_verbose=10;
+} elsif ($verbose) {
+    $ENV{OSCAR_VERBOSE} = 5;
+    $OSCAR::Env::oscar_verbose=5;
+}
 
 
 # Enforce that the user running this script is 'root'

@@ -115,7 +115,7 @@ sub get_config ($$$$) {
 }
 
 # Get the list of prereqs to install. Note that if the binary packages are
-# already isntalled, we do not try to install them again (not included in the
+# already installed, we do not try to install them again (not included in the
 # list of binary packages to install).
 #
 # Return: 0 if success, -1 else.
