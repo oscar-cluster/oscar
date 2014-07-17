@@ -122,6 +122,7 @@ Requires: perl-Net-IPv4Addr
 Requires: perl-Tk-TextANSIColor
 Requires: iproute
 Requires: wget
+Requires: apitest
 Requires: %{name}-base == %{version}-%{release}
 
 %description -n oscar-base-lib
