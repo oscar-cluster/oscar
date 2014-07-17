@@ -96,6 +96,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="3.6.3-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-07-17T19:01:23+02:00">
+        <item>Fix naemon non existing oscar directory when running post-server-install.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="3.6.2-1.2">
       <changelogEntry authorName="Olivier Lahaye" date="2014-07-11T15:25:17+02:00">
         <item>Rebuild to avoid conflicts with new disttag in rpm distros</item>
