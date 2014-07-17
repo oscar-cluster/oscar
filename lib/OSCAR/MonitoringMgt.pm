@@ -98,7 +98,7 @@ sub init_naemon_config_dir() {
 
     for my $subdir ("", "/hosts", "/contacts", "/services", "/commands") {
         my $config_dir = "$naemon_configdir/conf.d/oscar$subdir";
-        return 1 unless(-e $config_dir or mkdir $config_dir);
+        return 1 unless(-e $config_dir or mkdir($config_dir,0755));
     }
 
     return 0;
