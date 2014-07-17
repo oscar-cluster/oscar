@@ -36,19 +36,7 @@ use OSCAR::LoggerDefs;
 use OSCAR::oda;
 use Carp;
 
-my $naemon_configdir = OSCAR::OCA::OS_Settings::getitem(NAEMON()."_configdir");
-if (! -d $naemon_configdir) {
-    oscar_log(1, ERROR, "Naemon configuration directory not found!");
-    exit 1;
-}
-
-# Create oscar configuration directories.
-
-mkdir "$naemon_configdir/conf.d/oscar";
-mkdir "$naemon_configdir/conf.d/oscar/hosts";
-mkdir "$naemon_configdir/conf.d/oscar/contacts";
-mkdir "$naemon_configdir/conf.d/oscar/services";
-mkdir "$naemon_configdir/conf.d/oscar/commands";
+init_naemon_config_dir() or (oscar_log(1,ERROR,"Failed to create naemon OSCAR's specific directory structure"), exit 1);
 
 #my $configurator = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 my $scripts_dir = OSCAR::Package::get_scripts_dir("naemon", 'server-post-install');

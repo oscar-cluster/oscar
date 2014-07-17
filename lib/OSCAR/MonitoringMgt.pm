@@ -48,6 +48,7 @@ use vars qw(@EXPORT);
 use base qw(Exporter);
 
 @EXPORT = qw (
+             init_naemon_config_dir
              write_oscar_contact_cfg
              write_oscar_contactgroup_cfg
              write_oscar_command_cfg
@@ -74,6 +75,34 @@ files.
 =head2 Functions
 
 =over 4
+
+=cut
+###############################################################################
+=item init_naemon_config_dir ()
+
+Create the naemon directory structure for configuration related to OSCAR.
+
+Exported: YES
+
+=cut 
+###############################################################################
+
+sub init_naemon_config_dir() {
+    my $naemon_configdir = OSCAR::OCA::OS_Settings::getitem(NAEMON()."_configdir");
+    if (! -d $naemon_configdir) {
+        oscar_log(1, ERROR, "Naemon configuration directory not found!");
+        return 1;
+    }
+
+    # Create oscar configuration sub directories.
+
+    for my $subdir ("", "/hosts", "/contacts", "/services", "/commands") {
+        my $config_dir = "$naemon_configdir/conf.d/oscar$subdir";
+        return 1 unless(-e $config_dir or mkdir $config_dir);
+    }
+
+    return 0;
+}
 
 =cut
 ###############################################################################

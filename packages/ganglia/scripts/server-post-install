@@ -40,6 +40,14 @@ use OSCAR::LoggerDefs;
 use OSCAR::Utils;
 use OSCAR::Configurator_backend;
 use OSCAR::MonitoringMgt;
+use OSCAR::Database;
+
+# Load list of selected packages.
+my @pkgs = OSCAR::Database::list_selected_packages();
+
+# Keep in mind if naemon is selected.
+my $use_naemon=1 if ( 'naemon' ~~ @pkgs );
+ 
 
 # Note that we do not care if "stop" does not work, we just want to be sure the service is stopped.
 system_service(GANGLIA_GMOND,STOP);
@@ -58,12 +66,10 @@ if (oscar_system($cmd)) {
 
 # NAEMON specific part: Add monitoring to ganglia if naemon is used.
 
-my $naemon_scripts_dir = OSCAR::Package::get_scripts_dir("naemon", 'server-post-install');
-my $naemon_configurator = "$naemon_scripts_dir/configurator.html";
-
-my $naemon_config_ref = OSCAR::Configurator_backend::readInConfigValues($naemon_configurator, "naemon", "", noarray=>1);
 my $errors = 0;
-if (defined ($naemon_config_ref)) { # If defined, it means that naemon is configured. (we don't care for values)
+if (defined($use_naemon)) {
+    # 1st Create the directory structure required for oscar specific configuration. This needs to be checked as we may have been called before naemon server post install.
+    init_naemon_config_dir() or (oscar_log(1,ERROR,"Failed to create naemon OSCAR's specific directory structure"), exit 1);
     # Check that ganglia web interface is working on oscar_server.
     $errors += write_oscar_service_cfg ('HTTP-ganglia', 'host', 'oscar_server', 'check_http!-u/ganglia');
 

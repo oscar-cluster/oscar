@@ -180,6 +180,8 @@ oscar_system("cp -a $rm_file $rm_detect_dir") == 0
 
 # NAEMON specific part: Add monitoring to torque if naemon is used.
 if (defined ($use_naemon)) {
+    # 1st Create the directory structure required for oscar specific configuration. This needs to be checked as we may have been called before naemon server post install.
+    init_naemon_config_dir() or (oscar_log(1,ERROR,"Failed to create naemon OSCAR's specific directory structure"), exit 1);
     # Check that pbsnodes doesn't report any problem from oscar_server for each compute node.
     $rc += write_oscar_command_cfg ('check_pbsnode', '$USER1$/check_pbsnode $HOSTALIAS$');
     # Now we need to know if we compute on head (do we need to monitor pbs_mom on head?)
