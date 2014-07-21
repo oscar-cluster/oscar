@@ -9,12 +9,16 @@ FILES := debian-4-i386.rpmlist           debian-4-x86_64.rpmlist \
                                          fedora-17-x86_64.rpmlist \
                                          fedora-18-x86_64.rpmlist \
                                          fedora-19-x86_64.rpmlist \
+                                         fedora-20-x86_64.rpmlist \
          redhat-el-5-i386.rpmlist        redhat-el-5-x86_64.rpmlist \
          redhat-el-6-i386.rpmlist        redhat-el-6-x86_64.rpmlist \
+                                         redhat-el-7-x86_64.rpmlist \
          centos-5-i386.rpmlist           centos-5-x86_64.rpmlist \
          centos-6-i386.rpmlist           centos-6-x86_64.rpmlist \
+                                         centos-7-x86_64.rpmlist \
          scientific_linux-5-i386.rpmlist scientific_linux-5-x86_64.rpmlist \
          scientific_linux-6-i386.rpmlist scientific_linux-6-x86_64.rpmlist \
+                                         scientific_linux-7-x86_64.rpmlist \
          suse-10.0-i386.rpmlist          suse-10.0-x86_64.rpmlist \
                                          suse-10.2-x86_64.rpmlist \
                                          suse-10.3-x86_64.rpmlist \
