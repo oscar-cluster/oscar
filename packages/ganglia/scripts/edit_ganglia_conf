@@ -559,8 +559,8 @@ sub add_httpd_conf() {
                 return -1);
 
         # Find ganglia root (php pages)
-        my $ganglia_root;
-        for my $d ("/usr/share/ganglia", "/var/www/html/ganglia") {
+        my $ganglia_root="/var/www/html/ganglia";
+        for my $d ("/usr/share/ganglia-webfrontend", "/var/www/html/ganglia", "/usr/share/ganglia") {
             if (-f "$d/ganglia.php") {
                 $ganglia_root=$d;
                 last;
