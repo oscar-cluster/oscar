@@ -169,7 +169,7 @@ if ( ! -f $file ) {
 $file= "$SSHCFGDIR/ssh_host_dsa_key";
 OSCAR::Logger::oscar_log(5, INFO, "Checking for host key file $file...");
 if ( ! -f $file ) {
-    $cmd = "/usr/bin/ssh-keygen -t dsa -d -f $file -N \"\"";
+    $cmd = "/usr/bin/ssh-keygen -t dsa -f $file -N \"\"";
     if (oscar_system ($cmd)) {
         oscar_log(1, ERROR, "Unable to create host dsa key");
         exit 1;
