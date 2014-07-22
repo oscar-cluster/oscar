@@ -12,6 +12,7 @@ portmap_package=rpcbind
 # Overwrite the name of few services
 munge_service=munge
 mysql_service=mariadb
+tftp_service=atftp
 
 # Overwrite the name of few configuration files
 dhcp_leases=/var/lib/dhcpd/dhcpd.leases
