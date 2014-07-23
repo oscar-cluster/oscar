@@ -140,13 +140,13 @@ verbose("Enabling atftpd");
 !enable_system_sockets( (TFTP()) )
     or croak("Failed to enable atftpd");
 
-verbose("Restarting si_netbootmond");
-!system_service(SI_NETBOOTMOND,RESTART)
-    or croak "ERROR: Couldn't restart si_netbootmond service.";
+#verbose("Restarting si_netbootmond");
+#!system_service(SI_NETBOOTMOND,RESTART)
+#    or croak "ERROR: Couldn't restart si_netbootmond service.";
 
-verbose("Enabling si_netbootmond");
-!enable_system_services( SI_NETBOOTMOND )
-    or croak("Failed to enable si_netbootmond");
+#verbose("Enabling si_netbootmond");
+#!enable_system_services( SI_NETBOOTMOND )
+#    or croak("Failed to enable si_netbootmond");
 
 verbose("Creating directories.");
 #my $netboot_cfg_d = "/tftpboot/pxelinux.cfg";
