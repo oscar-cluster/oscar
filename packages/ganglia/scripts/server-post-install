@@ -69,7 +69,7 @@ if (oscar_system($cmd)) {
 my $errors = 0;
 if (defined($use_naemon)) {
     # 1st Create the directory structure required for oscar specific configuration. This needs to be checked as we may have been called before naemon server post install.
-    init_naemon_config_dir() or (oscar_log(1,ERROR,"Failed to create naemon OSCAR's specific directory structure"), exit 1);
+    init_naemon_config_dir() and (oscar_log(1,ERROR,"Failed to create naemon OSCAR's specific directory structure"), exit 1);
     # Check that ganglia web interface is working on oscar_server.
     $errors += write_oscar_service_cfg ('HTTP-ganglia', 'host', 'oscar_server', 'check_http!-u/ganglia');
 

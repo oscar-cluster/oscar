@@ -76,6 +76,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.4.3-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-07-23T18:24:12+02:00">
+        <item>Small bugfix.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.4.2-1">
       <changelogEntry authorName="Olivier Lahaye" date="2014-07-1TT18:59:47+02:00">
         <item>Fix naemon non existing oscar directory when running post-server-install.</item>

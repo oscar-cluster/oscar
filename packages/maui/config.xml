@@ -29,6 +29,11 @@ OSCAR cluster software system.</description>
   <clientDeps/>
   <apiDeps/>
   <changelog>
+    <versionEntry version="3.4.2-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-07-23T18:24:12+02:00">
+        <item>Small bugfix.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="3.4.1-1">
       <changelogEntry authorName="Olivier Lahaye" date="2014-07-17T19:00:15+02:00">
         <item>Fix naemon non existing oscar directory when running post-server-install.</item>

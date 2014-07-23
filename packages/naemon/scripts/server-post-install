@@ -36,7 +36,7 @@ use OSCAR::LoggerDefs;
 use OSCAR::oda;
 use Carp;
 
-init_naemon_config_dir() or (oscar_log(1,ERROR,"Failed to create naemon OSCAR's specific directory structure"), exit 1);
+init_naemon_config_dir() and (oscar_log(1,ERROR,"Failed to create naemon OSCAR's specific directory structure"), exit 1);
 
 #my $configurator = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
 my $scripts_dir = OSCAR::Package::get_scripts_dir("naemon", 'server-post-install');
