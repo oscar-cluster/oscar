@@ -46,8 +46,7 @@ close OUT;
 # OL: FIXME: Fake si_rsyncd log file so we can start.
 # Need to be removed once si_netbootmond will not depend of thins anymore.
 my $si_rsyncd_log = "/var/log/systemimager/rsyncd";
-open HANDLE, ">$si_rsyncd_log" || die;
-# do something?
+open HANDLE, ">>$si_rsyncd_log" or die "touch $filename: $!\n"; 
 close HANDLE
 
 # Do not abort if we fail when trying to restart the service.
