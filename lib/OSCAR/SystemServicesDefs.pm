@@ -44,6 +44,7 @@ use constant SENDMAIL       => 'sendmail';
 use constant SI_MONITOR     => 'monitor';
 use constant SI_NETBOOTMOND => 'netbootmond';
 use constant SI_RSYNC       => 'rsync';
+use constant SI_SERVER      => 'systemimager';
 use constant SI_FLAMETHROWER => 'flamethrower';
 use constant SI_BITTORRENT  => 'bittorrent';
 use constant SSH            => 'ssh';
@@ -98,6 +99,7 @@ our @EXPORT = qw(
                 SI_MONITOR
                 SI_NETBOOTMOND
                 SI_RSYNC
+                SI_SERVER
                 SI_FLAMETHROWER
                 SI_BITTORRENT
                 START
