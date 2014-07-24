@@ -1,11 +1,17 @@
 6.1.2 (not yet released):
 - Update C3 to 5.1.3.
 - Update jobmonarch to 1.1.1
-- Add the support for Scientific Linux 6.
-- Add the support for RedHat Enterprise Linux 6.
-- Add the support for Fedora 17.
-- Add the support for Ubuntu 12.04 (Precise).
-- Add the support for Ubuntu 12.10 (Wheezy).
+- Add support for Scientific Linux 6.
+- Add support for Scientific Linux 7.
+- Add support for Centos-7.
+- Add support for RedHat Enterprise Linux 6.
+- Add support for RedHat Enterprise Linux 7.
+- Add support for Fedora 17.
+- Add support for Fedora 18.
+- Add support for Fedora 19.
+- Add support for Fedora 20.
+- Add support for Ubuntu 12.04 (Precise).
+- Add support for Ubuntu 12.10 (Wheezy).
 - Fix some formatting problems in man pages.
 - Add GPU support in the database and torque configuration.
 - Add blcr and munge support.
@@ -16,6 +22,18 @@
 - Integrated apitest testing mechanism for each step.
 - Added configuration interface to opkg-nfs.
 - Added configuration interface for opkg-mta.
+- opkgc is now able to install deps that have been built the line above in
+a same build.cfg
+- bootstrapp is now able to use apitests before anything else.
+- Added support for naemon (nagios monitoring fork)
+- Added cconfig to manage c3.conf file.
+- Fixed many pod docs and Added OSCAR::* docs to the devel package.
+- Updated torque to 4.2.7
+- Updated ganglia-web to 3.7.0 (rpm only)
+- Fixed Configurator GUI
+- Ported netbootmgr to libqt4-perl and added support for deb world
+- Added OSCAR::MonitoringMgt API (naemon support for opkg)
+- Dropped LAM support (as per lam developpers request)
 
 6.1.1:
 - Update C3 to 5.1.2.

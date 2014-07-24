@@ -21,7 +21,7 @@ Package: oscar-bin
 Architecture: all
 Description: Binaries for OSCAR
  Set of binaries for OSCAR
-Depends: liboscar, libnetwork-ipv4addr-perl, systeminstaller-oscar (>= 2.4.12)
+Depends: liboscar, systeminstaller-oscar (>= 2.4.12)
 
 Package: oscar-utils
 Architecture: all
@@ -33,7 +33,7 @@ Package: liboscar
 Architecture: all
 Description: Libraries for OSCAR 
  Set of libraries for OSCAR
-Depends: libnetwork-ipv4addr-perl, apitest
+Depends: apitest
 
 Package: oscar-base-server
 Architecture: all

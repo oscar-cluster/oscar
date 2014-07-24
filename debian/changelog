@@ -1,3 +1,19 @@
+oscar (6.1.2~svn20140724-1) precise; urgency=low
+
+  * opkgc is now able to install deps that have been built the line above in
+    a same build.cfg
+  * bootstrapp is now able to use apitests before anything else.
+  * Added support for naemon (nagios monitoring fork)
+  * Added cconfig to manage c3.conf file.
+  * Fixed many pod docs and Added OSCAR::* docs to the devel package.
+  * Updated torque to 4.2.7
+  * Fixed Configurator GUI
+  * Ported netbootmgr to libqt4-perl and added support for deb world
+  * Added OSCAR::MonitoringMgt API (naemon support for opkg)
+  * Dropped LAM support (as per lam developpers request)
+
+ -- Olivier Lahaye <olivier.lahaye@cea.fr>  Wed, 12 Feb 2014 18:16:18 +0100
+
 oscar (6.1.2~svn20140212-1) precise; urgency=low
 
   * Updated packaging. bin and scripts split.
