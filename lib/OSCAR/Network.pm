@@ -30,7 +30,7 @@ BEGIN {
 use strict;
 use vars qw($VERSION @EXPORT);
 use File::Copy;
-use Net::IPv4Addr;
+# use Net::IPv4Addr;
 use OSCAR::Env;
 use OSCAR::Database;
 use OSCAR::Logger;
@@ -42,6 +42,7 @@ use Carp;
 use Data::Dumper;
 use base qw(Exporter);
 @EXPORT = qw(
+            cidr2netmask
             get_network_config
             get_network_adapter
             interface2ip
@@ -72,6 +73,20 @@ sub is_a_valid_ip ($) {
     return 1;
 }
 
+################################################################################
+# Returns the 4 number netmask given the cidr mask.
+#
+# Input: netmask in cidr format
+# Return: netmask in IPv4 format.
+################################################################################
+
+sub cidr2netmask($) {
+    my $cidr = shift;
+    my $mask_length = (2**(32-$cidr))-1;
+    my ($array_mask) = unpack("N", pack("C4",split(/\./,'255.255.255.255')));
+    my $netmask = join('.', unpack("C4", pack("N", ($array_mask ^ $mask_length ))));
+    return $netmask;
+}
 
 sub set_network_adapter ($) {
     my $ref = shift;
@@ -128,7 +143,8 @@ sub interface2ip ($) {
     while(<IP_ADDR_SHOW>) {
         if(/\s+inet ($ipregex)\/([0-9]{2}) brd ($ipregex) scope .*$/o) {
             ($ip, $net, $broadcast) = ($1,$2,$3);
-            $net = Net::IPv4Addr::ipv4_cidr2msk($net);
+            # $net = Net::IPv4Addr::ipv4_cidr2msk($net);
+            $net = cidr2netmask($net);
             last;
         }
     }

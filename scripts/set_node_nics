@@ -35,7 +35,8 @@ BEGIN {
 
 use strict;
 use Getopt::Long;
-use Net::IPv4Addr;
+#use Net::IPv4Addr;
+use OSCAR::Network;
 use OSCAR::oda;
 use Data::Dumper;
 use OSCAR::Database;
@@ -765,7 +766,8 @@ sub find_nics {
         # skip to next line if we can't parse and save ip and netmask
         next unless ( ($ip, $netmask, $broadcast) =
             /^\s+inet (\S+)\/([0-9]{2}) brd (\S+) scope.*$/ );
-        $netmask=Net::IPv4Addr::ipv4_cidr2msk($netmask);
+        #$netmask=Net::IPv4Addr::ipv4_cidr2msk($netmask);
+        $netmask=cidr2netmask($netmask);
 
         if ( ! valid_ip( $ip ) ) {
             push @$error_strings_ref, 
