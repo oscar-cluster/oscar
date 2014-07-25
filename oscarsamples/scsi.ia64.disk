@@ -1,5 +1,5 @@
 /dev/sda1        200  vfat  /boot/efi  defaults bootable
 /dev/sda5        512  swap
-/dev/sda6        *    ext3  /          defaults
+/dev/sda6        *    _ROOTFS_  /          defaults
 /dev/shm         -    tmpfs /dev/shm   defaults
 nfs_oscar:/home  -    nfs   /home      rw

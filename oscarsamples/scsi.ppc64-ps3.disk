@@ -1,4 +1,4 @@
-/dev/sda1        *  ext3  /      defaults bootable
+/dev/sda1        *  _ROOTFS_  /      defaults bootable
 /dev/sda2        512  swap
 /dev/shm         -    tmpfs /dev/shm   defaults
 nfs_oscar:/home  -    nfs   /home      rw

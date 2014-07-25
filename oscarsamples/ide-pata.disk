@@ -1,5 +1,5 @@
-/dev/hda1        100  ext3  /boot      defaults bootable
+/dev/hda1        100  _BOOTFS_  /boot      defaults bootable
 /dev/hda5        512  swap
-/dev/hda6        *    ext3  /          defaults
+/dev/hda6        *    _ROOTFS_  /          defaults
 /dev/shm         -    tmpfs /dev/shm   defaults
 nfs_oscar:/home  -    nfs   /home      rw

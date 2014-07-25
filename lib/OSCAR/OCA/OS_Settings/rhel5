@@ -1,4 +1,8 @@
 # rhel 5 specific settings
+available_filesystems=ext2,ext3
+boot_filesystem=ext2
+root_filesystem=ext3
+
 # Overwrite few deamons
 
 # Overwrite few services

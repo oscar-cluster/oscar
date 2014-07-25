@@ -1,4 +1,8 @@
 # rhel specific settings (valid for rhel, centos)
+available_filesystems=ext2,ext3
+boot_filesystem=ext2
+root_filesystem=ext3
+
 # Init directory specific to this distribution
 init=/etc/rc.d/init.d 
 

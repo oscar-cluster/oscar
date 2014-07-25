@@ -32,6 +32,8 @@ BEGIN {
 }
 
 use strict;
+use File::Basename;
+use File::Temp qw/ :mktemp  /;
 use OSCAR::Logger;
 use OSCAR::LoggerDefs;
 use OSCAR::PackagePath;
@@ -869,7 +871,24 @@ sub create_image ($%) {
     }
 
     # Deal with the harddrive configuration of the image
-    $cmd = "mksidisk -A --name $vars{imgname} --file $vars{diskfile}";
+
+    # 1st, create the final diskfile
+    my($filename, $dirs, $suffix) = fileparse($vars{diskfile},"disk");
+
+    my($tmp_fh, $temp_diskfile) = mkstemps( $filename."_XXXXXX", $suffix);
+
+    open my $template_fh,"<", $vars{diskfile}
+        or (oscar_log(1, ERROR, "Failed to open $vars{diskfile}"), close $tmp_fh, return -1);
+
+    while (my $line = <$template_fh>) {
+        $line =~ s/_BOOTFS_/$vars{boot_filesystem}/;
+        $line =~ s/_ROOTFS_/$vars{root_filesystem}/;
+        print $tmp_fh $line;
+    }
+
+    close $tmp_fh;
+
+    $cmd = "mksidisk -A --name $vars{imgname} --file $temp_diskfile";
     if( oscar_system($cmd) ) {
         cleanup_sis_configfile ($image);
         return -1;
