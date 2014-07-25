@@ -13,8 +13,9 @@ binutils
 bzip2
 bzip2-libs
 chkconfig
-compat-gcc-34
-compat-gcc-34-g77
+compat-gcc-44
+compat-gcc-44-c++
+compat-gcc-44-gfortran
 compat-libf2c-34
 coreutils
 cpio
@@ -26,7 +27,7 @@ cronie-anacron
 crontabs
 cyrus-sasl
 cyrus-sasl-md5
-db4
+libdb4
 device-mapper
 dhclient
 diffutils
@@ -34,7 +35,6 @@ dosfstools
 dracut
 e2fsprogs
 ed
-eject
 elfutils-libelf
 ethtool
 expat
@@ -65,7 +65,7 @@ gnuplot
 gpm
 grep
 groff
-grub
+grub2
 gtk2
 gzip
 hdparm
@@ -76,7 +76,7 @@ initscripts
 iproute
 iptables
 iputils
-jwhois
+whois
 kbd
 kernel
 krb5-libs
@@ -88,7 +88,6 @@ libart_lgpl
 libattr
 libcap
 libgcc
-libgcj
 libgcrypt
 libjpeg-turbo
 libmng
@@ -109,11 +108,10 @@ m4
 mailcap
 mailx
 make
-MAKEDEV
-man
+man-db
 man-pages
-mingetty
-module-init-tools
+mgetty
+kmod
 mtools
 mariadb
 ncurses
@@ -145,11 +143,10 @@ postfix
 postgresql
 postgresql-libs
 procmail
-procps
+procps-ng
 psmisc
 python
-pyxf86config
-PyXML
+python-lxml
 quota
 rdate
 rdist
@@ -185,12 +182,11 @@ tmpwatch
 traceroute
 ttmkfdir
 tzdata
-udev
 units
-upstart
+systemd
 usbutils
 usermode
-util-linux-ng
+util-linux
 vim-common
 vim-enhanced
 vim-minimal
@@ -199,7 +195,6 @@ words
 xinetd
 xorg-x11-fonts-misc
 xorg-x11-font-utils
-xorg-x11-twm
 xorg-x11-xauth
 xorg-x11-xinit
 ypbind
