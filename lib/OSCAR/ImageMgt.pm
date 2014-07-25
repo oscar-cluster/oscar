@@ -877,17 +877,24 @@ sub create_image ($%) {
 
     my($tmp_fh, $temp_diskfile) = mkstemps( $filename."_XXXXXX", $suffix);
 
+    oscar_log(5, INFO, "");
     open my $template_fh,"<", $vars{diskfile}
         or (oscar_log(1, ERROR, "Failed to open $vars{diskfile}"), close $tmp_fh, return -1);
 
+    oscar_log(5, INFO, "Generating $temp_diskfile from $vars{diskfile} using:");
+    oscar_log(5, INFO, "Boot_filesystem:$vars{boot_filesystem} Root_filesystem:$vars{root_filesystem}");
+    oscar_log(5, NONE, "----- $temp_diskfile -----");
     while (my $line = <$template_fh>) {
         $line =~ s/_BOOTFS_/$vars{boot_filesystem}/;
         $line =~ s/_ROOTFS_/$vars{root_filesystem}/;
         print $tmp_fh $line;
+        oscar_log(5, NONE, "> $line");
     }
 
     close $tmp_fh;
+    oscar_log(5, NONE, "----- end -----");
 
+    # 2nd, run mksidisk.
     $cmd = "mksidisk -A --name $vars{imgname} --file $temp_diskfile";
     if( oscar_system($cmd) ) {
         cleanup_sis_configfile ($image);
