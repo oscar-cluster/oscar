@@ -115,7 +115,7 @@ sub oscar_system($) {
 sub is_element_in_array ($@) {
     my $element = shift;
     my @array = @_;
-    (oscar_log(5, ERROR, "Undefined element"), return 0) if !defined ($element);
+    (OSCAR::Logger::oscar_log(5, ERROR, "Undefined element"), return 0) if !defined ($element);
 
     foreach my $i (@array) {
         if (defined ($i) && ($i eq $element)) {
@@ -134,7 +134,7 @@ sub is_element_in_array ($@) {
 sub print_array (@) {
     my @my_array = @_;
 
-    oscar_log(5, INFO,"Array: ".scalar(@my_array)." element(s):");
+    OSCAR::Logger::oscar_log(5, INFO,"Array: ".scalar(@my_array)." element(s):");
     foreach my $i (@my_array) {
         print " - $i\n";
     }
@@ -155,13 +155,13 @@ sub get_oscar_version {
     } elsif ( -f "/etc/oscar/VERSION" ) {
         $path = "/etc/oscar";
     } else {
-        oscar_log(5, ERROR, "Unable to get the OSCAR version");
-        oscar_log(6, ERROR, "Please check /etc/oscar/VERSION or \${OSCAR_HOME}/VERSION");
+        OSCAR::Logger::oscar_log(5, ERROR, "Unable to get the OSCAR version");
+        OSCAR::Logger::oscar_log(6, ERROR, "Please check /etc/oscar/VERSION or \${OSCAR_HOME}/VERSION");
         return undef;
     }
     $path .= "/VERSION";
     if (! -f $path) {
-    	oscar_log(1, ERROR, "File $path does not exist");
+    	OSCAR::Logger::oscar_log(1, ERROR, "File $path does not exist");
 	return undef;
     }
     my $cmd = "less $path | grep want_svn=0";
@@ -218,7 +218,7 @@ sub print_hash ($$$); # Prototype to avoid warnings when recursive calls of
                       # print_hash are made.
 sub print_hash ($$$) {
     my ($leading_spaces, $name, $hashref) = @_;
-    oscar_log(5, INFO, "Hash content: -- $leading_spaces$name:");
+    OSCAR::Logger::oscar_log(5, INFO, "Hash content: -- $leading_spaces$name:");
     foreach my $key (sort keys %$hashref) {
         my $value = $$hashref{$key};
         if (ref($value) eq "HASH") {
@@ -300,7 +300,7 @@ sub merge_arrays ($$) {
     my ($array_ref1, $array_ref2) = @_;
 
     if (!defined ($array_ref1) || !defined ($array_ref2)) {
-        oscar_log(5, ERROR, "Unable to merge the arrays");
+        OSCAR::Logger::oscar_log(5, ERROR, "Unable to merge the arrays");
         return undef;
     }
     my @array = @$array_ref1;
@@ -313,7 +313,7 @@ sub merge_arrays ($$) {
 sub get_path_perl_modules () {
     my @data = Config::config_re("vendorlib");
     if (scalar (@data) > 1 || scalar (@data) == 0) {
-        oscar_log(5, ERROR, "Can't locate Perl modules");
+        OSCAR::Logger::oscar_log(5, ERROR, "Can't locate Perl modules");
         return -1;
     }
     my ($key, $path) = split ("=", $data[0]);
