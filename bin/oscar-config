@@ -240,15 +240,15 @@ if ($verbose) {
 }
 
 if ($startover) {
-    return 1 if (force_run_as_root());
+    exit 1 if (force_run_as_root());
     require OSCAR::Startover;
     if (OSCAR::Startover::start_over()) {
         oscar_log(1, ERROR, "Failed to start over, please bootstrap OSCAR again ".
             "to try to recover");
-        return 1;
+        exit 1;
         }
 #    goto EXIT_SUCCESS;
-    return 0;
+    exit 0;
 }
 
 if ($distro_repo) {
