@@ -118,7 +118,8 @@ sub install_prereq ($$$) {
     my $prereq_name = basename ($cmd);
     oscar_log(2, SUBSECTION, "Dealing with Prereq $prereq_name");
     require OSCAR::PrereqsDefs;
-    my $rc = oscar_system ($cmd);
+    oscar_log(5, ACTION, "About to run: $cmd");
+    my $rc = system ($cmd); # Cannot use oscar_system as rc=1 is OK (not an error)
     if ($rc == OSCAR::PrereqsDefs::PREREQ_MISSING()) {
         OSCAR::Logger::oscar_log_subsection "$prereq_name is not installed.";
 
@@ -170,21 +171,24 @@ sub bootstrap_prereqs ($$) {
     oscar_log(2, SUBSECTION, "Dealing with Prereq $prereq_name" .
         "($prereq_path, $prereq_mode)");
     require OSCAR::PrereqsDefs;
-    my $rc = oscar_system ($cmd);
+    oscar_log(5, ACTION, "About to run: $cmd");
+    my $rc = system ($cmd); # Cannot use oscar_system as rc=1 is still OK.
     if ($rc == OSCAR::PrereqsDefs::PREREQ_MISSING()) {
         OSCAR::Logger::oscar_log_subsection "$prereq_name is not installed.";
 
         if ($prereq_mode eq "check_and_fix") {
             # We try to install Packman
             $cmd = $ipcmd . " --dumb " . $prereq_path;
-            if (oscar_system ($cmd)) {
+            oscar_log(5, ACTION, "About to run: $cmd");
+            if (system ($cmd)) {
                 oscar_log(5, ERROR, "Impossible to install $prereq_name ($cmd).");
                 return -1;
             }
 
             # Packman should be installed now
             $cmd = $ipcmd . " --status " . $prereq_path;
-            my $rc = oscar_system ($cmd);
+            oscar_log(5, ACTION, "About to run: $cmd");
+            my $rc = system ($cmd);
             if ($rc == OSCAR::PrereqsDefs::PREREQ_MISSING()) {
                 oscar_log(5, ERROR, "$prereq_name is still not installed");
                 return -1;
@@ -586,6 +590,16 @@ sub bootstrap_stage1 ($) {
     require OSCAR::ODA::Bootstrap;
     if(OSCAR::ODA::Bootstrap::bootstrap_oda(MYSQL)){
         oscar_log(5, ERROR, "Impossible to setup the ODA bootstrap with " . MYSQL);
+        return -1;
+    }
+
+    # Now we try to install perl-Qt
+    oscar_log(5, INFO, "Installing perl-Qt.");
+    my $selector_prereqs_path = $config->{'prereqs_path'} . "/perl-Qt";
+    my $prereq_mode = $config->{'prereq_mode'};
+    if (install_prereq ($ipcmd, $selector_prereqs_path, $prereq_mode)) {
+        oscar_log(5, ERROR, "Impossible to install perl-Qt prereqs ".
+             "($selector_prereqs_path)");
         return -1;
     }
 
