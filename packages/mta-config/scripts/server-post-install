@@ -86,7 +86,7 @@ given ($mta_service) {
         my $config_file = OSCAR::OCA::OS_Settings::getitem(POSTFIX()."_configfile");
         if (not -e $config_file) {
             carp("ERROR: Cound not find $config_file. Postfix configuration aborted!\n there will be no mailservices for client nodes");
-            exit -1;
+            exit(-1);
         }
         # First, comment out 'mynetworks_style = ' part.
         # If the inet_interfaces = all, then leave that option.
@@ -111,9 +111,9 @@ given ($mta_service) {
         # then add the oscar option (oscar_server) behind it
  
         open(IN,"<$config_file.oscarbak") or (carp "Couldn't open $config_file.oscarbak for reading!",
-                                 and return undef); # FIXME: check what to return.
+                                 and return undef); # FIXME: check what to return.
         open(OUT,">$config_file") or (carp "Couldn't open $config_file for writing!",
-                                 and return undef); # FIXME: check what to return.
+                                 and return undef); # FIXME: check what to return.
         my $inet_interface_is_set=0;
         my $masquerade_domains_is_set=0;
         my $oscar_comment_present=0;
@@ -197,28 +197,28 @@ INLINE_TEXT
 
         # Restart the postfix service
        !system_service(POSTFIX(),RESTART())
-        or (carp "ERROR: Couldn't restart postfix service.", exit -1);
+        or (carp "ERROR: Couldn't restart postfix service.", exit(-1));
 
         # Enable the postfix service
         !enable_system_services( (POSTFIX()) )
-            or (carp "ERROR: Couldn't enable postfix service.", exit -1);
+            or (carp "ERROR: Couldn't enable postfix service.", exit(-1));
     }
     when (/exim/) {
         my $config_file = OSCAR::OCA::OS_Settings::getitem(EXIM()."_configfile");
         # exim not yet supported
         carp "[ERROR] Exim not yet supported";
-        exit -1;
+        exit(-1);
     }
     when (/sendmail/) {
         my $config_file = OSCAR::OCA::OS_Settings::getitem(SENDMAIL()."_configfile");
         # sendmail not yet supported
         carp "[ERROR] sendmail not yet supported";
-        exit -1;
+        exit(-1);
     }
     default {
         # Unknown mailing service. configurator.html not in sync with this script.
         carp "[ERROR] ($mta_service) not supported";
-        exit -1;
+        exit(-1);
     }
 }
 
