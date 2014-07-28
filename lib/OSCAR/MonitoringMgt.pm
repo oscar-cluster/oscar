@@ -92,9 +92,9 @@ sub init_naemon_config_dir() {
     my $naemon_configdir = OSCAR::OCA::OS_Settings::getitem(NAEMON()."_configdir");
 
     my $v = 1 if ($OSCAR::Env::oscar_verbose > 5);
-    # Make sure that the oscar naemon path exists (even if naemon is not yet installed)
+    # Make sure that the oscar naemon path exists (even if naemon is not yet installed)
     File::Path::make_path("$naemon_configdir/conf.d/oscar", {
-                              verbose => $v,
+                              verbose => $v,
                               mode => 0755,
                            });
     if (! -d $naemon_configdir) {
