@@ -1,4 +1,6 @@
 # rhel specific settings (valid for rhel, centos)
+root_filesystem=xfs
+
 # Init directory specific to this distribution
 init=/etc/rc.d/init.d 
 
