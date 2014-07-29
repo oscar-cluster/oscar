@@ -27,15 +27,10 @@ if [ -z "$ROOT_DIR" -o ! -d "$ROOT_DIR" ]; then
     exit 1
 fi
 
-# If ${ROOT_DIR}/etc/munge does not exists, assume that munge is not yet installed.
-# Thus we prepare the correct tree.
-if test ! -d ${ROOT_DIR}/etc/munge
-then
-	/bin/mkdir -p ${ROOT_DIR}/etc/munge
-	/bin/mkdir -p ${ROOT_DIR}/var/log/munge
-	/bin/mkdir -p ${ROOT_DIR}/var/lib/munge
-fi
-# Create the /var/run/munge directory
+# Make sure that munge FS tree exists
+/bin/mkdir -p ${ROOT_DIR}/etc/munge
+/bin/mkdir -p ${ROOT_DIR}/var/log/munge
+/bin/mkdir -p ${ROOT_DIR}/var/lib/munge
 /bin/mkdir -p ${ROOT_DIR}/var/run/munge
 
 # Get the munge UID and GID from the ${ROOT_DIR}/etc/passwd

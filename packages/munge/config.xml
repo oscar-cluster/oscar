@@ -25,6 +25,12 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.2.0-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-07-29T17:59:28+02:00">
+        <item>Reworked api-post-image and fix configuration helper</item>
+        <item>making sure that munge.key has the correct permissions.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.1.1-1.1">
       <changelogEntry authorName="Olivier Lahaye" date="2014-07-11T15:25:17+02:00">
         <item>Rebuild to avoid conflicts with new disttag in rpm distros</item>
