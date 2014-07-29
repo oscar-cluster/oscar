@@ -14,10 +14,23 @@ use OSCAR::Logger;
 use OSCAR::LoggerDefs;
 # use OSCAR::Package;
 use SIS::NewDB;
+use SystemInstaller::Machine;
 use OSCAR::MonitoringMgt;
 use OSCAR::Opkg;
 
-oscar_log(2, INFO,"Creating Oscar hostgroup");
+# 1st, Create naemon nodes configs.
+my %hash = SystemInstaller::Machine::get_machine_listing();
+
+oscar_log(2, INFO, "Creating iOSCAR naemon nodes configs");
+for my $node (keys(%hash)) {
+    my $name = $node; # Try to use DNS name
+    my $alias = $node;
+    my $ip = $hash{$node}->{IPADDR};
+    # TODO: valid string and valid ip.
+    write_oscar_host_cfg($name, $alias, $ip);
+}
+
+oscar_log(2, INFO,"Creating OSCAR hostgroup");
 
 # Get the images with associated nodes.
 my %sis_nodes;
