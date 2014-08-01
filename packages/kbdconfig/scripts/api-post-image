@@ -1,0 +1,72 @@
+#!/usr/bin/perl
+#
+
+#########################################################################
+#  Script Name : post_rpm_nochroot
+#  Written by  : Olivier Lahaye
+#  Date        : July 29, 2014
+#  Purpose     : This post_install script configures the keyboard for the
+#                nodes of a particular image.
+#  Copyright (c) CEA: Commissariat a l'Energie Atomique et aux
+#                     Energies Alternatives.
+#                Olivier Lahaye 2014
+#                All rights reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#########################################################################
+# $Id: $
+#########################################################################
+
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+}
+
+use strict;
+use Carp;
+use POSIX;
+use OSCAR::Configurator_backend;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
+use OSCAR::Utils;
+use OSCAR::Package;
+
+my $pkgdir = OSCAR::Package::get_scripts_dir("kbdconfig", "post-install");
+my $configdir = "$pkgdir/.configs";
+
+my $imagedir = shift @ARGV;
+
+#####################
+# BEGIN MAIN SCRIPT #
+#####################
+
+my $configurator = "$pkgdir/configurator.html";
+
+my $kbd_conf;
+if (-e $configurator) {
+    $kbd_conf = OSCAR::Configurator_backend::readInConfigValues($configurator,
+                                                                   "kbdconfig",
+                                                                   "",
+                                                                   noarray=>1);
+    # Get the keyboard language.
+    print "[INFO]: Chosen keyboard: $kbd_conf->{lang}\n";
+} else {
+    exit 0;
+}
+
+
+exit 0;

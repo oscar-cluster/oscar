@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<oscar>
+  <name>kbdconfig</name>
+  <class>included</class>
+  <summary>OSCAR Keybord configuration for client nodes</summary>
+  <description></description>
+  <license>GPL</license>
+  <group>Application/System</group>
+  <authors>
+    <author cat="maintainer">
+      <name>Olivier Lahaye</name>
+      <email>olivier.lahaye@cea.fr</email>
+    </author>
+  </authors>
+  <serverDeps>
+    <requires>
+      <pkg>system-config-keyboard</pkg>
+    </requires>
+  </serverDeps>
+  <clientDeps>
+    <requires>
+      <pkg>system-config-keyboard</pkg>
+    </requires>
+  </clientDeps>
+  <apiDeps/>
+  <changelog>
+    <versionEntry version="1.0.0-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-07-29T18:31:52+02:00">
+        <item>Initial OPKG for kbdconfig</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
+</oscar>
