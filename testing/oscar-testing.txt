@@ -75,9 +75,9 @@
  O4. In 'Step4: Build OSCAR Client Image' 
     O4.1) create image using "Image Name" other than 'oscarimage'
     O4.2) create image using "Package File" other than the default
-          [note, can modify deafault package files in 'oscarsamples/']
+          [note, can modify deafault package files in 'oscarsamples/pkgfiles/']
     O4.3) create image using "Disk Partition File" other than the default
-          [note, can modify deafault partition files in 'oscarsamples/']
+          [note, can modify deafault partition files in 'oscarsamples/pkgfiles/']
     O4.4) create image using "IP Assign. Method" set to 'static'
     O4.5) create image using "IP Assign. Method" set to 'replicant'
     O4.6) create image using "IP Assign. Method" set to 'static'

@@ -237,9 +237,9 @@ sub get_disk_file {
 
     my $diskfile;
     if ($ENV{OSCAR_HOME}) {
-        $diskfile = "$ENV{OSCAR_HOME}/oscarsamples/$disk_type";
+        $diskfile = "$ENV{OSCAR_HOME}/oscarsamples/diskfiles/$disk_type";
     } else {
-        $diskfile = "/usr/share/oscar/oscarsamples/$disk_type";
+        $diskfile = "/usr/share/oscar/oscarsamples/diskfiles/$disk_type";
     }
     #ia64 needs special disk file because of /boot/efi
     $diskfile .= ".$arch" if $arch eq "ia64";
@@ -258,9 +258,9 @@ sub get_binary_list_file ($) {
 
     my $oscarsamples_dir;
     if (defined $ENV{OSCAR_HOME}) {
-        $oscarsamples_dir = "$ENV{OSCAR_HOME}/oscarsamples";
+        $oscarsamples_dir = "$ENV{OSCAR_HOME}/oscarsamples/pkglists";
     } else {
-        $oscarsamples_dir = "/usr/share/oscar/oscarsamples";
+        $oscarsamples_dir = "/usr/share/oscar/oscarsamples/pkglists";
     }
 
     if (! -d $oscarsamples_dir) {
@@ -291,16 +291,16 @@ sub get_binary_list_file ($) {
     } else {
         $full_version = $distro_ver;
     }
-    my $pkglist = "$oscarsamples_dir/$distro-$distro_ver-$arch.rpmlist";
+    my $pkglist = "$oscarsamples_dir/$distro-$distro_ver-$arch.pkglist";
     if (! -f $pkglist) {
         oscar_log(5, WARNING, "pkglist: $pkglist not found. trying with specific".
              " version $compat_distro-$full_version-$arch.\n");
-        $pkglist = "$oscarsamples_dir/$distro-$full_version-$arch.rpmlist";
+        $pkglist = "$oscarsamples_dir/$distro-$full_version-$arch.pkglist";
         if (! -f $pkglist) {
             oscar_log(5, WARNING, "pkglist: $pkglist not found. trying with".
                  " generic $compat_distro-$compat_distro_ver-$arch.\n");
             $pkglist = "$oscarsamples_dir/".
-                       "$compat_distro-$compat_distro_ver-$arch.rpmlist";
+                       "$compat_distro-$compat_distro_ver-$arch.pkglist";
             if (! -f $pkglist) {
                 oscar_log(1, ERROR, "No".
                     " $distro-$distro_ver-$arch suitable binary list file found".

@@ -1,0 +1,15 @@
+# File centos-7-x86_64.bootstrap
+
+# The following filesystem are needed for some post install scriptlets.
+bind /dev
+bind /proc
+
+# We need the following directory to avoid error messages
+# everytime we try to install a package.
+path /var/lib/yum
+
+# Core OS packages
+pkgs system-release setup filesystem
+pkgs ldconfig yum passwd vim-minimal dhclient authconfig
+
+# End

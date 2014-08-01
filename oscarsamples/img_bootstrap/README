@@ -1,0 +1,60 @@
+The postinstall and cleanup files are processed respectively when bootstrapping an image and after image is built.
+
+The file format is the same for both .bootstrap or .cleanup
+
+- Empty lines (or with only spaces or tabs) are ignored
+
+- # character is for comments. everything after this char is ignored. (space
+    or tabs before # are also ignored)
+
+- Commands:
+        - bind <host mountpoint>
+          => Mount the host mountpoint using -o bind in the image. Created the
+             mountpoint in the image if needed.
+             Example: "bind /dev" will mount /dev in the image
+
+        - del <space separated file list with wildcards>
+          => remove recursively the files or directories.
+
+        - mkpath <absolute path in the image>
+          => Creates the path in the image.
+             Example: "mkpath /var/lib/yum" will create $imagepath/var/lib/yum
+             Note: permission/owner canot be set here as passwd file does not
+                   exist yet in the image
+
+        - pkgs <space separated list of pacakges to install>
+          => Installs the packages and dependancies into the image.
+             In case of multiple instance of pkg comands, multiple install
+             instances will be done (in order)
+             Note: on rpm system, packages can be also "capabilities" like
+             'perl(File::Path)'. In that case, simple quotes must be used
+             around the "capabilities".
+
+        - post <scriptname>
+          => Runs the script after everything is processed.
+          => Multiple post can be specified. They will be processed
+             in the same order they've been decrared.
+          => Path can be relative to this directory or absolute.
+
+        - pre <scriptname>
+          => Runs the script before doing everything else.
+          => Multiple pre can be specified. They will be processed
+             in the same order they've been decrared.
+          => Path can be relative to this directory or absolute.
+
+        - unbind <mount_point>
+          => unmounts $imagepath/mount_point
+
+- Processing order:
+    - pre
+    - mkpath
+    - del
+    - bind
+    - unbind
+    - pkgs
+    - post
+
+
+
+
+

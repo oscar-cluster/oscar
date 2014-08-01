@@ -199,7 +199,7 @@ INLINE_TEXT
        !system_service(POSTFIX(),RESTART())
         or (carp "ERROR: Couldn't restart postfix service.", exit(-1));
 
-        # Enable the postfix service
+        # Enable the postfix service
         !enable_system_services( (POSTFIX()) )
             or (carp "ERROR: Couldn't enable postfix service.", exit(-1));
     }

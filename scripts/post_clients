@@ -61,9 +61,10 @@ my @pkgs = list_selected_packages();
 
 my $return = 0;
 
+my $verbose = $ENV{OSCAR_VERBOSE}>=5;
 my $phase = "post_clients";
 foreach my $pkg (@pkgs) {
-    if(OSCAR::Package::run_pkg_script($pkg, $phase, 1, undef) != 1) {
+    if(OSCAR::Package::run_pkg_script($pkg, $phase, $verbose, undef) != 1) {
         carp("ERROR: Couldn't run $phase script for $pkg");
         $return++;
     }
