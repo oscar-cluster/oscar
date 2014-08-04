@@ -34,6 +34,11 @@ BEGIN {
     }
 }
 
+$SIG{INT}       = 'SigHandler';         # Catch signals
+$SIG{QUIT}      = 'SigHandler';
+$SIG{TERM}      = 'SigHandler';
+$SIG{KILL}      = 'SigHandler';
+
 use strict;
 use Carp;
 use File::Copy;
@@ -152,7 +157,7 @@ foreach my $pkg (@pkgs) {       # %$pkg_ref has the two keys ( package, version)
 
 oscar_log(5, INFO, "post_rpm_install: Unmounting /dev /proc /sys in the image");
 for my $mount_point ( ("/dev", "/proc", "/sys", "/run") ) {
-    oscar_system("umount $mount_point $targetdir$mount_point");
+    oscar_system("umount $targetdir$mount_point");
 }
 
 if($return) {
@@ -208,3 +213,17 @@ sub sync_user_files {
     return 1;
 }
 
+sub SigHandler {
+    my $signal=@_;
+    oscar_log(1, INFO, "post_rpm_install: Caught signal $signal");
+    if ( (defined ($targetdir)) && (-d "$targetdir") ) {
+        oscar_log(1, INFO, "post_rpm_install: Unmounting /dev /proc /sys in the image ($targetdir)");
+        for my $mount_point ( ("/dev", "/proc", "/sys", "/run") ) {
+            oscar_system("umount $targetdir$mount_point");
+        }
+    } else {
+        oscar_log(1, INFO, "post_rpm_install: no image dir: nothing to unmount");
+    }
+
+    exit 1;
+}
