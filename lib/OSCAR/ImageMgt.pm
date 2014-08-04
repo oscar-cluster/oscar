@@ -848,26 +848,29 @@ sub create_image ($%) {
         cleanup_sis_configfile ($image);
         return -1;
     }
+
     # If we do not have yet selection data for some OPKGs, we assign the default
     # selection (selected for core OPKGs, unselected for others).
     require OSCAR::RepositoryManager;
     my $rm = OSCAR::RepositoryManager->new (distro=>$distro_id);
     my ($rc, @output);
     require OSCAR::ODA_Defs;
+    my @opkgs = ();
     foreach my $opkg (keys %selection_data) {
         if (!OSCAR::Utils::is_element_in_array ($opkg, @core_opkgs)) {
             if ($selection_data{$opkg} eq OSCAR::ODA_Defs::SELECTED()) {
-                oscar_log(4, ACTION, "Installing opkg-$opkg-client into the image...");
-                ($rc, @output) = $rm->install_pkg ($image_path,
-                                                   "opkg-$opkg-client");
-                if ($rc) {
-                    oscar_log(4, ERROR, "Impossible to install opkg-$opkg-client in ".
-                         "$image_path (rc: $rc)");
-                    cleanup_sis_configfile ($image);
-                    return -1;
-                }
+                push(@opkgs, "opkg-$opkg-client");
             }
         }
+    }
+    oscar_log(4, ACTION, "Installing ".join(", ",@opkgs)." into the image...");
+    ($rc, @output) = $rm->install_pkg ($image_path,
+                                      @opkgs);
+    if ($rc) {
+        oscar_log(4, ERROR, "Impossible to install ".join(", ",@opkgs)." in ".
+                  "$image_path (rc: $rc)");
+        cleanup_sis_configfile ($image);
+        return -1;
     }
 
     # Deal with the harddrive configuration of the image
