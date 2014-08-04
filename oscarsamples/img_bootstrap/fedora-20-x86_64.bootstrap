@@ -1,5 +1,12 @@
 # File centos-7-x86_64.bootstrap
 
+# The following files need to be copied from head before installing anything.
+copy /etc/passwd
+copy /etc/shadow
+copy /etc/group
+copy /etc/gshadow
+copy /etc/hosts
+
 # The following filesystem are needed for some post install scriptlets.
 bind /dev
 bind /proc
