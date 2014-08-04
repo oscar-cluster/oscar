@@ -196,7 +196,7 @@ sub do_oda_post_install ($$) {
         my @opkgs = list_selected_packages();
         foreach my $opkg (@opkgs)
         {
-            oscar_log(6, INFO, "Set package: $opkg");
+            oscar_log(6, INFO, "Set package $opkg as selected in ODA.");
             OSCAR::Database::set_image_packages($img,
                                                 $opkg,
                                                 $options,
