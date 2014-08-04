@@ -1245,14 +1245,13 @@ sub install_opkgs_into_image ($@) {
 
     # GV: do we need to install only the client side of the OPKG? or do we also
     # need to install the api part.
-    foreach my $opkg (@opkgs) {
-        oscar_log(4, ACTION, "\tInstalling $opkg using opkg-$opkg-client");
-        # Once we have the packman object, it is fairly simple to install opkgs.
-        my ($ret, @out) = $rm->install_pkg($image_path, "opkg-$opkg-client");
-        if ($ret) {
-            oscar_log(5, ERROR, "Impossible to install OPKG $opkg:\n".join("\n", @out));
-            return -1;
-        }
+    my @opkgs2install = map { "opkg-".$_."-client" } @opkgs;
+    oscar_log(4, ACTION, "Installing: ".join(', ',@opkgs));
+    # Once we have the packman object, it is fairly simple to install opkgs.
+    my ($ret, @out) = $rm->install_pkg($image_path, @opkgs2install);
+    if ($ret) {
+        oscar_log(5, ERROR, "Failed to install client opkgs:\n".join("\n", @out));
+        return -1;
     }
 
     oscar_log(4, INFO, "Successfully Installed OPKGs into image $image.");
