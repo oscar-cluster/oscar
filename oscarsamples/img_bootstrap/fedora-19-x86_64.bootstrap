@@ -6,6 +6,7 @@ copy /etc/shadow
 copy /etc/group
 copy /etc/gshadow
 copy /etc/hosts
+copy /etc/localtime
 
 # The following filesystem are needed for some post install scriptlets.
 bind /dev

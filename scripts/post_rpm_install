@@ -105,13 +105,13 @@ oscar_log(5, INFO, "post_rpm_install: Making sure /dev/null is r/w for all");
 !oscar_system("chmod a+rw $targetdir/dev/null") 
     or (oscar_log(1, ERROR, "Couldn't set $targetdir/dev/null permissions!"), exit 1);
 
-oscar_log(3, INFO, "post_rpm_install: Syncing system files");
-sync_system_files($targetdir) 
-    or (oscar_log(1, ERROR, "Couldn't sync system files ($targetdir)"), exit 1);
+#oscar_log(3, INFO, "post_rpm_install: Syncing system files");
+#sync_system_files($targetdir) 
+#    or (oscar_log(1, ERROR, "Couldn't sync system files ($targetdir)"), exit 1);
 
-oscar_log(3, INFO, "post_rpm_install: Syncing user files");
-sync_user_files($targetdir) 
-    or (oscar_log(1, ERROR, "Couldn't sync user files ($targetdir)"), exit 1);
+#oscar_log(3, INFO, "post_rpm_install: Syncing user files");
+#sync_user_files($targetdir) 
+#    or (oscar_log(1, ERROR, "Couldn't sync user files ($targetdir)"), exit 1);
 
 oscar_log(3, INFO, "post_rpm_install: Running ssh setup");
 my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
@@ -185,33 +185,38 @@ sub link_kernel_files {
     return 1;
 }
 
-# Return: 1 if success, 0 else.
-sub sync_system_files {
-    my ($imagedir) = @_;
-
-    my @files = qw(/etc/localtime);
-    foreach my $file (@files) {
-      if(-e $file) {
-        copy($file,$imagedir . $file) 
-            or (oscar_log(1, ERROR, "Couldn't populate $file to $imagedir"), return 0);
-      }
-    }
-    return 1;
-}
+# OL: We should not overwrite installed file woud head ones for the following reasons:
+# 1: ids are not fixed on some distros, thus we can break ownership in images
+# 2: we are able to build an image for another distro. the head ids are not guaratee to be the same on the target os.
+# => Moved into oscarsamples/img_bootstrap/*.{bootstrap,*.cleanup}
 
 # Return: 1 if success, 0 else.
-sub sync_user_files {
-    my ($imagedir) = @_;
+#sub sync_system_files {
+#    my ($imagedir) = @_;
+#
+#    my @files = qw(/etc/localtime);
+#    foreach my $file (@files) {
+#      if(-e $file) {
+#        copy($file,$imagedir . $file) 
+#            or (oscar_log(1, ERROR, "Couldn't populate $file to $imagedir"), return 0);
+#      }
+#    }
+#    return 1;
+#}
 
-    my @files = qw(/etc/gshadow /etc/shadow /etc/passwd /etc/group /etc/hosts);
-    foreach my $file (@files) {
-      if(-e $file) {
-        copy($file,$imagedir . $file) 
-            or (oscar_log(1, ERROR, "Couldn't populate $file to $imagedir"), return 0);
-      }
-    }
-    return 1;
-}
+# Return: 1 if success, 0 else.
+#sub sync_user_files {
+#    my ($imagedir) = @_;
+#
+#    my @files = qw(/etc/gshadow /etc/shadow /etc/passwd /etc/group /etc/hosts);
+#    foreach my $file (@files) {
+#      if(-e $file) {
+#        copy($file,$imagedir . $file) 
+#            or (oscar_log(1, ERROR, "Couldn't populate $file to $imagedir"), return 0);
+#      }
+#    }
+#    return 1;
+#}
 
 sub SigHandler {
     my $signal=@_;
