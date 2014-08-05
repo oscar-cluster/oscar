@@ -1,4 +1,6 @@
-The postinstall and cleanup files are processed respectively when bootstrapping an image and after image is built.
+The postinstall and cleanup files are processed respectively before installing package in a chrooted environment and after packages are installed.
+If its the dest imagedir has not yet been fully bootstrapped, ALL commands are executed.
+If the image dir has already been "bootstrapped", only the bind and unbind commands are executed.
 
 The file format is the same for both .bootstrap or .cleanup
 
@@ -46,15 +48,11 @@ The file format is the same for both .bootstrap or .cleanup
           => unmounts $imagepath/mount_point
 
 - Processing order:
+    - bind
     - pre
     - mkpath
     - del
-    - bind
-    - unbind
     - pkgs
     - post
-
-
-
-
+    - unbind
 

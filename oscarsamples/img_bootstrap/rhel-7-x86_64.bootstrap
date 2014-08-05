@@ -11,6 +11,10 @@ copy /etc/localtime
 # The following filesystem are needed for some post install scriptlets.
 bind /dev
 bind /proc
+bind /sys
+bind /run
+# bind also /tmp to avoid garbage in the image.
+bind /tmp
 
 # We need the following directory to avoid error messages
 # everytime we try to install a package.

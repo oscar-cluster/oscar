@@ -1,5 +1,8 @@
 # File centos-7-x86_64.cleanup
 unbind /dev
 unbind /proc
+unbind /sys
+unbind /run
+unbind /tmp
 del /etc/fstab
 # End
