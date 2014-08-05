@@ -742,19 +742,19 @@ sub umount_image_proc ($) {
 # Input: vars, image configuration hash.                                       #
 # Return: 0 if success, -1 else.                                               #
 ################################################################################
-sub image_cleanup ($) {
-    my $vars = shift;
-
-    my $image_path = "$$vars{imgpath}/$$vars{imgname}";
-
-    # Step 1: we make sure /proc is not mounted in the image
-    if (umount_image_proc ($image_path)) {
-        oscar_log(6, ERROR, "Failed to umount /proc ($image_path)");
-        return -1;
-    }
-
-    return 0;
-}
+#sub image_cleanup ($) {
+#    my $vars = shift;
+#
+#    my $image_path = "$$vars{imgpath}/$$vars{imgname}";
+#
+#    # Step 1: we make sure /proc is not mounted in the image
+#    if (umount_image_proc ($image_path)) {
+#        oscar_log(6, ERROR, "Failed to umount /proc ($image_path)");
+#        return -1;
+#    }
+#
+#    return 0;
+#}
 
 
 # Clean up the SystemImager configuration files. For instance, this is used when
@@ -911,12 +911,12 @@ sub create_image ($%) {
         return -1;
     }
 
-    # We make sure everything is fine with the image
-    if (image_cleanup (\%vars)) {
-        oscar_log(5, ERROR, "Failed to cleanup the image after creation.");
-        cleanup_sis_configfile ($image);
-        return -1;
-    }
+#    # We make sure everything is fine with the image
+#    if (image_cleanup (\%vars)) {
+#        oscar_log(5, ERROR, "Failed to cleanup the image after creation.");
+#        cleanup_sis_configfile ($image);
+#        return -1;
+#    }
 
     oscar_log(3, INFO, "OSCAR image successfully created.");
 
@@ -1232,7 +1232,7 @@ sub install_opkgs_into_image ($@) {
         return -1;
     }
 
-    # We assign the correct repos to the PacjMan object.
+    # We assign the correct repos to the PackMan object.
     my $os = OSCAR::OCA::OS_Detect::open(chroot=>$image_path);
     if (!defined ($os)) {
         oscar_log(5, ERROR, "Impossible to detect the OS of the image ($image_path)");
