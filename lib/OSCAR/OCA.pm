@@ -48,7 +48,7 @@ sub find_components {
                 $basedir = $1;
             }
         }
-        if (! $basedir) {
+        if ((! defined($basedir)) || (! -d $basedir)) {
             if (-d "/opt/oscar") {
                 $basedir = "/opt/oscar/lib";
             } else {
