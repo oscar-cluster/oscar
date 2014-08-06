@@ -95,10 +95,10 @@ if(!-d $targetdir) {
     exit 1;
 }
 
-oscar_log(5, INFO, "post_rpm_install: mounting /dev /proc /sys in the image");
-for my $mount_point ( ("/dev", "/proc", "/sys", "/run") ) {
-    oscar_system("mount -o bind $mount_point $targetdir$mount_point");
-}
+#oscar_log(5, INFO, "post_rpm_install: mounting /dev /proc /sys /run in the image");
+#for my $mount_point ( ("/dev", "/proc", "/sys", "/run") ) {
+#    oscar_system("mount -o bind $mount_point $targetdir$mount_point");
+#}
 
 oscar_log(2, SUBSECTION, "Running post_rpm_install");
 oscar_log(5, INFO, "post_rpm_install: Making sure /dev/null is r/w for all");
@@ -155,10 +155,10 @@ foreach my $pkg (@pkgs) {       # %$pkg_ref has the two keys ( package, version)
     }
 }
 
-oscar_log(5, INFO, "post_rpm_install: Unmounting /dev /proc /sys in the image");
-for my $mount_point ( ("/dev", "/proc", "/sys", "/run") ) {
-    oscar_system("umount $targetdir$mount_point");
-}
+#oscar_log(5, INFO, "post_rpm_install: Unmounting /dev /proc /sys /run in the image");
+#for my $mount_point ( ("/dev", "/proc", "/sys", "/run") ) {
+#    oscar_system("umount $targetdir$mount_point");
+#}
 
 if($return) {
     oscar_log (1, ERROR, "There were errors running post_rpm_install scripts. Please check your logs.");
@@ -169,21 +169,21 @@ exit($return);
 
 # DEPRECATED????
 # Return: 1 if success, 0 else.
-sub link_kernel_files {
-    my ($imagedir) = @_;
-    my @file;
-    my $dir=cwd();
-    chdir "$imagedir/boot" or croak ("Can't change to image /boot directory");
-    foreach my $link ("module-info","System.map","vmlinuz") {
-        unless (-e $link) {
-            @file = glob("$link*smp");
-            symlink($file[0], $link) or (oscar_log(1, ERROR, "Couldn't make symlink for $link"), exit 1);
-        }
-    }
-    chdir "$dir" 
-        or (oscar_log(1, ERROR, "Can't change back to original directory"), return 0);
-    return 1;
-}
+#sub link_kernel_files {
+#    my ($imagedir) = @_;
+#    my @file;
+#    my $dir=cwd();
+#    chdir "$imagedir/boot" or croak ("Can't change to image /boot directory");
+#    foreach my $link ("module-info","System.map","vmlinuz") {
+#        unless (-e $link) {
+#            @file = glob("$link*smp");
+#            symlink($file[0], $link) or (oscar_log(1, ERROR, "Couldn't make symlink for $link"), exit 1);
+#        }
+#    }
+#    chdir "$dir" 
+#        or (oscar_log(1, ERROR, "Can't change back to original directory"), return 0);
+#    return 1;
+#}
 
 # OL: We should not overwrite installed file woud head ones for the following reasons:
 # 1: ids are not fixed on some distros, thus we can break ownership in images
