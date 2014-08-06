@@ -53,18 +53,19 @@ use English;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 our @EXPORT = qw(
-                check_package_dependency
-                check_dependent_package
                 install_uninstall_packages
-                is_package_a_package
-                is_selected
-                package_install
-                package_uninstall
-                set_installed
-                set_uninstalled
-                uninstall_rpms_patch
-                update_opkg_status
                 );
+# Do not export the following functions as they are not used anywhere.
+#                check_package_dependency
+#                check_dependent_package
+#                is_package_a_package
+#                is_selected
+#                package_install
+#                package_uninstall
+#                set_installed
+#                set_uninstalled
+#                uninstall_rpms_patch
+#                update_opkg_status
 
 my @error_list = ();
 my %options = ();
