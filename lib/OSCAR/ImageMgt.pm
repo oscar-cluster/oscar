@@ -97,7 +97,7 @@ sub do_setimage ($%) {
         # Get the image path (typically
         # /var/lib/systemimager/images/<imagename>)
         my $config = SystemInstaller::Utils::init_si_config();
-        # FIXME: is $config always defined?
+        # FIXME: is $config always defined?
         my $imaged = $config->default_image_dir;
         (oscar_log(5, ERROR, "default_image_dir not defined."), return -1)
             unless $imaged;
@@ -202,8 +202,6 @@ sub do_oda_post_install ($$) {
                                                 $options,
                                                 \@errors);
         }
-    } elsif ($config->{oda_type} eq "db") {
-        # Get the list of opkgs for the specific image.
     } else {
         oscar_log(8, DB, "Unknow ODA type ($config->{oda_type})");
         return -1
