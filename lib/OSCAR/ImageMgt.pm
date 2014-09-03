@@ -806,7 +806,8 @@ sub create_image ($%) {
     my $cmd = "mksiimage -A --name $vars{imgname} " .
             "--filename $vars{pkgfile} " .
             "--arch $vars{arch} " .
-            "--path $image_path ";
+            "--path $image_path " .
+            "--selectedopkgs ";
     $cmd .= "--distro $vars{distro} " if defined $vars{distro};
     if (!defined $vars{distro} && defined $vars{pkgpath}) {
         $cmd .= "--location $vars{pkgpath} ";
@@ -829,47 +830,47 @@ sub create_image ($%) {
         return -1;
     }
 
-    # We now install selected non-core OPKGs
-    my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs();
-    my %selection_data
-        = OSCAR::Database::get_opkgs_selection_data (undef);
-    oscar_log(5, INFO, "No selected OPKGs") if (keys %selection_data == 0);
-    my $os = OSCAR::OCA::OS_Detect::open(chroot=>"$image_path");
-    if (!defined $os) {
-        oscar_log(5, ERROR, "Impossible to detect the distro id for $image_path");
-        cleanup_sis_configfile ($image);
-        return -1;
-    }
-    my $distro_id = OSCAR::PackagePath::os_distro_string ($os);
-    if (!OSCAR::Utils::is_a_valid_string ($distro_id)) {
-        oscar_log(5, ERROR, "Impossible to get the distro ID based on the detected os.");
-        cleanup_sis_configfile ($image);
-        return -1;
-    }
-
-    # If we do not have yet selection data for some OPKGs, we assign the default
-    # selection (selected for core OPKGs, unselected for others).
-    require OSCAR::RepositoryManager;
-    my $rm = OSCAR::RepositoryManager->new (distro=>$distro_id);
-    my ($rc, @output);
-    require OSCAR::ODA_Defs;
-    my @opkgs = ();
-    foreach my $opkg (keys %selection_data) {
-        if (!OSCAR::Utils::is_element_in_array ($opkg, @core_opkgs)) {
-            if ($selection_data{$opkg} eq OSCAR::ODA_Defs::SELECTED()) {
-                push(@opkgs, "opkg-$opkg-client");
-            }
-        }
-    }
-    oscar_log(4, ACTION, "Installing ".join(", ",@opkgs)." into the image...");
-    ($rc, @output) = $rm->install_pkg ($image_path,
-                                      @opkgs);
-    if ($rc) {
-        oscar_log(4, ERROR, "Impossible to install ".join(", ",@opkgs)." in ".
-                  "$image_path (rc: $rc)");
-        cleanup_sis_configfile ($image);
-        return -1;
-    }
+#    # We now install selected non-core OPKGs
+#    my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs();
+#    my %selection_data
+#        = OSCAR::Database::get_opkgs_selection_data (undef);
+#    oscar_log(5, INFO, "No selected OPKGs") if (keys %selection_data == 0);
+#    my $os = OSCAR::OCA::OS_Detect::open(chroot=>"$image_path");
+#    if (!defined $os) {
+#        oscar_log(5, ERROR, "Impossible to detect the distro id for $image_path");
+#        cleanup_sis_configfile ($image);
+#        return -1;
+#    }
+#    my $distro_id = OSCAR::PackagePath::os_distro_string ($os);
+#    if (!OSCAR::Utils::is_a_valid_string ($distro_id)) {
+#        oscar_log(5, ERROR, "Impossible to get the distro ID based on the detected os.");
+#        cleanup_sis_configfile ($image);
+#        return -1;
+#    }
+#
+#    # If we do not have yet selection data for some OPKGs, we assign the default
+#    # selection (selected for core OPKGs, unselected for others).
+#    require OSCAR::RepositoryManager;
+#    my $rm = OSCAR::RepositoryManager->new (distro=>$distro_id);
+#    my ($rc, @output);
+#    require OSCAR::ODA_Defs;
+#    my @opkgs = ();
+#    foreach my $opkg (keys %selection_data) {
+#        if (!OSCAR::Utils::is_element_in_array ($opkg, @core_opkgs)) {
+#            if ($selection_data{$opkg} eq OSCAR::ODA_Defs::SELECTED()) {
+#                push(@opkgs, "opkg-$opkg-client");
+#            }
+#        }
+#    }
+#    oscar_log(4, ACTION, "Installing ".join(", ",@opkgs)." into the image...");
+#    ($rc, @output) = $rm->install_pkg ($image_path,
+#                                      @opkgs);
+#    if ($rc) {
+#        oscar_log(4, ERROR, "Impossible to install ".join(", ",@opkgs)." in ".
+#                  "$image_path (rc: $rc)");
+#        cleanup_sis_configfile ($image);
+#        return -1;
+#    }
 
     # Deal with the harddrive configuration of the image
 
