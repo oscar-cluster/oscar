@@ -34,10 +34,10 @@ BEGIN {
     }
 }
 
-$SIG{INT}       = 'SigHandler';         # Catch signals
-$SIG{QUIT}      = 'SigHandler';
-$SIG{TERM}      = 'SigHandler';
-$SIG{KILL}      = 'SigHandler';
+#$SIG{INT}       = 'SigHandler';         # Catch signals
+#$SIG{QUIT}      = 'SigHandler';
+#$SIG{TERM}      = 'SigHandler';
+#$SIG{KILL}      = 'SigHandler';
 
 use strict;
 use Carp;
@@ -101,9 +101,10 @@ if(!-d $targetdir) {
 #}
 
 oscar_log(2, SUBSECTION, "Running post_rpm_install");
-oscar_log(5, INFO, "post_rpm_install: Making sure /dev/null is r/w for all");
-!oscar_system("chmod a+rw $targetdir/dev/null") 
-    or (oscar_log(1, ERROR, "Couldn't set $targetdir/dev/null permissions!"), exit 1);
+
+#oscar_log(5, INFO, "post_rpm_install: Making sure /dev/null is r/w for all");
+#!oscar_system("chmod a+rw $targetdir/dev/null") 
+#    or (oscar_log(1, ERROR, "Couldn't set $targetdir/dev/null permissions!"), exit 1);
 
 #oscar_log(3, INFO, "post_rpm_install: Syncing system files");
 #sync_system_files($targetdir) 
@@ -118,8 +119,10 @@ my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
                                                   undef,
                                                   "OSCAR_SCRIPTS_PATH");
 my $cmd = "$binaries_path/ssh_install $targetdir";
-!oscar_system($cmd) 
-    or (oscar_log(1, ERROR, "Couldn't generate ssh keys ($cmd)"), exit 1);
+if(oscar_system($cmd)) {
+    oscar_log(1, ERROR, "Couldn't generate ssh keys ($cmd)");
+    exit 1;
+}
 
 $cmd = "$binaries_path/integrate_image --name $imagename --verbose";
 if (oscar_system ($cmd)) {
@@ -141,6 +144,24 @@ my $return = 0;
 
 oscar_log(3, INFO, "Running OSCAR package post_rpm_install scripts for "
                      .join(", ", @pkgs));
+
+my @bind = ('/dev', '/proc', '/sys', '/run', '/tmp');
+my $cmd = "";
+$SIG{INT}  = \&UmountSigHandler; # Catch signals so we can unmount garbage.
+$SIG{QUIT} = \&UmountSigHandler;
+$SIG{TERM} = \&UmountSigHandler;
+$SIG{KILL} = \&UmountSigHandler;
+$SIG{HUP}  = \&UmountSigHandler;
+for my $mpt (@bind) {
+   if ( -d $mpt ) {
+       oscar_log(5, INFO, "Mounting $mpt into image $targetdir$mpt");
+       $cmd = "mount -o bind $mpt $targetdir$mpt";
+       if(oscar_system($cmd)) {
+           oscar_log(5, WARNING, "Failed to mount -o bind $mpt into the image $targetdir$mpt");
+       }
+   }
+}
+
 foreach my $pkg (@pkgs) {       # %$pkg_ref has the two keys ( package, version);
     if(OSCAR::Package::run_pkg_script_chroot($pkg, $targetdir) != 1) {
        oscar_log(2, ERROR, "Couldn't run post_rpm_install for $pkg");
@@ -155,6 +176,13 @@ foreach my $pkg (@pkgs) {       # %$pkg_ref has the two keys ( package, version)
     }
 }
 
+$SIG{INT}  = 'DEFAULT'; # Reset signal handler
+$SIG{QUIT} = 'DEFAULT';
+$SIG{TERM} = 'DEFAULT';
+$SIG{KILL} = 'DEFAULT';
+$SIG{HUP}  = 'DEFAULT';
+UmountSpecialFS();
+
 #oscar_log(5, INFO, "post_rpm_install: Unmounting /dev /proc /sys /run in the image");
 #for my $mount_point ( ("/dev", "/proc", "/sys", "/run") ) {
 #    oscar_system("umount $targetdir$mount_point");
@@ -165,6 +193,8 @@ if($return) {
 }
 
 $ENV{OSCAR_VERBOSE} = $initial_verbose_value;
+
+
 exit($return);
 
 # DEPRECATED????
@@ -218,17 +248,23 @@ exit($return);
 #    return 1;
 #}
 
-sub SigHandler {
+sub RunChrootSigHandler {
     my $signal=@_;
     oscar_log(1, INFO, "post_rpm_install: Caught signal $signal");
-    if ( (defined ($targetdir)) && (-d "$targetdir") ) {
-        oscar_log(1, INFO, "post_rpm_install: Unmounting /dev /proc /sys in the image ($targetdir)");
-        for my $mount_point ( ("/dev", "/proc", "/sys", "/run") ) {
-            oscar_system("umount $targetdir$mount_point");
+    UmountSpecialFS();
+    exit 1;
+}
+
+sub UmountSpecialFS {
+    if(defined($targetdir) && ($targetdir ne "/") && (-d $targetdir)) {
+        for my $mount ('/dev', '/proc', '/sys', '/run', '/tmp') {
+            if (-d $mount) {
+                my $cmd = "umount $targetdir$mount";
+                oscar_log(5, INFO, "Unmounting [$mount]");
+                oscar_system($cmd);
+            }
         }
     } else {
         oscar_log(1, INFO, "post_rpm_install: no image dir: nothing to unmount");
     }
-
-    exit 1;
 }
