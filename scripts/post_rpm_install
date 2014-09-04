@@ -34,11 +34,6 @@ BEGIN {
     }
 }
 
-#$SIG{INT}       = 'SigHandler';         # Catch signals
-#$SIG{QUIT}      = 'SigHandler';
-#$SIG{TERM}      = 'SigHandler';
-#$SIG{KILL}      = 'SigHandler';
-
 use strict;
 use Carp;
 use File::Copy;
@@ -95,24 +90,7 @@ if(!-d $targetdir) {
     exit 1;
 }
 
-#oscar_log(5, INFO, "post_rpm_install: mounting /dev /proc /sys /run in the image");
-#for my $mount_point ( ("/dev", "/proc", "/sys", "/run") ) {
-#    oscar_system("mount -o bind $mount_point $targetdir$mount_point");
-#}
-
 oscar_log(2, SUBSECTION, "Running post_rpm_install");
-
-#oscar_log(5, INFO, "post_rpm_install: Making sure /dev/null is r/w for all");
-#!oscar_system("chmod a+rw $targetdir/dev/null") 
-#    or (oscar_log(1, ERROR, "Couldn't set $targetdir/dev/null permissions!"), exit 1);
-
-#oscar_log(3, INFO, "post_rpm_install: Syncing system files");
-#sync_system_files($targetdir) 
-#    or (oscar_log(1, ERROR, "Couldn't sync system files ($targetdir)"), exit 1);
-
-#oscar_log(3, INFO, "post_rpm_install: Syncing user files");
-#sync_user_files($targetdir) 
-#    or (oscar_log(1, ERROR, "Couldn't sync user files ($targetdir)"), exit 1);
 
 oscar_log(3, INFO, "post_rpm_install: Running ssh setup");
 my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
@@ -130,20 +108,16 @@ if (oscar_system ($cmd)) {
     exit 1;
 }
 
-# unmount /proc from image, if needed
-#if (!system("grep $targetdir/proc /proc/mounts >/dev/null 2>&1")) {
-#    oscar_log(3, INFO, "post_rpm_install: unmounting /proc from image $imagename");
-#    !oscar_system("umount $targetdir/proc") or (oscar_log(1, ERROR, "Couldn't umount /proc from image!"), exit 1);
-#}
-
 # Here we run all the post_rpm_install scripts
 
-my @pkgs = OSCAR::Database::list_selected_packages();
+my @pkgs = OSCAR::Database::list_selected_packages(); # We assume that all cores are selected.
 
 my $return = 0;
 
 oscar_log(3, INFO, "Running OSCAR package post_rpm_install scripts for "
                      .join(", ", @pkgs));
+
+# Fist we mount specific filesystems into the image for chrooted runs.
 
 my @bind = ('/dev', '/proc', '/sys', '/run', '/tmp');
 my $cmd = "";
@@ -183,11 +157,6 @@ $SIG{KILL} = 'DEFAULT';
 $SIG{HUP}  = 'DEFAULT';
 UmountSpecialFS();
 
-#oscar_log(5, INFO, "post_rpm_install: Unmounting /dev /proc /sys /run in the image");
-#for my $mount_point ( ("/dev", "/proc", "/sys", "/run") ) {
-#    oscar_system("umount $targetdir$mount_point");
-#}
-
 if($return) {
     oscar_log (1, ERROR, "There were errors running post_rpm_install scripts. Please check your logs.");
 }
@@ -196,57 +165,6 @@ $ENV{OSCAR_VERBOSE} = $initial_verbose_value;
 
 
 exit($return);
-
-# DEPRECATED????
-# Return: 1 if success, 0 else.
-#sub link_kernel_files {
-#    my ($imagedir) = @_;
-#    my @file;
-#    my $dir=cwd();
-#    chdir "$imagedir/boot" or croak ("Can't change to image /boot directory");
-#    foreach my $link ("module-info","System.map","vmlinuz") {
-#        unless (-e $link) {
-#            @file = glob("$link*smp");
-#            symlink($file[0], $link) or (oscar_log(1, ERROR, "Couldn't make symlink for $link"), exit 1);
-#        }
-#    }
-#    chdir "$dir" 
-#        or (oscar_log(1, ERROR, "Can't change back to original directory"), return 0);
-#    return 1;
-#}
-
-# OL: We should not overwrite installed file woud head ones for the following reasons:
-# 1: ids are not fixed on some distros, thus we can break ownership in images
-# 2: we are able to build an image for another distro. the head ids are not guaratee to be the same on the target os.
-# => Moved into oscarsamples/img_bootstrap/*.{bootstrap,*.cleanup}
-
-# Return: 1 if success, 0 else.
-#sub sync_system_files {
-#    my ($imagedir) = @_;
-#
-#    my @files = qw(/etc/localtime);
-#    foreach my $file (@files) {
-#      if(-e $file) {
-#        copy($file,$imagedir . $file) 
-#            or (oscar_log(1, ERROR, "Couldn't populate $file to $imagedir"), return 0);
-#      }
-#    }
-#    return 1;
-#}
-
-# Return: 1 if success, 0 else.
-#sub sync_user_files {
-#    my ($imagedir) = @_;
-#
-#    my @files = qw(/etc/gshadow /etc/shadow /etc/passwd /etc/group /etc/hosts);
-#    foreach my $file (@files) {
-#      if(-e $file) {
-#        copy($file,$imagedir . $file) 
-#            or (oscar_log(1, ERROR, "Couldn't populate $file to $imagedir"), return 0);
-#      }
-#    }
-#    return 1;
-#}
 
 sub RunChrootSigHandler {
     my $signal=@_;
