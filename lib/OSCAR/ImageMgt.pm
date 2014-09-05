@@ -70,7 +70,12 @@ use warnings "all";
             update_systemconfigurator_configfile
             );
 
+our $si_config = SystemInstaller::Utils::init_si_config();
+
 our $images_path = "/var/lib/systemimager/images";
+$images_path = $si_config->default_image_dir if defined($si_config->default_image_dir);
+
+our $imagename;
 
 ################################################################################
 # Set the image in the Database.                                               #
@@ -96,9 +101,9 @@ sub do_setimage ($%) {
 
         # Get the image path (typically
         # /var/lib/systemimager/images/<imagename>)
-        my $config = SystemInstaller::Utils::init_si_config();
+        #my $config = SystemInstaller::Utils::init_si_config();
         # FIXME: is $config always defined?
-        my $imaged = $config->default_image_dir;
+        my $imaged = $si_config->default_image_dir;
         (oscar_log(5, ERROR, "default_image_dir not defined."), return -1)
             unless $imaged;
         (oscar_log(5, ERROR, "$imaged: not a directory."), return -1)
@@ -134,40 +139,150 @@ sub do_setimage ($%) {
 }
 
 ################################################################################
-# Simple wrapper around post_install; make sure we call correctly the script.  #
+# Runs the post installation scripts.
 #                                                                              #
-# Input: img, image name.                                                      #
-#        interface, network interface id used by OSCAR.                        #
+# Input: $vars
 # Return: 1 if success, 0 else.                                                #
 ################################################################################
-sub do_post_image_creation ($$) {
-    my $img = shift;
-    my $interface = shift;
-    my $cwd = `/bin/pwd`;
+sub do_post_image_creation ($) {
+    my $vars = shift;
+    my $cmd = "";
+    $imagename = $$vars{imgname};
 
-    oscar_log(3, INFO, "Running post image creation scripts (post_rpm_install).");
+    if (! -d "${images_path}/${imagename}") {
+        oscar_log(1, ERROR, "${images_path}/${imagename} does not exists.");
+        return 0;
+    }
+
+    oscar_log(3, INFO, "Running post image creation scripts.");
+
     # We get the configuration from the OSCAR configuration file.
     my $oscar_configurator = OSCAR::ConfigManager->new();
-
-    ## FIXME: use a wrapper to run an oscar_script.
-    #         in the below situation, if configurator fail we even don't try
-    #         /usr/bin/post_rpm_install...
     if ( ! defined ($oscar_configurator) ) {
-        delete_image($img);
+        delete_image($imagename);
         return 0;
     }
+
     my $config = $oscar_configurator->get_config();
 
-    chdir "$config->{binaries_path}";
-    my $cmd = "$config->{binaries_path}/post_rpm_install $img $interface --verbose";
-
-    if (oscar_system($cmd)) {
-        delete_image($img);
-        return 0;
+    #
+    # 1st: Install the ssh config.
+    #
+    $cmd = "$config->{binaries_path}/ssh_install ${images_path}/${imagename}"; # FIXME: OL: we should have a core opkg for that. (maybe a opium non chroot script?)
+    if(oscar_system($cmd)) {
+        oscar_log(1, ERROR, "Couldn't generate ssh keys ($cmd)");
+        return 1;
     }
 
-    chdir "$cwd";
+    #
+    # 2nd: We create the SystemImager auto_install scripts for the image.
+    #
+    my $config_dir = "/etc/systemimager";
+    my $auto_install_script_conf = "${images_path}/${imagename}${config_dir}/autoinstallscript.conf";
+    SystemImager::Server->validate_auto_install_script_conf( $auto_install_script_conf );
+
+    my $ip_assignment_method = "static";
+    $ip_assignment_method = $$vars{ipmeth} if defined($$vars{ipmeth});
+    my $post_install = "reboot";
+    $post_install = $$vars{piaction} if defined($$vars{piaction});
+    my $no_listing = 0;
+    my $autodetect_disks = 1;
+    my $overrides = "$imagename,";
+    my $script_name = $imagename;
+    my $autoinstall_script_dir = $si_config->autoinstall_script_dir();
+    SystemImager::Server->create_autoinstall_script(
+        $script_name,
+        $autoinstall_script_dir,
+        $config_dir,
+        $imagename,
+        $overrides,
+        $autoinstall_script_dir,
+        $ip_assignment_method,
+        $post_install,
+        $no_listing,
+        $auto_install_script_conf,
+        $autodetect_disks);
+
+    oscar_log(5, INFO, "Setting postinstall action to: $post_install");
+
+    #
+    # 3rd: We run the post install scripts.
+    # 
+    my @pkgs = OSCAR::Database::list_selected_packages(); # We assume that all cores are selected.
+
+    my $err_count = 0;
+
+    oscar_log(3, INFO, "Running OSCAR package post_rpm_install scripts for " . join(", ", @pkgs));
+    # Fist we mount specific filesystems into the image for chrooted runs.
+
+    my @bind = ('/dev', '/proc', '/sys', '/run', '/tmp');
+    $SIG{INT}  = \&UmountSigHandler; # Catch signals so we can unmount garbage.
+    $SIG{QUIT} = \&UmountSigHandler;
+    $SIG{TERM} = \&UmountSigHandler;
+    $SIG{KILL} = \&UmountSigHandler;
+    $SIG{HUP}  = \&UmountSigHandler;
+    for my $mpt (@bind) {
+        if ( -d $mpt ) {
+            oscar_log(5, INFO, "Mounting $mpt into image ${images_path}/${imagename}$mpt");
+            $cmd = "mount -o bind $mpt ${images_path}/${imagename}$mpt";
+            if(oscar_system($cmd)) {
+                oscar_log(5, WARNING, "Failed to mount -o bind $mpt into the image ${images_path}/${imagename}$mpt");
+            }
+        }
+    }
+
+    foreach my $pkg (@pkgs) {       # %$pkg_ref has the two keys ( package, version);
+        if(OSCAR::Package::run_pkg_script_chroot($pkg, "${images_path}/${imagename}") != 1) {
+            oscar_log(2, ERROR, "Couldn't run post_rpm_install for $pkg");
+            $err_count++;
+        }
+
+        # Config script running outside chroot, for access to
+        # master databases, xml files and parsing perl modules.
+        # Argument passed: image directory path.
+
+        if(!OSCAR::Package::run_pkg_script($pkg,"post_rpm_nochroot",1,"${images_path}/${imagename}")) {
+            oscar_log(2, ERROR, "Couldn't run post_rpm_nochroot for $pkg");
+            $err_count++;
+        }
+    }
+
+    UmountSpecialFS();
+    $SIG{INT}  = 'DEFAULT'; # Reset signal handler
+    $SIG{QUIT} = 'DEFAULT';
+    $SIG{TERM} = 'DEFAULT';
+    $SIG{KILL} = 'DEFAULT';
+    $SIG{HUP}  = 'DEFAULT';
+
+    if($err_count) {
+        oscar_log (1, ERROR, "There were errors running post install scripts. Please check your logs.");
+        delete_image($imagename);
+    }
+    $imagename = "";
     return 1;
+}
+
+sub UmountSigHandler {
+    my $signal=@_;
+    oscar_log(1, ERROR, "do_post_image_creation: Caught signal $signal");
+    UmountSpecialFS();
+    delete_image($imagename);
+    $imagename = "";
+    exit 1;
+}
+
+sub UmountSpecialFS {
+    if(defined($imagename) && ($imagename ne "") && (-d "${images_path}/${imagename}")) {
+        for my $mount ('/dev', '/proc', '/sys', '/run', '/tmp') {
+            if (-d $mount) {
+                my $cmd = "umount ${images_path}/${imagename}$mount";
+                oscar_log(5, INFO, "Unmounting [$mount]");
+                oscar_system($cmd);
+            }
+        }
+    } else {
+        oscar_log(1, INFO, "post_rpm_install: no image dir: nothing to unmount");
+    }
 }
 
 ################################################################################
@@ -372,12 +487,10 @@ sub get_image_default_settings () {
 
     my $diskfile = get_disk_file($arch, $disk_type);
 
-    my $config = SystemInstaller::Utils::init_si_config();
-
     # Default settings
     my %vars = (
            # imgpath: location where the image is created
-           imgpath => $config->default_image_dir,
+           imgpath => $si_config->default_image_dir,
            # imgname: image name
            imgname => "oscarimage",
            # arch: target hardware architecture
@@ -467,9 +580,9 @@ sub delete_image ($) {
     # If the image exists at the SystemImager level, we delete it
     my @si_images = get_systemimager_images ();
     if (OSCAR::Utils::is_element_in_array ($imgname, @si_images) == 1) {
-        my $config = SystemInstaller::Utils::init_si_config();
-        my $rsyncd_conf = $config->rsyncd_conf();
-        my $rsync_stub_dir = $config->rsync_stub_dir();
+#        my $config = SystemInstaller::Utils::init_si_config();
+        my $rsyncd_conf = $si_config->rsyncd_conf();
+        my $rsync_stub_dir = $si_config->rsync_stub_dir();
 
         oscar_log(6, ACTION, "Removing image $imgname from disk.");
         my $cmd = "/usr/bin/mksiimage -D --name $imgname --force";
@@ -733,27 +846,6 @@ sub umount_image_proc ($) {
     return 0;
 }
 
-################################################################################
-# This function aims to clean up the image after creation. For instance, it    #
-# will ensure that /proc is not mounted anymore.                               #
-#                                                                              #
-# Input: vars, image configuration hash.                                       #
-# Return: 0 if success, -1 else.                                               #
-################################################################################
-#sub image_cleanup ($) {
-#    my $vars = shift;
-#
-#    my $image_path = "$$vars{imgpath}/$$vars{imgname}";
-#
-#    # Step 1: we make sure /proc is not mounted in the image
-#    if (umount_image_proc ($image_path)) {
-#        oscar_log(6, ERROR, "Failed to umount /proc ($image_path)");
-#        return -1;
-#    }
-#
-#    return 0;
-#}
-
 
 # Clean up the SystemImager configuration files. For instance, this is used when
 # the creation of an image fails: config files are updated by SystemImager so if
@@ -830,48 +922,6 @@ sub create_image ($%) {
         return -1;
     }
 
-#    # We now install selected non-core OPKGs
-#    my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs();
-#    my %selection_data
-#        = OSCAR::Database::get_opkgs_selection_data (undef);
-#    oscar_log(5, INFO, "No selected OPKGs") if (keys %selection_data == 0);
-#    my $os = OSCAR::OCA::OS_Detect::open(chroot=>"$image_path");
-#    if (!defined $os) {
-#        oscar_log(5, ERROR, "Impossible to detect the distro id for $image_path");
-#        cleanup_sis_configfile ($image);
-#        return -1;
-#    }
-#    my $distro_id = OSCAR::PackagePath::os_distro_string ($os);
-#    if (!OSCAR::Utils::is_a_valid_string ($distro_id)) {
-#        oscar_log(5, ERROR, "Impossible to get the distro ID based on the detected os.");
-#        cleanup_sis_configfile ($image);
-#        return -1;
-#    }
-#
-#    # If we do not have yet selection data for some OPKGs, we assign the default
-#    # selection (selected for core OPKGs, unselected for others).
-#    require OSCAR::RepositoryManager;
-#    my $rm = OSCAR::RepositoryManager->new (distro=>$distro_id);
-#    my ($rc, @output);
-#    require OSCAR::ODA_Defs;
-#    my @opkgs = ();
-#    foreach my $opkg (keys %selection_data) {
-#        if (!OSCAR::Utils::is_element_in_array ($opkg, @core_opkgs)) {
-#            if ($selection_data{$opkg} eq OSCAR::ODA_Defs::SELECTED()) {
-#                push(@opkgs, "opkg-$opkg-client");
-#            }
-#        }
-#    }
-#    oscar_log(4, ACTION, "Installing ".join(", ",@opkgs)." into the image...");
-#    ($rc, @output) = $rm->install_pkg ($image_path,
-#                                      @opkgs);
-#    if ($rc) {
-#        oscar_log(4, ERROR, "Impossible to install ".join(", ",@opkgs)." in ".
-#                  "$image_path (rc: $rc)");
-#        cleanup_sis_configfile ($image);
-#        return -1;
-#    }
-
     # Deal with the harddrive configuration of the image
 
     # 1st, create the final diskfile
@@ -896,26 +946,19 @@ sub create_image ($%) {
     close $tmp_fh;
     oscar_log(5, NONE, "----- end -----");
 
-    # 2nd, run mksidisk.
+    # 2nd: Run mksidisk.
     $cmd = "mksidisk -A --name $vars{imgname} --file $temp_diskfile";
     if( oscar_system($cmd) ) {
         cleanup_sis_configfile ($image);
         return -1;
     }
 
-    # Now we execute the post image creation actions.
+    # 3rd: Now we execute the post image creation actions.
     if (postimagebuild (\%vars)) {
         oscar_log(5, ERROR, "Failed to run postimagebuild.");
         cleanup_sis_configfile ($image);
         return -1;
     }
-
-#    # We make sure everything is fine with the image
-#    if (image_cleanup (\%vars)) {
-#        oscar_log(5, ERROR, "Failed to cleanup the image after creation.");
-#        cleanup_sis_configfile ($image);
-#        return -1;
-#    }
 
     oscar_log(3, INFO, "OSCAR image successfully created.");
 
@@ -1177,7 +1220,7 @@ sub postimagebuild {
     }
 
     oscar_log (4, INFO, "Doing post binary package install.");
-    if (do_post_image_creation ($img, $interface) == 0) {
+    if (do_post_image_creation ($vars) == 0) {
         oscar_log(4, ERROR, "Impossible to do post binary package install, ".
              "deleting the image...");
         if (delete_image ($img)) {
