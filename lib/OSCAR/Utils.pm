@@ -45,7 +45,7 @@ use v5.10.1;
 no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 
 @EXPORT = qw(
-            kill_process_locking_path
+            kill_processes_locking_path
             oscar_system
             compactSpaces
             get_oscar_version
