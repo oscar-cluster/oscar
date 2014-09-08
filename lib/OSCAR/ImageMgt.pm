@@ -175,38 +175,7 @@ sub do_post_image_creation ($) {
     }
 
     #
-    # 2nd: We create the SystemImager auto_install scripts for the image.
-    #
-    my $config_dir = "/etc/systemimager";
-    my $auto_install_script_conf = "${images_path}/${imagename}${config_dir}/autoinstallscript.conf";
-    SystemImager::Server->validate_auto_install_script_conf( $auto_install_script_conf );
-
-    my $ip_assignment_method = "static";
-    $ip_assignment_method = $$vars{ipmeth} if defined($$vars{ipmeth});
-    my $post_install = "reboot";
-    $post_install = $$vars{piaction} if defined($$vars{piaction});
-    my $no_listing = 0;
-    my $autodetect_disks = 1;
-    my $overrides = "$imagename,";
-    my $script_name = $imagename;
-    my $autoinstall_script_dir = $si_config->autoinstall_script_dir();
-    SystemImager::Server->create_autoinstall_script(
-        $script_name,
-        $autoinstall_script_dir,
-        $config_dir,
-        $imagename,
-        $overrides,
-        $autoinstall_script_dir,
-        $ip_assignment_method,
-        $post_install,
-        $no_listing,
-        $auto_install_script_conf,
-        $autodetect_disks);
-
-    oscar_log(5, INFO, "Setting postinstall action to: $post_install");
-
-    #
-    # 3rd: We run the post install scripts.
+    # 2nd: We run the post install scripts.
     # 
     my @pkgs = OSCAR::Database::list_selected_packages(); # We assume that all cores are selected.
 
@@ -257,7 +226,44 @@ sub do_post_image_creation ($) {
     if($err_count) {
         oscar_log (1, ERROR, "There were errors running post install scripts. Please check your logs.");
         delete_image($imagename);
+        return 0;
     }
+
+    #
+    # 3rd: We create the SystemImager auto_install scripts for the image.
+    #
+    my $config_dir = "/etc/systemimager";
+    my $auto_install_script_conf = "${images_path}/${imagename}${config_dir}/autoinstallscript.conf";
+    SystemImager::Server->validate_auto_install_script_conf( $auto_install_script_conf );
+
+    my $ip_assignment_method = "static";
+    $ip_assignment_method = $$vars{ipmeth} if defined($$vars{ipmeth});
+    my $post_install = "reboot";
+    $post_install = $$vars{piaction} if defined($$vars{piaction});
+    my $no_listing = 0;
+    my $autodetect_disks = 1;
+    my $overrides = "$imagename,";
+    my $script_name = $imagename;
+    my $autoinstall_script_dir = $si_config->autoinstall_script_dir();
+    oscar_log(5, INFO, "Generating autoinstall script for image $imagename.");
+    oscar_log(5, INFO, "Using postinstall action: $post_install");
+    oscar_log(5, INFO, "Using ip assigment method: $ip_assignment_method");
+
+    SystemImager::Server->create_autoinstall_script(
+        $script_name,
+        $autoinstall_script_dir,
+        $config_dir,
+        $imagename,
+        $overrides,
+        $autoinstall_script_dir,
+        $ip_assignment_method,
+        $post_install,
+        $no_listing,
+        $auto_install_script_conf,
+        $autodetect_disks);
+
+    oscar_log(5, INFO, "New autoinstall script has been created for this image: $autoinstall_script_dir/$script_name.master");
+
     $imagename = "";
     return 1;
 }
