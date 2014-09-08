@@ -40,6 +40,9 @@ use OSCAR::LoggerDefs;
 use File::Basename;
 use POSIX;
 use Carp;
+use v5.10.1;
+# Avoid smartmatch warnings when using given
+no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 
 @EXPORT = qw(
             oscar_system
@@ -79,6 +82,42 @@ duplication
 =over 4
 
 =cut
+################################################################################
+=item kill_process_locking_path($path)
+
+Kill process locking a path.
+
+ Input:  $path: The path to check.
+ Output: none.
+
+Exported: YES
+
+=cut
+################################################################################
+sub kill_processes_locking_path($) {
+    my $path = shift;
+    my @to_kill = ();
+
+    oscar_log(5, INFO, "Killing process holding locks on path $path.");
+
+    open LSOF, "LC_ALL=C lsof |"
+        or (oscar_log(6, ERROR, "Could not run: $!"), return undef);
+
+    while (<LSOF>) {
+        if (/^(\S)+\s+(\d{1,5}).*\Q$path\E.*$/) {
+            push (@to_kill, $2) if(! ($1 ~~ @to_kill));
+            oscar_log(5, INFO, "Need to kill process $2 ($1)");
+        }
+    }
+    close LSOF;
+
+    oscar_log(5, INFO, "Sending 'SIGTERM' to " . join(", ",@to_kill);
+    kill 'TERM',@to_kill;
+
+    oscar_log(5, INFO, "Sending 'SIGHUP' to " . join(", ",@to_kill);
+    kill 'HUP',@to_kill; # Shell scripts will ignore TERM.
+}
+
 ################################################################################
 =item oscar_system($cmd)
 
