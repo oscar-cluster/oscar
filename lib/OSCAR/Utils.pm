@@ -112,11 +112,15 @@ sub kill_processes_locking_path($) {
     }
     close LSOF;
 
-    oscar_log(5, INFO, "Sending 'SIGTERM' to " . join(", ",@to_kill));
-    kill 'TERM',@to_kill;
+    if(@to_kill) {
+        oscar_log(5, INFO, "Sending 'SIGTERM' to " . join(", ",@to_kill));
+        kill 'TERM',@to_kill;
 
-    oscar_log(5, INFO, "Sending 'SIGHUP' to " . join(", ",@to_kill));
-    kill 'HUP',@to_kill; # Shell scripts will ignore TERM.
+        oscar_log(5, INFO, "Sending 'SIGHUP' to " . join(", ",@to_kill));
+        kill 'HUP',@to_kill; # Shell scripts will ignore TERM.
+    } else {
+        oscar_log(5, INFO, "No process to kill.");
+    }
 }
 
 ################################################################################
