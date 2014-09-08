@@ -45,6 +45,7 @@ use v5.10.1;
 no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 
 @EXPORT = qw(
+            kill_process_locking_path
             oscar_system
             compactSpaces
             get_oscar_version
@@ -111,10 +112,10 @@ sub kill_processes_locking_path($) {
     }
     close LSOF;
 
-    oscar_log(5, INFO, "Sending 'SIGTERM' to " . join(", ",@to_kill);
+    oscar_log(5, INFO, "Sending 'SIGTERM' to " . join(", ",@to_kill));
     kill 'TERM',@to_kill;
 
-    oscar_log(5, INFO, "Sending 'SIGHUP' to " . join(", ",@to_kill);
+    oscar_log(5, INFO, "Sending 'SIGHUP' to " . join(", ",@to_kill));
     kill 'HUP',@to_kill; # Shell scripts will ignore TERM.
 }
 
