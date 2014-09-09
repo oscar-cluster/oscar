@@ -694,7 +694,8 @@ sub remote_system_service($$$) {
     # command not found: 127
     # unknown service: 1
 
-    my $ret_code = oscar_system ("$remote_cmd $cmd");
+    oscar_log(8, INFO, "About to run: $remote_cmd $cmd");
+    my $ret_code = system ("$remote_cmd $cmd");
     $ret_code = $ret_code/256 if ($ret_code > 255);
     oscar_log (7, INFO, "Return code: $ret_code") if($ret_code > 0);
 
