@@ -59,6 +59,13 @@ if ($shorthostname eq "") {
     print " --------------------------------------\n";
     $rc++;
 }
+if ($shorthostname !~ m/^([a-z0-9-]+)$/i) {
+    print " --------------------------------------\n";
+    print " ERROR: shorthostname not RFC 952/1123 compliant.\n";
+    print " --------------------------------------\n";
+    $rc++;
+}
+
 my $dnsdomainname = `dnsdomainname`;
 chomp ($dnsdomainname); # FIXME: OL: Incomplete code here.
 if ($shorthostname eq "localhost") {
