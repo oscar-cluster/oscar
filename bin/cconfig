@@ -1020,7 +1020,7 @@ given ($command) {
                 $new_head->{'name'} = $1;
                 check_host_resolvs_or_die($new_head->{'name'});
             } else {
-                die "ERROR: invalide head name: [$new_head->{'name'}]\n";
+                die "ERROR: invalide head name: [$raw_head] (see RFC 952 and 1123)\n";
             }
             $new_cluster->{'head'} = $new_head;
 
