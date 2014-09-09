@@ -216,7 +216,7 @@ backup_file_if_not_exist($file)
     or oscar_log(1, WARNING, "Unable to create a bacup copy of $file");
 
 # Protocol 2: Enforce ssh v2 (v1 is insecure and v2 is supported anywhere).
-# AuthorizedKeysFile. Add compat for .ssh/authorized_keys2 if present.
+# AuthorizedKeysFile. 
 # X11Forwarding: Forward display.
 # PermitRootLogin:yes (it is set to no on Mandriva, thus we need to enforce it.
 # IgnoreRhosts: rhosts is insecure.
@@ -225,7 +225,7 @@ backup_file_if_not_exist($file)
 # GSSAPIAuthentication: not used.
 my %sshd_config = (
     Protocol => '2',
-    AuthorizedKeysFile => '.ssh/authorized_keys,.ssh/authorized_keys2',
+    AuthorizedKeysFile => '.ssh/authorized_keys',
     X11Forwarding => 'yes',
     PermitRootLogin => 'yes',
     IgnoreRhosts => 'yes',
