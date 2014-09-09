@@ -47,6 +47,8 @@ if (! -f $configurator) {
     exit 1;
 }
 
+my $naemon_configdir = OSCAR::OCA::OS_Settings::getitem(NAEMON()."_configdir");
+
 # Rename default configuration files to oscarbak.
 foreach ('contacts.cfg', 'localhost.cfg', 'printer.cfg', 'switch.cfg', 'windows.cfg') {
     if ( -f "$naemon_configdir/conf.d/$_" ) {
