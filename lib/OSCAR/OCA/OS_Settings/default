@@ -112,3 +112,7 @@ xinetd_dir=/etc/xinetd.d/
 # For compatibility
 exports_file=/etc/exports
 
+# OSCAR Specific host aliases
+oscar-server_hostalias=oscar_server
+nfs-server_hostalias=nfs_oscar
+pbs-server_hostalias=pbs_oscar
