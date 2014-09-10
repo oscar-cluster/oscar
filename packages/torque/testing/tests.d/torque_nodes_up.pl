@@ -96,6 +96,9 @@ foreach my $client_ref (@oda_nodes){
     # If $$client_ref{gpu_num} is not defined, it means gpus=0;
     $$client_ref{gpu_num} = 0 if (! defined($$client_ref{gpu_num}));
 
+    # If $pbsnodes_hash->{Node}->{$node_name}->{gpus} is not defined, create it and set it to 0.
+    $pbsnodes_hash->{Node}->{$node_name}->{gpus} = 0 if (! exists($pbsnodes_hash->{Node}->{$node_name}->{gpus}));
+
     # Fake head gpu count test on head. (We disable gpus on head).
     $pbsnodes_hash->{Node}->{$node_name}->{gpus} = $$client_ref{gpu_num} if ($$client_ref{group_name} eq "oscar_server");
 
@@ -108,8 +111,9 @@ foreach my $client_ref (@oda_nodes){
      }
 
     # Check that the nodes are ok. (no errors)
+    my @ok_states = ("down","unknown","offline","buzy","state-unknown");
     for my $state (split ',', $pbsnodes_hash->{Node}->{$node_name}->{state}) {
-        if ($state ~~ {"down","unknown","offline","buzy","state-unknown"}) {
+        if ($state ~~ @ok_states) {
             oscar_log(5, ERROR, "Node: $node_name bad state: $state");
             $rc++;
         }
