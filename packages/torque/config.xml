@@ -76,6 +76,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.4.4-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-09-10T12:27:46+02:00">
+        <item>Fix torque_nodes_up.pl testing routine.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.4.3-1">
       <changelogEntry authorName="Olivier Lahaye" date="2014-07-23T18:24:12+02:00">
         <item>Small bugfix.</item>
