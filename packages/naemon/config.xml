@@ -32,6 +32,11 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="1.0.10-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-09-09T11:57:01+02:00">
+        <item>Small bugfix.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="1.0.9-1">
       <changelogEntry authorName="Olivier Lahaye" date="2014-07-23T18:24:12+02:00">
         <item>Small bugfix.</item>

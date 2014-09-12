@@ -55,7 +55,7 @@ open CMD, "$pbsnodes_cmd |" or die "Error: $!";
 my $pbsnodes_hash = $xml->XMLin(<CMD>, ForceArray => [ 'Node' ]);
 close CMD;
 
-# Get nodes seen by PBS.
+# Get nodes seen by PBS.
 my @pbs_seen_nodes = keys %{$pbsnodes_hash->{Node}};
 
 my %options = ();
@@ -96,7 +96,7 @@ foreach my $client_ref (@oda_nodes){
     # If $$client_ref{gpu_num} is not defined, it means gpus=0;
     $$client_ref{gpu_num} = 0 if (! defined($$client_ref{gpu_num}));
 
-    # If $pbsnodes_hash->{Node}->{$node_name}->{gpus} is not defined, create it and set it to 0.
+    # If $pbsnodes_hash->{Node}->{$node_name}->{gpus} is not defined, create it and set it to 0.
     $pbsnodes_hash->{Node}->{$node_name}->{gpus} = 0 if (! exists($pbsnodes_hash->{Node}->{$node_name}->{gpus}));
 
     # Fake head gpu count test on head. (We disable gpus on head).
