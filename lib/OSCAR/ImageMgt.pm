@@ -933,7 +933,7 @@ sub create_image ($%) {
     # 1st, create the final diskfile
     my($filename, $dirs, $suffix) = fileparse($vars{diskfile},"disk");
 
-    my($tmp_fh, $temp_diskfile) = mkstemps( $filename."_XXXXXX", $suffix);
+    my($tmp_fh, $temp_diskfile) = mkstemps( "/tmp/".$filename."_XXXXXX.", $suffix);
 
     oscar_log(5, INFO, "");
     open my $template_fh,"<", $vars{diskfile}
@@ -959,7 +959,11 @@ sub create_image ($%) {
         return -1;
     }
 
-    # 3rd: Now we execute the post image creation actions.
+    # 3rd: We remove the temporary disk file.
+    unlink $temp_diskfile
+        or oscar_log(1, WARNING, "Unable to remove temporary disk file: $temp_diskfile");
+
+    # 4th: Now we execute the post image creation actions.
     if (postimagebuild (\%vars)) {
         oscar_log(5, ERROR, "Failed to run postimagebuild.");
         cleanup_sis_configfile ($image);
