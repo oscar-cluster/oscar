@@ -931,9 +931,9 @@ sub create_image ($%) {
     # Deal with the harddrive configuration of the image
 
     # 1st, create the final diskfile
-    my($filename, $dirs, $suffix) = fileparse($vars{diskfile},"disk");
+    my($filename, $dirs, $suffix) = fileparse($vars{diskfile},".disk");
 
-    my($tmp_fh, $temp_diskfile) = mkstemps( "/tmp/".$filename."_XXXXXX.", $suffix);
+    my($tmp_fh, $temp_diskfile) = mkstemps( "/tmp/".$filename."_XXXXXX", $suffix);
 
     oscar_log(5, INFO, "");
     open my $template_fh,"<", $vars{diskfile}
