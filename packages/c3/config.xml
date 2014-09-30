@@ -18,6 +18,10 @@ tasks on a cluster.</description>
       <name>Geoffroy Vallee</name>
       <email>valleegr@ornl.gov</email>
     </author>
+    <author cat="maintainer">
+      <name>Olivier Lahaye</name>
+      <email>olivier.lahaye@cea.fr</email>
+    </author>
   </authors>
   <serverDeps>
     <requires>
@@ -60,6 +64,11 @@ tasks on a cluster.</description>
   <apiDeps>
   </apiDeps>
   <changelog>
+    <versionEntry version="4.1.8-1.1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-09-30T11:12:42+02:00">
+        <item>Avoid removing /etc/c3.conf if $imagedir is not correct in api-post-image script</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="4.1.7-1.1">
       <changelogEntry authorName="Olivier Lahaye" date="2014-07-11T15:25:17+02:00">
         <item>Rebuild to avoid conflicts with new disttag in rpm distros</item>

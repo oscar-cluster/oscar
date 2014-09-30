@@ -1,15 +1,16 @@
 #!/usr/bin/perl
 
-# this script is here to remove the /etc/c3.conf file from 
+# This script is here to remove the /etc/c3.conf file from 
 # any image as the one shipped in the RPM is not correct
 
 use strict;
 use Carp;
-use SystemInstaller::Machine;
-use Data::Dumper;
 
 my $image = shift;
 my $imagedir = shift;
 
-unlink "$imagedir/etc/c3.conf";
-
+if ( -d "$imagedir" and "$imagedir" ne "/" and -f "$imagedir/etc/c3.conf") {
+    unlink "$imagedir/etc/c3.conf";
+} else {
+    print "ERROR: Invalid imagedir; can't remove c3.conf from image.\n";
+}
