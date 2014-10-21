@@ -64,6 +64,11 @@ tasks on a cluster.</description>
   <apiDeps>
   </apiDeps>
   <changelog>
+    <versionEntry version="4.1.9-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2014-10-21T14:14:15+02:00">
+        <item>cconfig has been renamed c3config to avoid conflict with cconfig from root package.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="4.1.8-1.1">
       <changelogEntry authorName="Olivier Lahaye" date="2014-09-30T11:12:42+02:00">
         <item>Avoid removing /etc/c3.conf if $imagedir is not correct in api-post-image script</item>

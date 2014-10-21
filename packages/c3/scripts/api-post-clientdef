@@ -12,7 +12,7 @@
 # Copyright (c) 2014 Olivier LAHAYE <olivier.lahaye@cea.fr>
 #                    Commissariat a l'Energie Atomique et aux Energies Alternatives.
 #                    All Rights reserved.
-#                    => major rewrite relying on cconfig instead of c3_conf_manager.
+#                    => major rewrite relying on c3config instead of c3_conf_manager.
 #
 
 use strict;
@@ -30,7 +30,7 @@ my %hash = SystemInstaller::Machine::get_machine_listing($image_name);
 my $binaries_path = OSCAR::ConfigFile::get_value ("/etc/oscar/oscar.conf",
                                                   undef,
                                                   "OSCAR_SCRIPTS_PATH");
-my $c3mgr = "$binaries_path/cconfig";
+my $c3mgr = "$binaries_path/c3config";
 
 # Remove any old oscar_cluster definition
 if(-f $c3conf) {

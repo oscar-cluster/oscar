@@ -679,7 +679,7 @@ sub c3_hosts_up () {
 ################################################################################
 #
 # Update the list of nodes that are able to effectively execute some remote commands.
-# This is more sofisticated than "cconfig check" that only test that ssh port is
+# This is more sofisticated than "c3config check" that only test that ssh port is
 # open on nodes.
 #
 ################################################################################
@@ -691,12 +691,12 @@ sub update_list_alive_nodes () {
     @down_nodes = get_list_of_down_nodes ();
 
     # Enable all nodes for oscar_cluster in c3.conf
-    !oscar_system("/usr/bin/cconfig  enablenodes --cluster oscar_cluster --file /etc/c3.conf")
+    !oscar_system("/usr/bin/c3config  enablenodes --cluster oscar_cluster --file /etc/c3.conf")
         or return -1;
 
     # Disable the nodes that we found as dead.
     if(@down_nodes) {
-        !oscar_system("/usr/bin/cconfig disablenodes --cluster oscar_cluster --file /etc/c3.conf --nodes ".join(" ",@down_nodes))
+        !oscar_system("/usr/bin/c3config disablenodes --cluster oscar_cluster --file /etc/c3.conf --nodes ".join(" ",@down_nodes))
             or return -1;
     }
 

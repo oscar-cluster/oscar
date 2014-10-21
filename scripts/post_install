@@ -99,7 +99,7 @@ my $cmd;
 #     $errors++;
 # }
 
-!oscar_system("cconfig update --cluster oscar_cluster --refreshstatuses --file /etc/c3.conf")
+!oscar_system("/usr/bin/c3config update --cluster oscar_cluster --refreshstatuses --file /etc/c3.conf")
     or oscar_log(5, ERROR, "Couldn't refresh nodes statuses in /etc/c3.conf");
 
 my @pkgs = list_selected_packages();

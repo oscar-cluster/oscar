@@ -26,7 +26,7 @@
 a same build.cfg
 - bootstrapp is now able to use apitests before anything else.
 - Added support for naemon (nagios monitoring fork)
-- Added cconfig to manage c3.conf file.
+- Added c3config to manage c3.conf file.
 - Fixed many pod docs and Added OSCAR::* docs to the devel package.
 - Updated torque to 4.2.7
 - Updated ganglia-web to 3.7.0 (rpm only)

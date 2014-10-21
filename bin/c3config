@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# cconfig (replacement for c3_conf_manager)
+# c3config (replacement for c3_conf_manager)
 #
 # Written by Olivier Lahaye 14/03/2014
 #
@@ -37,7 +37,7 @@ no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 
 Getopt::Long::Configure ("pass_through");
 
-my $SCRIPT      = "cconfig";
+my $SCRIPT      = "c3config";
 my $VERSION     = "v1.0";
 my $refreshstatuses   = undef; # If set, nodes are pinged and status (dead/online) is updated accordingly.
 my $sortnodes      = undef; # If set, nodes are sorted.
@@ -115,7 +115,7 @@ OPTIONS:
 --noresolv|l               Don't try to check if hostnames resolv.
 --service|e <service name> Name of service to use to test that a remote node is alive or not.
                            The service name can be any tcp service in /etc/services or a port number.
-                           Special values are: ping, resolv, none (see cconfig(1) manpage).
+                           Special values are: ping, resolv, none (see c3config(1) manpage).
 --zero|z|0                 Force 0-indexing (do not insert or remove dummy dead entry)
                            Only valid for addcluster and update commands. Must be used with
                            --cluster option.
@@ -1235,20 +1235,20 @@ __END__
 
 =head1 NAME
 
-cconfig, a command line tool for managing c3 configuration file.
+c3config, a command line tool for managing c3 configuration file.
 
 =head1 SYNOPSIS
 
-cconfig COMMAND OPTIONS
+c3config COMMAND OPTIONS
 
 =head1 DESCRIPTION
 
-cconfig is a command line tool for managing c3 configuration file from
+c3config is a command line tool for managing c3 configuration file from
 adding nodes or cluster to node status update or syntax optimisation. 
 
 =head1 SYNTAX
 
-cconfig command [options]
+c3config command [options]
 
 =head1 COMMANDS
 
@@ -1265,14 +1265,14 @@ Ranges in the form basename[#min-#max] are accepted.
 padding is supported. For a padding of 3 digit for a 500 nodes
 cluster, you need to use: node[000-499]
 
-example: cconfig addcluster --cluster my_cluster --nodes nodes0[0-9] nodes[10-49]
+example: c3config addcluster --cluster my_cluster --nodes nodes0[0-9] nodes[10-49]
 
 =item delcluster
 
 Removes a cluster from the c3 configuration file.
 Must be used with the --cluster option.
 
-example: cconfig delcluster --cluster my_cluster
+example: c3config delcluster --cluster my_cluster
 
 =item addnodes
 
@@ -1280,14 +1280,14 @@ Add node(s) to a cluster.
 Refuses to add an already existing node.
 Requires the --cluster and --nodes options.
 
-example: cconfig addnodes --cluster my_cluster --nodes foo bar rack1-[1-22] rack2-[1-22]
+example: c3config addnodes --cluster my_cluster --nodes foo bar rack1-[1-22] rack2-[1-22]
 
 =item delnodes
 
 Remove node(s) from a cluster
 Requires the --cluster and --nodes option.
 
-example: cconfig delnodes --cluster my_cluster --nodes foo bar
+example: c3config delnodes --cluster my_cluster --nodes foo bar
 
 =item disablenodes
 
@@ -1296,7 +1296,7 @@ Mark nodes as dead (or excluded if part of a range)
 --nodes <nodenames> is optional (requires --cluster if used).
 
 example:
-    cconfig disablenodes --cluster my_cluster --nodes rack1-[1-22]
+    c3config disablenodes --cluster my_cluster --nodes rack1-[1-22]
 
 =item enablenodes
 
@@ -1305,7 +1305,7 @@ Mark nodes back to life.
 --nodes <nodenames> is optional (requires --cluster if used).
 
 example:
-    cconfig enablenodes --cluster my_cluster --nodes rack1-[1-22]
+    c3config enablenodes --cluster my_cluster --nodes rack1-[1-22]
 
 =item update
 
@@ -1314,7 +1314,7 @@ Update config file (usefull to sort nodes or update status)
 --nodes <nodenames> is optional (requires --cluster if used).)
 
 example: Sorting all nodes in clusters definitions:
-    cconfig update --sortnodes
+    c3config update --sortnodes
 
 =item listnodes
 
@@ -1322,14 +1322,14 @@ Lists active nodes in cluster
 If no --cluster option is used, then it lists the default cluster nodes (1st one).
 
 example:
-    cconfig listnodes --cluster my_cluster
+    c3config listnodes --cluster my_cluster
 
 =item listclusters
 
 Lists defined clusters
 
 example:
-    cconfig listclusters
+    c3config listclusters
 
 =item check
 
