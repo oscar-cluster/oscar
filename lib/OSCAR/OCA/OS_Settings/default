@@ -116,3 +116,6 @@ exports_file=/etc/exports
 oscar-server_hostalias=oscar_server
 nfs-server_hostalias=nfs_oscar
 pbs-server_hostalias=pbs_oscar
+
+# Package manager
+package_manager=none

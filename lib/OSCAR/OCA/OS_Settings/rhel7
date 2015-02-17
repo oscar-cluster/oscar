@@ -14,11 +14,11 @@ portmap_package=rpcbind
 # Overwrite the name of few services
 munge_service=munge
 mysql_service=mariadb
-tftp_service=atftp
+tftp_service=atftpd
 
 # Overwrite the name of few configuration files
 dhcp_leases=/var/lib/dhcpd/dhcpd.leases
-mysql_configfile=/etc/my.cnf.d/galera.cnf
+mysql_configfile=/etc/my.cnf.d/server.cnf
 
 # Overwrite the name of few directories
 mysql_configdir=/etc/my.cnf.d/

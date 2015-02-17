@@ -6,7 +6,7 @@
 mysql_service=mariadb
 
 # Overwrite the name of few configuration files
-mysql_configfile=/etc/my.cnf.d/galera.cnf
+mysql_configfile=/etc/my.cnf.d/server.cnf
 
 # Overwrite the name of few directories
 mysql_configdir=/etc/my.cnf.d/
