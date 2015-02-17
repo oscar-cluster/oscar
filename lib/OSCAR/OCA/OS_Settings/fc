@@ -15,6 +15,7 @@ tftp_service=atftpd
 
 # Overwrite the name of few configuration files
 dhcp_leases=/var/lib/dhcpd/dhcpd.leases
+yum_configfile=/etc/yum.conf
 
 # verwrite the name of few directories
 pxe_dir=/usr/share/syslinux/
