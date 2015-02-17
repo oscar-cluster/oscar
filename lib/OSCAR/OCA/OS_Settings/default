@@ -63,6 +63,7 @@ postgresql_service=postgresql
 rpc_service=rpcbind
 rsync_service=systemimager-server-rsyncd
 sendmail_service=sendmail
+squid_service=squid
 ssh_service=sshd
 syslog_service=rsyslog
 tftp_service=tftp
@@ -91,6 +92,7 @@ postfix_configfile=/etc/postfix/main.cf
 pxe_bootbin=pxelinux.0
 rsync_configfile=
 sendmail_configfile=/etc/mail/sendmail.cf
+squid_configfile=/etc/squid/squid.conf
 systemimager_configfile=/etc/systemimager/systemimager.conf
 syslog_configfile=/etc/rsyslog.conf
 
