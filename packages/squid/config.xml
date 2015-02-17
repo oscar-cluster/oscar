@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<oscar>
+  <name>squid</name>
+  <class>included</class>
+  <summary>Squid Proxy Configuration</summary>
+  <description>OSCAR-specific Http proxy configurator.  If configured, sets up the OSCAR server to act as a web proxy server for nodes. This is only usefull if nodes have no direct internet access.</description>
+  <license>Freely distributable</license>
+  <group>System Environment/Base</group>
+  <uri>http://oscar.openclustergroup.org/</uri>
+  <authors>
+    <author cat="maintainer">
+      <name>Olivier Lahaye</name>
+      <email>olivier.lahaye@cea.Fr</email>
+    </author>
+  </authors>
+  <serverDeps>
+    <requires>
+      <pkg>squid</pkg>
+    </requires>
+  </serverDeps>
+  <apiDeps/>
+  <changelog>
+    <versionEntry version="1.0.0-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2015-02-17T12:38:29+02:00">
+        <item>Initial packaging.</item>
+      </changelogEntry>
+    </versionEntry>
+  </changelog>
+</oscar>

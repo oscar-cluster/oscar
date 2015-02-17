@@ -1,0 +1,124 @@
+#!/usr/bin/perl
+########################################################################
+#  Script Name : api-post-image
+#  Written by  : Olivier Lahaye
+#  Date        : February 17, 2015
+#  Purpose     : This post_install script configures package manager to use
+#                the head_node http proxy.
+#  Copyright (c) Olivier Lahaye 2015
+#                All rights reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#########################################################################
+# $Id: api-post-image 10570 2014-02-18 11:58:13Z olahaye74 $
+#########################################################################
+
+use OSCAR::Package;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
+use OSCAR::OCA::OS_Settings;
+use OSCAR::Configurator_backend;
+use strict;
+use Carp;
+use v5.10.1;
+# Avoid smartmatch warnings when using given
+no if $] >= 5.017011, warnings => 'experimental::smartmatch';
+
+my $image = shift;
+my $imagedir = shift;
+$imagedir =~ s/\/$//; # Clean trailing slash.
+
+if ( -d "$imagedir" and "$imagedir" ne "") {
+    if (-f "$imagedir/etc/yum.conf") {
+        
+    }
+} else {
+    print "ERROR: Invalid imagedir; can't setup proxy for package manager.\n";
+}
+
+my $pkgdir = OSCAR::Package::get_scripts_dir("squid", "post-install");
+my $configdir = "$pkgdir/.configs";
+
+my $imageconf = "$configdir/$image";
+my $configurator = "$pkgdir/configurator.html";
+my $squid_visible_hostname;
+my $squid_port;
+
+# If user has configured squid package.
+if (-e $configurator) {
+    my $ref = OSCAR::Configurator_backend::readInConfigValues($configurator,
+        "squid", "", noarray=>1);
+    $squid_visible_hostname = $ref->{visible_hostname};
+    $squid_port = $ref->{port};
+    my $valid952HostnameRegex;
+    $valid952HostnameRegex = quotemeta '^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$';
+    if ($squid_visible_hostname !~ /$valid952HostnameRegex/) {
+        oscar_log(3, WARNING, "Invalid visible_hostname: using oscar_server instead");
+        $squid_visible_hostname = "oscar_server";
+    }
+    if ($squid_port !~ /[0-9]{1,5}/) {
+        oscar_log(3, WARNING, "Invalid squid port: using 3128 instead");
+        $squid_port = 3128;
+    }
+} else {
+    $squid_visible_hostname = "oscar_server";
+    $squid_port = 3128;
+} # End configurator
+
+
+my $proxy_url = "http://$squid_visible_hostname:$squid_port";
+
+# We assume that the node image is the same OS as headnode.
+# FIXME: package manager should be moved to OS_Detect and we should
+#        detect image OS and retretreive the correct image package manager.
+
+my $package_manager = OSCAR::OCA::OS_Settings::getitem("package_manager");
+
+given ($package_manager) {
+    when ("yum") {
+		my $yum_conf = OSCAR::OCA::OS_Settings::getitem("yum_configfile");
+        my $yumBuffer = "";
+        backup_file_if_not_exist($yum_conf) or (carp "ERROR: Couldn't backup $yum_conf.\n", exit 1);
+        # Read yum.conf
+        my $line;
+        open(YUM_CONF, $yum_conf) or croak("Failed to open $yum_conf");
+        while ($line = <YUM_CONF>) {
+            $yumBuffer = $yumBuffer.$line;
+        }
+        close(YUM_CONF, $yum_conf);
+
+        if ($yumBuffer =~ /^proxy=.*$/) {
+            $yumBuffer =~ s/^proxy=.*$/proxy=$proxy_url/m;
+        } else {
+            $yumBuffer = $yumBuffer."\n# Added by OSCAR package squid\nproxy=http://$squid_visible_hostname:$squid_port\n";
+        }
+        open(YUM_CONF, ">$yum_conf") or croak("Failed to open $yum_conf");
+        print YUM_CONF $yumBuffer;
+        close(YUM_CONF);
+    }
+    when ("apt") {
+        oscar_log(1,WARNING,"Proxy not yet supported for apt package manager");
+    }
+    when ("zypper") {
+        oscar_log(1,WARNING,"Proxy not yet supported for apt package manager");
+    }
+    when ("urpmi") {
+        oscar_log(1,WARNING,"Proxy not yet supported for apt package manager");
+    }
+    default {
+		oscar_log(1,WARNING,"package manager not supported for this distro");
+    }
+} # end given ($package_manager)
