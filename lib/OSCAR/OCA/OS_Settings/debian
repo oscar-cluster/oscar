@@ -20,3 +20,6 @@ postfix_configfile=/usr/lib/postfix/main.cf
 mysql_configdir=/etc/mysql/
 postgresql_datadir=/var/lib/postgresql/9.1/main
 postgresql_bindir=/usr/libpostgresql/9.1/bin
+
+# Package manager
+package_manager=apt

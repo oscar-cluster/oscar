@@ -11,3 +11,6 @@ pxe_bin=linux.0
 # Overwrite a few directories
 pxe_configdir=/var/lib/tftpboot/pxelinux.cfg/
 tftp_dir=/var/lib/tftpboot/
+
+# Package manager
+package_manager=urpmi

@@ -11,10 +11,13 @@ portmap_package=rpcbind
 
 # Overwrite the name of few services
 munge_service=munge
-tftp_service=atftp
+tftp_service=atftpd
 
 # Overwrite the name of few configuration files
 dhcp_leases=/var/lib/dhcpd/dhcpd.leases
 
 # verwrite the name of few directories
 pxe_dir=/usr/share/syslinux/
+
+# Package manager
+package_manager=yum
