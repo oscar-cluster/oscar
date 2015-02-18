@@ -111,12 +111,14 @@ given ($package_manager) {
     }
     when ("apt") {
         oscar_log(1,WARNING,"Proxy not yet supported for apt package manager");
+        oscar_log(1, INFO, "Add: Acquire::http::Proxy "$proxy_url"; in /etc/apt/apt.conf"):
     }
     when ("zypper") {
-        oscar_log(1,WARNING,"Proxy not yet supported for apt package manager");
+        oscar_log(1,WARNING,"Proxy not yet supported for zypper package manager");
+        # Config: aria2c variable: all-proxy=$proxy_url
     }
     when ("urpmi") {
-        oscar_log(1,WARNING,"Proxy not yet supported for apt package manager");
+        oscar_log(1,WARNING,"Proxy not yet supported for urpmi package manager");
     }
     default {
 		oscar_log(1,WARNING,"package manager not supported for this distro");
