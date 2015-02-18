@@ -31,6 +31,7 @@ use OSCAR::Logger;
 use OSCAR::LoggerDefs;
 use OSCAR::OCA::OS_Settings;
 use OSCAR::Configurator_backend;
+use OSCAR::FileUtils;
 use strict;
 use Carp;
 use v5.10.1;
@@ -91,27 +92,35 @@ given ($package_manager) {
     when ("yum") {
 		my $yum_conf = OSCAR::OCA::OS_Settings::getitem("yum_configfile");
         my $yumBuffer = "";
-        backup_file_if_not_exist($yum_conf) or (carp "ERROR: Couldn't backup $yum_conf.\n", exit 1);
+        backup_file_if_not_exist($imagedir.$yum_conf) or (carp "ERROR: Couldn't backup $imagedir$yum_conf.\n", exit 1);
         # Read yum.conf
         my $line;
-        open(YUM_CONF, $yum_conf) or croak("Failed to open $yum_conf");
+        my $proxy_found=0;
+        open(YUM_CONF, "$imagedir$yum_conf") or croak("Failed to open $imagedir$yum_conf");
         while ($line = <YUM_CONF>) {
-            $yumBuffer = $yumBuffer.$line;
+            if ($line =~ /^proxy=.*$/) {
+                $yumBuffer = $yumBuffer."proxy=$proxy_url\n";
+                oscar_log(5, INFO, "Updating proxy=$proxy_url to yum.conf");
+                $proxy_found=1;
+            } else {
+                $yumBuffer = $yumBuffer.$line;
+            }
         }
         close(YUM_CONF, $yum_conf);
 
-        if ($yumBuffer =~ /^proxy=.*$/) {
-            $yumBuffer =~ s/^proxy=.*$/proxy=$proxy_url/m;
-        } else {
-            $yumBuffer = $yumBuffer."\n# Added by OSCAR package squid\nproxy=http://$squid_visible_hostname:$squid_port\n";
+        if (!$proxy_found) {
+            oscar_log(5, INFO, "Adding proxy=http://$proxy_url to yum.conf");
+            $yumBuffer = $yumBuffer."\n# Added by OSCAR package squid\nproxy=$proxy_url\n";
         }
-        open(YUM_CONF, ">$yum_conf") or croak("Failed to open $yum_conf");
+
+        oscar_log(5, INFO, "Writing $imagedir$yum_conf");
+        open(YUM_CONF, ">$imagedir$yum_conf") or croak("Failed to open $imagedir$yum_conf");
         print YUM_CONF $yumBuffer;
         close(YUM_CONF);
     }
     when ("apt") {
         oscar_log(1,WARNING,"Proxy not yet supported for apt package manager");
-        oscar_log(1, INFO, "Add: Acquire::http::Proxy "$proxy_url"; in /etc/apt/apt.conf"):
+        oscar_log(1, INFO, "Add: Acquire::http::Proxy \"$proxy_url\"; in /etc/apt/apt.conf");
     }
     when ("zypper") {
         oscar_log(1,WARNING,"Proxy not yet supported for zypper package manager");
