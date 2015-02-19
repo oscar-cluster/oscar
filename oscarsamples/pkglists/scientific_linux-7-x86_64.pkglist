@@ -116,6 +116,7 @@ mariadb
 mgetty
 mtools
 ncurses
+NetworkManager
 net-tools
 newt
 nfs-utils
