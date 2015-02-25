@@ -61,7 +61,7 @@ while ( $mount_counter <= $max_counter ) {
 	$mount_counter++;
 	}
 
-#Add_export setups up the /etc/exports file on the oscar_server
+#Add_export setups up the /etc/exports file on the oscar-server
 # add_export ( sharepoint, ip, netmask ) 
 # where ip and netmask are the permitted networks for the server
 # to be sharing to.

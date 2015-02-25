@@ -97,7 +97,7 @@ case "$service_name" in
             origin=`hostname -d`
             
             # Get the IP address of the server node from /etc/hosts
-            oscar_server_ipaddress=`grep oscar_server /etc/hosts | awk '{print $1;}'`
+            oscar-server_ipaddress=`grep oscar-server /etc/hosts | awk '{print $1;}'`
             
             cat >> main.cf.client.$$ << EOF
 
@@ -112,7 +112,7 @@ case "$service_name" in
 # incoming mail will be accepted by the client nodes from external
 # sources.
 #
-# 2. Relay all mail from the client nodes to the oscar_server node --
+# 2. Relay all mail from the client nodes to the oscar-server node --
 # let all mail routing decisions be made at the server.  The client
 # nodes act like dumb relays.
 #

@@ -100,7 +100,7 @@ foreach my $client_ref (@oda_nodes){
     $pbsnodes_hash->{Node}->{$node_name}->{gpus} = 0 if (! exists($pbsnodes_hash->{Node}->{$node_name}->{gpus}));
 
     # Fake head gpu count test on head. (We disable gpus on head).
-    $pbsnodes_hash->{Node}->{$node_name}->{gpus} = $$client_ref{gpu_num} if ($$client_ref{group_name} eq "oscar_server");
+    $pbsnodes_hash->{Node}->{$node_name}->{gpus} = $$client_ref{gpu_num} if ($$client_ref{group_name} eq "oscar-server");
 
     # Check that ODA node options are the same as in PBD (np= gpus=)
     if (($pbsnodes_hash->{Node}->{$node_name}->{np} != $$client_ref{cpu_num}) ||

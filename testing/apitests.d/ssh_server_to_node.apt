@@ -29,7 +29,7 @@
 <testDef>
 
   <info>
-This script tests that user can ssh to all nodes from oscar_server
+This script tests that user can ssh to all nodes from oscar-server
 
 Desired result : PASS
 </info>

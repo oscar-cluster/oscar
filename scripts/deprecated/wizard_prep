@@ -42,7 +42,7 @@ use Data::Dumper;
 use vars qw($RPMTABLE);
 use Carp;
 
-my $OSCAR_SERVER_NODE = "oscar_server";
+my $OSCAR_SERVER_NODE = "oscar-server";
 my $OSCAR_SERVER_GROUP = "oscar_server";
 my $ohome = $ENV{OSCAR_HOME};
 my $prereqs_dir = "share/prereqs";
@@ -492,7 +492,7 @@ for my $opkg (@inst_core_opkgs) {
     # add here code to mark packages as installed !!!
     #
     die "$0:Failed to update the table Node_Package_Status"
-    if(!update_node_package_status(\%options,"oscar_server",
+    if(!update_node_package_status(\%options,"$OSCAR_SERVER_NODE",
                        \@package_results, 8,\@errors));
 }
 

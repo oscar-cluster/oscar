@@ -214,7 +214,7 @@ sub __setup_dhcpd ($) {
     my $cmd = "mkdhcpconf -o $dhcpd_configfile ".
                          "--interface=$interface ".
                          "--gateway=$ip ".
-                         "--imageserver=oscar_server";
+                         "--imageserver=oscar-server";
 
     if ($install_mode eq "systemimager-multicast") {
        $cmd = $cmd . " --multicast=yes";

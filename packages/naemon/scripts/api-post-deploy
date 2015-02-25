@@ -21,7 +21,7 @@ use OSCAR::Opkg;
 # 1st, Create naemon nodes configs.
 my %hash = SystemInstaller::Machine::get_machine_listing();
 
-oscar_log(2, INFO, "Creating iOSCAR naemon nodes configs");
+oscar_log(2, INFO, "Creating OSCAR naemon nodes configs");
 for my $node (keys(%hash)) {
     my $name = $node; # Try to use DNS name
     my $alias = $node;

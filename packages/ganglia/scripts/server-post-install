@@ -70,8 +70,8 @@ my $errors = 0;
 if (defined($use_naemon)) {
     # 1st Create the directory structure required for oscar specific configuration. This needs to be checked as we may have been called before naemon server post install.
     init_naemon_config_dir() and (oscar_log(1,ERROR,"Failed to create naemon OSCAR's specific directory structure"), exit 1);
-    # Check that ganglia web interface is working on oscar_server.
-    $errors += write_oscar_service_cfg ('HTTP-ganglia', 'host', 'oscar_server', 'check_http!-u/ganglia');
+    # Check that ganglia web interface is working on oscar-server.
+    $errors += write_oscar_service_cfg ('HTTP-ganglia', 'host', 'oscar-server', 'check_http!-u/ganglia');
 
     # Get ganglia gmond port configuration.
     my $gmond_port = 8649;
@@ -81,7 +81,7 @@ if (defined($use_naemon)) {
     $gmond_port = $ganglia_config_ref->{udp_send_channel__port} if (defined ($ganglia_config_ref->{udp_send_channel__port}));
 
     # Check that gmetad in listenning on  the head node.
-    $errors += write_oscar_service_cfg ('gmetad', 'host', 'oscar_server', "check_tcp!$gmetad_port -w 1.0 -c 1.5");
+    $errors += write_oscar_service_cfg ('gmetad', 'host', 'oscar-server', "check_tcp!$gmetad_port -w 1.0 -c 1.5");
 
     # Check that gmond is listenning on oscar computers (head + nodes).
     $errors += write_oscar_service_cfg ('gmond', 'hostgroup', 'oscar_computers', "check_tcp!$gmond_port -w 1.0 -c 1.5");

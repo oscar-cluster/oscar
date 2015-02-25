@@ -69,7 +69,7 @@ our @EXPORT = qw(
 
 my @error_list = ();
 my %options = ();
-my $OSCAR_SERVER_NODE = "oscar_server";
+my $OSCAR_SERVER_NODE = "oscar-server";
 
 
 # The goal of this function is to abstract interaction between the database
@@ -103,7 +103,7 @@ sub update_opkg_status ($$) {
     my %options = ();
     my @errors;
     my $status = OSCAR::Database::get_node_package_status_with_node_package(
-        "oscar_server", "opkg-$opkg", \@pstatus, \%options, \@errors);
+        "oscar-server", "opkg-$opkg", \@pstatus, \%options, \@errors);
     # if (status == 0) => package installed
     # if (status == 1) => package not installed
     if ($status == 0) {
@@ -122,7 +122,7 @@ sub update_opkg_status ($$) {
               "should_be_installed ($opkg)");
         my $success = OSCAR::Database::update_node_package_status(
                             \%options,
-                            "oscar_server",
+                            "oscar-server",
                             "opkg-$opkg",
                             2,
                             \@errors,
@@ -142,7 +142,7 @@ sub update_opkg_status ($$) {
               "should_not_be_installed ($opkg)");
         my $success = OSCAR::Database::update_node_package_status(
                             \%options,
-                            "oscar_server",
+                            "oscar-server",
                             "opkg-$opkg",
                             1,
                             \@errors,

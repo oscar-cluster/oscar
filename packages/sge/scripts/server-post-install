@@ -253,7 +253,7 @@ sub setup_pe ($) {
 
   # FIXME: Right now it checks to see if the parallel library is installed on the headnode
   if ( OSCAR::Database::is_installed_on_node("$pe",
-            "oscar_server", undef, undef, 0, undef) ) {
+            "oscar-server", undef, undef, 0, undef) ) {
         # Check to see if we already have the parallel environment defined
         `$qconf -sp $pe 2>&1`;
 

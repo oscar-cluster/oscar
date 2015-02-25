@@ -48,19 +48,19 @@ use OSCAR::Network;
 
 my %options = ();
 my %field_value_hash = ();
-my $OSCAR_SERVER_NODE = "oscar_server";
-my $OSCAR_SERVER_GROUP = "oscar_server";
+my $OSCAR_SERVER_NODE = "oscar-server";
+my $OSCAR_SERVER_GROUP = "oscar-server";
 
 $options{debug} = 1 if $ENV{OSCAR_DB_DEBUG}; 
 $options{verbose} = 1 if $ENV{OSCAR_DB_VERBOSE}; 
 
-# see if there is already a node named oscar_server,
+# see if there is already a node named oscar-server,
 # and make it if it doesn't already exist, this will also
-# make a special associated node group named oscar_server
-# and a special associated configuration named oscar_server
+# make a special associated node group named oscar-server
+# and a special associated configuration named oscar-server
 
 my @nodes = ();
-print "Checking for database existence of node oscar_server ...\n";
+print "Checking for database existence of node oscar-server ...\n";
 
 # dikim commented out the LOCKING codes here because he believes
 # that InnoDB type can handle the all the crossing locking issues.
@@ -80,7 +80,7 @@ my @errors = ();
 
 # First, we create the appropriate node group for the headnode.
 # This will also create the entry for the node itself.
-my $msg = "in create_and_populate_basic_node_info Populating Nodes records for oscar_server ...\n";
+my $msg = "in create_and_populate_basic_node_info Populating Nodes records for oscar-server ...\n";
 print "DB_DEBUG>$0:====>\n$msg" if $options{debug};
 @errors = ("cannot read nodes database table");
 if (set_node_with_group($OSCAR_SERVER_NODE,
@@ -90,13 +90,13 @@ if (set_node_with_group($OSCAR_SERVER_NODE,
     die "ERROR: Impossible to set headnode information in the database";
 }
 
-# Then, we update some of the fields in the node record for oscar_server.
+# Then, we update some of the fields in the node record for oscar-server.
 # If the entry does not exist, we include it.
 # fqdn: fully qualified domain name: = $hostname.$dns_domain
 # name: hostname without dns domainname
 my $hostname = `hostname`;
 chomp ($hostname);
-print "Updating the hostname field in the oscar_server node to <$hostname> ...\n";
+print "Updating the hostname field in the oscar-server node to <$hostname> ...\n";
 %field_value_hash = ( );
 my $dns_domain = `dnsdomainname`;
 chomp ($dns_domain);
@@ -112,11 +112,11 @@ if ( defined $dns_domain && $dns_domain ne "" ) {
     %field_value_hash = ( "hostname" => $hostname );
 }
 
-if (OSCAR::Database::update_node ('oscar_server',
+if (OSCAR::Database::update_node ('oscar-server',
                                   \%field_value_hash,
                                   undef,
                                   undef) != 1) {
-    die "ERROR: Impossible to update the entry for oscar_server";
+    die "ERROR: Impossible to update the entry for oscar-server";
 }
 
 # make sure that certain node groups exist

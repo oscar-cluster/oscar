@@ -61,7 +61,7 @@ use OSCAR::Opkg;
 
 ## Begin distribution specific stuff ##
 
-my $OSCAR_SERVER_NODE = "oscar_server";
+my $OSCAR_SERVER_NODE = "oscar-server";
 my $OSCAR_SERVER_GROUP = "oscar_server";
 
 my $INTERFACE = shift or (oscar_log(1, ERROR,"No interface specified"), exit 1);
@@ -128,7 +128,7 @@ oscar_log(3, INFO, "Successfully installed server non-core binary packages");
 # Update the status of the non-core packages from installable to installed.
 # Unless node_config_revs already has the record of node_id and configurations_id,
 # do the following step. Otherwise, skip it.
-# 1. Insert core packages into config_opkgs table for oscar_server.
+# 1. Insert core packages into config_opkgs table for oscar-server.
 #    add_config_opkgs is a shortcut to insert a record of configurations_id and package_id
 #    e.g) add_config_opkgs [$configurations_id] [$package_id]
 #

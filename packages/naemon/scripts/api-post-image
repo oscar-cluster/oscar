@@ -33,7 +33,7 @@ cat >> ${IMAGEDIR}/etc/nrpe.d/oscar.cfg <<EOF
 #
 #############################################################################
 
-allowed_hosts=127.0.0.1,oscar_server
+allowed_hosts=127.0.0.1,oscar-server
 dont_blame_nrpe=1
 
 command[check_smart]=${NAGIOS_PLUGINS}/check_ide_smart -n /dev/sda

@@ -14,7 +14,7 @@ use OSCAR::SystemServicesDefs;
 use OSCAR::Package;
 
 # Default value
-my $ntpserver = "oscar_server";
+my $ntpserver = "oscar-server";
 
 
 my $ntpconfig_options = getConfigurationValues('ntpconfig');

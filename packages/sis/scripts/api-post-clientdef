@@ -165,7 +165,7 @@ my @tables = ("Nodes","Packages","Node_Package_Status","Nics","Groups","Group_No
 #=================================================================
 
 # read the pertinant OSCAR database information, start with the 
-# node records that aren't for node oscar_server (which we don't 
+# node records that aren't for node oscar-server (which we don't 
 # mess with since that cannot be a SIS installed node)
 
 print "using ODA to read the OSCAR database for node and adapters information ...\n";
@@ -183,11 +183,11 @@ my %oscar_nodes = ();
 foreach my $node_result_ref ( @nodes_results ) {
 
     # for each nodes result line with a valid node name, .....
-    # (we don't allow sis to screw up the oscar_server node), ...
+    # (we don't allow sis to screw up the oscar-server node), ...
 
     if ( exists $$node_result_ref{ name } &&
 	 $$node_result_ref{ name } ne "" &&
-	 $$node_result_ref{ name } ne "oscar_server" ) {
+	 $$node_result_ref{ name } ne "oscar-server" ) {
 	my $node_name = $$node_result_ref{ name };
 	print "found node $node_name\n" if $options{ verbose };
 
@@ -287,9 +287,9 @@ my %sis_nodes = ();
 foreach my $client ( @sis_clients ) {
     print_hash( "", "SIS function list_client client", $client ) if $options{ debug };
 
-    # if the client name is not oscar_server, ...
+    # if the client name is not oscar-server, ...
 
-    if ( $client ne "oscar_server" ) {
+    if ( $client ne "oscar-server" ) {
 
 	# create a node hash and fill in the data from the sis database
 
@@ -405,7 +405,7 @@ foreach my $node_name ( keys %sis_nodes ) {
 
     # if the node doesn't have it's installer field set to sis, do so
 
-    if ( $node_name ne "oscar_server" &&
+    if ( $node_name ne "oscar-server" &&
          ! exists $$oscar_node_ref{ installer } ||
 	     $$oscar_node_ref{ installer } ne "sis" ) {
 	print "Setting node $node_name field installer to \"sis\" ...\n";
@@ -431,7 +431,7 @@ foreach my $node_name ( keys %sis_nodes ) {
 		     $oscar_value ne $sis_value ) {
 		    print "Setting OSCAR database node $node_name" .
 			" field $field to \"$sis_value\" ...\n";
-		    if ( $options{ changes } && $node_name ne "oscar_server" ) {
+		    if ( $options{ changes } && $node_name ne "oscar-server" ) {
                 my %field_value = ( $field=>$sis_value );
                 print "Done setting field $field to \"$sis_value\".\n"
                     if update_node($node_name,\%field_value,\%oda_options,\@error_strings);

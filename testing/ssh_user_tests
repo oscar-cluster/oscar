@@ -35,7 +35,7 @@ else
 fi
 
 $OSCAR_TESTPRINT --label "SSH node->server"  
-server='oscar_server'
+server='oscar-server'
 if ssh $node1 "ssh -o 'StrictHostKeyChecking no' $server hostname >/dev/null 2>&1"
 then
   $OSCAR_TESTPRINT --label "SSH node->server" -p 

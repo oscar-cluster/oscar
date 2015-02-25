@@ -124,10 +124,10 @@ sub check_oscar_interface ($) {
     }
 
     # we check now the IP assgned to the interface used by OSCAR
-    my $oscar_ip = get_host_ip ("oscar_server", $host_file);
+    my $oscar_ip = get_host_ip ("oscar-server", $host_file);
     if ($oscar_ip eq FAILURE) {
         print " ----------------------------------------------------\n";
-        print " WARNING: oscar_server is not defined in $host_file. \n";
+        print " WARNING: oscar-server is not defined in $host_file. \n";
         print " This may be normal if this is the first time you \n";
         print " execute OSCAR.\n";
         print " ----------------------------------------------------\n";

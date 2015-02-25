@@ -13,15 +13,15 @@ sed -i -e 's/^server/# server/g' -e 's/^authenticate/# authenticate/g' ${IMAGEDI
 cat >${IMAGEDIR}/etc/ntp/step-tickers <<EOF
 # List of servers used for initial synchronization.
 
-oscar_server
+oscar-server
 EOF
 
 # Set OSCAR ntp configuration
 cat >> ${IMAGEDIR}/etc/ntp.conf <<EOF
 
 # Section added by $0 after image creation.
-server oscar_server
-restrict oscar_server mask 255.255.255.255
+server oscar-server
+restrict oscar-server mask 255.255.255.255
 EOF
 
 exit 0

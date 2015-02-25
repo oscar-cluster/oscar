@@ -251,7 +251,7 @@ sub update_image_data {
     my %data;
     my %options = ();
     my @errors = ();
-    my $OSCAR_SERVER_NODE = "oscar_server";
+    my $OSCAR_SERVER_NODE = "oscar-server";
     my $success;
 
     while ((my $package_name, my $value) = each(%data)) {

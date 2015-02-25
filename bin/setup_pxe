@@ -164,9 +164,9 @@ my $archdir = "$ARCH-boot";
 
 my $monitor_port = 8181;
 
-# Need to get the IP address of headnode (oscar_server)
+# Need to get the IP address of headnode (oscar-server)
 my @result = ();
-my $node = "oscar_server";
+my $node = "oscar-server";
 my $iface = OSCAR::Database::get_headnode_iface(undef, undef);
 if ( !defined $iface ) {
     die "ERROR: Impossible to get the network interface id used by OSCAR";
@@ -184,7 +184,7 @@ if (OSCAR::Database::get_nics_with_name_node($iface,
 }
 
 if (scalar (@result) == 0) {
-    die "ERROR: Can't get oscar_server nodes nic ip address from OSCAR database.";
+    die "ERROR: Can't get oscar-server nodes nic ip address from OSCAR database.";
 }
 
 my $node_ref = pop @result;

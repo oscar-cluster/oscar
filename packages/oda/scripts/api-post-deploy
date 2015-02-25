@@ -109,7 +109,7 @@ if ( $db_type eq "pgsql" ) {
 
 my $file = "/etc/odaserver";
 OSCAR::Opkg::opkg_print "Generating the $file file on all oscar clients...\n";
-$cmd = "/usr/bin/cexec \'echo oscar_server > $file\'";
+$cmd = "/usr/bin/cexec \'echo oscar-server > $file\'";
 OSCAR::Opkg::opkg_print "Executing: $cmd\n";
 if (system( $cmd )) {
     die ("ERROR: oda server location file $file push failed.");

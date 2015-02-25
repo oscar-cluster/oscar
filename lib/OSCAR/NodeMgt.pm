@@ -243,7 +243,7 @@ sub delete_clients (@) {
     oscar_log(3, SUBSECTION, "Turning off generic services");
     foreach my $services_ref (@generic_services) {
         my $generic_service = $$services_ref{service};
-        oscar_log(4, INFO, "Disabling $generic_service for oscar_server");
+        oscar_log(4, INFO, "Disabling $generic_service for oscar-server");
         $cmd = "/etc/init.d/$generic_service stop";
         if (oscar_system($cmd)) {
             $fail++;
@@ -387,7 +387,7 @@ sub delete_clients (@) {
     #        or (carp "ERROR: Couldn't backup dhcpd.conf file", return -1);
     #}
 
-    $cmd = "mkdhcpconf -o $dhcpd_configfile --interface=$interface --gateway=$ip --imageserver=oscar_server";
+    $cmd = "mkdhcpconf -o $dhcpd_configfile --interface=$interface --gateway=$ip --imageserver=oscar-server";
     if ($install_mode eq "systemimager-multicast") {
        $cmd = $cmd . " --multicast=yes";
     }

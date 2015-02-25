@@ -19,7 +19,7 @@
 
 # This script sets the ntp server for the client nodes (via the image in the
 # chroot environment) to be the OSCAR headnode signified by the alias
-# oscar_server
+# oscar-server
 
 use Carp;
 use OSCAR::SystemServices;

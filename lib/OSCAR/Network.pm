@@ -284,7 +284,7 @@ sub get_network_config ($$$) {
     my $gw;
     my @tables = qw( nodes nics networks );
     my @results;
-    my $node = "oscar_server";
+    my $node = "oscar-server";
     # TODO: check the return code.
     OSCAR::Database::get_nics_info_with_node($node, 
                                              \@results,
@@ -356,7 +356,9 @@ sub update_hosts ($) {
             $short=undef;
         }
     }
-    my @aliases = qw(oscar_server nfs_oscar pbs_oscar);
+    # OL: "_" is not allowed in hostname standard RFC -952 Assumptions §1 and RFC-1123
+    # We keep old aliases for compatibility, but we are also using new aliases
+    my @aliases = qw(oscar-server nfs-oscar pbs-oscar oscar-server nfs_oscar pbs_oscar);
     open(IN,"</etc/hosts.oscarbak") 
         or (oscar_log(5, ERROR, "Impossible to open /etc/hosts.oscarbak"), return -1);
     open(OUT,">/etc/hosts") 

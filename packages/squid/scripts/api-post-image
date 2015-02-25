@@ -67,15 +67,15 @@ if (-e $configurator) {
     my $valid952HostnameRegex;
     $valid952HostnameRegex = quotemeta '^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$';
     if ($squid_visible_hostname !~ /$valid952HostnameRegex/) {
-        oscar_log(3, WARNING, "Invalid visible_hostname: using oscar_server instead");
-        $squid_visible_hostname = "oscar_server";
+        oscar_log(3, WARNING, "Invalid visible_hostname: using oscar-server instead");
+        $squid_visible_hostname = "oscar-server";
     }
     if ($squid_port !~ /[0-9]{1,5}/) {
         oscar_log(3, WARNING, "Invalid squid port: using 3128 instead");
         $squid_port = 3128;
     }
 } else {
-    $squid_visible_hostname = "oscar_server";
+    $squid_visible_hostname = "oscar-server";
     $squid_port = 3128;
 } # End configurator
 

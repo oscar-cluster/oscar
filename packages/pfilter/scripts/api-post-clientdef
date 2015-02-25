@@ -112,11 +112,11 @@ chomp @conf_lines;          # lop off new-line characters at end of lines
 # if so, just update the server and node lines, if not, 
 # append all our stuff to the end
 
-if ( grep( /^\%define oscar_server/, @conf_lines ) ) {
+if ( grep( /^\%define oscar-server/, @conf_lines ) ) {
 
     print "Updating already modified pfilter configuration file $server_file\n";
     foreach my $conf_line ( @conf_lines ) {
-	$conf_line =~ s/^\%define oscar_server .*$/%define oscar_server $hostname/;
+	$conf_line =~ s/^\%define oscar-server .*$/%define oscar-server $hostname/;
 	$conf_line =~ s/^\%define nodes .*$/%define nodes @nodes/;
     }
     open(SERVER, ">$server_file") 
@@ -135,7 +135,7 @@ if ( grep( /^\%define oscar_server/, @conf_lines ) ) {
 
 # define the main OSCAR server
 
-%define oscar_server $hostname
+%define oscar-server $hostname
 
 # define the OSCAR compute nodes (this is updated when
 # compute nodes are added or taken away)
@@ -185,7 +185,7 @@ open    rsync   $on_interface
 
 # the server and every compute node trust each other
 
-trusted %oscar_server% %nodes%
+trusted %oscar-server% %nodes%
 
 # for ganglia and multicast deployment
 # WARNING: flamethrower requires more ports to be open!
@@ -215,11 +215,11 @@ if ( -f $clients_file  ) {
 # if so, just update the server and node lines, if not, 
 # append all our stuff to the end
 
-if ( grep( /^\%define oscar_server/, @client_lines ) ) {
+if ( grep( /^\%define oscar-server/, @client_lines ) ) {
 
     print "Updating already modified pfilter configuration file $clients_file\n";
     foreach my $conf_line ( @client_lines ) {
-	$conf_line =~ s/^\%define oscar_server .*$/%define oscar_server $hostname/;
+	$conf_line =~ s/^\%define oscar-server .*$/%define oscar-server $hostname/;
 	$conf_line =~ s/^\%define nodes .*$/%define nodes @nodes/;
     }
     open(CLIENTS, ">$clients_file") 
@@ -238,7 +238,7 @@ if ( grep( /^\%define oscar_server/, @client_lines ) ) {
 
 # define the main OSCAR server
 
-%define oscar_server $hostname
+%define oscar-server $hostname
 
 # define the OSCAR compute nodes (this is updated when
 # compute nodes are added or taken away)
@@ -269,7 +269,7 @@ open	tcp	ssh
 
 # the server and every compute node trust each other
 
-trusted %oscar_server% %nodes%
+trusted %oscar-server% %nodes%
 
 # let us be pingable from everywhere
 

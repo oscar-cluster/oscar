@@ -20,7 +20,7 @@
 # Authors: Olivier LAHAYE
 
 # Purpose: server-post-install for munge (run after STEP3)
-# 1. Create the /etc/munge/munge.key for oscar_server.
+# 1. Create the /etc/munge/munge.key for oscar-server.
 # 2. Enable and start the service on head node.
 
 use Carp;

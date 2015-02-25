@@ -220,7 +220,7 @@ backup_file_if_not_exist($file)
 # X11Forwarding: Forward display.
 # PermitRootLogin:yes (it is set to no on Mandriva, thus we need to enforce it.
 # IgnoreRhosts: rhosts is insecure.
-# RSAAuthentication: Not needed as it's for ssh v1 we do not use.
+# RSAAuthentication: (Not needed as it's for ssh v1 we do not use.)
 # RhostsRSAAuthentication: not used (related to ssh v1).
 # GSSAPIAuthentication: not used.
 my %sshd_config = (
@@ -229,7 +229,7 @@ my %sshd_config = (
     X11Forwarding => 'yes',
     PermitRootLogin => 'yes',
     IgnoreRhosts => 'yes',
-    RSAAuthentication => 'no',
+    RSAAuthentication => 'yes',
     RhostsRSAAuthentication => 'no',
     GSSAPIAuthentication => 'no',
 );
@@ -261,6 +261,7 @@ if (! -d $home) {
     my %ssh_keys = (
         "rsa"   => ["$home/.ssh/id_rsa", "$home/.ssh/authorized_keys"],
         "dsa"   => ["$home/.ssh/id_dsa", "$home/.ssh/authorized_keys"],
+        "ecdsa"   => ["$home/.ssh/id_ecdsa", "$home/.ssh/authorized_keys"],
 #        "rsa1"  => ["$home/.ssh/identity", "$home/.ssh/authorized_keys"],
         );
     my $orig_file;

@@ -2,7 +2,7 @@
 
 #After client RPMs are installed (to image)
 
-serverip=`ping -c 1 -w 1 oscar_server 2>/dev/null | cut -d ' ' -f 3 | \
+serverip=`ping -c 1 -w 1 oscar-server 2>/dev/null | cut -d ' ' -f 3 | \
           grep -wE "[(]([[:digit:]].*)[)]" | perl -pe "s/[()]//g"`
 
 echo "nameserver $serverip" >> /etc/resolv.conf

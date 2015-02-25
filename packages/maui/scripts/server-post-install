@@ -41,5 +41,5 @@ if (defined($use_naemon)) {
     init_naemon_config_dir() and (oscar_log(1,ERROR,"Failed to create naemon OSCAR's specific directory structure"), exit 1);
     # Check that MAUI server is listenning on default port 42559.
     $rc += write_oscar_command_cfg ('check_maui', '$USER1$/check_tcp -H $HOSTADDRESS$ -p $ARG1$ -w $ARG2$ -c $ARG3$');
-    $rc += write_oscar_service_cfg ('maui', 'host', 'oscar_server', 'check_maui!42559!1.0!1.5');
+    $rc += write_oscar_service_cfg ('maui', 'host', 'oscar-server', 'check_maui!42559!1.0!1.5');
 }

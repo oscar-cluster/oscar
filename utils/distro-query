@@ -131,9 +131,9 @@ sub print_image_detect {
 	# in the expectation that they are exported
 	for (@distro_repos, @oscar_repos) {
 	    if (!/^(http|ftp):/ && /^\//) {
-		$_ = "http://oscar_server/repo".$_;
+		$_ = "http://oscar-server/repo".$_;
 	    } elsif (/^file:/) {
-		s,^file:,http://oscar_server/repo,;
+		s,^file:,http://oscar-server/repo,;
 	    }
 	}
     }

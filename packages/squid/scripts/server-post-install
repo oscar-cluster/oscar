@@ -69,7 +69,7 @@ if (-e $configurator) {
     $squid_port = $ref->{port};
     opkg_print("squid: using configurator values\n");
 } else {
-    $squid_visible_hostname = oscar_server;
+    $squid_visible_hostname = oscar-server;
     $squid_port = 3128;
     opkg_print("squid: using default values\n");
 }

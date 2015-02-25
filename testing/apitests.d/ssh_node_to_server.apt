@@ -29,7 +29,7 @@
 <testDef>
 
   <info>
-This script tests that user can ssh from all nodes to oscar_server
+This script tests that user can ssh from all nodes to oscar-server
 
 Desired result : PASS
 </info>
@@ -50,7 +50,7 @@ do
             if ! ssh $node "ssh -o 'StrictHostKeyChecking no' ${server_alias} hostname > /dev/null 2>&amp;1"
             then
                 SOME_NODES_FAILED=1
-                echo "failed to ssh from $node to oscar_server"
+                echo "failed to ssh from $node to oscar-server"
             fi
         fi
     done

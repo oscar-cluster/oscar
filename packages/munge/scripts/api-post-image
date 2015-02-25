@@ -20,7 +20,7 @@
 # Authors: Olivier LAHAYE
 
 # Purpose: api-post-image for munge (run after image creation)
-# Copy /etc/munge/munge.key for oscar_server to the image which was just created.
+# Copy /etc/munge/munge.key for oscar-server to the image which was just created.
 # This is required in order to give nodes the ability to authenticate across the
 # cluster
 

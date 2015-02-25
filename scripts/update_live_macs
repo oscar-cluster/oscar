@@ -147,7 +147,7 @@ my @line = split /\s+/, $l;
 my $interface = $line[$#line];
 print "internal interface = $interface\n";
 
-my $cmd = "mkdhcpconf -o $dhcpd_configfile --interface=$interface --gateway=$gwip --imageserver=oscar_server";
+my $cmd = "mkdhcpconf -o $dhcpd_configfile --interface=$interface --gateway=$gwip --imageserver=oscar-server";
 if (system($cmd)) {
     die "ERROR: Impossible to successfully execute $cmd";
 }

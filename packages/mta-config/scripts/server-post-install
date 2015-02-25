@@ -24,8 +24,8 @@
 # This scripts configure the mail transfer agent on the head node
 # for the following purpose:
 #
-# 1. Allow all nodes in the oscar cluster to access to the oscar_server
-# so that the oscar_server can receive the mail in the same domain.
+# 1. Allow all nodes in the oscar cluster to access to the oscar-server
+# so that the oscar-server can receive the mail in the same domain.
 #
 # 2. Make all mail from the client nodes have a "From" address that
 # looks like it originated from the head node.  This is necessary for
@@ -91,10 +91,10 @@ given ($mta_service) {
         # First, comment out 'mynetworks_style = ' part.
         # If the inet_interfaces = all, then leave that option.
         # If the inet_interfaces has already a different option,
-        # then add the oscar option (oscar_server) behind it.
+        # then add the oscar option (oscar-server) behind it.
         # If there is no option for inet_interfaces,
         # uncomment out the "#inet_interfaces = all" and replace the 'all' option
-        # with the oscar option (oscar_server). 
+        # with the oscar option (oscar-server). 
         # And then save it to the new file (which is main.cf.server.$$).
         # And then append 'masquerade_domains = headnode.domain' at the end of 
         # the main.cf.server.$$ if it is not configured yet. 
@@ -106,9 +106,9 @@ given ($mta_service) {
 
         # Comment out 'mynetworks = ' part.
         # If the inet_interfaces = all, then leave that option.
-        # If the inet_interfaces alreay has the oscar_server, leave it untouched.
+        # If the inet_interfaces alreay has the oscar-server, leave it untouched.
         # If the inet_interfaces has a different option,
-        # then add the oscar option (oscar_server) behind it
+        # then add the oscar option (oscar-server) behind it
  
         open(IN,"<$config_file.oscarbak") or (carp "Couldn't open $config_file.oscarbak for reading!",
                                  and return undef); # FIXME: check what to return.
@@ -134,13 +134,13 @@ given ($mta_service) {
                 # If the inet_interfaces = all, then leave that option.
                 print OUT "$line\n";
                 $inet_interface_is_set=1;
-            } elsif ($line =~/^[ \t]*inet_interfaces[ \t]*=[ \t]*.*oscar_server.*/) {
-                # If the inet_interfaces contains oscar_server: it is already added: nothing to do.
+            } elsif ($line =~/^[ \t]*inet_interfaces[ \t]*=[ \t]*.*oscar-server.*/) {
+                # If the inet_interfaces contains oscar-server: it is already added: nothing to do.
                 print OUT "$line\n";
                 $inet_interface_is_set=1;
             } elsif ($line =~/^[ \t]*inet_interfaces[ \t]*=[ \t]*.*/) {
-                # inet_interfaces is not set to all, nor it contains oscar_server. We need to add it.
-                print OUT "$line, oscar_server\n";
+                # inet_interfaces is not set to all, nor it contains oscar-server. We need to add it.
+                print OUT "$line, oscar-server\n";
                 $inet_interface_is_set=1;
             } elsif ($line =~/^[ \t]*inet_protocols[ \t]*=[ \t]*.*/) {
                 # inet_protocols imust be set to ipv4 as we have disabled ipv6.
@@ -153,7 +153,7 @@ given ($mta_service) {
         }
 
         if ($inet_interface_is_set == 0) {
-            print OUT "inet_interfaces = oscar_server\n";
+            print OUT "inet_interfaces = oscar-server\n";
         }
 
         if ($oscar_comment_present == 0) {
@@ -166,8 +166,8 @@ given ($mta_service) {
 # The configuration options below were added specifically for OSCAR
 # for the following purpose:
 #
-# 1. Allow all nodes in the oscar cluster to access to the oscar_server
-# so that the oscar_server can receive the mail in the same domain.
+# 1. Allow all nodes in the oscar cluster to access to the oscar-server
+# so that the oscar-server can receive the mail in the same domain.
 #
 # 2. Make all mail from the client nodes have a "From" address that
 # looks like it originated from the head node.  This is necessary for

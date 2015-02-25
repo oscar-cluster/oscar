@@ -117,7 +117,7 @@ $errors += write_oscar_command_cfg ('check_mysql', '$USER1$/check_mysql -H $HOST
 $errors += write_oscar_command_cfg ('check_nrpe', '$USER1$/check_nrpe -H $HOSTADDRESS$ $ARG1$');
 
 # Define the check nrpe for head only.
-#write_oscar_command_cfg ('check_nrpe_head', '$USER1$/check_nrpe -H oscar_server $ARG1$');
+#write_oscar_command_cfg ('check_nrpe_head', '$USER1$/check_nrpe -H oscar-server $ARG1$');
 
 # Write oscar_<service>.cfg (ping, ssh, (HTTP-ganlia:ganglia), HTTP-naemon, MySQL-oscar, (DISK-export:nfs), PBSNODE, SATA Disk smart status)
 
@@ -128,23 +128,23 @@ $errors += write_oscar_service_cfg ('PING', 'hostgroup', 'oscar_cluster', 'check
 $errors += write_oscar_service_cfg ('SSH', 'hostgroup', 'oscar_cluster', 'check_ssh');
 
 # Check that naemon web interface is working. We assume that naemon runs on head.
-$errors += write_oscar_service_cfg ('HTTP-naemon', 'host', 'oscar_server', 'check_http!-u/naemon');
+$errors += write_oscar_service_cfg ('HTTP-naemon', 'host', 'oscar-server', 'check_http!-u/naemon');
 
 # Check that / filesystem is not full (/var/tmp /tmp ...).
-$errors += write_oscar_service_cfg ('Root-Partition', 'host', 'oscar_server', 'check_local_disk!20%!10%!/');
+$errors += write_oscar_service_cfg ('Root-Partition', 'host', 'oscar-server', 'check_local_disk!20%!10%!/');
 
 # Check that OSCAR MySQL database is up.
 $errors += write_oscar_service_cfg ('MySQL-oscar', 'host', 'localhost', 'check_mysql!-d oscar -u root');
 
 # Write oscar_hosts.cfg (nodes + head + hostgroups) OL: don't know nodes yet. will be done in api post deploy.
-# 1st, write oscar_server which is the head.
-# Get IP of oscar_server from ODA.
+# 1st, write oscar-server which is the head.
+# Get IP of oscar-server from ODA.
 my @internal_results = ();
-my $sql = "select Nics.ip from Nodes,Nics where Nodes.name='oscar_server' AND Nodes.id=Nics.node_id";
+my $sql = "select Nics.ip from Nodes,Nics where Nodes.name='oscar-server' AND Nodes.id=Nics.node_id";
 OSCAR::oda::do_query(undef, $sql, \@internal_results);
 my $oscar_server_ip = "127.0.0.1"; # Fallback default value.
 $oscar_server_ip = "$internal_results[0]->{'ip'}" if (scalar(@internal_results) ==1);
-$errors += write_oscar_host_cfg('oscar_server', 'oscar_server', $oscar_server_ip);
+$errors += write_oscar_host_cfg('oscar-server', 'oscar-server', $oscar_server_ip);
 $errors += write_oscar_host_cfg('localhost', 'localhost', "127.0.0.1"); # Required for local only testing like MySQL.
 
 # Now, set the admin password to web interface access.
