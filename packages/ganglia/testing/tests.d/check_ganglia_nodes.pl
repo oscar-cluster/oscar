@@ -137,7 +137,7 @@ if ($gnc != $onc) {
 # 2nd: check that all ODA nodes are seen by ganglia.
 for my $node (@oda_nodes) {
     next if ($$node{'hostname'} ~~ @ganglia_nodes);
-    oscar_log(1, ERROR, "Node [$node] not seen by ganglia.");
+    oscar_log(1, ERROR, "Node [$$node{'hostname'}] not seen by ganglia.");
     $return_code++;
 }
 
