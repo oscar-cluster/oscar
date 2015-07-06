@@ -91,6 +91,8 @@ GetOptions(
           );
 
 
+my $log_prefix = "oscar_wizard:";
+
 # First of all, enforce that the user running this script is 'root'
 croak "You must be 'root' to run this script.  Aborting" if ($< != 0);
 
@@ -165,8 +167,6 @@ $ENV{OSCAR_UI} = "gui";
 #} else {
 #    $oscarsamples_dir = "/usr/share/oscar/oscarsamples";
 #}
-
-my $log_prefix = "oscar_wizard:";
 
 # END processing to remove the lockfile when we die(), exit, or otherwise
 # cease to exist.
