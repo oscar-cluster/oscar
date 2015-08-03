@@ -358,7 +358,7 @@ sub update_hosts ($) {
     }
     # OL: "_" is not allowed in hostname standard RFC -952 Assumptions §1 and RFC-1123
     # We keep old aliases for compatibility, but we are also using new aliases
-    my @aliases = qw(oscar-server nfs-oscar pbs-oscar oscar-server nfs_oscar pbs_oscar);
+    my @aliases = qw(oscar-server nfs-oscar pbs-oscar oscar_server nfs_oscar pbs_oscar);
     open(IN,"</etc/hosts.oscarbak") 
         or (oscar_log(5, ERROR, "Impossible to open /etc/hosts.oscarbak"), return -1);
     open(OUT,">/etc/hosts") 
