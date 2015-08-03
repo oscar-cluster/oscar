@@ -49,7 +49,7 @@ use OSCAR::Network;
 my %options = ();
 my %field_value_hash = ();
 my $OSCAR_SERVER_NODE = "oscar-server";
-my $OSCAR_SERVER_GROUP = "oscar-server";
+my $OSCAR_SERVER_GROUP = "oscar_server";
 
 $options{debug} = 1 if $ENV{OSCAR_DB_DEBUG}; 
 $options{verbose} = 1 if $ENV{OSCAR_DB_VERBOSE}; 
