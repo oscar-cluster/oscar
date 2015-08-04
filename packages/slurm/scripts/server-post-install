@@ -1,116 +1,166 @@
-#!/usr/bin/env perl
-# $Id: server-post-install 9565 2013-01-30 17:51:47Z olahaye74 $
-# Copyright (c) 2004, The Board of Trustees of the University of Illinois.
-#                     All rights reserved.
+#!/usr/bin/perl
+#
+# Copyright (c) 2013 CEA Commissariat A l'Energie Atomique
+#                    All rights reserved.
+#
+# Previous deprecated version written in bash is
+# Copyright (c) 2004 The Trustees of Indiana University.  
+#                    All rights reserved.
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# This scripts configure the slurm batch system on the head node
+#
+# $Id: server-post-install 11034 2015-08-04 11:08:16Z olahaye74 $
+#
 
-#   This program is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 2 of the License, or
-#   (at your option) any later version.
- 
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
- 
-#   You should have received a copy of the GNU General Public License
-#   along with this program; if not, write to the Free Software
-#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-#   post_server_rpm_install for torque
-
-BEGIN {
-    if (defined $ENV{OSCAR_HOME}) {
-        unshift @INC, "$ENV{OSCAR_HOME}/lib";
-    }
-}
-
-use strict;
 use Carp;
-use lib '/usr/lib/systeminstaller';
-use SystemInstaller::Machine;
-
 use OSCAR::Opkg;
+use OSCAR::FileUtils;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
+use OSCAR::OCA::OS_Detect;
+use OSCAR::OCA::OS_Settings;
+use OSCAR::Database;
+use OSCAR::Configurator_backend;
+use feature "switch";
+# Avoid smartmatch warnings when using given
+no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 
-#######################################################
-#  Start up 'Torque Server' by restarting the daemon  #
-#######################################################
-sub startPBSserver
-{
-  system('/etc/init.d/trqauthd start');
-  if(!-f '/var/lib/torque/server_priv/serverdb' && !-f '/var/spool/pbs/server_priv/serverdb') {
-    system('/etc/init.d/pbs_server create'); # no config file: need to initialise config.
-  }
-  system('/etc/init.d/pbs_server restart');
+my $configurator = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
+
+# User has configured slurm package.
+#my $value;
+#
+#if (-e $configurator) {
+#    my $ref = OSCAR::Configurator_backend::readInConfigValues($configurator,
+#        "slurm", "", noarray=>1);
+#    $value = $ref->{value};
+#}
+
+
+# Check that chosen mta is installed. if not, then install it.
+#my $mta_package = OSCAR::OCA::OS_Settings::getitem($mta_service."_package");
+# !system("/usr/bin/packman install $mta_package")
+#            or (carp "ERROR: Couldn't install $mta_package package (provides a mail transfert agent).\n", return 0);
+#
+
+my $config_file = OSCAR::OCA::OS_Settings::getitem(SLURM()."_configfile");
+if (not -e $config_file) {
+    carp("ERROR: Cound not find $config_file. Postfix configuration aborted!\n there will be no mailservices for client nodes");
+    exit(-1);
 }
 
+# 1st, create a backup of the config file if not already done.
+backup_file_if_not_exist($config_file) or return -1;
 
-########################
-#  BEGIN MAIN PROGRAM  #
-########################
+open(IN,"<$config_file.oscarbak") or (carp "Couldn't open $config_file.oscarbak for reading!",
+                         and return undef); # FIXME: check what to return.
+open(OUT,">$config_file") or (carp "Couldn't open $config_file for writing!",
+                         and return undef); # FIXME: check what to return.
 
-startPBSserver();
+#        my $inet_interface_is_set=0;
+#        my $masquerade_domains_is_set=0;
+#        my $oscar_comment_present=0;
+#        while(my $line = <IN>) {
+#            chomp($line);
+#            if ($line =~ /^[ \t]*mynetworks[ \t]*=/) {
+#                # Comment out 'mynetworks = ' part.
+#                print OUT "# $line\n";
+#            } elsif($line =~/^[ \t]*masquerade_domains[ \t]*=[ \t]*/) {
+#                # Check if masquerade_domains is set
+#                $masquerade_domains_is_set=1;
+#                print OUT "$line\n";
+#            } elsif($line =~/^# ADDED CONFIGURATION OPTIONS FOR OSCAR/) {
+#                # Check if configuration file has already been modified by oscar.
+#                $oscar_comment_present=1;
+#                print OUT "$line\n";
+#            } elsif ($line =~/^[ \t]*inet_interfaces[ \t]*=[ \t]*all/) {
+#                # If the inet_interfaces = all, then leave that option.
+#                print OUT "$line\n";
+#                $inet_interface_is_set=1;
+#            } elsif ($line =~/^[ \t]*inet_interfaces[ \t]*=[ \t]*.*oscar-server.*/) {
+#                # If the inet_interfaces contains oscar-server: it is already added: nothing to do.
+#                print OUT "$line\n";
+#                $inet_interface_is_set=1;
+#            } elsif ($line =~/^[ \t]*inet_interfaces[ \t]*=[ \t]*.*/) {
+#                # inet_interfaces is not set to all, nor it contains oscar-server. We need to add it.
+#                print OUT "$line, oscar-server\n";
+#                $inet_interface_is_set=1;
+#            } elsif ($line =~/^[ \t]*inet_protocols[ \t]*=[ \t]*.*/) {
+#                # inet_protocols imust be set to ipv4 as we have disabled ipv6.
+#                print OUT "inet_protocols = ipv4\n";
+#                $inet_interface_is_set=1;
+#            } else {
+#                # It's another line, just report it.
+#                print OUT "$line\n";
+#            }
+#        }
+#
+#        if ($inet_interface_is_set == 0) {
+#            print OUT "inet_interfaces = oscar-server\n";
+#        }
+#
+#        if ($oscar_comment_present == 0) {
+#            print OUT <<INLINE_TEXT;
 
-# Config Torque sched service not to start since we use Maui
-# In order to prevent a conflict when Maui is to be used,
-# 'pbs_sched' is disabled, then. 'pbs_sched' should be installed
-# by default
-if (-f '/etc/init.d/pbs_sched') {
-    if (-f '/etc/init.d/maui') {
-        system('/sbin/chkconfig --del pbs_sched');
-    }
-} else {
-    print "WARNING! PBS Scheduler is not installed, but should be.\n";
-}
-# Config Torque server service to start
-system('/sbin/chkconfig --add pbs_server');
+#
+# ADDED CONFIGURATION OPTIONS FOR OSCAR
+#
 
-opkg_print("...updating xpbsmonrc file\n");
-my $arch = `uname -i`;
-chomp($arch);
+# The configuration options below were added specifically for OSCAR
+# for the following purpose:
+#
+# 1. Allow all nodes in the oscar cluster to access to the oscar-server
+# so that the oscar-server can receive the mail in the same domain.
+#
+# 2. Make all mail from the client nodes have a "From" address that
+# looks like it originated from the head node.  This is necessary for
+# OSCAR clusters that are private and may have non-public IP names and
+# addresses -- some mail servers will reject mail if they have a
+# "From" address that is not DNS-resolvable.  Hence, we allow it to
+# have a "From" address the same as the OSCAR head node's public IP
+# address, which hopefully will be DNS resolvable.  Specifically, mail
+# servers receiving mail from the OSCAR server will accept it because
+# it can DNS resolve the OSCAR server (etc.).
 
-my $xpbsmonrc;
+#INLINE_TEXT
+#        }
 
-# Attention: More sophistication needed here.
-# Check for 32/64 bit architecture AND
-# Check if using /opt located oscar torque package or distro torque package
-if ($arch eq "x86_64") {
-    if (-f "/usr/lib64/xpbsmon/xpbsmonrc") {
-        $xpbsmonrc = "/usr/lib64/xpbsmon/xpbsmonrc";
-    } else {
-        $xpbsmonrc = "/opt/pbs/lib64/xpbsmon/xpbsmonrc";
-    } 
-} else {
-    if (-f "/usr/lib/xpbsmon/xpbsmonrc") {
-        $xpbsmonrc = "/usr/lib/xpbsmon/xpbsmonrc";
-    } else {
-        $xpbsmonrc = "/opt/pbs/lib/xpbsmon/xpbsmonrc";
-    }
-}
+#        if ($masquerade_domains_is_set == 0) {
+#            my $dnsdomainname=`hostname -d`;
+#            chomp($dnsdomainname);
+#            printf OUT <<INLINE_TEXT;
+## Strips any.thing.$dnsdomainname to $dnsdomainname in the domain part of email address.
+#masquerade_domains = $dnsdomainname
+#
+#INLINE_TEXT
+#        }
+close(OUT);
+close(IN);
+print "[INFO] Slurm is succesfully configured. : SERVER NODE\n";
 
-# Eventually 'torque_gui' is not installed, so we cannot configure xpbsmonrc
-if (-f $xpbsmonrc) {
-    my @lines = `cat $xpbsmonrc`;
-    grep { s/ICON.*$/ICON;pbs_oscar;pbs_oscar;;;}/ } @lines;
+# Restart the postfix service
+!system_service(SURM(),RESTART())
+    or (carp "ERROR: Couldn't restart sulrm service.", exit(-1));
 
-    open (RCFILE, ">$xpbsmonrc") 
-      or croak("Error: XPBSMONRC not setup - Couldn't open $xpbsmonrc.\n");
-    print RCFILE @lines; 
-    close (RCFILE);
-} else {
-    print "xpbsmon not installed!\n"
-}
+# Enable the postfix service
+!enable_system_services( (SLURM()) )
+    or (carp "ERROR: Couldn't enable postfix service.", exit(-1));
 
-my $rm_detect_dir;
-if (defined $ENV{OSCAR_HOME}) {
-    $rm_detect_dir = "$ENV{OSCAR_HOME}/lib/";
-} else {
-    require OSCAR::Utils;
-    $rm_detect_dir = OSCAR::Utils::get_path_perl_modules ();
-}
-$rm_detect_dir .= "/OSCAR/OCA/RM_Detect";
+# Succeffully configured slurm.
+print "[INFO] slurm: successfully configured batch queueing system on the head node\n";
 
-# Copy RM_Detect component for TORQUE to the right location
-my $rm_file = "/usr/lib/oscar/packages/torque/TORQUE.pm";
-system("cp -a $rm_file $rm_detect_dir") == 0 
-    or croak("Failed to copy $rm_file to $rm_detect_dir");
+exit 0;
