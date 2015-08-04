@@ -47,6 +47,7 @@ use constant SI_RSYNC       => 'rsync';
 use constant SI_SERVER      => 'systemimager';
 use constant SI_FLAMETHROWER => 'flamethrower';
 use constant SI_BITTORRENT  => 'bittorrent';
+use constant SLURM          => 'slurm';
 use constant SSH            => 'ssh';
 use constant SQUID          => 'squid';
 use constant SYSLOG         => 'syslog';
@@ -103,6 +104,7 @@ our @EXPORT = qw(
                 SI_SERVER
                 SI_FLAMETHROWER
                 SI_BITTORRENT
+                SLURM
                 SQUID
                 START
                 STOP
