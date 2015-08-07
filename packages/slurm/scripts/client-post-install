@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: client-post-install 9722 2013-03-21 15:34:37Z olahaye74 $
+# $Id: client-post-install 9722 2015-08-04 18:07:13Z olahaye74 $
 # Copyright (c) 2004, The Board of Trustees of the University of Illinois.
 #		      All rights reserved.		      
 
@@ -17,15 +17,18 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#   post_clients_rpm_install for torque 
+#   post_clients_rpm_install for slurm 
 
 use strict;
 use Carp;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
+use feature "switch";
+# Avoid smartmatch warnings when using given
+no if $] >= 5.017011, warnings => 'experimental::smartmatch';
+
+# Enable the slurm service
+!enable_system_services( SLURM )
+    or (carp "ERROR: Couldn't enable slurm service.", exit(-1));
 
 
-# Config Torque mom service to start
-system('/sbin/chkconfig --add pbs_mom');
-# The line below should be useless as the initscript has a default start.
-# but some distros provide an old school script with no default start.
-system('/sbin/chkconfig --level 35 pbs_mom on');
-system('/sbin/service pbs_mom start');

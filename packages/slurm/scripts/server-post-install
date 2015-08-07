@@ -28,139 +28,35 @@
 
 use Carp;
 use OSCAR::Opkg;
+use OSCAR::Utils;
 use OSCAR::FileUtils;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
-use OSCAR::OCA::OS_Detect;
-use OSCAR::OCA::OS_Settings;
-use OSCAR::Database;
-use OSCAR::Configurator_backend;
 use feature "switch";
 # Avoid smartmatch warnings when using given
 no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 
-my $configurator = "$ENV{OSCAR_PACKAGE_HOME}/configurator.html";
+# Enable the slurm service
+!enable_system_services( SLURM )
+    or (carp "ERROR: Couldn't enable slurm service.", exit(-1));
 
-# User has configured slurm package.
-#my $value;
-#
-#if (-e $configurator) {
-#    my $ref = OSCAR::Configurator_backend::readInConfigValues($configurator,
-#        "slurm", "", noarray=>1);
-#    $value = $ref->{value};
-#}
-
-
-# Check that chosen mta is installed. if not, then install it.
-#my $mta_package = OSCAR::OCA::OS_Settings::getitem($mta_service."_package");
-# !system("/usr/bin/packman install $mta_package")
-#            or (carp "ERROR: Couldn't install $mta_package package (provides a mail transfert agent).\n", return 0);
-#
-
-my $config_file = OSCAR::OCA::OS_Settings::getitem(SLURM()."_configfile");
-if (not -e $config_file) {
-    carp("ERROR: Cound not find $config_file. Postfix configuration aborted!\n there will be no mailservices for client nodes");
-    exit(-1);
+# Get RM_Detect full path.
+my $rm_detect_dir;
+if (defined $ENV{OSCAR_HOME}) {
+    $rm_detect_dir = "$ENV{OSCAR_HOME}/lib/";
+} else {
+    require OSCAR::Utils;
+    $rm_detect_dir = OSCAR::Utils::get_path_perl_modules ();
 }
+$rm_detect_dir .= "/OSCAR/OCA/RM_Detect";
 
-# 1st, create a backup of the config file if not already done.
-backup_file_if_not_exist($config_file) or return -1;
-
-open(IN,"<$config_file.oscarbak") or (carp "Couldn't open $config_file.oscarbak for reading!",
-                         and return undef); # FIXME: check what to return.
-open(OUT,">$config_file") or (carp "Couldn't open $config_file for writing!",
-                         and return undef); # FIXME: check what to return.
-
-#        my $inet_interface_is_set=0;
-#        my $masquerade_domains_is_set=0;
-#        my $oscar_comment_present=0;
-#        while(my $line = <IN>) {
-#            chomp($line);
-#            if ($line =~ /^[ \t]*mynetworks[ \t]*=/) {
-#                # Comment out 'mynetworks = ' part.
-#                print OUT "# $line\n";
-#            } elsif($line =~/^[ \t]*masquerade_domains[ \t]*=[ \t]*/) {
-#                # Check if masquerade_domains is set
-#                $masquerade_domains_is_set=1;
-#                print OUT "$line\n";
-#            } elsif($line =~/^# ADDED CONFIGURATION OPTIONS FOR OSCAR/) {
-#                # Check if configuration file has already been modified by oscar.
-#                $oscar_comment_present=1;
-#                print OUT "$line\n";
-#            } elsif ($line =~/^[ \t]*inet_interfaces[ \t]*=[ \t]*all/) {
-#                # If the inet_interfaces = all, then leave that option.
-#                print OUT "$line\n";
-#                $inet_interface_is_set=1;
-#            } elsif ($line =~/^[ \t]*inet_interfaces[ \t]*=[ \t]*.*oscar-server.*/) {
-#                # If the inet_interfaces contains oscar-server: it is already added: nothing to do.
-#                print OUT "$line\n";
-#                $inet_interface_is_set=1;
-#            } elsif ($line =~/^[ \t]*inet_interfaces[ \t]*=[ \t]*.*/) {
-#                # inet_interfaces is not set to all, nor it contains oscar-server. We need to add it.
-#                print OUT "$line, oscar-server\n";
-#                $inet_interface_is_set=1;
-#            } elsif ($line =~/^[ \t]*inet_protocols[ \t]*=[ \t]*.*/) {
-#                # inet_protocols imust be set to ipv4 as we have disabled ipv6.
-#                print OUT "inet_protocols = ipv4\n";
-#                $inet_interface_is_set=1;
-#            } else {
-#                # It's another line, just report it.
-#                print OUT "$line\n";
-#            }
-#        }
-#
-#        if ($inet_interface_is_set == 0) {
-#            print OUT "inet_interfaces = oscar-server\n";
-#        }
-#
-#        if ($oscar_comment_present == 0) {
-#            print OUT <<INLINE_TEXT;
-
-#
-# ADDED CONFIGURATION OPTIONS FOR OSCAR
-#
-
-# The configuration options below were added specifically for OSCAR
-# for the following purpose:
-#
-# 1. Allow all nodes in the oscar cluster to access to the oscar-server
-# so that the oscar-server can receive the mail in the same domain.
-#
-# 2. Make all mail from the client nodes have a "From" address that
-# looks like it originated from the head node.  This is necessary for
-# OSCAR clusters that are private and may have non-public IP names and
-# addresses -- some mail servers will reject mail if they have a
-# "From" address that is not DNS-resolvable.  Hence, we allow it to
-# have a "From" address the same as the OSCAR head node's public IP
-# address, which hopefully will be DNS resolvable.  Specifically, mail
-# servers receiving mail from the OSCAR server will accept it because
-# it can DNS resolve the OSCAR server (etc.).
-
-#INLINE_TEXT
-#        }
-
-#        if ($masquerade_domains_is_set == 0) {
-#            my $dnsdomainname=`hostname -d`;
-#            chomp($dnsdomainname);
-#            printf OUT <<INLINE_TEXT;
-## Strips any.thing.$dnsdomainname to $dnsdomainname in the domain part of email address.
-#masquerade_domains = $dnsdomainname
-#
-#INLINE_TEXT
-#        }
-close(OUT);
-close(IN);
-print "[INFO] Slurm is succesfully configured. : SERVER NODE\n";
-
-# Restart the postfix service
-!system_service(SURM(),RESTART())
-    or (carp "ERROR: Couldn't restart sulrm service.", exit(-1));
-
-# Enable the postfix service
-!enable_system_services( (SLURM()) )
-    or (carp "ERROR: Couldn't enable postfix service.", exit(-1));
+# Copy RM_Detect component for SLURM to the right location
+my $rm_file = "/usr/lib/oscar/packages/slurm/SLURM.pm";
+oscar_system("cp -a $rm_file $rm_detect_dir") == 0
+    or ($rc++, oscar_log(5, ERROR, "Failed to copy $rm_file to $rm_detect_dir"), exit 1);
 
 # Succeffully configured slurm.
-print "[INFO] slurm: successfully configured batch queueing system on the head node\n";
+print "[INFO] slurm: successfully enabled batch queuing system on the head node\n";
 
 exit 0;
+

@@ -1,0 +1,69 @@
+<!--
+Copyright (c) 2013, The Board of Trustees of the University of Illinois. All rights reserved.
+Author: Olivier Lahaye olivier.lahaye@cea.fr
+Cloned from torque config from: Jeremy Enos jenos@ncsa.uiuc.edu
+$Id:$
+-->
+<html>
+<head>
+	<title>SLURM Batch System Configuration</title>
+</head>
+<body>
+	<form>
+		<input name="cluster_name" value="OSCAR Cluster" order="1">
+			Name of Cluster
+		</input>
+		<br />
+		<input name="control_machine" value="oscar-server" order="2">
+			Jobs submission node (default: head node)
+		</input>
+		<br />
+		<p order="3"><h2>Head node as compute node.</h2></p>
+		<p order="4">
+			For smaller clusters, some admins may wish to use the head node (OSCAR server)
+			as a compute node too.  This is not recommended for larger clusters.
+		</p>
+		<input type="checkbox" name="compute_on_head" value="YES" order="3">  
+			Run batch system client (slurm client) on head node
+		</input>
+		<p order="5">
+			<h2>AuthType</h2>
+		</p>
+		<input checked="1" type="radio" name="auth_type" order="6" value="auth/munge">
+			munge
+		</input> <br />
+		<input type="radio" name="auth_type" order="7" value="auth/authd">
+			authd
+		</input> <br />
+		<input type="radio" name="auth_type" order="8" value="auth/none">
+			none
+		</input> <br />
+		<br />
+		<p order="9">
+			<h2>CheckpointType</h2>
+		</p>
+		<input type="radio" name="checkpoint_type" order="10" value="checkpoint/blcr">
+			blcr
+		</input> <br />
+		<input type="radio" name="checkpoint_type" order="11" value="checkpoint/ompi">
+			open mpi
+		</input> <br />
+		<input checked="1" type="radio" name="checkpoint_type" order="12" value="checkpoint/none">
+			none
+		</input> <br />
+		<br />
+		<p order="13">
+			<h2>CryptoType</h2>
+		</p>
+		<input checked="1" type="radio" name="crypto_type" order="14" value="crypto/munge">
+			munge
+		</input> <br />
+		<input type="radio" name="crypto_type" order="15" value="crypto/openssl">
+			openssl
+		</input> <br />
+		<br />
+		<input type="reset" value='Reset Form' />
+	</form>
+	<hr />
+</body>
+</html>

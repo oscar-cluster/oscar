@@ -1,151 +1,47 @@
 #!/usr/bin/perl
-# $Id: api-post-deploy 9722 2013-03-21 15:34:37Z olahaye74 $
+########################################################################
+#  Script Name : api-post-image
+#  Written by  : Olivier Lahaye
+#  Date        : August 04, 2015
+#  Purpose     : This post_install script deploys the slurm.conf into images
+#  Copyright (c) Olivier Lahaye 2015
+#                All rights reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#########################################################################
+# $Id: api-post-clientdef 10570 2015-08-04 14:58:43Z olahaye74 $
+#########################################################################
 
-# Copyright (c) 2004, The Board of Trustees of the University of Illinois.
-#                     All rights reserved.
-
-#   This program is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 2 of the License, or
-#   (at your option) any later version.
- 
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
- 
-#   You should have received a copy of the GNU General Public License
-#   along with this program; if not, write to the Free Software
-#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-#   post_clients for torque
-#                        generates torque config files from clamdr entries
-
-use strict;
-use lib "$ENV{OSCAR_HOME}/lib";
-use lib "/usr/lib/systeminstaller";
 use OSCAR::Opkg;
 use OSCAR::Package;
+use OSCAR::Utils;
+use OSCAR::Logger;
+use OSCAR::LoggerDefs;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
+use OSCAR::OCA::OS_Settings;
+use OSCAR::FileUtils;
+use SystemInstaller::Machine; # get_machine_listing()
+#use Getopt::Long;  # Used to get command line option
+use strict;
 use Carp;
-use Data::Dumper;
-use SystemInstaller::Machine;
-use Getopt::Long;  # Used to get command line option
-my $default;       # Did we type --default on the command line?
+use v5.10.1;
+# Avoid smartmatch warnings when using given
+no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 
-#########################################################################
-# Guess SLURM home is it /usr or /opt/pbs ?
-#########################################################################
-
-my $slurm_home;
-# Trying to find the torque home using slurmnodes. Note that even if alternatives
-# is used, slurmnodes is not part of alternatives, thus we are sure that if found,
-# it's the original one (slurmnodes-torque does not exists)
-if (-f '/usr/bin/sinfo') {
-   $slurm_home='/usr';
-} else {
-   $slurm_home='/opt/slurm';
-}
-
-
-#########################################################################
-#  compactSpaces strips off the leading and trailing spaces from a      #
-#  string.  If you also pass in $compact=1, then it compresses multiple #
-#  spaces within the string down to 1 space.  Also, you can pass in     #
-#  $commas=1 to change commas to spaces prior to compacting.            #
-#########################################################################
-sub compactSpaces # ($string,$compact,$commas) -> $string
-{
-  my($string,$compact,$commas) = @_;
-
-  $string =~ s/,/ /g if ($commas);     # Change commas to spaces
-  $string =~ s/^\s*//;                 # Strip off leading spaces
-  $string =~ s/\s*$//;                 # Strip off trailing spaces
-  $string =~ s/\s+/ /g if ($compact);  # Compact multiple spaces
-  return $string; 
-}
-
-#########################################################################
-#  Subroutine name : parseCommandLine                                   #
-#  Parameters : none                                                    #
-#  Returns    : nothing                                                 #
-#  This function scans the command line for options and stores their    #
-#  values in global variables.                                          #
-#########################################################################
-sub parseCommandLine
-{
-  $Getopt::Long::autoabbrev = 1;
-  $Getopt::Long::getopt_compat = 1;     # Allow + for options
-  $Getopt::Long::order = $PERMUTE;      # Option reordering
-  &GetOptions("default" => \$default);
-}
-
-#########################################################################
-#  Check to see if 'SLURM Server' is running.  If not, then start it.  #
-#########################################################################
-sub startSLURMserver
-{
-  open(CMD,"/sbin/service slurm status |");
-  my $result = <CMD>;
-  close(CMD);
-  system('/sbin/service slurm start')
-      unless ($result =~ /is running/);
-  # Trying to find the qstat binary. if alternatives is used, it can be named qstat-torque
-  # So we check for qstat and qstat-torque in $slurm_home/bin
-  my $squeue_bin="";
-  if ( -f $slurm_home."/bin/squeue" ) {
-      my $squeue_bin=$slurm_home."/bin/squeue"; }
-  else {
-      warn("Unable to find squeue binary in $slurm_home/bin/\n");
-      return -1;
-  }
-  # need to wait until slurm is up.(we are here before it is up)
-  for(my $i=0; $i < 10; $i++) {
-      system($squeue_bin." 2> /dev/null");
-      if($? != 0) {
-          print "Server not ready for communication: sleeping 1 second....\n";
-          sleep 1;
-      } else {
-          return 0;
-      }
-  }
-  # 10 squeue without success, there is a problem.
-  warn("Unable to communicatate with slurm\n");
-  return -1;
-}
-
-sub restartSLURMserver
-{
-  system('/sbin/service slurm restart');
-}
-
-######################################################################
-#  Check to see if workq is defined                                  #
-######################################################################
-sub isWorkqDefined
-{
-  open(CMD,$slurm_home."/bin/qmgr -c 'l q workq' |");
-  my $result = <CMD>;
-  close(CMD);
-  if($result =~ /^Queue workq/) {
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
-######################################################################
-#  Check to see if 'Maui' is running.  If not, then start it.        #
-######################################################################
-sub restartMaui
-{
-#  open(CMD,"/etc/init.d/maui status |");
-#  my $result = <CMD>;
-#  close(CMD);
-  system('/etc/init.d/maui restart');
-  #    unless ($result =~ /is running/);
-}
-
-# Use Schwartzian transform to sort node names alphabetically and numerically.
 # Names w/o numeric suffix preceed those with numeric suffix.
 sub sortnodes(@) {
 	return map { $_->[0] }
@@ -154,59 +50,114 @@ sub sortnodes(@) {
 	       @_;
 }
 
+# Get all configured packages so we can check the one we may interract with (jobmonarch, blcr, maui, openmpi, ...)
+my @pkgs = OSCAR::Database::list_selected_packages();
+
+# OSCAR Default values for slurm.conf.
+my $cluster_name="OSCAR Cluster";
+my $control_machine="oscar-server";
+my $auth_type="auth/munge";
+my $checkpoint_type="checkpoint/blcr";
+my $crypto_type="crypto/munge";
+my $compute_on_head = "NO"; 
+
+# Read in configurator values for slurm
+my $configvalues = getConfigurationValues('slurm');
+
+# User has configured slurm package.
+if (defined ($configvalues)) {
+    $cluster_name = $configvalues->{cluster_name}[0];
+    $control_machine = $configvalues->{control_machine}[0];
+    $auth_type = $configvalues->{auth_type}[0];
+    $checkpoint_type = $configvalues->{checkpoint_type}[0];
+    $crypto_type = $configvalues->{crypto_type}[0];
+    $compute_on_head = $configvalues->{compute_on_head}[0];
+}
+
+# Get the config file name and back it up is needed.
+my $config_file = OSCAR::OCA::OS_Settings::getitem(SLURM()."_configfile");
+if (-e $config_file) {
+    # 1st, create a backup of the config file if not already done.
+    backup_file_if_not_exist($config_file) or return -1;
+}
+
+# Open file for writing.
+open(CONF,">$config_file") or (carp "Couldn't open $config_file for writing!",
+                         and return undef); # FIXME: check what to return.
+
+print CONF <<EOF;
+# slurm.conf file generated by $0.
+# Please run configurator.html (in doc/html) to build a configuration file customized
+# for your environment. Copy this file on all nodes.
+# See the slurm.conf man page for more information.
+#
+ClusterName=$cluster_name
+ControlMachine=$control_machine
+SlurmUser=slurm
+SlurmctldPort=6817
+SlurmdPort=6818
+AuthType=$auth_type
+CacheGroups=1
+CheckpointType=$checkpoint_type
+CryptoType=$crypto_type
+CheckpointType=$checkpoint_type
+#EnforcePartLimits=YES
+PrivateData=jobs
+ProctrackType=proctrack/pgid
+ReturnToService=1
+StateSaveLocation=/var/spool
+SlurmdSpoolDir=/var/spool/slurmd
+SlurmctldPidFile=/var/run/slurmctld.pid
+SlurmdPidFile=/var/run/slurmd.pid
+
+EOF
+
+if ( 'jobmonarch' ~~ @pkgs ) {
+    # TODO: jobmonarch
+# If jobmonarch enabled need accounting infos
+# AccountingStorageEnforce=limits
+# AccountingStorageHost=$control_machine
+# AccountingStoragePort=6819
+# AccountingStorageType=accounting_storage/slurmdbd
+# AccountingStoreJobComment=YES
+
+    opkg_print("Accounting not yet supported in slurm config (jobmonarch)\n");
+# Update the server's nodes file (optionally for only one image).
+}
+
+if( 'blcr' ~~ @pkgs ) {
+    # TODO: blcr
+    opkg_print("Make sure you've set CheckpointType= to checkpoint/blcr\n");
+}
+
+#my $image = shift; # Optionally provide an image name.
+
 ########################
 #  BEGIN MAIN PROGRAM  #
 ########################
 
-# Read in configurator values
-my $configvalues = getConfigurationValues('torque');
-my $compute_on_head = ($configvalues->{compute_on_head}[0]);
-my $loglevel = ($configvalues->{loglevel}[0]);
-# In case configurator wasn't run, provide a default
-if ($loglevel eq "") {
-  $loglevel = 64 ;
+oscar_log(5, INFO, "Compute on head node is set to $compute_on_head\n");
+
+# Check if we're using MAUI Scheduler
+if ( 'maui' ~~ @pkgs ) {
+    # Using MAUI: need to add some slurm config
+    opkg_print("Using MAUI with slurm (not tessted/supported)\n");
+    print CONF <<EOF;
+#
+# MAUI specific part
+SchedulerType=sched/wiki
+SchedulerPort=7321
+# Check that AuthKey is correctly set up in wiki.conf
+# See https://computing.llnl.gov/linux/slurm/maui.html for more info
+# End of MAUI specific part
+EOF
+    oscar_log(5, WARNING, "wiki.conf file not created. More info here: https://computing.llnl.gov/linux/slurm/maui.html");
 }
-
-#print "Compute on head node is set to $compute_on_head\n";
-
-# Call the update SLURM mom config script
-print `../packages/torque/scripts/update_mom_config`;
-
-startSLURMserver();
-
-parseCommandLine();
-
-# Update the server's nodes file (optionally for only one image).
-my $image = shift; # Optionally provide an image name.
 
 opkg_print("Updating slurm nodes\n");
 
-# Read in the current nodes as shown by 'slurmnodes -a'
-open (CMD,$slurm_home.'/bin/sinfo -N |');
-my $inp = "";
-my $server = "";
-my $opt = "";
-my $val = "";
-my %slurmnodes;
-while ($inp = <CMD>)
-  {
-    chomp($inp);
-    if ($inp =~ /^\s*([^=]+)\s*$/) 
-      { 
-        $server = $1; 
-      }
-    elsif ($inp =~ /^\s*([^=]+)\s*=\s*([^=]+)\s*$/) 
-      { 
-        $opt = $1; 
-        $val = $2; 
-        $slurmnodes{$server}{$opt} = $val;
-      } 
-  }
-close (CMD);
-#print Dumper(\%slurmnodes);
-
 # Get listing of nodes from the SIS database
-my %nodes = get_machine_listing($image);
+my %nodes = get_machine_listing();
 
 # OL: TODO: Code duplication. Need to use nodes code
 if ($compute_on_head eq "YES") {
@@ -234,177 +185,54 @@ if ($compute_on_head eq "YES") {
 my $TOT_NODES = 0;
 my $TOT_NP = 0;
 my $hostname = "";
-foreach my $node (sortnodes( keys %nodes )) 
-  {
+my $all_nodes = "";
+
+print CONF "\n#\n# Node Configurations\n#\n";
+
+# Add nodes to slurm config file
+foreach my $node (sortnodes( keys %nodes )) {
     # If NUM_PROCS is not defined for this node, skip this node entirely
     next unless ($nodes{$node}{NUM_PROCS});
 
     # Check each node against the output from 'slurmnodes -a'
     $hostname = $nodes{$node}{HOST};
-    if ($slurmnodes{$hostname})
-      {
-        system($slurm_home."/bin/slurmnodes -o $hostname");
-        # Reset the number of processors for this node
-        my $qmgr_cmd=$slurm_home.'/bin/qmgr -a -e -c "set node ' . $hostname .
-                     ' np = ' . $nodes{$node}{NUM_PROCS};
-        # and number of GPUs if any
-        if ($nodes{$node}{NUM_GPUS}>0) {
-	    $qmgr_cmd.=', gpus = ' . $nodes{$node}{NUM_GPUS};
-        }
-        $qmgr_cmd.='"';
-	system($qmgr_cmd);
-        # Search the properties for 'all' and add it if not found
-        my(@props) = split(/,/,$slurmnodes{$hostname}{'properties '});
-        my($alldefined) = "";
-        foreach my $prop (@props)
-          {
-            $alldefined = 1 if $prop eq 'all';
-          }
-        system($slurm_home.'/bin/qmgr -a -e -c "set node ' . $hostname . 
-               ' properties += all"') unless $alldefined;
-        system($slurm_home."/bin/slurmnodes -c $hostname");
-        # Remove from slurmnodes hash
-        delete $slurmnodes{$nodes{$node}{HOST}};
-      }
-    else
-      { # Didn't find a match -> ADD the node
-        my $qmgr_cmd=$slurm_home.'/bin/qmgr -a -e -c "create node ' . $hostname .
-                     ' np = ' . $nodes{$node}{NUM_PROCS};
-        if ($nodes{$node}{NUM_GPUS}>0) {
-            $qmgr_cmd.=' , gpus = ' . $nodes{$node}{NUM_GPUS};
-        }
-        $qmgr_cmd.=' , properties = all"';
-        system($qmgr_cmd);
-      }
-    
+    print CONF "NodeName=".$nodes{$node}{HOST}." CPUs=".$nodes{$node}{NUM_PROCS}." State=UNKNOWN\n"; # GPUs: $nodes{$node}{NUM_GPUS}
+    $all_nodes .= $nodes{$node}{HOST}." ";
+
     # Count up the number of nodes and processors
     $TOT_NODES++;
     $TOT_NP += $nodes{$node}{NUM_PROCS};
-  }
-# print Dumper(\%nodes);
+}
 
-# Now go through the remaining slurmnodes hash and delete these nodes
-foreach my $node (sortnodes( keys %slurmnodes )) 
-  {
-    system($slurm_home.'/bin/qmgr -a -e -c "delete node ' . $node . '"');
-  }
-# OL: we don't need to restart the server.
-# restartSLURMserver();
+# Next, set up the values for workq
+opkg_print("Creating SLURM workq partition...\n");
 
-if(isWorkqDefined()) {
-  opkg_print("workq already defined...Skipping queue creation...\n");
-} else {
-  # Next, use qmgr command to set up the values for workq
-  opkg_print("Creating SLURM workq queue...\n");
+print CONF "\n#\n# Partition Configurations\n#";
+print CONF "PartitionName=workq $all_nodes Default=YES MaxTime=INFINITE State=UP\n";
  
-  # These are default values set only when not present or when --default
-  my @default_params = (
-    'create queue workq',
-    'set queue workq queue_type                 = Execution',
-    'set queue workq resources_max.cput         = 10000:00:00',
-    'set queue workq resources_max.walltime     = 10000:00:00',
-    'set queue workq resources_min.cput         = 00:00:01',
-    'set queue workq resources_min.ncpus        = 1',
-    'set queue workq resources_min.nodect       = 1',
-    'set queue workq resources_min.walltime     = 00:00:01',
-    'set queue workq resources_default.cput     = 10000:00:00',
-    'set queue workq resources_default.ncpus    = 1',
-    'set queue workq resources_default.nodect   = 1',
-    'set queue workq resources_default.walltime = 10000:00:00',
-    'set queue workq enabled                    = True',
-    'set queue workq started                    = True',
-    'set server scheduling                      = True',
-    'set server default_queue                   = workq',
-    'set server mail_from                       = adm',
-    'set server query_other_jobs                = True',
-  );
+close(CONF);
 
-  # These are variable parameters that are set everytime
-  my @variable_params = (
-    "set queue workq resources_max.ncpus        = $TOT_NP",
-    "set queue workq resources_max.nodect       = $TOT_NODES",
-    "set queue workq resources_available.nodect = $TOT_NODES",
-    "set server resources_available.ncpus       = $TOT_NP",
-    "set server resources_available.nodect      = $TOT_NODES",
-    "set server resources_available.nodes       = $TOT_NODES",
-    "set server resources_max.ncpus             = $TOT_NP",
-    "set server resources_max.nodes             = $TOT_NODES",
-    "set server scheduler_iteration             = 60",
-    "set server log_events                      = $loglevel",
-  );
-
-  # First, read in the current values for the localhost
-  undef $/;   # Suck in the entire files into one big string
-  open (CMD,$slurm_home.'/bin/qmgr -a -e -c "print server @localhost" |');
-  my $cmd_output = <CMD>;
-  close (CMD);
-
-  # Next, build up a command string to pass back to the qmgr command.
-  my $line = "";
-  my $key = "";
-  my $value = "";
-  my $cmd_input = "";
-
-  # Search through the default_params for anything missing.
-  foreach $line (@default_params)
-    {
-      ($key,$value) = split /=/, $line;
-      $key = compactSpaces($key);
-      $value = compactSpaces($value);
-      if ($value eq "")
-        { # Search for just the $key since there's no value for it.
-          $cmd_input .= "$key\n" if
-            ($cmd_output !~ /$key/m) || 
-            (defined($default) && $key !~ /create/);
-        }
-      else
-        { # Search for "$key =".  Output key and value if needed.
-          $cmd_input .= "$key = $value\n" if
-            ($cmd_output !~ /$key\s*=/m) || defined($default);
-        }
-    }
-
-  # Then, force the setting of the of the variable_params.
-  foreach $line (@variable_params)
-    {
-      ($key,$value) = split /=/, $line;
-      $key = compactSpaces($key);
-      $value = compactSpaces($value);
-      $cmd_input .= "$key";
-      $cmd_input .= " = $value"
-        if ($value ne "");
-      $cmd_input .= "\n";
-    }
-
-  # Run the qmgr command if necessary
-  if ($cmd_input ne "")
-    {
-      my $pbs_server_logs = "/var/log/torque/server_logs";
-      open (CMD,"|".$slurm_home."/bin/qmgr -a -e ");
-      print CMD $cmd_input;
-      close (CMD) 
-          or croak("ERROR: Impossible to Configure SLURM queues, ".
-                   "check the logs at $pbs_server_logs");
-    }
+# copy client config to images
+opkg_print "Copying slurm configuration file to images:\n";
+my @images = list_image();
+foreach my $image (@images) {
+    my $dir = $image->location;
+    opkg_print " -> $dir\n";
+    copy($config_file,"$dir$config_file") or (carp "Can't copy $config_file to $dir",
+						    return undef);
 }
 
-restartMaui();
+# We need to deploy config file on nodes
+opkg_print "Copying slurm configuration file to nodes:\n";
+oscar_system("/usr/bin/cpush $config_file");
 
-# Get current state of server's mom
-open(CMD,"/etc/init.d/pbs_mom status |");
-  my $mom_state = <CMD>;
-close(CMD);
-#print "Server's mom state: $mom_state\n";
 
-# Set server's mom to configured state
-if ($compute_on_head eq "YES") {
-  system('/sbin/chkconfig --add pbs_mom');
-  if ( $mom_state !~ /^.*is running.*$/) {
-    system('/etc/init.d/pbs_mom start');
-  }
-} else {
-  system('/sbin/chkconfig --del pbs_mom');
-  if ( $mom_state =~ /^.*is running.*$/) {
-    system('/etc/init.d/pbs_mom stop');
-  }
-}
+# We need to start the slurm daemon here as it needs to be up when deploying nodes.
+# Needs to be listenning when node boots.
+oscar_log(5, INFO, "Starting slurm daemon");
+!system_service(SLURM,START)
+    or (oscar_log(5, ERROR, "Couldn't start slurm service."), return -1);
+
+# Restart slurm on nodes.
+!remote_system_service(SLURM,RESTART,"/usr/bin/cexec")
+    or (oscar_log(5, ERROR, "Couldn't restart slurm on all nodes."), exit 1);

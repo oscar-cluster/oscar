@@ -52,24 +52,9 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
-    <versionEntry version="2.6.1.1-2.1">
-      <changelogEntry authorName="Olivier Lahaye" date="2014-07-11T15:25:17+02:00">
-        <item>Rebuild to avoid conflicts with new disttag in rpm distros</item>
-      </changelogEntry>
-    </versionEntry>
-    <versionEntry version="2.6.1.1-2">
-      <changelogEntry authorName="Olivier Lahaye" date="2013-12-03T10:00:12+01:00">
-        <item>Rebuild for FHS compliance</item>
-      </changelogEntry>
-    </versionEntry>
-    <versionEntry version="2.6.1.1-1">
-      <changelogEntry authorName="Olivier Lahaye" date="2013-12-02T15:29:39+01:00">
-        <item>Migration from /var/lib/oscar to /usr/lib/oscar (FHS).</item>
-      </changelogEntry>
-    </versionEntry>
-    <versionEntry version="2.6.1-1">
-      <changelogEntry authorName="Olivier Lahaye" date="2013-09-04T18:21:49+02:00">
-        <item>Initial packaging.</item>
+    <versionEntry version="2.7.0-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2015-08-07T12:08:23+02:00">
+        <item>iInitial packaging (port from torque)</item>
       </changelogEntry>
     </versionEntry>
   </changelog>
