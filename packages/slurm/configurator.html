@@ -10,52 +10,41 @@ $Id:$
 </head>
 <body>
 	<form>
-		<p order="1"><h2>Head node as compute node.</h2></p>
-		<p order="2">
-			For smaller clusters, some admins may wish to use the head node (OSCAR server)
-			as a compute node too.  This is not recommended for larger clusters.
+		<p>
+			Cluster&nbsp;Name:&nbsp;<input type="text" name="cluster_name" value="OSCAR Cluster"></input><br />
+			Control&nbsp;Machine:&nbsp;<input type="text" name="control_machine" value="oscar-server"></input>
 		</p>
-		<input type="checkbox" name="compute_on_head" value="YES" order="3">  
-			Run batch system client (slurm client) on head node
-		</input>
-		<p order="4">
-			<h2>Server log level</h2>
+		
+		<p>
+			<h2>AuthType</h2>
+			<input type="radio" name="auth_type" value="auth/munge" checked="checked">Munge</input><br />
+			<input type="radio" name="auth_type" value="auth/authd">authd</input><br />
+			<input type="radio" name="auth_type" value="auth/none">None</input><br />
 		</p>
-		<p order="5">
-			Each level includes those before it.  Select one:
+
+		<p>
+			<h2>CheckpointType</h2>
+			<input type="radio" name="checkpoint_type" value="checkpoint/blcr">BLCR</input><br />
+			<input type="radio" name="checkpoint_type" value="checkpoint/ompi">OpenMPI</input><br />
+			<input type="radio" name="checkpoint_type" value="checkpoint/none" checked="checked">None</input><br />
 		</p>
-		<input type="radio" name="loglevel" order="6" value="1">
-			1 - Error Events
-		</input> <br />
-		<input type="radio" name="loglevel" order="7" value="2">
-			2 - Batch System/Server Events
-		</input> <br />
-		<input type="radio" name="loglevel" order="8" value="4">
-			4 - Administration Events
-		</input> <br />
-		<input type="radio" name="loglevel" order="9" value="8">
-			8 - Job Events
-		</input> <br />
-		<input type="radio" name="loglevel" order="10" value="16">
-			16 - Job Resource Usage
-		</input> <br />
-		<input type="radio" name="loglevel" order="11" value="32">
-			32 - Security Violations
-		</input> <br />
-		<input type="radio" name="loglevel" order="12" value="64" checked="checked">
-			64 - Scheduler Calls (recommended, default)
-		</input> <br />
-		<input type="radio" name="loglevel" order="13" value="128">
-			128 - Debug Messages
-		</input> <br />
-		<input type="radio" name="loglevel" order="14" value="256">
-			256 - Extra Debug Messages
-		</input> <br />
-		<input type="radio" name="loglevel" order="15" value="511">
-			511 - Everything On
-		</input> <br />
-		<br />
-		<input type="reset" value='Reset Form' />
+
+		<p>
+			<h2>CryptoType</h2>
+			<input type="radio" name="crypto_type" value="crypto/munge" checked="checked">Munge</input><br />
+			<input type="radio" name="crypto_type" value="crypto/openssl">OpenSSL</input><br />
+		</p>
+		<p>
+			<h2>Head node as compute node.</h2>
+			For smaller clusters, some admins may wish to use the head node (OSCAR server)<br />
+			as a compute node too.  This is not recommended for larger clusters.<br />
+			<input type="checkbox" name="compute_on_head" value="YES">
+				Run jobs on head node as well.
+			</input>
+		</p>
+		<p>
+			<input type="reset" value='Reset Form' />
+		</p>
 	</form>
 	<hr />
 </body>

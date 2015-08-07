@@ -52,9 +52,14 @@
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.7.1-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2015-08-07T14:39:48+02:00">
+        <item>Reworked configurator.html (select tag doesn't work yet).</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.7.0-1">
       <changelogEntry authorName="Olivier Lahaye" date="2015-08-07T12:08:23+02:00">
-        <item>iInitial packaging (port from torque)</item>
+        <item>Initial packaging (port from torque)</item>
       </changelogEntry>
     </versionEntry>
   </changelog>
