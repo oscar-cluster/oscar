@@ -35,8 +35,10 @@ use OSCAR::SystemServicesDefs;
 use OSCAR::OCA::OS_Settings;
 use OSCAR::FileUtils;
 use SystemInstaller::Machine; # get_machine_listing()
+use SIS::NewDB; # list_image()
 #use Getopt::Long;  # Used to get command line option
 use strict;
+use File::Copy;
 use Carp;
 use v5.10.1;
 # Avoid smartmatch warnings when using given
@@ -127,7 +129,7 @@ if ( 'jobmonarch' ~~ @pkgs ) {
 
 if( 'blcr' ~~ @pkgs ) {
     # TODO: blcr
-    opkg_print("Make sure you've set CheckpointType= to checkpoint/blcr\n");
+    opkg_print("Make sure you've set CheckpointType=checkpoint/blcr\n");
 }
 
 #my $image = shift; # Optionally provide an image name.
@@ -187,7 +189,7 @@ my $TOT_NP = 0;
 my $hostname = "";
 my $all_nodes = "";
 
-print CONF "\n#\n# Node Configurations\n#\n";
+print CONF "\n#\n# Node Configurations\n#\n\n";
 
 # Add nodes to slurm config file
 foreach my $node (sortnodes( keys %nodes )) {
@@ -216,7 +218,7 @@ close(CONF);
 opkg_print "Copying slurm configuration file to images:\n";
 my @images = list_image();
 foreach my $image (@images) {
-    my $dir = $image->location;
+    my $dir = $image->{'location'};
     opkg_print " -> $dir\n";
     copy($config_file,"$dir$config_file") or (carp "Can't copy $config_file to $dir",
 						    return undef);
