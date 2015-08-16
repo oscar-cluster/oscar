@@ -53,7 +53,7 @@ for my $img (keys(%sis_nodes)) {
 write_oscar_hostgroup_cfg("oscar_nodes", "OSCAR Nodes", undef, \@hostgroups);
 
 # Create the oscar_computers hostgroup that regroups all nodes and heads we can ssh to.
-my @oscar_cluster_heads = ( 'oscar_server' ); # heads (list of hosts). (only one hardcoded head for the moment)
+my @oscar_cluster_heads = ( 'oscar-server' ); # heads (list of hosts). (only one hardcoded head for the moment)
 my @oscar_cluster_nodes = ( 'oscar_nodes' ); # nodes (list of hostgroup(s)
 my @complete_oscar_cluster =  ( 'oscar_nodes', 'switches' ); # Used for ping, ...
 write_oscar_hostgroup_cfg('oscar_computers', 'OSCAR Cluster', \@oscar_cluster_heads, \@oscar_cluster_nodes);
