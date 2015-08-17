@@ -24,12 +24,16 @@
         <dist>suse</dist>
       </filters>  
       <pkg>slurm</pkg>
+      <pkg>slurm-munge</pkg>
+      <pkg>slurm-pam_slurm</pkg>
     </requires>
     <requires>
       <filters>
         <dist>debian</dist>
       </filters>
       <pkg>slurm</pkg>
+      <pkg>slurm-munge</pkg>
+      <pkg>slurm-pam_slurm</pkg>
     </requires>
   </serverDeps>
   <clientDeps>
@@ -42,16 +46,25 @@
         <dist>suse</dist>
       </filters>  
       <pkg>slurm</pkg>
+      <pkg>slurm-munge</pkg>
+      <pkg>slurm-pam_slurm</pkg>
     </requires>
      <requires>
       <filters>
         <dist>debian</dist>
       </filters>
       <pkg>slurm</pkg>
+      <pkg>slurm-munge</pkg>
+      <pkg>slurm-pam_slurm</pkg>
     </requires>
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.7.2-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2015-08-17T11:37:23+02:00">
+        <item>Add slurm-munge and slurm-pam_slurm dependancy.</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.7.1-1">
       <changelogEntry authorName="Olivier Lahaye" date="2015-08-07T14:39:48+02:00">
         <item>Reworked configurator.html (select tag doesn't work yet).</item>

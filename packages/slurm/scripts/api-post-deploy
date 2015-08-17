@@ -38,11 +38,15 @@ use SystemInstaller::Machine; # get_machine_listing()
 use SIS::NewDB; # list_image()
 #use Getopt::Long;  # Used to get command line option
 use strict;
+use Sys::Hostname;
 use File::Copy;
 use Carp;
 use v5.10.1;
 # Avoid smartmatch warnings when using given
 no if $] >= 5.017011, warnings => 'experimental::smartmatch';
+
+# Get the real hostname $(hostname -s)
+my $hostname_s=(split /\./,hostname)[0];
 
 # Names w/o numeric suffix preceed those with numeric suffix.
 sub sortnodes(@) {
@@ -93,8 +97,11 @@ print CONF <<EOF;
 # for your environment. Copy this file on all nodes.
 # See the slurm.conf man page for more information.
 #
-ClusterName=$cluster_name
-ControlMachine=$control_machine
+ClusterName="$cluster_name"
+ControlMachine=$hostname_s
+ControlAddr=$control_machine
+#BackupController=
+#BackupAddr=
 SlurmUser=slurm
 SlurmctldPort=6817
 SlurmdPort=6818
@@ -102,7 +109,6 @@ AuthType=$auth_type
 CacheGroups=1
 CheckpointType=$checkpoint_type
 CryptoType=$crypto_type
-CheckpointType=$checkpoint_type
 #EnforcePartLimits=YES
 PrivateData=jobs
 ProctrackType=proctrack/pgid
@@ -129,7 +135,7 @@ if ( 'jobmonarch' ~~ @pkgs ) {
 
 if( 'blcr' ~~ @pkgs ) {
     # TODO: blcr
-    opkg_print("Make sure you've set CheckpointType=checkpoint/blcr\n");
+    opkg_print("Make sure you've set CheckpointType to checkpoint/blcr\n");
 }
 
 #my $image = shift; # Optionally provide an image name.
@@ -187,9 +193,9 @@ if ($compute_on_head eq "YES") {
 my $TOT_NODES = 0;
 my $TOT_NP = 0;
 my $hostname = "";
-my $all_nodes = "";
+my @all_nodes = ();
 
-print CONF "\n#\n# Node Configurations\n#\n\n";
+print CONF "\n#\n# Node Configurations\n#\n";
 
 # Add nodes to slurm config file
 foreach my $node (sortnodes( keys %nodes )) {
@@ -199,7 +205,7 @@ foreach my $node (sortnodes( keys %nodes )) {
     # Check each node against the output from 'slurmnodes -a'
     $hostname = $nodes{$node}{HOST};
     print CONF "NodeName=".$nodes{$node}{HOST}." CPUs=".$nodes{$node}{NUM_PROCS}." State=UNKNOWN\n"; # GPUs: $nodes{$node}{NUM_GPUS}
-    $all_nodes .= $nodes{$node}{HOST}." ";
+    push(@all_nodes,$nodes{$node}{HOST});
 
     # Count up the number of nodes and processors
     $TOT_NODES++;
@@ -209,8 +215,8 @@ foreach my $node (sortnodes( keys %nodes )) {
 # Next, set up the values for workq
 opkg_print("Creating SLURM workq partition...\n");
 
-print CONF "\n#\n# Partition Configurations\n#";
-print CONF "PartitionName=workq $all_nodes Default=YES MaxTime=INFINITE State=UP\n";
+print CONF "\n#\n# Partition Configurations\n#\n";
+print CONF "PartitionName=workq Nodes=".join(",",@all_nodes)." Default=YES MaxTime=INFINITE State=UP\n";
  
 close(CONF);
 
@@ -226,7 +232,7 @@ foreach my $image (@images) {
 
 # We need to deploy config file on nodes
 opkg_print "Copying slurm configuration file to nodes:\n";
-oscar_system("/usr/bin/cpush $config_file");
+oscar_system("/usr/bin/cpush $config_file $config_file");
 
 
 # We need to start the slurm daemon here as it needs to be up when deploying nodes.
