@@ -16,6 +16,9 @@ portmap_package=rpcbind
 # Overwrite the name of few services
 munge_service=munge
 nfs_service=nfs
+slurmd_service=slurm
+slurmctld_service=slurm
+slurmdbd_service=slurm
 
 # Overwrite the name of few configuration files
 dhcp_leases=/var/lib/dhcpd/dhcpd.leases

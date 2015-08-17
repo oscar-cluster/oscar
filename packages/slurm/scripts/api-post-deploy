@@ -135,6 +135,7 @@ if ( 'jobmonarch' ~~ @pkgs ) {
 
 if( 'blcr' ~~ @pkgs ) {
     # TODO: blcr
+	# Need to install slurm-blcr package.
     opkg_print("Make sure you've set CheckpointType to checkpoint/blcr\n");
 }
 
@@ -237,10 +238,15 @@ oscar_system("/usr/bin/cpush $config_file $config_file");
 
 # We need to start the slurm daemon here as it needs to be up when deploying nodes.
 # Needs to be listenning when node boots.
-oscar_log(5, INFO, "Starting slurm daemon");
-!system_service(SLURM,START)
+oscar_log(5, INFO, "Starting slurm control daemon on head node");
+!system_service(SLURMCTLD,START)
     or (oscar_log(5, ERROR, "Couldn't start slurm service."), return -1);
 
+if ($compute_on_head eq "YES") {
+!system_service(SLURMD,START)
+    or (oscar_log(5, ERROR, "Couldn't start slurm service on head node. (head node is a compute node)"), return -1);
+}
+
 # Restart slurm on nodes.
-!remote_system_service(SLURM,RESTART,"/usr/bin/cexec")
-    or (oscar_log(5, ERROR, "Couldn't restart slurm on all nodes."), exit 1);
+!remote_system_service(SLURMD,START,"/usr/bin/cexec")
+    or (oscar_log(5, ERROR, "Couldn't start slurmd on all compute nodes."), exit 1);

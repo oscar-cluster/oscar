@@ -37,8 +37,10 @@ use feature "switch";
 no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 
 # Enable the slurm service
-!enable_system_services( SLURM )
+!enable_system_services( SLURMCTLD )
     or (carp "ERROR: Couldn't enable slurm service.", exit(-1));
+
+# TODO: Also enable slurd on head node is compute on head node is enabled.
 
 # Get RM_Detect full path.
 my $rm_detect_dir;

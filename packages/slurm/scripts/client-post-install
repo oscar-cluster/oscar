@@ -28,7 +28,7 @@ use feature "switch";
 no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 
 # Enable the slurm service
-!enable_system_services( SLURM )
+!enable_system_services( SLURMD )
     or (carp "ERROR: Couldn't enable slurm service.", exit(-1));
 
 
