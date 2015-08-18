@@ -81,7 +81,7 @@ if (defined ($configvalues)) {
 }
 
 # Get the config file name and back it up is needed.
-my $config_file = OSCAR::OCA::OS_Settings::getitem(SLURM()."_configfile");
+my $config_file = OSCAR::OCA::OS_Settings::getitem(SLURMD."_configfile");
 if (-e $config_file) {
     # 1st, create a backup of the config file if not already done.
     backup_file_if_not_exist($config_file) or return -1;
