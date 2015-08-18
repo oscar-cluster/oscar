@@ -570,10 +570,10 @@ sub add_httpd_conf() {
         print C <<EOI;
 Alias /ganglia $ganglia_root/
 <Directory $ganglia_root/>
-   Options None
-   order deny,allow
-   deny from all
-   allow from all
+  AllowOverride All
+  Require local
+  # Require ip 192.168.0.1/24
+  # Require host ny-oscar-admin-console
 </Directory>
 EOI
         close C;
