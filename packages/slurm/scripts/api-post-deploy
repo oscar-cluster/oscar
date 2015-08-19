@@ -80,6 +80,13 @@ if (defined ($configvalues)) {
     $compute_on_head = $configvalues->{compute_on_head}[0];
 }
 
+# Create the spool directory if it doesn't exists yet:
+!oscar_system("/usr/bin/mkdir -p /var/spool/slurm")
+    or (oscar_log(5, ERROR, "Couldn't create slurm StateSaveLocation directory on head node."), exit 1);
+# give corrrect ownership
+!oscar_system("/usr/bin/chown slurm /var/spool/slurm")
+    or (oscar_log(5, ERROR, "Couldn't give correct ownership to slurm StateSaveLocation directory on head node."), exit 1);
+
 # Get the config file name and back it up is needed.
 my $config_file = OSCAR::OCA::OS_Settings::getitem(SLURMD."_configfile");
 if (-e $config_file) {
@@ -113,7 +120,7 @@ CryptoType=$crypto_type
 PrivateData=jobs
 ProctrackType=proctrack/pgid
 ReturnToService=1
-StateSaveLocation=/var/spool
+StateSaveLocation=/var/spool/slurm
 SlurmdSpoolDir=/var/spool/slurmd
 SlurmctldPidFile=/var/run/slurmctld.pid
 SlurmdPidFile=/var/run/slurmd.pid
@@ -233,20 +240,41 @@ foreach my $image (@images) {
 
 # We need to deploy config file on nodes
 opkg_print "Copying slurm configuration file to nodes:\n";
-oscar_system("/usr/bin/cpush $config_file $config_file");
+!oscar_system("/usr/bin/cpush $config_file $config_file")
+    or (oscar_log(5, ERROR, "Couldn't update clusrm.conf on nodes."), exit 1);
 
+# Make sure that all service are down before starting them.
+# If we start slurmctld when some slurmd are up with an old config is bad.
+
+oscar_log(5, INFO, "Make sure that slurmd is stopped on all compute nodes.");
+remote_system_service(SLURMD,STOP,"/usr/bin/cexec"); # Don't care if it fails. (in fact it should)
+
+if ($compute_on_head eq "YES") {
+    oscar_log(5, INFO, "Make sure slurmd is stoppped before trying to start it.");
+    system_service(SLURMD,STOP);
+}
+
+oscar_log(5, INFO, "Make sure slurmctld is stopped before trying to start it.");
+system_service(SLURMCTLD,STOP);
 
 # We need to start the slurm daemon here as it needs to be up when deploying nodes.
 # Needs to be listenning when node boots.
+
+
 oscar_log(5, INFO, "Starting slurm control daemon on head node");
 !system_service(SLURMCTLD,START)
-    or (oscar_log(5, ERROR, "Couldn't start slurm service."), exit 1);
+    or (oscar_log(3, ERROR, "Couldn't start slurm service."), exit 1);
 
 if ($compute_on_head eq "YES") {
-!system_service(SLURMD,START)
-    or (oscar_log(5, ERROR, "Couldn't start slurm service on head node. (head node is a compute node)"), exit 1);
+    oscar_log(5, INFO, "Starting slurmd on head node (head node is a compute node)");
+    !system_service(SLURMD,START)
+        or (oscar_log(3, ERROR, "Couldn't start slurm service on head node."), exit 1);
 }
+
+# Create the spool directory for all nodes and give correct ownership
+!oscar_system("/usr/bin/cexec 'mkdir -p /var/spool/slurm; /usr/bin/chown slurm /var/spool/slurm'")
+    or (oscar_log(3, ERROR, "Couldn't init slurm StateSaveLocation directory on nodes."), exit 1);
 
 # Restart slurm on nodes.
 !remote_system_service(SLURMD,START,"/usr/bin/cexec")
-    or (oscar_log(5, ERROR, "Couldn't start slurmd on all compute nodes."), exit 1);
+    or (oscar_log(3, ERROR, "Couldn't start slurmd on all compute nodes."), exit 1);

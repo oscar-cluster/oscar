@@ -1,0 +1,16 @@
+#!/bin/sh
+
+### Job name (Max 10 chars)
+#SBATCH -J shelltest
+
+### Output
+#SBATCH -o shelltest.out
+#SBATCH -e shelltest.err
+
+### Queue name
+#SBATCH --partition=workq
+
+### Script commands
+srun hostname
+srun date +"Hello, date is %D, time is %T"
+exit
