@@ -135,9 +135,15 @@ if ($gnc != $onc) {
 
 
 # 2nd: check that all ODA nodes are seen by ganglia.
+# We use 'name' that containes the node name while 'hostname' is the public hostname
+# public hostname doesn't match on cluster with private network. Indeed, on head node,
+# name points to the correct ganglia hostname while hostname points to the public fqdn host name
+# which has nothing to do with cluster config.
+# $$node{'name'} => "oscar-cluster" (which matches OSCAR interface IP)
+# $$node{'hostnamename'} => "my-server" (which match public IP)
 for my $node (@oda_nodes) {
-    next if ($$node{'hostname'} ~~ @ganglia_nodes);
-    oscar_log(1, ERROR, "Node [$$node{'hostname'}] not seen by ganglia.");
+    next if ($$node{'name'} ~~ @ganglia_nodes);
+    oscar_log(1, ERROR, "Node [$$node{'name'}] not seen by ganglia.");
     $return_code++;
 }
 
