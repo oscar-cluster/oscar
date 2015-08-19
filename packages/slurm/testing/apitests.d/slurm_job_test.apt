@@ -40,7 +40,7 @@ Desired result : PASS
   
     <command wdir="/tmp" uname="oscartst">tests.d/slurm_job_test.pl</command>
 
-    <output name="stdout" format="regexp">Submitted batch job .*</output>
+    <output name="stdout" format="regexp">.*</output>
     <output name="stderr" />
     <output name="status" format="literal">0</output>
 
