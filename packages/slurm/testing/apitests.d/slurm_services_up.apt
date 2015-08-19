@@ -40,7 +40,7 @@ Desired result : PASS
   
     <command wdir="/tmp" uname="root">tests.d/slurm_services_up.pl</command>
 
-    <output name="stdout">.*</output>
+    <output name="stdout" />
     <output name="stderr" />
     <output name="status" format="literal">0</output>
 
