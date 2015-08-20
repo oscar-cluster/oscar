@@ -124,6 +124,7 @@ StateSaveLocation=/var/spool/slurm
 SlurmdSpoolDir=/var/spool/slurmd
 SlurmctldPidFile=/var/run/slurmctld.pid
 SlurmdPidFile=/var/run/slurmd.pid
+RebootProgram=/usr/sbin/reboot
 
 EOF
 
