@@ -151,7 +151,8 @@ sub detect_arch_file {
     my $q = `env LC_ALL=C file $root/$file`;
     if ( ($q =~ m/executable,\ \S+\ (\S+),\ version/) ||
          ($q =~ m/executable,\ (\S+),\ version/) ||
-         ($q =~ m/object,\ \S+ (\S+),\ version/) )
+         ($q =~ m/object,\ \S+ (\S+),\ version/) ||
+         ($q =~ m/object,\ (\S+),\ version/) )
     {
         $arch = $1;
         if ($arch =~ m/386$/) {
