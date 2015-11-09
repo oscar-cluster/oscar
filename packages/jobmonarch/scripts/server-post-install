@@ -69,11 +69,11 @@ sub get_config {
         $conf->{'gangliawww'}    = "/opt/ganglia";
     }
 
-    if ( -f "/etc/ganglia-webfrontend" ) {
+    if ( -d "/etc/ganglia-webfrontend" ) {
         $conf->{'ganglia_conf'}  = "/etc/ganglia-webfrontend/conf.php";
-    } elsif ( -f "/etc/ganglia-web" ) {
+    } elsif ( -d "/etc/ganglia-web" ) {
         $conf->{'ganglia_conf'}  = "/etc/ganglia-web/conf.php";
-    } elsif ( -f "/etc/ganglia/conf.php" ) {
+    } elsif ( -d "/etc/ganglia/conf.php" ) {
         $conf->{'ganglia_conf'}  = "/etc/ganglia/conf.php";
     } else {
         $conf->{'ganglia_conf'}  = $conf->{'gangliawww'}."/conf.php";

@@ -12,9 +12,12 @@
 #          a repo for the distro.
 
 [unstable]
+ubuntu-1604-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+xenial+main+universe+multiverse oscar:http://svn.oscar.openclustergroup.org/repos/unstable/debian-8-x86_64/+wheezy+/ distro:http://us.archive.ubuntu.com/ubuntu/+xenial-updates+main+universe+multiverse
+ubuntu-1504-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+vivid+main+universe+multiverse oscar:http://svn.oscar.openclustergroup.org/repos/unstable/debian-8-x86_64/+wheezy+/ distro:http://us.archive.ubuntu.com/ubuntu/+vivid-updates+main+universe+multiverse
+ubuntu-1404-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+trusty+main+universe+multiverse oscar:http://svn.oscar.openclustergroup.org/repos/unstable/debian-8-x86_64/+wheezy+/ distro:http://us.archive.ubuntu.com/ubuntu/+trusty-updates+main+universe+multiverse
 ubuntu-1304-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+raring+main+universe+multiverse oscar:http://svn.oscar.openclustergroup.org/repos/unstable/debian-7-x86_64/+wheezy+/ distro:http://us.archive.ubuntu.com/ubuntu/+raring-updates+main+universe+multiverse
 ubuntu-1210-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+quantal+main+universe+multiverse oscar:http://svn.oscar.openclustergroup.org/repos/unstable/debian-7-x86_64/+wheezy+/ distro:http://us.archive.ubuntu.com/ubuntu/+quantal-updates+main+universe+multiverse
-ubuntu-1204-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+precise+main+universe+multiverse oscar:http://bison.csm.ornl.gov/repos/unstable/debian-6-x86_64/+squeeze+/ distro:http://us.archive.ubuntu.com/ubuntu/+precise-updates+main+universe+multiverse
+ubuntu-1204-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+precise+main+universe+multiverse oscar:http://bison.csm.ornl.gov/repos/unstable/debian-7-x86_64/+squeeze+/ distro:http://us.archive.ubuntu.com/ubuntu/+precise-updates+main+universe+multiverse
 ubuntu-910-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+karmic+main+universe+multiverse oscar:http://bison.csm.ornl.gov/repos/unstable/debian-5-x86_64/+etch+/ distro:http://us.archive.ubuntu.com/ubuntu/+karmic-updates+main+universe+multiverse
 redhat-el-7-x86_64 = distro:file:/tftpboot/distro/redhat-el-7-x86_64 oscar:http://svn.oscar.openclustergroup.org/repos/unstable/rhel-7-x86_64 distro:http://dl.fedoraproject.org/pub/epel/7/x86_64
 redhat-el-6-x86_64 = distro:file:/tftpboot/distro/redhat-el-6-x86_64 oscar:http://svn.oscar.openclustergroup.org/repos/unstable/rhel-6-x86_64 distro:http://dl.fedoraproject.org/pub/epel/6/x86_64
