@@ -98,7 +98,7 @@ sub detect_dir {
         chomp($rslt);
         close(CMD);
 
-        $deb_ver = (split(/\s+/, $rslt))[1];  # [0]=name,  [1]=version
+        $deb_ver = (split(/[\s\+]+/, $rslt))[1];  # [0]=name,  [1]=version, [2]=optional update release
     } else {
         return undef;
     }
