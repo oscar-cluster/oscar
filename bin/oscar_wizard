@@ -1133,6 +1133,8 @@ Display even more information (set OSCAR_VERBOSE to 10).
 
 =head1 AUTHORS
 
+=over 8
+
 =item The Board of Trustees of the University of Illinois.
 
 =item The Trustees of Indiana University.
@@ -1140,6 +1142,8 @@ Display even more information (set OSCAR_VERBOSE to 10).
 =item Bernard Li <bli@bcgsc.ca>
 
 =item Erich Focht <efocht@hpce.nec.com>
+
+=back
 
 =head1 SEE ALSO
 
