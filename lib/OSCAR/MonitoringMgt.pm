@@ -112,7 +112,6 @@ sub init_naemon_config_dir() {
     return 0;
 }
 
-=cut
 ###############################################################################
 =item write_oscar_contact_cfg ($name, $alias, $email)
 
