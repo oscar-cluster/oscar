@@ -12,7 +12,9 @@ category: wiki
 [Developer Documentation](/wiki/DevelDocs/) > Distribution Support
 
 ## Distribution Support for OSCAR >= 6.x
+
 |Distribution\Arch       |x86_64 |
+|---|---|
 | Fedora 17       | ok |
 | Fedora 18       | ok |
 | Fedora 19       | ok |
@@ -37,6 +39,7 @@ The new version(branch-5-1) of OSCAR requires to build [opkg meta rpms](/wiki/op
 The following matrix lists people who intend to test on a particular distro/arch for the upcoming (5.1) release:
 
 |Distribution\Arch    | x86     |x86_64 |ppc64 |
+|---|---|---|---|
 | Fedora Core 7       | Abhishek, DongInn (ok) | DongInn (ok)      |       |
 | Fedora Core 8       | Abhishek, DongInn (ok) | Steven Blackburn, Allan Menezes[[BR]] DongInn (ok) |       |
 | RHEL 4              | DongInn  (ok) | Michael, DongInn  (ok)   |       |

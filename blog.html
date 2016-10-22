@@ -1,0 +1,14 @@
+---
+layout: blog
+category: trac
+---
+
+
+<ul>
+  {% for blog in site.categories.trac %}
+  <li>
+    <a href="{{site.baseurl}}{{blog.url}}">{{ blog.title }}</a>
+    <p>{{ blog.meta }}</p>
+  </li>
+  {% endfor %}
+</ul>
