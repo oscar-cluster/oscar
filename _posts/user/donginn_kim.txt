@@ -1,0 +1,14 @@
+DongInn Kim, one of the OSCAR developers at the [[http://www.osl.iu.edu|OSL]] of Indiana University.
+
+His interest areas in the development of OSCAR include
+  * OSCAR Database API (ODA)
+     * Abstraction to support various open source database
+     * Alternative DBMS (PostgreSQL, SQLite, etc)
+  * Supporting Apple OSX to port OSCAR
+  * LDAP support
+  * Testing using virtual machines and CLI automation
+  * OSCAR Package Management (OPM)
+
+Miscellaneous stuff that he wants to do
+  * Enable autofs
+  * GUI for handling the OSCAR wizard step button intellectually

@@ -242,12 +242,12 @@ table {
 th {
   font-family: 'Lucida Grande', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   padding: 10px;
-  background: #373737;
+  background: #575757;
   color: #fff;
  }
 
 td {
-  padding: 10px;
+  padding: 5px;
   border: 1px solid #373737;
  }
 
@@ -275,7 +275,7 @@ Full-Width Styles
   display: block;
   position: absolute;
   top:0;
-  right: 10px;
+  left: 485px;
   z-index: 10;
   padding: 10px 50px 10px 10px;
   color: #fff;
@@ -297,6 +297,7 @@ Full-Width Styles
 
 #header_wrap .inner {
   padding: 50px 10px 30px 10px;
+  height: 38px;
 }
 
 #project_title {
@@ -308,18 +309,35 @@ Full-Width Styles
 }
 
 #project_tagline {
+  position: absolute;
+  top: 5px;
+  width: 30%;
+  height: 100px;
   color: #fff;
   font-size: 24px;
   font-weight: 300;
   background: none;
   text-shadow: #111 0px 0px 10px;
+  float: right;
+}
+
+#project_tagline1 {
+  position: absolute;
+  top: 55px;
+  left: 160px;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 300;
+  background: none;
+  text-shadow: #111 0px 0px 10px;
+  float: right;
 }
 
 #downloads {
   position: absolute;
   width: 210px;
   z-index: 10;
-  bottom: -40px;
+  bottom: -70px;
   right: 0;
   height: 70px;
   background: url('../images/icon_download.png') no-repeat 0% 90%;
@@ -360,6 +378,11 @@ Full-Width Styles
   border-bottom: 1px solid #111;
 }
 
+#main_content_wrap .middle{
+    margin-left: auto ;
+    margin-right: auto ;
+    width: 900px;
+}
 #main_content {
   padding-top: 40px;
 }
@@ -368,7 +391,71 @@ Full-Width Styles
   background: #212121;
 }
 
+/* Navigation */
+.nav h2, .nav hr { display: none  }
+.nav ul { font-size: 10px; list-style: none; margin: 0; text-align: right  }
+.nav li {
+    border-right: 1px solid #d7d7d7;
+    display: inline;
+    padding: 0 .75em;
+    white-space: nowrap;
+}
+.nav li.last { border-right: none  }
 
+.sidebox {
+    float: left;
+    margin-top: 10px;
+    background: #bce09c;
+    border: 1px outset #aaa;
+    margin-bottom: 10px;
+}
+
+.sidebox .title {
+    color: #555;
+    font-weight: bold;
+    padding: 3px 7px 3px 7px;
+}
+
+.sidebox .content {
+    padding: 0;
+}
+
+.sidebox ul {
+    margin: 2px 0 2px 0;
+    padding: 0;
+
+}
+
+.sidebox li {
+    list-style-type: none;
+    list-style-image: none;
+    padding: 0;
+
+}
+
+.sidebox a {
+    color: #555;
+    font-weight: bold;
+    text-decoration: none;
+    display: block;
+    padding: .3em 7px .3em 7px;
+    margin: 2px 0 2px 0;
+
+}
+
+.sidebox :link, .sidebox :visited {
+    border-top: solid 1px transparent;
+    border-bottom: solid 1px transparent;
+    background: #daf4c3;
+
+}
+
+.sidebox a:hover, .sidebar a:active {
+    color: #0a4d83;
+    border-top: solid 1px #b00;
+    border-bottom: solid 1px #b00;
+
+}
 
 /*******************************************************************************
 Small Device Styles

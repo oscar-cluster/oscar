@@ -1,0 +1,12 @@
+---
+layout: default
+---
+
+<div id="second-header">
+  <ul class="blue">
+    <li><a href="{{site.baseurl}}/apple_blog" title="apple" class="{% if page.category == 'apple' %}current{% endif %}" ><span>Apple</span></a></li>
+    <li><a href="{{site.baseurl}}/linux_blog" title="linux" class="{% if page.category == 'linux' %}current{% endif %}" ><span>Linux</span></a></li>
+  </ul>
+</div>
+
+{{ content }}
