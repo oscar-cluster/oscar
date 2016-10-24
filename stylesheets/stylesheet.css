@@ -385,6 +385,7 @@ Full-Width Styles
 }
 #main_content {
   padding-top: 40px;
+  min-height: 450px;
 }
 
 #footer_wrap {
