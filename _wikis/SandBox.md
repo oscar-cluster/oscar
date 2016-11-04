@@ -2,7 +2,7 @@
 layout: wiki
 title: SandBox
 meta: 
-permalink: "/wiki/SandBox"
+permalink: "wiki/SandBox"
 category: wiki
 ---
 <!-- Name: SandBox -->

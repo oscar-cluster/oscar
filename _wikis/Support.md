@@ -2,7 +2,7 @@
 layout: wiki
 title: Support
 meta: 
-permalink: "/wiki/Support"
+permalink: "wiki/Support"
 category: wiki
 ---
 <!-- Name: Support -->
@@ -13,32 +13,32 @@ category: wiki
 
 ### Current Version
 
- * [Installation Guide](/wiki/InstallGuide/)
- * [Administration Guide](/wiki/AdminGuide/)
- * [Quick start guide for RHEL6](/wiki/quick_start_guide_for_rhel/) (Only for people who already knows OSCAR and knows what they do. NOT FOR GEGINNERS)
+ * [Installation Guide](wiki/InstallGuide)
+ * [Administration Guide](wiki/AdminGuide)
+ * [Quick start guide for RHEL6](wiki/quick_start_guide_for_rhel) (Only for people who already knows OSCAR and knows what they do. NOT FOR GEGINNERS)
 
-### [Old Versions](/wiki/OldManuals/)
+### [Old Versions](wiki/OldManuals)
 
 ## Tips and Tricks
 
- * [Two Network Interfaces](/wiki/TipTwoNetworkInterfaces/)
- * [Windows and Linux](/wiki/TipWindowsAndLinux/)
- * [LDAP Setup](/wiki/TipLDAP/)
- * [Openfabrics (Infiniband) Setup](/wiki/TipOFED/)
- * [Modules](/wiki/TipModules/)
- * [Installing OSCAR on Playstation 3](/wiki/OSCAR_on_PS3/)
+ * [Two Network Interfaces](wiki/TipTwoNetworkInterfaces)
+ * [Windows and Linux](wiki/TipWindowsAndLinux)
+ * [LDAP Setup](wiki/TipLDAP)
+ * [Openfabrics (Infiniband) Setup](wiki/TipOFED)
+ * [Modules](wiki/TipModules)
+ * [Installing OSCAR on Playstation 3](wiki/OSCAR_on_PS3)
 
 ## FAQ
 
 If you are having problems with OSCAR, chances are someone else have encountered the same problem too - this FAQ is a great source of information for commonly encountered issues.
 
- * [Development](/wiki/faq#Development/)
- * [Installation](/wiki/faq#Installation/)
- * [Usage](/wiki/faq#Usage/)
+ * [Development](wiki/faq#Development)
+ * [Installation](wiki/faq#Installation)
+ * [Usage](wiki/faq#Usage)
 
 ## Mail Archives
- * [Devel](http://www.mail-archive.com/oscar-devel@lists.sourceforge.net/) (To subscribe  [oscar-devel@](http://lists.sourceforge.net/mailman/listinfo/oscar-devel))
- * [Users](http://www.mail-archive.com/oscar-users@lists.sourceforge.net/) (To subscribe  [oscar-users@](http://lists.sourceforge.net/mailman/listinfo/oscar-users))
+ * [Devel](http://www.mail-archive.com/oscar-devel@lists.sourceforge.net) (To subscribe  [oscar-devel@](http://lists.sourceforge.net/mailman/listinfo/oscar-devel))
+ * [Users](http://www.mail-archive.com/oscar-users@lists.sourceforge.net) (To subscribe  [oscar-users@](http://lists.sourceforge.net/mailman/listinfo/oscar-users))
 
 
 ## How to get help ?
@@ -46,8 +46,8 @@ If you are having problems with OSCAR, chances are someone else have encountered
 Having problems building a cluster with OSCAR?  We are here to help!  However, please make sure that you have done the following steps first:
 
  * [Google](http://www.google.com) the error message
- * Check the OSCAR [FAQ](/wiki/faq/)
- * Read the OSCAR [User Documentation](http://svn.oscar.openclustergroup.org/wiki/)
+ * Check the OSCAR [FAQ](wiki/faq)
+ * Read the OSCAR [User Documentation](http://svn.oscar.openclustergroup.orgwiki)
  * Check the [oscar-users](http://sourceforge.net/mailarchive/forum.php?forum_name=oscar-users) and [oscar-devel](http://sourceforge.net/mailarchive/forum.php?forum_name=oscar-devel) mailing-lists archives.  Searching through the archives usually brings up solutions to common problems.
  * For SIS (imaging) related questions, also search the [sisuite-users](http://sourceforge.net/mailarchive/forum.php?forum_name=sisuite-users) mailing-list archives.
  * If after going through the above steps, and you did not find a solution to your problem, feel free to email us at the [mailto:oscar-users@lists.sourceforge.net oscar-users mailing-list]. Please be verbose about your problem and provide us with the following:
@@ -56,7 +56,7 @@ Having problems building a cluster with OSCAR?  We are here to help!  However, p
    * Hardware type (eg. x86, ia64, x86_64)
    * Step you are encountering problem (eg. Step 4. Image Creation Step)
    * oscarinstall.log (located in /opt/oscar)
-   * [typescript](/wiki/faq#typescript/) of installation
+   * [typescript](wiki/faq#typescript) of installation
    * A list of third-party packages you may have downloaded from OPD and selected to be installed
    * Any other error messages
 

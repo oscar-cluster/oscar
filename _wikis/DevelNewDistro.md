@@ -2,7 +2,7 @@
 layout: wiki
 title: DevelNewDistro
 meta: 
-permalink: "/wiki/DevelNewDistro"
+permalink: "wiki/DevelNewDistro"
 category: wiki
 ---
 <!-- Name: DevelNewDistro -->

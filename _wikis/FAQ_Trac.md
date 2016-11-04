@@ -2,7 +2,7 @@
 layout: wiki
 title: FAQ_Trac
 meta: 
-permalink: "/wiki/FAQ_Trac"
+permalink: "wiki/FAQ_Trac"
 category: wiki
 ---
 <!-- Name: FAQ_Trac -->

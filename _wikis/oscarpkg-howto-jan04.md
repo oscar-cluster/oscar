@@ -2,7 +2,7 @@
 layout: wiki
 title: oscarpkg-howto-jan04
 meta: 
-permalink: "/wiki/oscarpkg-howto-jan04"
+permalink: "wiki/oscarpkg-howto-jan04"
 category: wiki
 ---
 <!-- Name: oscarpkg-howto-jan04 -->

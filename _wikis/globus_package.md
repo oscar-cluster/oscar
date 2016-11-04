@@ -2,7 +2,7 @@
 layout: wiki
 title: globus_package
 meta: 
-permalink: "/wiki/globus_package"
+permalink: "wiki/globus_package"
 category: wiki
 ---
 <!-- Name: globus_package -->
@@ -35,7 +35,7 @@ Ans.
 
 Q. 
 ## How to create a package
-[OSCAR Package creation method](/wiki/BuildOpkg/) 
+[OSCAR Package creation method](wiki/BuildOpkg) 
 
 ### What's specific regarding Globus package
 

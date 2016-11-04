@@ -2,14 +2,14 @@
 layout: wiki
 title: AdminGuide/Licenses/SIS
 meta: 
-permalink: "/wiki/AdminGuide/Licenses/SIS"
+permalink: "wiki/AdminGuide/Licenses/SIS"
 category: wiki
 folder: wiki
 ---
 <!-- Name: AdminGuide/Licenses/SIS -->
 <!-- Version: 1 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](/wiki/AdminGuide/)
+[back to Table of Contents](wiki/AdminGuide)
 
 ## 5.8 SIS License
 

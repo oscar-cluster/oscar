@@ -2,7 +2,7 @@
 layout: wiki
 title: UserDocs
 meta: 
-permalink: "/wiki/UserDocs"
+permalink: "wiki/UserDocs"
 category: wiki
 ---
 <!-- Name: UserDocs -->
@@ -31,8 +31,8 @@ This page is the entry point for the so called User Docs, meaning it is aimed at
    * User accounts
    * Managing node images
      * [wiki/DeleteImage Deleting node images]
-   * [Managing distribution repositories](/wiki/RepoMgmt/)
-   * [Updating nodes](/wiki/NodeUpdate/)
+   * [Managing distribution repositories](wiki/RepoMgmt)
+   * [Updating nodes](wiki/NodeUpdate)
    * Re-installing a node
    * Adding nodes to the cluster
    * Using env-switcher / modules

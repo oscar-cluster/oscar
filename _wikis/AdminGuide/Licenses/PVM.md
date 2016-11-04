@@ -2,14 +2,14 @@
 layout: wiki
 title: AdminGuide/Licenses/PVM
 meta: 
-permalink: "/wiki/AdminGuide/Licenses/PVM"
+permalink: "wiki/AdminGuide/Licenses/PVM"
 category: wiki
 folder: wiki
 ---
 <!-- Name: AdminGuide/Licenses/PVM -->
 <!-- Version: 1 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](/wiki/AdminGuide/)
+[back to Table of Contents](wiki/AdminGuide)
 
 ## 5.7 PVM License
 

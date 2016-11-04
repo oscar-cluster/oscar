@@ -2,14 +2,14 @@
 layout: wiki
 title: StartOver
 meta: 
-permalink: "/wiki/StartOver"
+permalink: "wiki/StartOver"
 category: wiki
 ---
 <!-- Name: StartOver -->
 <!-- Version: 2 -->
 <!-- Author: bli -->
 
-[Cluster Administrator Documentation](/wiki/UserDocs/) > Uninstalling OSCAR - starting over
+[Cluster Administrator Documentation](wiki/UserDocs) > Uninstalling OSCAR - starting over
 
 # Uninstalling OSCAR - starting over
 

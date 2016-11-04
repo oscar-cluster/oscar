@@ -2,7 +2,7 @@
 layout: wiki
 title: TipLDAP
 meta: 
-permalink: "/wiki/TipLDAP"
+permalink: "wiki/TipLDAP"
 category: wiki
 ---
 <!-- Name: TipLDAP -->

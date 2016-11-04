@@ -2,14 +2,14 @@
 layout: wiki
 title: Build
 meta: 
-permalink: "/wiki/Build"
+permalink: "wiki/Build"
 category: wiki
 ---
 <!-- Name: Build -->
 <!-- Version: 7 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](/wiki/DevelDocs/) > [Command Line Interface](/wiki/CLI/) > Build Client Image
+[Development Documentation](wiki/DevelDocs) > [Command Line Interface](wiki/CLI) > Build Client Image
 
 # Build Client Image
 

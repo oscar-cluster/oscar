@@ -2,7 +2,7 @@
 layout: wiki
 title: FAQ_Development_SVN
 meta: 
-permalink: "/wiki/FAQ_Development_SVN"
+permalink: "wiki/FAQ_Development_SVN"
 category: wiki
 ---
 <!-- Name: FAQ_Development_SVN -->
@@ -28,7 +28,7 @@ It should look something like this:
     
     Copyright (C) 2000-2004 CollabNet.
     Subversion is open source software, see http://subversion.tigris.org/
-    This product includes software developed by CollabNet (http://www.Collab.Net/).
+    This product includes software developed by CollabNet (http://www.Collab.Net).
     
     The following repository access (RA) modules are available:
     

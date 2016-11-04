@@ -2,7 +2,7 @@
 layout: wiki
 title: ConfigFile
 meta: 
-permalink: "/wiki/ConfigFile"
+permalink: "wiki/ConfigFile"
 category: wiki
 ---
 <!-- Name: ConfigFile -->

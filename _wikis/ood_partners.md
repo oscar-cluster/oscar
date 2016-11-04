@@ -2,7 +2,7 @@
 layout: wiki
 title: ood_partners
 meta: 
-permalink: "/wiki/ood_partners"
+permalink: "wiki/ood_partners"
 category: wiki
 ---
 <!-- Name: ood_partners -->
@@ -21,6 +21,6 @@ Work on OSCARonDebian is currently funded thanks to cooperations with our partne
 
 Other partners:
 
- * [RBI](http://www.irb.hr/en/cir/)  
+ * [RBI](http://www.irb.hr/en/cir)  
  
- * [DCC](http://dcc.irb.hr/) - Debian packages for Torque come from the DCC project (http://dcc.irb.hr/).
+ * [DCC](http://dcc.irb.hr) - Debian packages for Torque come from the DCC project (http://dcc.irb.hr).

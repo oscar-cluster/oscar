@@ -2,7 +2,7 @@
 layout: wiki
 title: AdminGuide/Commands
 meta: 
-permalink: "/wiki/AdminGuide/Commands"
+permalink: "wiki/AdminGuide/Commands"
 category: wiki
 folder: wiki
 ---
@@ -12,7 +12,7 @@ folder: wiki
 
 [[TOC]]
 
-[back to Table of Contents](/wiki/AdminGuide/)
+[back to Table of Contents](wiki/AdminGuide)
 
 # Chapter 3: OSCAR Management Commands
 

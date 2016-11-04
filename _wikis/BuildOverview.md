@@ -2,7 +2,7 @@
 layout: wiki
 title: BuildOverview
 meta: 
-permalink: "/wiki/BuildOverview"
+permalink: "wiki/BuildOverview"
 category: wiki
 ---
 <!-- Name: BuildOverview -->

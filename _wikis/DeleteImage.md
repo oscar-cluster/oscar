@@ -2,20 +2,20 @@
 layout: wiki
 title: DeleteImage
 meta: 
-permalink: "/wiki/DeleteImage"
+permalink: "wiki/DeleteImage"
 category: wiki
 ---
 <!-- Name: DeleteImage -->
 <!-- Version: 4 -->
 <!-- Author: bli -->
 
-[Cluster Administrator Documentation](/wiki/UserDocs/) > Deleting node images
+[Cluster Administrator Documentation](wiki/UserDocs) > Deleting node images
 
 # Deleting node images
 
 To delete an OSCAR image, you need to first unassign the image from the client(s) and then run the command `mksiimage`.
 
-There is currently no way to "unassign" an image from client(s), you will need to delete the client node(s).  To do so, invoke the [OSCAR Wizard](/wiki/OscarWizard/) and select "Delete OSCAR Clients...".
+There is currently no way to "unassign" an image from client(s), you will need to delete the client node(s).  To do so, invoke the [OSCAR Wizard](wiki/OscarWizard) and select "Delete OSCAR Clients...".
 
 `mksiimage` is a command from SystemInstaller which is used to manage SIS images on the headnode (image server).
 

@@ -2,7 +2,7 @@
 layout: wiki
 title: TitleIndex
 meta: 
-permalink: "/wiki/TitleIndex"
+permalink: "wiki/TitleIndex"
 category: wiki
 ---
 <!-- Name: TitleIndex -->

@@ -2,7 +2,7 @@
 layout: wiki
 title: PageTemplates
 meta: 
-permalink: "/wiki/PageTemplates"
+permalink: "wiki/PageTemplates"
 category: wiki
 ---
 <!-- Name: PageTemplates -->
@@ -25,6 +25,6 @@ To create a new template, simply create a new page having a name starting with _
 After you have created your new template, a drop-down selection box will automatically appear on any new wiki pages that are created.  By default it is located on the right side of the 'Create this page' button.
 
 Available templates: 
-[[TitleIndex(PageTemplates/)]]
+[[TitleIndex(PageTemplates)]]
 ----
 See also: TracWiki

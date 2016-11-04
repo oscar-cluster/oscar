@@ -2,7 +2,7 @@
 layout: wiki
 title: ErichFocht
 meta: 
-permalink: "/wiki/ErichFocht"
+permalink: "wiki/ErichFocht"
 category: wiki
 ---
 <!-- Name: ErichFocht -->

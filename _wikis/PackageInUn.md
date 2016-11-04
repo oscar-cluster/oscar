@@ -2,7 +2,7 @@
 layout: wiki
 title: PackageInUn
 meta: 
-permalink: "/wiki/PackageInUn"
+permalink: "wiki/PackageInUn"
 category: wiki
 ---
 <!-- Name: PackageInUn -->

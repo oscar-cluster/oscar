@@ -2,14 +2,14 @@
 layout: wiki
 title: OPM
 meta: 
-permalink: "/wiki/OPM"
+permalink: "wiki/OPM"
 category: wiki
 ---
 <!-- Name: OPM -->
 <!-- Version: 11 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](/wiki/DevelDocs/) > OSCAR Package Manager
+[Development Documentation](wiki/DevelDocs) > OSCAR Package Manager
 
 # OSCAR Package Manager (OPM)
 
@@ -17,7 +17,7 @@ The OSCAR Package Manger is a mechanism to install OSCAR packages in the new for
 
 There are differences in the server and client versions of OPM.  The server will run all the steps while the client will only run the install-bpkg step.  The server will get its work from some other tool while the clients will get their work from the server.
 
-(See also: [OSCAR Package API](/wiki/opkgAPI/))
+(See also: [OSCAR Package API](wiki/opkgAPI))
 
 ## /etc/opm.conf
 

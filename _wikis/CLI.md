@@ -2,14 +2,14 @@
 layout: wiki
 title: CLI
 meta: 
-permalink: "/wiki/CLI"
+permalink: "wiki/CLI"
 category: wiki
 ---
 <!-- Name: CLI -->
 <!-- Version: 21 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](/wiki/DevelDocs/) > Command Line Interface
+[Development Documentation](wiki/DevelDocs) > Command Line Interface
 
 # Command Line Interface
 
@@ -39,11 +39,11 @@ If these flags are added, the script will run automatically:
 ## Implementation Notes
 
 ### Step 0: Download Packages - Should be done with OPD command line.
-### Step 1: [Selector](/wiki/Selector/)
-### Step 2: [Configurator](/wiki/Configurator/)
-#### [configurator.html changes](/wiki/Configurator.html/)
-### Step 3: [Install Server RPMs](/wiki/InstallServer/)
-### Step 4: [Build Client Image](/wiki/Build/)
-### Step 5: [Define OSCAR Clients](/wiki/Define/)
-### Step 6: [Setup Networking](/wiki/SetupNetwork/)
-### Step 7-8: [Complete and Test Cluster Setup](/wiki/CompleteTest/)
+### Step 1: [Selector](wiki/Selector)
+### Step 2: [Configurator](wiki/Configurator)
+#### [configurator.html changes](wiki/Configurator.html)
+### Step 3: [Install Server RPMs](wiki/InstallServer)
+### Step 4: [Build Client Image](wiki/Build)
+### Step 5: [Define OSCAR Clients](wiki/Define)
+### Step 6: [Setup Networking](wiki/SetupNetwork)
+### Step 7-8: [Complete and Test Cluster Setup](wiki/CompleteTest)

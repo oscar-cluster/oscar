@@ -2,7 +2,7 @@
 layout: wiki
 title: AdminGuide/Packages
 meta: 
-permalink: "/wiki/AdminGuide/Packages"
+permalink: "wiki/AdminGuide/Packages"
 category: wiki
 ---
 <!-- Name: AdminGuide/Packages -->
@@ -11,7 +11,7 @@ category: wiki
 
 [[TOC]]
 
-[back to Table of Contents](/wiki/AdminGuide/)
+[back to Table of Contents](wiki/AdminGuide)
 
 # 4 Package Notes
 
@@ -163,13 +163,13 @@ The following variables relate to the environment where the job is executing:
 
 ### 4.1.7 Additional Resources
 
-More information about using and configuring Torque is available on the Cluster Resources website at [http://www.clusterresources.com/wiki/doku.php?id=torque:torque_wiki]
+More information about using and configuring Torque is available on the Cluster Resources website at [http://www.clusterresources.comwiki/doku.php?id=torque:torque_wiki]
 
 == 4.2 MAUI Scheduler == #Maui
 
 Official website: http://www.clusterresources.com/pages/products/maui-cluster-scheduler.php
 
-License: [MAUI License](/wiki/Maui_license/)
+License: [MAUI License](wiki/Maui_license)
 
 ### 4.2.1 Overview
 

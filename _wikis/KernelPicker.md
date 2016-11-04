@@ -2,7 +2,7 @@
 layout: wiki
 title: KernelPicker
 meta: 
-permalink: "/wiki/KernelPicker"
+permalink: "wiki/KernelPicker"
 category: wiki
 ---
 <!-- Name: KernelPicker -->

@@ -2,7 +2,7 @@
 layout: wiki
 title: TipModules
 meta: 
-permalink: "/wiki/TipModules"
+permalink: "wiki/TipModules"
 category: wiki
 ---
 <!-- Name: TipModules -->
@@ -13,7 +13,7 @@ category: wiki
 
 This was developed and tested on OSCAR 5.0 on a 30 node cluster of Dell PE1950's using RedHat Enterprise Linux AS 4 Update 4.  Your mileage may vary.
 
-OSCAR uses a package called [Modules](http://modules.sourceforge.net/), which is a sort of shell environment packaging system.
+OSCAR uses a package called [Modules](http://modules.sourceforge.net), which is a sort of shell environment packaging system.
 
 It is designed to dynamically load and unload parts of your PATH, MANPATH, and other environment variables on the fly.  This is a useful way to make system and user level defaults for different packages, such as what MPI implementation people want to use.  However it is also a nice place to store all your environment related changes in an organized and easy to find place.
 

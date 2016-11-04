@@ -2,7 +2,7 @@
 layout: wiki
 title: gsoc2009ideas
 meta: 
-permalink: "/wiki/gsoc2009ideas"
+permalink: "wiki/gsoc2009ideas"
 category: wiki
 ---
 <!-- Name: gsoc2009ideas -->

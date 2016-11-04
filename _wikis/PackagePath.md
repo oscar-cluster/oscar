@@ -2,7 +2,7 @@
 layout: wiki
 title: PackagePath
 meta: 
-permalink: "/wiki/PackagePath"
+permalink: "wiki/PackagePath"
 category: wiki
 ---
 <!-- Name: PackagePath -->

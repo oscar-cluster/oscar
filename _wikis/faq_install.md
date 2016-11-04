@@ -2,7 +2,7 @@
 layout: wiki
 title: faq_install
 meta: 
-permalink: "/wiki/faq_install"
+permalink: "wiki/faq_install"
 category: wiki
 ---
 <!-- Name: faq_install -->
@@ -11,7 +11,7 @@ category: wiki
 
 [[TOC]]
 
-[Back to the FAQ main page](/wiki/faq/)
+[Back to the FAQ main page](wiki/faq)
 
 # FAQ Related to Cluster Installation
 
@@ -94,7 +94,7 @@ You can try the following:
 
 ## The SIS kernel is too big to fit on a floppy disk, and my network card does not support PXE boot, how can I boot the nodes?
 
-You can try to create a [Etherboot](http://etherboot.sf.net/) floppy disk - this will allow you to boot up your compute nodes using the disk and subsequently boot off the network.
+You can try to create a [Etherboot](http://etherboot.sf.net) floppy disk - this will allow you to boot up your compute nodes using the disk and subsequently boot off the network.
 
 ## The SystemImager kernel does not support my SATA/SCSI or network hardware, what can I do?
 
@@ -148,7 +148,7 @@ When you are in the process of imaging your nodes, you see a similar message as 
     This is system Installer auto install system .
     <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-This is because your hard drive is not supported by the SystemImager kernel - please refer to FAQ item about [SystemImager kernel](/wiki/faq#TheSystemImagerkerneldoesnotsupportmySATASCSIornetworkhardwarewhatcanIdo/) to solve this problem.
+This is because your hard drive is not supported by the SystemImager kernel - please refer to FAQ item about [SystemImager kernel](wiki/faq#TheSystemImagerkerneldoesnotsupportmySATASCSIornetworkhardwarewhatcanIdo) to solve this problem.
 
 ## What if the network boot fails?
 

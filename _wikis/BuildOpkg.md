@@ -2,7 +2,7 @@
 layout: wiki
 title: BuildOpkg
 meta: 
-permalink: "/wiki/BuildOpkg"
+permalink: "wiki/BuildOpkg"
 category: wiki
 ---
 <!-- Name: BuildOpkg -->
@@ -38,4 +38,4 @@ _[EF: the HOWTO content should move to some wiki pages, it will be easier to kee
 The `config.xml` file structure has changed in trunk, i.e. for OSCAR 5.0. The new format is documented on the [wiki/ConfigXML] page.  A script to convert from the pre-5.0 format to 5.0+ format is available here: [browser:trunk/scripts/config-xml-convert.pl].
 
 ### generic-setup package structure
-The `RPMS` directory is not used any more. Instead, each package needs to follow the [generic-setup](/wiki/GenericSetup/) structure. Starting with OSCAR 5.0 the wizard calls `generic-setup` for copying binary packages to `/tftpboot/oscar/*`. The `scripts/setup` script doesn't need to take care of this any more.
+The `RPMS` directory is not used any more. Instead, each package needs to follow the [generic-setup](wiki/GenericSetup) structure. Starting with OSCAR 5.0 the wizard calls `generic-setup` for copying binary packages to `/tftpboot/oscar/*`. The `scripts/setup` script doesn't need to take care of this any more.

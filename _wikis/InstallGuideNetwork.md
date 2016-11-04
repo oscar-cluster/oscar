@@ -2,7 +2,7 @@
 layout: wiki
 title: InstallGuideNetwork
 meta: 
-permalink: "/wiki/InstallGuideNetwork"
+permalink: "wiki/InstallGuideNetwork"
 category: wiki
 ---
 <!-- Name: InstallGuideNetwork -->
@@ -11,7 +11,7 @@ category: wiki
 
 [[TOC]]
 
-[back to Table of Content](/wiki/InstallGuide/)
+[back to Table of Content](wiki/InstallGuide)
 
 # Chapter 4: Network Setup
 

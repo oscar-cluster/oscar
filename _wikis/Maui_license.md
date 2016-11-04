@@ -2,7 +2,7 @@
 layout: wiki
 title: Maui_license
 meta: 
-permalink: "/wiki/Maui_license"
+permalink: "wiki/Maui_license"
 category: wiki
 ---
 <!-- Name: Maui_license -->

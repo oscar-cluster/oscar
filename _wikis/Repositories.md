@@ -2,7 +2,7 @@
 layout: wiki
 title: Repositories
 meta: 
-permalink: "/wiki/Repositories"
+permalink: "wiki/Repositories"
 category: wiki
 ---
 <!-- Name: Repositories -->

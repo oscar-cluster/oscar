@@ -2,14 +2,14 @@
 layout: wiki
 title: Define
 meta: 
-permalink: "/wiki/Define"
+permalink: "wiki/Define"
 category: wiki
 ---
 <!-- Name: Define -->
 <!-- Version: 2 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](/wiki/DevelDocs/) > [Command Line Interface](/wiki/CLI/) > Define OSCAR Clients
+[Development Documentation](wiki/DevelDocs) > [Command Line Interface](wiki/CLI) > Define OSCAR Clients
 
 # Define OSCAR Clients
 

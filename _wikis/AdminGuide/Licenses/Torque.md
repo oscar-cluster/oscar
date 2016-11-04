@@ -2,14 +2,14 @@
 layout: wiki
 title: AdminGuide/Licenses/Torque
 meta: 
-permalink: "/wiki/AdminGuide/Licenses/Torque"
+permalink: "wiki/AdminGuide/Licenses/Torque"
 category: wiki
 folder: wiki
 ---
 <!-- Name: AdminGuide/Licenses/Torque -->
 <!-- Version: 1 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](/wiki/AdminGuide/)
+[back to Table of Contents](wiki/AdminGuide)
 
 ===== 5.10 Torque License =====
 

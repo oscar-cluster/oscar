@@ -2,14 +2,14 @@
 layout: wiki
 title: AdminGuide/Licenses/Switcher
 meta: 
-permalink: "/wiki/AdminGuide/Licenses/Switcher"
+permalink: "wiki/AdminGuide/Licenses/Switcher"
 category: wiki
 folder: wiki
 ---
 <!-- Name: AdminGuide/Licenses/Switcher -->
 <!-- Version: 1 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](/wiki/AdminGuide/)
+[back to Table of Contents](wiki/AdminGuide)
 
 ## 5.9 Switcher License
 

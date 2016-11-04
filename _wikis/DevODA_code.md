@@ -2,7 +2,7 @@
 layout: wiki
 title: DevODA_code
 meta: 
-permalink: "/wiki/DevODA_code"
+permalink: "wiki/DevODA_code"
 category: wiki
 ---
 <!-- Name: DevODA_code -->
@@ -29,7 +29,7 @@ In order to install ODA on your system from source code, simply execute the stan
 
 ## Installation From Binary Packages
 
-Binary packages for ODA are available via online [OSCAR repositories](/wiki/online_oscar_repos/).
+Binary packages for ODA are available via online [OSCAR repositories](wiki/online_oscar_repos).
 
 ### RPM Based Systems
 

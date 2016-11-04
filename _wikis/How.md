@@ -2,7 +2,7 @@
 layout: wiki
 title: How
 meta: 
-permalink: "/wiki/How"
+permalink: "wiki/How"
 category: wiki
 ---
 <!-- Name: How -->

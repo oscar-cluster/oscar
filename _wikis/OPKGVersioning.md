@@ -2,14 +2,14 @@
 layout: wiki
 title: OPKGVersioning
 meta: 
-permalink: "/wiki/OPKGVersioning"
+permalink: "wiki/OPKGVersioning"
 category: wiki
 ---
 <!-- Name: OPKGVersioning -->
 <!-- Version: 9 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](/wiki/DevelDocs/) > [OSCAR Set Manager](/wiki/OSM/) > [Package Set Manager](/wiki/SetManager/) > OPKG Versioning
+[Development Documentation](wiki/DevelDocs) > [OSCAR Set Manager](wiki/OSM) > [Package Set Manager](wiki/SetManager) > OPKG Versioning
 
 # OPKG Versioning
 

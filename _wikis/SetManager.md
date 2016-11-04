@@ -2,14 +2,14 @@
 layout: wiki
 title: SetManager
 meta: 
-permalink: "/wiki/SetManager"
+permalink: "wiki/SetManager"
 category: wiki
 ---
 <!-- Name: SetManager -->
 <!-- Version: 15 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](/wiki/DevelDocs/) > [Oscar Set Manager](/wiki/OSM/) > Package Set Manager
+[Development Documentation](wiki/DevelDocs) > [Oscar Set Manager](wiki/OSM) > Package Set Manager
 
 # Package Set Manager
 
@@ -17,7 +17,7 @@ The Package Set Manager is a tool that has the ability to manage package sets an
 
 ## Manage Repositories
 
-Using [OPD2](/wiki/DevOPD2/) the Package Set Manager will have the ability to add repositories and keep track of what packages are available in each repository.
+Using [OPD2](wiki/DevOPD2) the Package Set Manager will have the ability to add repositories and keep track of what packages are available in each repository.
 
 ## Manage Package Set Descriptions
 
@@ -41,7 +41,7 @@ These package sets can be combined inside the Package Set Manager along with ind
 
 ## OPKG Version Numbering
 
-The OPKG version numbers will be compared using the same scheme as the dpkg version comparison.  The parser and comparison tool is borrowed from dpkg and converted to perl with some modifications to make parsing the versions out of XML easier.  A full description of how the OPKGs should be numbered is shown in the [OPKG Versioning](/wiki/OPKGVersioning/) document.
+The OPKG version numbers will be compared using the same scheme as the dpkg version comparison.  The parser and comparison tool is borrowed from dpkg and converted to perl with some modifications to make parsing the versions out of XML easier.  A full description of how the OPKGs should be numbered is shown in the [OPKG Versioning](wiki/OPKGVersioning) document.
 
 == OPKG Set Naming Scheme == 
 

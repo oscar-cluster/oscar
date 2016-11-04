@@ -2,7 +2,7 @@
 layout: wiki
 title: Packaging
 meta: 
-permalink: "/wiki/Packaging"
+permalink: "wiki/Packaging"
 category: wiki
 ---
 <!-- Name: Packaging -->
@@ -17,11 +17,11 @@ As a deployment tool, *OSCAR* heavily uses packaging systems. Currently, distrib
 
 _opkg_ system is specific to *OSCAR*. It allows developers to describe software with a cluster-wide view and in a multi-distribution way.
 
-The _opkg_ description is then compiled with [opkgc](/wiki/opkg_opkgc/) to produce packages in distribution native systems (RPM or deb).
+The _opkg_ description is then compiled with [opkgc](wiki/opkg_opkgc) to produce packages in distribution native systems (RPM or deb).
 
 Here are useful resources about _opkg_ system:
- * [Describing a software with opkg](/wiki/opkgAPI/)
- * [The opkg compiler](/wiki/opkg_opkgc/)
+ * [Describing a software with opkg](wiki/opkgAPI)
+ * [The opkg compiler](wiki/opkg_opkgc)
 
 ## RPM packaging
 
@@ -33,15 +33,15 @@ Macroes such as `%if %{?suse_version:1}0` are useful to determine what distribut
 
 The following are some good resources on how to build RPMs from scratch:
 
- * [Packaging Guidelines, by Fedora](http://fedoraproject.org/wiki/Packaging/Guidelines?action=show&redirect=PackagingGuidelines)
- * [RPM guide, by Fedora](http://docs.fedoraproject.org/drafts/rpm-guide-en/)
+ * [Packaging Guidelines, by Fedora](http://fedoraproject.orgwiki/Packaging/Guidelines?action=show&redirect=PackagingGuidelines)
+ * [RPM guide, by Fedora](http://docs.fedoraproject.org/drafts/rpm-guide-en)
  * [RPM HOW-TO (rpm.org)](http://www.rpm.org/support/RPM-HOWTO.html)
- * [Maximum RPM guide](http://www.rpm.org/max-rpm/)
+ * [Maximum RPM guide](http://www.rpm.org/max-rpm)
  * IBM Packaging software with RPM (3 part series):
-   * [Introductory](http://www.ibm.com/developerworks/linux/library/l-rpm1/)
-   * [Building without root, patching software, and distributing RPMs](http://www.ibm.com/developerworks/linux/library/l-rpm2/)
+   * [Introductory](http://www.ibm.com/developerworks/linux/library/l-rpm1)
+   * [Building without root, patching software, and distributing RPMs](http://www.ibm.com/developerworks/linux/library/l-rpm2)
    * [Part 3](http://www.ibm.com/developerworks/linux/library/l-rpm3.html)
- * [Specific notes for building RPM for OSCAR](/wiki/BuildRPM/)
+ * [Specific notes for building RPM for OSCAR](wiki/BuildRPM)
 
 ### Do not build debuginfo package
 
@@ -59,16 +59,16 @@ Here are some useful resources:
  * Official documentation, heavy but complete:
    * [Debian Developer's Reference](http://www.debian.org/doc/developers-reference/index.html)
    * [Debian New Maintainers' Guide](http://www.debian.org/doc/manuals/maint-guide/index.html)
-   * [Debian Policy Manual](http://www.debian.org/doc/debian-policy/)
+   * [Debian Policy Manual](http://www.debian.org/doc/debian-policy)
  * svn-buildpackage (maintaining packages with Subversion):
    * [http://workaround.org/moin/SvnBuildpackage]
-   * [svn-buildpackage official documentation](http://www-user.rhrk.uni-kl.de/~blochedu/svn-docs/HOWTO.html/)
+   * [svn-buildpackage official documentation](http://www-user.rhrk.uni-kl.de/~blochedu/svn-docs/HOWTO.html)
 
 ### Specific notes for building Debian packages for *OSCAR*
 
 #### Package validity
 
-When uploading a Debian package on our repository, package validity is checked with the [lintian](http://lintian.debian.org/) tool. We strongly advise you to check the package yourself before uploading it.
+When uploading a Debian package on our repository, package validity is checked with the [lintian](http://lintian.debian.org) tool. We strongly advise you to check the package yourself before uploading it.
 
 #### Distribution
 
@@ -96,12 +96,12 @@ Useful resources:
 
 ## Package repositories
 
-For instructions on uploading packages, have a look at [Repositories for Developers](/wiki/DevelRepositories/) page.
+For instructions on uploading packages, have a look at [Repositories for Developers](wiki/DevelRepositories) page.
 
-To get packages from repositories, have a look at [Repositories](/wiki/Repositories/) page.
+To get packages from repositories, have a look at [Repositories](wiki/Repositories) page.
 
-To know how OSCAR package repositories are maintained see [Repositories Internals](/wiki/RepositoriesInternals/) page.
+To know how OSCAR package repositories are maintained see [Repositories Internals](wiki/RepositoriesInternals) page.
 
 ## Modification of the Default Package Set
 
-Have a look at [How to exclude OSCAR package from the default package set](/wiki/ExcludeOSCARPackagesByDefault/)
+Have a look at [How to exclude OSCAR package from the default package set](wiki/ExcludeOSCARPackagesByDefault)

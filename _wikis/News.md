@@ -2,7 +2,7 @@
 layout: wiki
 title: News
 meta: 
-permalink: "/wiki/News"
+permalink: "wiki/News"
 category: wiki
 ---
 <!-- Name: News -->

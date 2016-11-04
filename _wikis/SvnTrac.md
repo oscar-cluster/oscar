@@ -2,7 +2,7 @@
 layout: wiki
 title: SvnTrac
 meta: 
-permalink: "/wiki/SvnTrac"
+permalink: "wiki/SvnTrac"
 category: wiki
 ---
 <!-- Name: SvnTrac -->

@@ -2,7 +2,7 @@
 layout: wiki
 title: OPKGSetSchema
 meta: 
-permalink: "/wiki/OPKGSetSchema"
+permalink: "wiki/OPKGSetSchema"
 category: wiki
 ---
 <!-- Name: OPKGSetSchema -->

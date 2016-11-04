@@ -2,7 +2,7 @@
 layout: wiki
 title: BuildRPM
 meta: 
-permalink: "/wiki/BuildRPM"
+permalink: "wiki/BuildRPM"
 category: wiki
 ---
 <!-- Name: BuildRPM -->

@@ -2,7 +2,7 @@
 layout: wiki
 title: DevelRepositories
 meta: 
-permalink: "/wiki/DevelRepositories"
+permalink: "wiki/DevelRepositories"
 category: wiki
 ---
 <!-- Name: DevelRepositories -->
@@ -15,13 +15,13 @@ category: wiki
 
 Packages are hosted by the GForge service of INRIA. You have to be [registered](http://gforge.inria.fr/account/register.php) on this service.
 
-Once registered, [add your public ssh (rsa or dsa) key](https://gforge.inria.fr/account/editsshkeys.php) and ask to join the [OSCAR project](https://gforge.inria.fr/projects/oscar/). You will then be able to upload packages.
+Once registered, [add your public ssh (rsa or dsa) key](https://gforge.inria.fr/account/editsshkeys.php) and ask to join the [OSCAR project](https://gforge.inria.fr/projects/oscar). You will then be able to upload packages.
 
 From the *oscar* project page of GForge, subscribe to `oscar-package` maillist to receive notifications of uploaded packages.
 
 ## Package authentication
 
-Packages must be signed with gpg. The way it is done [depends on the packaging system](/wiki/Packaging#PackageSignature/) (.deb or RPM).
+Packages must be signed with gpg. The way it is done [depends on the packaging system](wiki/Packaging#PackageSignature) (.deb or RPM).
 
 For packages to be accepted on repository, your gpg public key must be in the OSCAR keyring. For the moment, to add an identity into OSCAR keyring, please contact Jean Parpaillon.
 

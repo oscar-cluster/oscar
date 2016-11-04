@@ -2,7 +2,7 @@
 layout: wiki
 title: GSoC/NFS
 meta: 
-permalink: "/wiki/GSoC/NFS"
+permalink: "wiki/GSoC/NFS"
 category: wiki
 folder: wiki
 ---

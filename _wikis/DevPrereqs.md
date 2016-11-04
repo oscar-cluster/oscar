@@ -2,7 +2,7 @@
 layout: wiki
 title: DevPrereqs
 meta: 
-permalink: "/wiki/DevPrereqs"
+permalink: "wiki/DevPrereqs"
 category: wiki
 ---
 <!-- Name: DevPrereqs -->
@@ -19,9 +19,9 @@ Prerequisites are conditions that have to be fulfilled such that the OSCAR wizar
 
 Prerequisites are distribution dependent! For example: yum is provided by certain distributions while it is missing on others, the mysql database packages are named differently, some distros come with needed perl modules while others don't.
 
-Until (and including) OSCAR 4.2.1 the prerequisites handling was very static and controlled by the setup scripts in the `share/prereqs/*/scripts` directories. Adding support for new distributions was painful as it required the adaptation of each of these scripts. The prereq packages were not following the [generic-setup](/wiki/GenericSetup/) format which lead to chaos and confusion.
+Until (and including) OSCAR 4.2.1 the prerequisites handling was very static and controlled by the setup scripts in the `share/prereqs/*/scripts` directories. Adding support for new distributions was painful as it required the adaptation of each of these scripts. The prereq packages were not following the [generic-setup](wiki/GenericSetup) format which lead to chaos and confusion.
 
-Starting with OSCAR 5.0 the prerequisites were reorganized by [EF](/wiki/ErichFocht/) to comply with the [generic-setup](/wiki/GenericSetup/) format. Their handling was integrated into the program `$OSCAR_HOME/scripts/install_prereq`.
+Starting with OSCAR 5.0 the prerequisites were reorganized by [EF](wiki/ErichFocht) to comply with the [generic-setup](wiki/GenericSetup) format. Their handling was integrated into the program `$OSCAR_HOME/scripts/install_prereq`.
 
 ## install_prereq
 
@@ -33,18 +33,18 @@ The program `$OSCAR_HOME/scripts/install_prereq` handles several tasks:
    * installs packages as specified in the configuration file
    * executes shell scripts as specified in the configuration file (not yet implemented [EF: April 26th, 2006])
 
-The main task is the installation and removal of packages. `install_prereq` is geared towards using the [packman](/wiki/DevPackman/) smart installer features thus being able to resolve dependencies automatically from the package repositories. `install_prereq --smart` uses a packman instance specific to the current distro and expects that to return "true" when the `->is_smart()` method is invoked. It is able to resolve dependencies automatically from the
+The main task is the installation and removal of packages. `install_prereq` is geared towards using the [packman](wiki/DevPackman) smart installer features thus being able to resolve dependencies automatically from the package repositories. `install_prereq --smart` uses a packman instance specific to the current distro and expects that to return "true" when the `->is_smart()` method is invoked. It is able to resolve dependencies automatically from the
 repositories.
 
-As [packman](/wiki/DevPackman/) cannot be available right from the start on every distribution (because the underlying smart package managers like [yum(e)](/wiki/DevYume/) are not necessarilly installed), `install_prereq` has a _--dumb_ installation mode, where only the basic package managers are used for installing packages. Prerequisites installed in dumb mode need to provide all dependencies in their configuration file. The dumb mode is only used for bootstrapping the smart installer, i.e. for getting packman installed.
+As [packman](wiki/DevPackman) cannot be available right from the start on every distribution (because the underlying smart package managers like [yum(e)](wiki/DevYume) are not necessarilly installed), `install_prereq` has a _--dumb_ installation mode, where only the basic package managers are used for installing packages. Prerequisites installed in dumb mode need to provide all dependencies in their configuration file. The dumb mode is only used for bootstrapping the smart installer, i.e. for getting packman installed.
 
 
 ### Configuration file: prereq.cfg
 
 *_prereq.cfg*_
 
-Each prerequisite must have a configuration file. This is called prereq.cfg and must be located in the top directory of the [generic-setup](/wiki/GenericSetup/) compatible prerequisites directory. Because prereqs are installed long before OSCAR is able to parse
-[config.xml](/wiki/ConfigXML/) files, prereq.cfg is much simpler. The format is:
+Each prerequisite must have a configuration file. This is called prereq.cfg and must be located in the top directory of the [generic-setup](wiki/GenericSetup) compatible prerequisites directory. Because prereqs are installed long before OSCAR is able to parse
+[config.xml](wiki/ConfigXML) files, prereq.cfg is much simpler. The format is:
 
 
     [distro:version:architecture]

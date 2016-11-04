@@ -2,7 +2,7 @@
 layout: wiki
 title: TipWindowsAndLinux
 meta: 
-permalink: "/wiki/TipWindowsAndLinux"
+permalink: "wiki/TipWindowsAndLinux"
 category: wiki
 ---
 <!-- Name: TipWindowsAndLinux -->

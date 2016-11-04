@@ -2,14 +2,14 @@
 layout: wiki
 title: ConfigSchema
 meta: 
-permalink: "/wiki/ConfigSchema"
+permalink: "wiki/ConfigSchema"
 category: wiki
 ---
 <!-- Name: ConfigSchema -->
 <!-- Version: 3 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](/wiki/DevelDocs/) > [Command Line Interface](/wiki/CLI/) > [wiki/Configurator] > Schema
+[Development Documentation](wiki/DevelDocs) > [Command Line Interface](wiki/CLI) > [wiki/Configurator] > Schema
 
 # Schema
 

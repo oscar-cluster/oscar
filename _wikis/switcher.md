@@ -2,7 +2,7 @@
 layout: wiki
 title: switcher
 meta: 
-permalink: "/wiki/switcher"
+permalink: "wiki/switcher"
 category: wiki
 ---
 <!-- Name: switcher -->

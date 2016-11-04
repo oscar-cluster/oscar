@@ -2,7 +2,7 @@
 layout: wiki
 title: CamelCase
 meta: 
-permalink: "/wiki/CamelCase"
+permalink: "wiki/CamelCase"
 category: wiki
 ---
 <!-- Name: CamelCase -->
@@ -28,7 +28,7 @@ See TracIni for more information on the available options.
 ## More information on CamelCase
 
  * http://c2.com/cgi/wiki?WikiCase
- * http://en.wikipedia.org/wiki/CamelCase
+ * http://en.wikipedia.orgwiki/CamelCase
 
 ----
 See also: WikiPageNames, WikiNewPage, WikiFormatting, TracWiki

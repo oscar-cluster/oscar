@@ -2,7 +2,7 @@
 layout: wiki
 title: oscar_meeting_notes
 meta: 
-permalink: "/wiki/oscar_meeting_notes"
+permalink: "wiki/oscar_meeting_notes"
 category: wiki
 ---
 <!-- Name: oscar_meeting_notes -->
@@ -174,4 +174,4 @@ category: wiki
           and debian 4 x86/x86_64
     
 
-A TODO list for OSCAR 5.2 is available [here](/wiki/oscar-5.2-todo/).
+A TODO list for OSCAR 5.2 is available [here](wiki/oscar-5.2-todo).

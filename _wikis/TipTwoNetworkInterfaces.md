@@ -2,7 +2,7 @@
 layout: wiki
 title: TipTwoNetworkInterfaces
 meta: 
-permalink: "/wiki/TipTwoNetworkInterfaces"
+permalink: "wiki/TipTwoNetworkInterfaces"
 category: wiki
 ---
 <!-- Name: TipTwoNetworkInterfaces -->

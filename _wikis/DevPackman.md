@@ -2,7 +2,7 @@
 layout: wiki
 title: DevPackman
 meta: 
-permalink: "/wiki/DevPackman"
+permalink: "wiki/DevPackman"
 category: wiki
 ---
 <!-- Name: DevPackman -->
@@ -92,7 +92,7 @@ Generate the metadata cache for each package repository (where applicable):
     #!perl
       $pm->gencache;
 
-Install, remove or update packages by invoking the smart package manager under the hood. For RPM packages this is the [yum(e)](/wiki/DevYume/) package manager. Smart package managers resolve dependencies on their own and typically use package repositories and package metadata caches of some form (see above):
+Install, remove or update packages by invoking the smart package manager under the hood. For RPM packages this is the [yum(e)](wiki/DevYume) package manager. Smart package managers resolve dependencies on their own and typically use package repositories and package metadata caches of some form (see above):
 
     #!perl
       ($err,$outref) = $pm->smart_install("pkg1",...);
@@ -185,7 +185,7 @@ with "/"), and contain no spaces.
 
 PackMan was written by Jeff Squyres and Matt Garrett.
 
-Smart PackMan methods and repository handling were introduced by [Erich Focht](/wiki/ErichFocht/) for OSCAR5.
+Smart PackMan methods and repository handling were introduced by [Erich Focht](wiki/ErichFocht) for OSCAR5.
 
 Yum doesn't generate progress output if it's not running from a tty. Packman uses a trick for getting this output, it calls yum(e) through `ptty_try` which runs the command under a pseudo-tty. This probably slows down the yum execution on 1-CPU machines at the price of getting progress output during the generation of images with SystemInstaller. We have some choices be faster here:
  * remove or rename ptty_try: packman won't find it and go without it.

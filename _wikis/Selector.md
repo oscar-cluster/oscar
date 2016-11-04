@@ -2,14 +2,14 @@
 layout: wiki
 title: Selector
 meta: 
-permalink: "/wiki/Selector"
+permalink: "wiki/Selector"
 category: wiki
 ---
 <!-- Name: Selector -->
 <!-- Version: 7 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](/wiki/DevelDocs/) > [Command Line Interface](/wiki/CLI/) > Selector
+[Development Documentation](wiki/DevelDocs) > [Command Line Interface](wiki/CLI) > Selector
 
 # Selector
 

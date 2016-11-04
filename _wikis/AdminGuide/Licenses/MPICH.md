@@ -2,14 +2,14 @@
 layout: wiki
 title: AdminGuide/Licenses/MPICH
 meta: 
-permalink: "/wiki/AdminGuide/Licenses/MPICH"
+permalink: "wiki/AdminGuide/Licenses/MPICH"
 category: wiki
 folder: wiki
 ---
 <!-- Name: AdminGuide/Licenses/MPICH -->
 <!-- Version: 1 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](/wiki/AdminGuide/)
+[back to Table of Contents](wiki/AdminGuide)
 
 ## 5.5 MPICH License
 

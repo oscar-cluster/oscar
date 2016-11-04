@@ -2,7 +2,7 @@
 layout: wiki
 title: Document
 meta: 
-permalink: "/wiki/Document"
+permalink: "wiki/Document"
 category: wiki
 ---
 <!-- Name: Document -->
@@ -11,6 +11,6 @@ category: wiki
 
 # Documentation
 
- * [User Documentations](/wiki/Support/)
- * [Devel Documentations](/wiki/DevelDocs/)
- * [FAQ](/wiki/faq/)
+ * [User Documentations](wiki/Support)
+ * [Devel Documentations](wiki/DevelDocs)
+ * [FAQ](wiki/faq)

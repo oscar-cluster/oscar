@@ -2,7 +2,7 @@
 layout: wiki
 title: DongInn
 meta: 
-permalink: "/wiki/DongInn"
+permalink: "wiki/DongInn"
 category: wiki
 ---
 <!-- Name: DongInn -->

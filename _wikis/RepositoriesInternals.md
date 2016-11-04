@@ -2,7 +2,7 @@
 layout: wiki
 title: RepositoriesInternals
 meta: 
-permalink: "/wiki/RepositoriesInternals"
+permalink: "wiki/RepositoriesInternals"
 category: wiki
 ---
 <!-- Name: RepositoriesInternals -->

@@ -2,14 +2,14 @@
 layout: wiki
 title: SetupNetwork
 meta: 
-permalink: "/wiki/SetupNetwork"
+permalink: "wiki/SetupNetwork"
 category: wiki
 ---
 <!-- Name: SetupNetwork -->
 <!-- Version: 5 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](/wiki/DevelDocs/) > [Command Line Interface](/wiki/CLI/) > Setup Network
+[Development Documentation](wiki/DevelDocs) > [Command Line Interface](wiki/CLI) > Setup Network
 
 # Setup Networking
 

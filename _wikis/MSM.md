@@ -2,14 +2,14 @@
 layout: wiki
 title: MSM
 meta: 
-permalink: "/wiki/MSM"
+permalink: "wiki/MSM"
 category: wiki
 ---
 <!-- Name: MSM -->
 <!-- Version: 5 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](/wiki/DevelDocs/) > [Oscar Set Manager](/wiki/OSM/) > Machine Set Manager
+[Development Documentation](wiki/DevelDocs) > [Oscar Set Manager](wiki/OSM) > Machine Set Manager
 
 # Machine Set Manager
 

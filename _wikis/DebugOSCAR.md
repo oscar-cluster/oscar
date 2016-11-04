@@ -2,7 +2,7 @@
 layout: wiki
 title: DebugOSCAR
 meta: 
-permalink: "/wiki/DebugOSCAR"
+permalink: "wiki/DebugOSCAR"
 category: wiki
 ---
 <!-- Name: DebugOSCAR -->

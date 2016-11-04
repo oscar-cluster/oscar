@@ -2,7 +2,7 @@
 layout: wiki
 title: SupportedDistros
 meta: 
-permalink: "/wiki/SupportedDistros"
+permalink: "wiki/SupportedDistros"
 category: wiki
 ---
 <!-- Name: SupportedDistros -->

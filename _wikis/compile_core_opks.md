@@ -2,7 +2,7 @@
 layout: wiki
 title: compile_core_opks
 meta: 
-permalink: "/wiki/compile_core_opks"
+permalink: "wiki/compile_core_opks"
 category: wiki
 ---
 <!-- Name: compile_core_opks -->
@@ -17,7 +17,7 @@ On RPM based systems, please follow instrucation available there: [wiki/Building
 
 ## On Debian Based Systems
 
-First, you need to install [OPKGC](/wiki/opkg_opkgc/):
+First, you need to install [OPKGC](wiki/opkg_opkgc):
     1. Please, add the following line to your ''/etc/apt/sources.list'' file:
         * For x86 systems: ''deb http://bear.csm.ornl.gov/repos/debian-4-i386/ etch /''
         * For x86_64 systems: ''deb http://bear.csm.ornl.gov/repos/debian-4-x86_64/ etch /''

@@ -2,7 +2,7 @@
 layout: wiki
 title: DevOSsettings
 meta: 
-permalink: "/wiki/DevOSsettings"
+permalink: "wiki/DevOSsettings"
 category: wiki
 ---
 <!-- Name: DevOSsettings -->

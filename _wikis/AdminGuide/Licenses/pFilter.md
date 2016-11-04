@@ -2,14 +2,14 @@
 layout: wiki
 title: AdminGuide/Licenses/pFilter
 meta: 
-permalink: "/wiki/AdminGuide/Licenses/pFilter"
+permalink: "wiki/AdminGuide/Licenses/pFilter"
 category: wiki
 folder: wiki
 ---
 <!-- Name: AdminGuide/Licenses/pFilter -->
 <!-- Version: 2 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](/wiki/AdminGuide/)
+[back to Table of Contents](wiki/AdminGuide)
 
 ===== 5.6 pfilter License =====
 

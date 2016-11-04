@@ -2,7 +2,7 @@
 layout: wiki
 title: GSoC/V2M_Track
 meta: 
-permalink: "/wiki/GSoC/V2M_Track"
+permalink: "wiki/GSoC/V2M_Track"
 category: wiki
 folder: wiki
 ---

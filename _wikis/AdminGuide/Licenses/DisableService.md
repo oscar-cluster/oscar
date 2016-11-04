@@ -2,14 +2,14 @@
 layout: wiki
 title: AdminGuide/Licenses/DisableService
 meta: 
-permalink: "/wiki/AdminGuide/Licenses/DisableService"
+permalink: "wiki/AdminGuide/Licenses/DisableService"
 category: wiki
 folder: wiki
 ---
 <!-- Name: AdminGuide/Licenses/DisableService -->
 <!-- Version: 1 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](/wiki/AdminGuide/)
+[back to Table of Contents](wiki/AdminGuide)
 
 ## 5.2 Disable Services License
 

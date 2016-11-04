@@ -2,7 +2,7 @@
 layout: wiki
 title: InterTrac
 meta: 
-permalink: "/wiki/InterTrac"
+permalink: "wiki/InterTrac"
 category: wiki
 ---
 <!-- Name: InterTrac -->

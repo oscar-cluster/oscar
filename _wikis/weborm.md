@@ -2,7 +2,7 @@
 layout: wiki
 title: weborm
 meta: 
-permalink: "/wiki/weborm"
+permalink: "wiki/weborm"
 category: wiki
 ---
 <!-- Name: weborm -->

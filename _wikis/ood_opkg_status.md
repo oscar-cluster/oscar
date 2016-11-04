@@ -2,7 +2,7 @@
 layout: wiki
 title: ood_opkg_status
 meta: 
-permalink: "/wiki/ood_opkg_status"
+permalink: "wiki/ood_opkg_status"
 category: wiki
 ---
 <!-- Name: ood_opkg_status -->

@@ -2,7 +2,7 @@
 layout: wiki
 title: DistroPort
 meta: 
-permalink: "/wiki/DistroPort"
+permalink: "wiki/DistroPort"
 category: wiki
 ---
 <!-- Name: DistroPort -->

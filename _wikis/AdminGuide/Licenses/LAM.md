@@ -2,14 +2,14 @@
 layout: wiki
 title: AdminGuide/Licenses/LAM
 meta: 
-permalink: "/wiki/AdminGuide/Licenses/LAM"
+permalink: "wiki/AdminGuide/Licenses/LAM"
 category: wiki
 folder: wiki
 ---
 <!-- Name: AdminGuide/Licenses/LAM -->
 <!-- Version: 1 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](/wiki/AdminGuide/)
+[back to Table of Contents](wiki/AdminGuide)
 
 ## 5.3 LAM/MPI License
 

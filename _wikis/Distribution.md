@@ -2,7 +2,7 @@
 layout: wiki
 title: Distribution
 meta: 
-permalink: "/wiki/Distribution"
+permalink: "wiki/Distribution"
 category: wiki
 ---
 <!-- Name: Distribution -->

@@ -2,7 +2,7 @@
 layout: wiki
 title: InstallGuidePreparing
 meta: 
-permalink: "/wiki/InstallGuidePreparing"
+permalink: "wiki/InstallGuidePreparing"
 category: wiki
 ---
 <!-- Name: InstallGuidePreparing -->
@@ -11,7 +11,7 @@ category: wiki
 
 [[TOC]]
 
-[back to the Table of Content](/wiki/InstallGuide/)
+[back to the Table of Content](wiki/InstallGuide)
 
 # Chapter 3: Preparing to Install OSCAR
 

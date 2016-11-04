@@ -2,14 +2,14 @@
 layout: wiki
 title: Configurator.html
 meta: 
-permalink: "/wiki/Configurator.html"
+permalink: "wiki/Configurator.html"
 category: wiki
 ---
 <!-- Name: Configurator.html -->
 <!-- Version: 6 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](/wiki/DevelDocs/) > [Command Line Interface](/wiki/CLI/) > Configurator.html
+[Development Documentation](wiki/DevelDocs) > [Command Line Interface](wiki/CLI) > Configurator.html
 
 # configurator.html
 

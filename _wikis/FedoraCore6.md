@@ -2,14 +2,14 @@
 layout: wiki
 title: FedoraCore6
 meta: 
-permalink: "/wiki/FedoraCore6"
+permalink: "wiki/FedoraCore6"
 category: wiki
 ---
 <!-- Name: FedoraCore6 -->
 <!-- Version: 5 -->
 <!-- Author: bli -->
 
-[Developer Documentation](/wiki/DevelDocs/) > [Distribution Support](/wiki/DistroSupport/) > Fedora Core 6
+[Developer Documentation](wiki/DevelDocs) > [Distribution Support](wiki/DistroSupport) > Fedora Core 6
 
 Basic support for Fedora Core 6 i386 has been added to trunk r5606.  Most OSCAR packages have been ommitted (see [browser:trunk/share/exclude_pkg_set/fc-6-i386.txt]).
 

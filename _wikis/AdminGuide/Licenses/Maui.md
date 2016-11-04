@@ -2,14 +2,14 @@
 layout: wiki
 title: AdminGuide/Licenses/Maui
 meta: 
-permalink: "/wiki/AdminGuide/Licenses/Maui"
+permalink: "wiki/AdminGuide/Licenses/Maui"
 category: wiki
 folder: wiki
 ---
 <!-- Name: AdminGuide/Licenses/Maui -->
 <!-- Version: 1 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](/wiki/AdminGuide/)
+[back to Table of Contents](wiki/AdminGuide)
 
 ## 5.4 Maui Scheduler
 

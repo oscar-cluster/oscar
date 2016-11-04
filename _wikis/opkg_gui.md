@@ -2,7 +2,7 @@
 layout: wiki
 title: opkg_gui
 meta: 
-permalink: "/wiki/opkg_gui"
+permalink: "wiki/opkg_gui"
 category: wiki
 ---
 <!-- Name: opkg_gui -->

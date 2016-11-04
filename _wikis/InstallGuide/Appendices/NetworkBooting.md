@@ -2,14 +2,14 @@
 layout: wiki
 title: InstallGuide/Appendices/NetworkBooting
 meta: 
-permalink: "/wiki/InstallGuide/Appendices/NetworkBooting"
+permalink: "wiki/InstallGuide/Appendices/NetworkBooting"
 category: wiki
 folder: wiki
 ---
 <!-- Name: InstallGuide/Appendices/NetworkBooting -->
 <!-- Version: 2 -->
 <!-- Author: olahaye74 -->
-[back to Table of Contents](/wiki/InstallGuide/)
+[back to Table of Contents](wiki/InstallGuide)
 
 # Appendix A: Network Booting Client Nodes
 

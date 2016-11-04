@@ -2,7 +2,7 @@
 layout: wiki
 title: RecentChanges
 meta: 
-permalink: "/wiki/RecentChanges"
+permalink: "wiki/RecentChanges"
 category: wiki
 ---
 <!-- Name: RecentChanges -->

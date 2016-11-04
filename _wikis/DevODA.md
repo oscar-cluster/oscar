@@ -2,7 +2,7 @@
 layout: wiki
 title: DevODA
 meta: 
-permalink: "/wiki/DevODA"
+permalink: "wiki/DevODA"
 category: wiki
 ---
 <!-- Name: DevODA -->
@@ -45,7 +45,7 @@ In particular, ODA does the following:
 ODA is implemented with the two Perl modules: `oda.pm` and
 `Database.pm`.
 ----
- * [oda.pm](/wiki/DevODA_oda.pm/)
- * [Database.pm](/wiki/DevODA_Database.pm/)
- * [Architecture](/wiki/DevODA_architecture/)
- * [Maintenance](/wiki/DevODA_maintenance/) of ODA
+ * [oda.pm](wiki/DevODA_oda.pm)
+ * [Database.pm](wiki/DevODA_Database.pm)
+ * [Architecture](wiki/DevODA_architecture)
+ * [Maintenance](wiki/DevODA_maintenance) of ODA

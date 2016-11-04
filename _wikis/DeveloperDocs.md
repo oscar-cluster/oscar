@@ -2,7 +2,7 @@
 layout: wiki
 title: DeveloperDocs
 meta: 
-permalink: "/wiki/DeveloperDocs"
+permalink: "wiki/DeveloperDocs"
 category: wiki
 ---
 <!-- Name: DeveloperDocs -->

@@ -2,7 +2,7 @@
 layout: wiki
 title: AdminGuide/Introduction
 meta: 
-permalink: "/wiki/AdminGuide/Introduction"
+permalink: "wiki/AdminGuide/Introduction"
 category: wiki
 folder: wiki
 ---
@@ -11,7 +11,7 @@ folder: wiki
 <!-- Author: valleegr -->
 [[TOC]]
 
-[back to Table of Contents](/wiki/AdminGuide/)
+[back to Table of Contents](wiki/AdminGuide)
 
 # Chapter 1: Introduction
 
@@ -26,5 +26,5 @@ projects, visit its website [http://www.openclustergroup.org/].
 
 This document provides details about the management tools which are provided to make administering an OSCAR cluster easier.  It also describes the packages included in the OSCAR distribution, and an introduction to their usage.  For detailed instructions on each package you should refer to its own internal documentation or the mailing lists for that project.
 
-Please be sure that you have the latest version of this document. The PDF version of this document which is included in the distribution is a snapshot of the OSCAR Trac wiki [wiki/AdminGuide] (http://svn.oscar.openclustergroup.org/trac/oscar/wiki/AdminGuide) which may have been updated since this version was released.
+Please be sure that you have the latest version of this document. The PDF version of this document which is included in the distribution is a snapshot of the OSCAR Trac wiki [wiki/AdminGuide] (http://svn.oscar.openclustergroup.org/trac/oscarwiki/AdminGuide) which may have been updated since this version was released.
 

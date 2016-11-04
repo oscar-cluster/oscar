@@ -2,7 +2,7 @@
 layout: wiki
 title: OSCAR_on_PS3
 meta: 
-permalink: "/wiki/OSCAR_on_PS3"
+permalink: "wiki/OSCAR_on_PS3"
 category: wiki
 ---
 <!-- Name: OSCAR_on_PS3 -->
@@ -17,7 +17,7 @@ This documentation is based on the following requirements but I believe that it 
     * [http://oscar.openclustergroup.org/filebrowser/49/crispy:OSCAR 5.1 Crispy branch]
     * 2 x PS3 machines or more
     * USB key
-    * [http://svn.oscar.openclustergroup.org/trac/oscar/attachment/wiki/OSCAR_on_PS3/otheros.bld?format=raw: OtherOS Installer]
+    * [http://svn.oscar.openclustergroup.org/trac/oscar/attachmentwiki/OSCAR_on_PS3/otheros.bld?format=raw: OtherOS Installer]
     * HDMI-DVI connector
     * [http://www.terrasoftsolutions.com/resources/downloads.shtml: YellowDogLinux(YDL)5.0 (PPC) DVD] (This is my choice to make it easy to build PPC linux packages but I believe that any recent linux distro would work fine with my instruction)
     * USB Keyboard and USB mouse
@@ -25,7 +25,7 @@ This documentation is based on the following requirements but I believe that it 
 
 ### Install
 #### Step 1. Install Linux on PS3
-    * Download the [http://svn.oscar.openclustergroup.org/trac/oscar/attachment/wiki/OSCAR_on_PS3/otheros.bld?format=raw: OtherOS installer] specially built for OSCAR
+    * Download the [http://svn.oscar.openclustergroup.org/trac/oscar/attachmentwiki/OSCAR_on_PS3/otheros.bld?format=raw: OtherOS installer] specially built for OSCAR
     * Save it to the USB key (FAT format) and then hook it up to the PS3
        * On your USB key, create a directory /PS3/otheros and then copy the downloaded the otheros.bld file to /PS3/otheros/
 

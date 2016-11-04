@@ -2,7 +2,7 @@
 layout: wiki
 title: ScientificLinux
 meta: 
-permalink: "/wiki/ScientificLinux"
+permalink: "wiki/ScientificLinux"
 category: wiki
 ---
 <!-- Name: ScientificLinux -->

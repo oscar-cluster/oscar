@@ -2,7 +2,7 @@
 layout: wiki
 title: SystemInstaller
 meta: 
-permalink: "/wiki/SystemInstaller"
+permalink: "wiki/SystemInstaller"
 category: wiki
 ---
 <!-- Name: SystemInstaller -->

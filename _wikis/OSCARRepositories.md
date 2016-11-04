@@ -2,7 +2,7 @@
 layout: wiki
 title: OSCARRepositories
 meta: 
-permalink: "/wiki/OSCARRepositories"
+permalink: "wiki/OSCARRepositories"
 category: wiki
 ---
 <!-- Name: OSCARRepositories -->

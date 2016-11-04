@@ -2,7 +2,7 @@
 layout: wiki
 title: RAPT
 meta: 
-permalink: "/wiki/RAPT"
+permalink: "wiki/RAPT"
 category: wiki
 ---
 <!-- Name: RAPT -->

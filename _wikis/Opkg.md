@@ -2,14 +2,14 @@
 layout: wiki
 title: Opkg
 meta: 
-permalink: "/wiki/Opkg"
+permalink: "wiki/Opkg"
 category: wiki
 ---
 <!-- Name: Opkg -->
 <!-- Version: 3 -->
 <!-- Author: valleegr -->
 
-[Developer Documentation](/wiki/DevelDocs/) > Opkg
+[Developer Documentation](wiki/DevelDocs) > Opkg
 
 # How OPKGs are handled by OSCAR?
 

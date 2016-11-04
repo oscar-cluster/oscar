@@ -2,7 +2,7 @@
 layout: wiki
 title: oscar-5.2-todo
 meta: 
-permalink: "/wiki/oscar-5.2-todo"
+permalink: "wiki/oscar-5.2-todo"
 category: wiki
 ---
 <!-- Name: oscar-5.2-todo -->
@@ -11,11 +11,11 @@ category: wiki
 
 # TODO List for OSCAR-5.2
 
-This todo list is based on the audit performed by Weslay Bland. This audit is available [here](/wiki/oscar5-1-audit/)
+This todo list is based on the audit performed by Weslay Bland. This audit is available [here](wiki/oscar5-1-audit)
 
-1. Include binary packages available in branch and not available in trunk. For that, we will use online repositories in order to ease the management of those binary packages and also simplify the usage of OPKGC. This is why binary packages do not appear on that page. [WebORM](/wiki/weborm/) has been developed in order to provide a web-based interface for the creation and the management of OSCAR repositories. [WebORM](/wiki/weborm/) is still under testing and cannot be yet deployed in production mode (we also need to find a machine that can host both Debian and RPM repositories).
+1. Include binary packages available in branch and not available in trunk. For that, we will use online repositories in order to ease the management of those binary packages and also simplify the usage of OPKGC. This is why binary packages do not appear on that page. [WebORM](wiki/weborm) has been developed in order to provide a web-based interface for the creation and the management of OSCAR repositories. [WebORM](wiki/weborm) is still under testing and cannot be yet deployed in production mode (we also need to find a machine that can host both Debian and RPM repositories).
 
-Status: [WebORM](/wiki/weborm/) under testing, upload complete for fc9-i386, fc9-x86_64, rhel5-i386, rhel5-x86_64, debian4-i386, and debian4-x86_64. The current URL of the server is http://bear.csm.ornl.gov/repos; but will change very soon (this is a temporary server).
+Status: [WebORM](wiki/weborm) under testing, upload complete for fc9-i386, fc9-x86_64, rhel5-i386, rhel5-x86_64, debian4-i386, and debian4-x86_64. The current URL of the server is http://bear.csm.ornl.gov/repos; but will change very soon (this is a temporary server).
 
 2. Include the file representing the database schema, the associated API modifications (done).
 

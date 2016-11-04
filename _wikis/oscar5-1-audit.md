@@ -2,7 +2,7 @@
 layout: wiki
 title: oscar5-1-audit
 meta: 
-permalink: "/wiki/oscar5-1-audit"
+permalink: "wiki/oscar5-1-audit"
 category: wiki
 ---
 <!-- Name: oscar5-1-audit -->

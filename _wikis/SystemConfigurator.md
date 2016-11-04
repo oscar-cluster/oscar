@@ -2,7 +2,7 @@
 layout: wiki
 title: SystemConfigurator
 meta: 
-permalink: "/wiki/SystemConfigurator"
+permalink: "wiki/SystemConfigurator"
 category: wiki
 ---
 <!-- Name: SystemConfigurator -->

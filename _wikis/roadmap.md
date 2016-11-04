@@ -2,7 +2,7 @@
 layout: wiki
 title: roadmap
 meta: 
-permalink: "/wiki/roadmap"
+permalink: "wiki/roadmap"
 category: wiki
 ---
 <!-- Name: roadmap -->
@@ -103,4 +103,4 @@ For oscar-6.0.3, the following tickets have been closed:
 Support Fedora Core 9, Debian 5 and Suse 10:
   * 2009/04/30: generation of binary packages for SuSe 10.3 (both openSuSe and SuSe Entreprise Linux) i386 - http://bear.csm.ornl.gov/repos/unstable/sus-10-i386/
   * 2009/04/23: generation of binary packages for Debian 5 x86_64 - http://bear.csm.ornl.gov/repos/unstable/debian-5-x86_64/
-  * 2009/04/21: generation of binary packages for Fedora Core 9 i386, update of the online repository (http://bear.csm.ornl.gov/repos/unstable/fc-9-i386/).
+  * 2009/04/21: generation of binary packages for Fedora Core 9 i386, update of the online repository (http://bear.csm.ornl.gov/repos/unstable/fc-9-i386).

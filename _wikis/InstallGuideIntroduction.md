@@ -2,7 +2,7 @@
 layout: wiki
 title: InstallGuideIntroduction
 meta: 
-permalink: "/wiki/InstallGuideIntroduction"
+permalink: "wiki/InstallGuideIntroduction"
 category: wiki
 ---
 <!-- Name: InstallGuideIntroduction -->
@@ -11,7 +11,7 @@ category: wiki
 
 [[TOC]]
 
-[back to Table of Contents](/wiki/InstallGuide/)
+[back to Table of Contents](wiki/InstallGuide)
 
 # Chapter 1: Introduction
 
@@ -154,7 +154,7 @@ Given the wide variety of software and hardware combinations possible in a compu
 
 Due to the complicated nature of putting together a high-performance cluster, it is strongly suggested that even experienced system administrators read this document through, without skipping any sections, and then use the detailed installation procedure to install your OSCAR cluster. Novice users will be comforted to know that anyone who has installed and used Linux can successfully navigate through the OSCAR cluster install.
 
-The rest of this document is organized as follows. First, [Section 2](/wiki/InstallGuideReleaseNotes/) tells how to install OSCAR on your system. Next, the [Release Notes section (Section 3)](/wiki/InstallGuideReleaseNotes/) that applies to this OSCAR version contains some requirements and update issues that need to be resolved before the install. Section 4 provides an overview for the System Installation Suite software package used in OSCAR to perform the bulk of the cluster installation. Section 5 details the cluster installation procedure (the level of detail lies somewhere between "the install will now update some files" and "the install will now replace the string ‘xyz’ with ‘abc’ in file some file.") Finally, Section 6 contains system administration notes about several of the individual packages that are installed by OSCAR. This section is a _must read_ for all OSCAR system administrators.
+The rest of this document is organized as follows. First, [Section 2](wiki/InstallGuideReleaseNotes) tells how to install OSCAR on your system. Next, the [Release Notes section (Section 3)](wiki/InstallGuideReleaseNotes) that applies to this OSCAR version contains some requirements and update issues that need to be resolved before the install. Section 4 provides an overview for the System Installation Suite software package used in OSCAR to perform the bulk of the cluster installation. Section 5 details the cluster installation procedure (the level of detail lies somewhere between "the install will now update some files" and "the install will now replace the string ‘xyz’ with ‘abc’ in file some file.") Finally, Section 6 contains system administration notes about several of the individual packages that are installed by OSCAR. This section is a _must read_ for all OSCAR system administrators.
 
 Appendix A covers the topic of network booting client nodes, which is so important that it deserved its own section. Appendix B provides curious users an overview of what really happens during a client install. Appendix C discusses how to install an OSCAR cluster without a DHCP server. Appendix D covers a primer of some security aspects of a Linux cluster. Although not intended to be a comprehensive description of cluster security, it is a good overview for those who know relatively little about system administration and security. Finally, Appendix E is a screen-by-screen walk through of a typical OSCAR installation.
 

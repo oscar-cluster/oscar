@@ -2,7 +2,7 @@
 layout: wiki
 title: faq_usaqge
 meta: 
-permalink: "/wiki/faq_usaqge"
+permalink: "wiki/faq_usaqge"
 category: wiki
 ---
 <!-- Name: faq_usaqge -->
@@ -11,7 +11,7 @@ category: wiki
 
 [[TOC]]
 
-[Back to the FAQ Main Page](/wiki/faq/)
+[Back to the FAQ Main Page](wiki/faq)
 
 # Usage
 
@@ -22,7 +22,7 @@ There are two aspects to adding an MPI implementation to your OSCAR cluster:
  1. Installing the MPI.  This is covered in the installation documentation for the MPI that you are installing, and is not covered here.
  1. Setting up users to use that MPI.  Once the MPI is installed, you will likely need to add a directory to the PATH (and/or LD_LIBRARY_PATH) to allow users to use it.
 
-Note that OSCAR already ships with multiple MPI implementations; which MPI users choose to use is sometimes a highly religious issue.  As such, OSCAR provides a simple mechanism for users to choose their own MPI implementation (or use the system-provided default) known as `switcher`.  Switcher uses the environment modules software ([http://modules.sourceforge.net/](http://modules.sourceforge.net/)) to form a two-level hierarchy of persistent preferences: 
+Note that OSCAR already ships with multiple MPI implementations; which MPI users choose to use is sometimes a highly religious issue.  As such, OSCAR provides a simple mechanism for users to choose their own MPI implementation (or use the system-provided default) known as `switcher`.  Switcher uses the environment modules software ([http://modules.sourceforge.net/](http://modules.sourceforge.net)) to form a two-level hierarchy of persistent preferences: 
  1. the user's preferences, and 
  1. the system-provided default preferences.
 

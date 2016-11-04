@@ -2,7 +2,7 @@
 layout: wiki
 title: IndianaServers
 meta: 
-permalink: "/wiki/IndianaServers"
+permalink: "wiki/IndianaServers"
 category: wiki
 ---
 <!-- Name: IndianaServers -->

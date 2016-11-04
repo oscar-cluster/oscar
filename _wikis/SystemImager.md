@@ -2,14 +2,14 @@
 layout: wiki
 title: SystemImager
 meta: 
-permalink: "/wiki/SystemImager"
+permalink: "wiki/SystemImager"
 category: wiki
 ---
 <!-- Name: SystemImager -->
 <!-- Version: 3 -->
 <!-- Author: bli -->
 
-[Cluster Administrator Documentation](/wiki/UserDocs/) > SystemImager
+[Cluster Administrator Documentation](wiki/UserDocs) > SystemImager
 
 # SystemImager
 

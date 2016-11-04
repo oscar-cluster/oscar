@@ -2,7 +2,7 @@
 layout: wiki
 title: RepoMgmt
 meta: 
-permalink: "/wiki/RepoMgmt"
+permalink: "wiki/RepoMgmt"
 category: wiki
 ---
 <!-- Name: RepoMgmt -->
@@ -11,7 +11,7 @@ category: wiki
 
 # Managing Distribution Repositories
 
-[Distribution repositories](/wiki/RepoPrepare/) contain the packages needed for
+[Distribution repositories](wiki/RepoPrepare) contain the packages needed for
  * building client node images
  * resolving dependencies when installing OSCAR packages onto the master node or the client nodes
 
@@ -75,7 +75,7 @@ The command *$OSCAR_HOME/scripts/repo-update* simplifies steps 1 and 2 of the re
     
     
        Remove duplicate rpms (old package versions) from the repository (usefull when
-       one has copied the packages over from /var/cache/yum/*/packages/):
+       one has copied the packages over from /var/cache/yum/*/packages):
     
        repo-update --rmdup --repo /tftpboot/distro/fedora-4-i386
 

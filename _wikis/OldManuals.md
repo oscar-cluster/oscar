@@ -2,7 +2,7 @@
 layout: wiki
 title: OldManuals
 meta: 
-permalink: "/wiki/OldManuals"
+permalink: "wiki/OldManuals"
 category: wiki
 ---
 <!-- Name: OldManuals -->

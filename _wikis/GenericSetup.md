@@ -2,7 +2,7 @@
 layout: wiki
 title: GenericSetup
 meta: 
-permalink: "/wiki/GenericSetup"
+permalink: "wiki/GenericSetup"
 category: wiki
 ---
 <!-- Name: GenericSetup -->
@@ -24,7 +24,7 @@ package repository.
      distro/common-debs/  : debian packages common to all debian related distros (not
                           : supported, yet)
 
-The distribution name $CDISTRO is the distro name recognized by OSCAR, i.e. the so called compatible distro name (see [OS_Detect](/wiki/DevOSDetect/)). The compatible distro names known do OSCAR are listed in the table below. They have been chosen to be short strings in order to keep the distro/ subdirectory overseeable.
+The distribution name $CDISTRO is the distro name recognized by OSCAR, i.e. the so called compatible distro name (see [OS_Detect](wiki/DevOSDetect)). The compatible distro names known do OSCAR are listed in the table below. They have been chosen to be short strings in order to keep the distro/ subdirectory overseeable.
 
 |*real distro*|*compat distro*|
 |RedHat EL AS/ES/WS|rhel|
@@ -68,7 +68,7 @@ This should not be needed as it is done through other OSCAR components.
 
 ### Notes
 
-`generic-setup` was introduced by [EF](/wiki/ErichFocht/) during OSCAR 4.2 development.
+`generic-setup` was introduced by [EF](wiki/ErichFocht) during OSCAR 4.2 development.
 
 `generic-setup` has been stripped of package version comparison functionality. It might make sense to re-introduce this or add it to `install_prereq`.
 

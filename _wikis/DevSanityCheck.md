@@ -2,7 +2,7 @@
 layout: wiki
 title: DevSanityCheck
 meta: 
-permalink: "/wiki/DevSanityCheck"
+permalink: "wiki/DevSanityCheck"
 category: wiki
 ---
 <!-- Name: DevSanityCheck -->

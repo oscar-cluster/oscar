@@ -2,23 +2,23 @@
 layout: wiki
 title: ReleaseProcess
 meta: 
-permalink: "/wiki/ReleaseProcess"
+permalink: "wiki/ReleaseProcess"
 category: wiki
 ---
 <!-- Name: ReleaseProcess -->
 <!-- Version: 18 -->
 <!-- Author: valleegr -->
 
-[Developer Documentation](/wiki/DevelDocs/) > Release Processes
+[Developer Documentation](wiki/DevelDocs) > Release Processes
 
 ## Release Processes
 
 1. Make sure to unit tests can run successfully (running [run_unit_test](http://svn.oscar.openclustergroup.org/trac/oscar/browser/trunk/testing/run_unit_test)).
 
 2. Prepare documentations
-  a. Write and update [Installation/Administration guide](/wiki/Support/) documentations accordingly.
-  a. Generate the _Installation Manual_ PDF. For that, log into the OSCAR Trac system (https://svn.oscar.openclustergroup.org/), and go under Admin->WikiToPdf, select the following pages and export to PDF: InstallGuideIntroduction, InstallGuideReleaseNotes, InstallGuidePreparing, InstallGuideNetwork, InstallGuideClusterInstall, InstallGuide/Appendices, InstallGuide/Appendices/NetworkBooting, InstallGuide/Appendices/SISBoot, InstallGuide/Appendices/Tips.
-  a. Generate the _Management Manual_ PDF. For that, log into the OSCAR Trac system (https://svn.oscar.openclustergroup.org/), and go under Admin->WikiToPdf, select the following pages and export to PDF: AdminGuide, AdminGuide/Introduction, AdminGuide/Wizard, AdminGuide/Commands, AdminGuide/Packages, AdminGuide/Licenses, AdminGuide/Licenses/C3, AdminGuide/Licenses/DisableService, AdminGuide/Licenses/LAM, AdminGuide/Licenses/Maui, AdminGuide/Licenses/MPICH, AdminGuide/Licenses/pFilter, AdminGuide/Licenses/PVM, AdminGuide/Licenses/SIS, AdminGuide/Licenses/Switcher, AdminGuide/Licenses/Torque.
+  a. Write and update [Installation/Administration guide](wiki/Support) documentations accordingly.
+  a. Generate the _Installation Manual_ PDF. For that, log into the OSCAR Trac system (https://svn.oscar.openclustergroup.org), and go under Admin->WikiToPdf, select the following pages and export to PDF: InstallGuideIntroduction, InstallGuideReleaseNotes, InstallGuidePreparing, InstallGuideNetwork, InstallGuideClusterInstall, InstallGuide/Appendices, InstallGuide/Appendices/NetworkBooting, InstallGuide/Appendices/SISBoot, InstallGuide/Appendices/Tips.
+  a. Generate the _Management Manual_ PDF. For that, log into the OSCAR Trac system (https://svn.oscar.openclustergroup.org), and go under Admin->WikiToPdf, select the following pages and export to PDF: AdminGuide, AdminGuide/Introduction, AdminGuide/Wizard, AdminGuide/Commands, AdminGuide/Packages, AdminGuide/Licenses, AdminGuide/Licenses/C3, AdminGuide/Licenses/DisableService, AdminGuide/Licenses/LAM, AdminGuide/Licenses/Maui, AdminGuide/Licenses/MPICH, AdminGuide/Licenses/pFilter, AdminGuide/Licenses/PVM, AdminGuide/Licenses/SIS, AdminGuide/Licenses/Switcher, AdminGuide/Licenses/Torque.
   a. Write and update [release notes](http://svn.oscar.openclustergroup.org/trac/oscar/browser/trunk/dist/release-info).
   a. Put the pdf files and the release notes to the OSCAR SVN repository.
   a. In SVN, update the [VERSION file](http://svn.oscar.openclustergroup.org/trac/oscar/browser/trunk/VERSION).

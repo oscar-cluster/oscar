@@ -2,7 +2,7 @@
 layout: wiki
 title: OscarWizard
 meta: 
-permalink: "/wiki/OscarWizard"
+permalink: "wiki/OscarWizard"
 category: wiki
 ---
 <!-- Name: OscarWizard -->

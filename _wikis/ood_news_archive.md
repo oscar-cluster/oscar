@@ -2,14 +2,14 @@
 layout: wiki
 title: ood_news_archive
 meta: 
-permalink: "/wiki/ood_news_archive"
+permalink: "wiki/ood_news_archive"
 category: wiki
 ---
 <!-- Name: ood_news_archive -->
 <!-- Version: 3 -->
 <!-- Author: valleegr -->
 
-[wiki/OSCARonDebian] > [News Archive](/wiki/ood_news_archive/)
+[wiki/OSCARonDebian] > [News Archive](wiki/ood_news_archive)
 
 The news are currently handled by Geoffroy Vallee (Oak Ridge National Laboratory). 
 

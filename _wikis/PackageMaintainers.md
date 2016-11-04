@@ -2,14 +2,14 @@
 layout: wiki
 title: PackageMaintainers
 meta: 
-permalink: "/wiki/PackageMaintainers"
+permalink: "wiki/PackageMaintainers"
 category: wiki
 ---
 <!-- Name: PackageMaintainers -->
 <!-- Version: 8 -->
 <!-- Author: dikim -->
 
-[Developer Documentation](/wiki/DevelDocs/) > OSCAR Package Maintainers
+[Developer Documentation](wiki/DevelDocs) > OSCAR Package Maintainers
 
 # OSCAR Package Maintainers
 

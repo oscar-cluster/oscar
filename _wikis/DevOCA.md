@@ -2,14 +2,14 @@
 layout: wiki
 title: DevOCA
 meta: 
-permalink: "/wiki/DevOCA"
+permalink: "wiki/DevOCA"
 category: wiki
 ---
 <!-- Name: DevOCA -->
 <!-- Version: 7 -->
 <!-- Author: bli -->
 
-[Developer Documentation](/wiki/DevelDocs/) > OSCAR Component Architecture
+[Developer Documentation](wiki/DevelDocs) > OSCAR Component Architecture
 ## 
 
 *Introduction*

@@ -2,7 +2,7 @@
 layout: wiki
 title: opkgAPI
 meta: 
-permalink: "/wiki/opkgAPI"
+permalink: "wiki/opkgAPI"
 category: wiki
 ---
 <!-- Name: opkgAPI -->

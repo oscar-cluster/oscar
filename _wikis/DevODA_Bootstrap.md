@@ -2,7 +2,7 @@
 layout: wiki
 title: DevODA_Bootstrap
 meta: 
-permalink: "/wiki/DevODA_Bootstrap"
+permalink: "wiki/DevODA_Bootstrap"
 category: wiki
 ---
 <!-- Name: DevODA_Bootstrap -->

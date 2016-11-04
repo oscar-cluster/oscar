@@ -2,7 +2,7 @@
 layout: wiki
 title: Website
 meta: 
-permalink: "/wiki/Website"
+permalink: "wiki/Website"
 category: wiki
 ---
 <!-- Name: Website -->

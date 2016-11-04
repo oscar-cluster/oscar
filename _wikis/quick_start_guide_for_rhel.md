@@ -2,7 +2,7 @@
 layout: wiki
 title: quick_start_guide_for_rhel
 meta: 
-permalink: "/wiki/quick_start_guide_for_rhel"
+permalink: "wiki/quick_start_guide_for_rhel"
 category: wiki
 ---
 <!-- Name: quick_start_guide_for_rhel -->

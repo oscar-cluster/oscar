@@ -2,14 +2,14 @@
 layout: wiki
 title: AutoInstallHead
 meta: 
-permalink: "/wiki/AutoInstallHead"
+permalink: "wiki/AutoInstallHead"
 category: wiki
 ---
 <!-- Name: AutoInstallHead -->
 <!-- Version: 13 -->
 <!-- Author: valleegr -->
 
-[Developer Documentation](/wiki/DevelDocs/) > Autoinstalling the headnode
+[Developer Documentation](wiki/DevelDocs) > Autoinstalling the headnode
 
 # !!!WARNING!!!
 

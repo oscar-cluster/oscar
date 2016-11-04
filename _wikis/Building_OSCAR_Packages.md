@@ -2,7 +2,7 @@
 layout: wiki
 title: Building_OSCAR_Packages
 meta: 
-permalink: "/wiki/Building_OSCAR_Packages"
+permalink: "wiki/Building_OSCAR_Packages"
 category: wiki
 ---
 <!-- Name: Building_OSCAR_Packages -->

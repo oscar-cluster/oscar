@@ -2,14 +2,14 @@
 layout: wiki
 title: CompleteTest
 meta: 
-permalink: "/wiki/CompleteTest"
+permalink: "wiki/CompleteTest"
 category: wiki
 ---
 <!-- Name: CompleteTest -->
 <!-- Version: 2 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](/wiki/DevelDocs/) > [Command Line Interface](/wiki/CLI/) > Complete and Test Cluster Setup
+[Development Documentation](wiki/DevelDocs) > [Command Line Interface](wiki/CLI) > Complete and Test Cluster Setup
 
 # Complete and Test Cluster Setup
 

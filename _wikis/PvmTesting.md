@@ -2,7 +2,7 @@
 layout: wiki
 title: PvmTesting
 meta: 
-permalink: "/wiki/PvmTesting"
+permalink: "wiki/PvmTesting"
 category: wiki
 ---
 <!-- Name: PvmTesting -->
@@ -22,7 +22,7 @@ Here's a quick set of steps for testing PVM without having all of OSCAR installe
     PATH=$PATH:$PVM_ROOT/lib
     PATH=$PATH:$PVM_ROOT/lib/$PVM_ARCH
     PATH=$PATH:$PVM_ROOT/bin/$PVM_ARCH
- 1. Grab the ['master1.c'](http://svn.oscar.openclustergroup.org/svn/oscar/trunk/packages/pvm/testing/master1.c) and ['slave1.c'](http://svn.oscar.openclustergroup.org/svn/oscar/trunk/packages/pvm/testing/slave1.c) files from the [testing/](http://svn.oscar.openclustergroup.org/svn/oscar/trunk/packages/pvm/testing/) subdir of the PVM opkg.
+ 1. Grab the ['master1.c'](http://svn.oscar.openclustergroup.org/svn/oscar/trunk/packages/pvm/testing/master1.c) and ['slave1.c'](http://svn.oscar.openclustergroup.org/svn/oscar/trunk/packages/pvm/testing/slave1.c) files from the [testing/](http://svn.oscar.openclustergroup.org/svn/oscar/trunk/packages/pvm/testing) subdir of the PVM opkg.
  1. Compile the test programs,
 
       sgrundy: $ gcc -I$PVM_ROOT/include  master1.c \

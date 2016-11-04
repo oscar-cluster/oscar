@@ -2,7 +2,7 @@
 layout: wiki
 title: AdminGuide/Wizard
 meta: 
-permalink: "/wiki/AdminGuide/Wizard"
+permalink: "wiki/AdminGuide/Wizard"
 category: wiki
 folder: wiki
 ---
@@ -11,7 +11,7 @@ folder: wiki
 <!-- Author: valleegr -->
 [[TOC]]
 
-[back to Table of Contents](/wiki/AdminGuide/)
+[back to Table of Contents](wiki/AdminGuide)
 
 # Chapter 2: OSCAR Management Wizard
 
@@ -27,7 +27,7 @@ The OSCAR Management Wizard GUI has the following functionality to allow manipul
 
 All of the above menu items are optional, and can be executed in any order. However, once started, a choice should be followed through to completion, e.g., after adding new nodes, the Complete Cluster Setup must be done.
 
-If you wish to wipe out the cluster and start over, see the [Starting Over](/wiki/InstallGuideClusterInstall#StartingOver/) section of the [Install Guide](/wiki/InstallGuide/).
+If you wish to wipe out the cluster and start over, see the [Starting Over](wiki/InstallGuideClusterInstall#StartingOver) section of the [Install Guide](wiki/InstallGuide).
 
 ## 2.2 Launching the OSCAR Wizard
 

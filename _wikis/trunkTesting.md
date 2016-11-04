@@ -2,7 +2,7 @@
 layout: wiki
 title: trunkTesting
 meta: 
-permalink: "/wiki/trunkTesting"
+permalink: "wiki/trunkTesting"
 category: wiki
 ---
 <!-- Name: trunkTesting -->
@@ -34,8 +34,8 @@ If you face the problem, please send the error message on oscar-devel, so we can
 ## On RPM Based Systems
 
  1. As root, add the following file into your _/etc/yum.conf.d_ directory: 
-  * On x86_64 systems: [http://svn.oscar.openclustergroup.org/trac/oscar/attachment/wiki/repoTesting/CentOS-i386-OSCAR.repo]
-  * On x86 systems: [http://svn.oscar.openclustergroup.org/trac/oscar/attachment/wiki/repoTesting/CentOS-x86_64-OSCAR.repo]
+  * On x86_64 systems: [http://svn.oscar.openclustergroup.org/trac/oscar/attachmentwiki/repoTesting/CentOS-i386-OSCAR.repo]
+  * On x86 systems: [http://svn.oscar.openclustergroup.org/trac/oscar/attachmentwiki/repoTesting/CentOS-x86_64-OSCAR.repo]
  1. Make sure that your system is up-to-date, executing as root *yum update*
  1. Check-out OSCAR trunk
  1. Execute as root *make install*

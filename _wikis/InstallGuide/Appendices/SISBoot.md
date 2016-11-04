@@ -2,14 +2,14 @@
 layout: wiki
 title: InstallGuide/Appendices/SISBoot
 meta: 
-permalink: "/wiki/InstallGuide/Appendices/SISBoot"
+permalink: "wiki/InstallGuide/Appendices/SISBoot"
 category: wiki
 folder: wiki
 ---
 <!-- Name: InstallGuide/Appendices/SISBoot -->
 <!-- Version: 1 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](/wiki/InstallGuide/)
+[back to Table of Contents](wiki/InstallGuide)
 
 # Appendix B: What Happens During Client Installation
 

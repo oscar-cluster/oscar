@@ -2,7 +2,7 @@
 layout: wiki
 title: ExcludeOSCARPackagesByDefault
 meta: 
-permalink: "/wiki/ExcludeOSCARPackagesByDefault"
+permalink: "wiki/ExcludeOSCARPackagesByDefault"
 category: wiki
 ---
 <!-- Name: ExcludeOSCARPackagesByDefault -->

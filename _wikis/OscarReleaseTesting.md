@@ -2,7 +2,7 @@
 layout: wiki
 title: OscarReleaseTesting
 meta: 
-permalink: "/wiki/OscarReleaseTesting"
+permalink: "wiki/OscarReleaseTesting"
 category: wiki
 ---
 <!-- Name: OscarReleaseTesting -->
@@ -76,7 +76,7 @@ The APITest package was developed by William McLendon at Sandia National Labs.  
 package with OSCAR.  The [APITest User's Guide](http://svn.oscar.openclustergroup.org/svn/oscar/trunk/packages/apitest/doc/APItest-userguide-1_0.pdf) is 
 included with the package.  There are also examples available with APITest, which as of apitest-1.0.0-12 are 
 available in the _/usr/share/doc/apitest/examples/_ directory.
-There are also some simple examples in the current PVM package that is included with OSCAR under, [_<OSCAR_HOME>/packages/pvm/testing/_](https://svn.oscar.openclustergroup.org/svn/oscar/trunk/packages/pvm/testing/).
+There are also some simple examples in the current PVM package that is included with OSCAR under, [_<OSCAR_HOME>/packages/pvm/testing/_](https://svn.oscar.openclustergroup.org/svn/oscar/trunk/packages/pvm/testing).
 
 There are two types of APITest test files: 
   * simple tests (*.apt), and 

@@ -2,7 +2,7 @@
 layout: wiki
 title: oscar50
 meta: 
-permalink: "/wiki/oscar50"
+permalink: "wiki/oscar50"
 category: wiki
 ---
 <!-- Name: oscar50 -->
@@ -12,7 +12,7 @@ category: wiki
 After one year of hard work, debugging, rewriting and testing we are proud to present: *OSCAR 5.0*
 
  1. Release features
-   * [Supported distributions](/wiki/SupportedDistros/)
+   * [Supported distributions](wiki/SupportedDistros)
    * *Completely reworked infrastructure*:
      * smart package managers
      * yum based image build and package install
@@ -54,7 +54,7 @@ After one year of hard work, debugging, rewriting and testing we are proud to pr
       * '''oscar-repo-common-rpms-5.0.tar.gz''': repository of noarch rpms used on all supported distributions
       * '''oscar-repo-DISTRO-VERSION-ARCH-5.0.tar.gz''': repository of distro and architecture specific rpms.
     * Online documentation
-      Is located at: [http://svn.oscar.openclustergroup.org/wiki/oscar:5.0:install_guide]. The installation procedure of OSCAR 5 is quite different to that of previous versions. Please read the documentation!
+      Is located at: [http://svn.oscar.openclustergroup.orgwiki/oscar:5.0:install_guide]. The installation procedure of OSCAR 5 is quite different to that of previous versions. Please read the documentation!
     * OSCAR installation
       1. Download the oscar-base tarball. Unpack it in /opt. Rename the unpacked directory, if you want (e.g. /opt/oscar)
       1. In the unpacked directory execute as root the command:
@@ -69,4 +69,4 @@ After one year of hard work, debugging, rewriting and testing we are proud to pr
     ./install_cluster ETH_INTERFACE
          (ETH_INTERFACE is the cluster internal interface on the head node, e.g. eth0).
     * Repositories
-      Instead of copying RPMs locally to the master node you can use online repositories: [/wiki/oscar:5.0:install_guide:ch3.5_advanced_repo]
+      Instead of copying RPMs locally to the master node you can use online repositories: [wiki/oscar:5.0:install_guide:ch3.5_advanced_repo]

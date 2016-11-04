@@ -2,7 +2,7 @@
 layout: wiki
 title: repoTesting
 meta: 
-permalink: "/wiki/repoTesting"
+permalink: "wiki/repoTesting"
 category: wiki
 ---
 <!-- Name: repoTesting -->

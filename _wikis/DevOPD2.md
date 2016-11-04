@@ -2,7 +2,7 @@
 layout: wiki
 title: DevOPD2
 meta: 
-permalink: "/wiki/DevOPD2"
+permalink: "wiki/DevOPD2"
 category: wiki
 ---
 <!-- Name: DevOPD2 -->

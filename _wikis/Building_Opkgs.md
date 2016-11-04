@@ -2,7 +2,7 @@
 layout: wiki
 title: Building_Opkgs
 meta: 
-permalink: "/wiki/Building_Opkgs"
+permalink: "wiki/Building_Opkgs"
 category: wiki
 ---
 <!-- Name: Building_Opkgs -->
@@ -51,7 +51,7 @@ My $OSCAR_WORKING_COPY is where I checked out the OSCAR subversion repository.
 
         cd $OSCAR_WORKING_COPY
         cd packages; env OSCAR_HOME=`pwd`/.. ../scripts/build_opkg_rpms `ls -1F | grep '/$'`
-    All the built opkg rpms are saved to the distro directory of the corresponding packages. (e.g., opkg rpms for openmpi on RHEL5-X86 are saved at $OSCAR_WORKING_COPY/packages/openmpi/distro/rhel5-i386/)
+    All the built opkg rpms are saved to the distro directory of the corresponding packages. (e.g., opkg rpms for openmpi on RHEL5-X86 are saved at $OSCAR_WORKING_COPY/packages/openmpi/distro/rhel5-i386)
 
 ### How to update the change logs in config.xml
 The config.xml file of each OSCAR package is the most important factor to build the opkg meta rpms via opkgc. Here is how we want to add the new change logs to the existing config.xml file.

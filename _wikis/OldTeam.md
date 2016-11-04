@@ -2,7 +2,7 @@
 layout: wiki
 title: OldTeam
 meta: 
-permalink: "/wiki/OldTeam"
+permalink: "wiki/OldTeam"
 category: wiki
 ---
 <!-- Name: OldTeam -->

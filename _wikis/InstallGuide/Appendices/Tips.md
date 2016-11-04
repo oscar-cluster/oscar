@@ -2,14 +2,14 @@
 layout: wiki
 title: InstallGuide/Appendices/Tips
 meta: 
-permalink: "/wiki/InstallGuide/Appendices/Tips"
+permalink: "wiki/InstallGuide/Appendices/Tips"
 category: wiki
 folder: wiki
 ---
 <!-- Name: InstallGuide/Appendices/Tips -->
 <!-- Version: 8 -->
 <!-- Author: olahaye74 -->
-[back to Table of Contents](/wiki/InstallGuide/)
+[back to Table of Contents](wiki/InstallGuide)
 
 # Appendix C: Tips and Troubleshooting
 
@@ -111,7 +111,7 @@ Check:
 ### More things to cross-check:
 
 1. sshd_config
-Edit _/etc/ssh/sshd.config_ and ensure the `PermitRootLogin` is set to `Yes`. See [Build Client Images](/wiki/InstallGuideClusterInstall#BuildImage/)
+Edit _/etc/ssh/sshd.config_ and ensure the `PermitRootLogin` is set to `Yes`. See [Build Client Images](wiki/InstallGuideClusterInstall#BuildImage)
 
 Then run */etc/init.d/sshd reload*
 
@@ -133,7 +133,7 @@ Note: the systemimager will determine the correct type of drive (hda/sda) so the
 1. Adding own packages when deploying nodes.
 Copy your application (rpm) to the repository _/tftpboot/distro/your-os-version/_ and add the name to _/usr/share/oscar/oscarsamples/your-os-version.rpmlist_. Make sure to select the correct file for the creation of the image.
 
-Other methods of installing your applications after OSCAR has been installed will be covered in the [Administration Guide](/wiki/AdminGuide/).
+Other methods of installing your applications after OSCAR has been installed will be covered in the [Administration Guide](wiki/AdminGuide).
 
 
      cpush xyz.rpm /usr/src/ & cexec rpm -i /usr/src/xyz.rpm

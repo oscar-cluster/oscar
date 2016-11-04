@@ -2,7 +2,7 @@
 layout: wiki
 title: Partners
 meta: 
-permalink: "/wiki/Partners"
+permalink: "wiki/Partners"
 category: wiki
 ---
 <!-- Name: Partners -->

@@ -2,7 +2,7 @@
 layout: wiki
 title: CodingStyle
 meta: 
-permalink: "/wiki/CodingStyle"
+permalink: "wiki/CodingStyle"
 category: wiki
 ---
 <!-- Name: CodingStyle -->

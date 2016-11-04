@@ -2,14 +2,14 @@
 layout: wiki
 title: SvnMerges
 meta: 
-permalink: "/wiki/SvnMerges"
+permalink: "wiki/SvnMerges"
 category: wiki
 ---
 <!-- Name: SvnMerges -->
 <!-- Version: 3 -->
 <!-- Author: bli -->
 
-[Developer Documentation](/wiki/DevelDocs/) > SVN > Merges
+[Developer Documentation](wiki/DevelDocs) > SVN > Merges
 
 # SVN Merges
 

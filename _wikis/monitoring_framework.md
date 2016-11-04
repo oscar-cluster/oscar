@@ -2,7 +2,7 @@
 layout: wiki
 title: monitoring_framework
 meta: 
-permalink: "/wiki/monitoring_framework"
+permalink: "wiki/monitoring_framework"
 category: wiki
 ---
 <!-- Name: monitoring_framework -->
