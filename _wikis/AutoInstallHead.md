@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 13 -->
 <!-- Author: valleegr -->
 
-[Developer Documentation](wiki/DevelDocs) > Autoinstalling the headnode
+[Developer Documentation](DevelDocs) > Autoinstalling the headnode
 
 # !!!WARNING!!!
 

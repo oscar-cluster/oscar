@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 2 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](wiki/DevelDocs) > [Command Line Interface](wiki/CLI) > Define OSCAR Clients
+[Development Documentation](DevelDocs) > [Command Line Interface](CLI) > Define OSCAR Clients
 
 # Define OSCAR Clients
 

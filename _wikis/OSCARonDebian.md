@@ -34,7 +34,7 @@ To test the current development version, try the current OSCAR trunk (http://osc
 
 This effort is the result of the OPKGC effort (http://oscar.openclustergroup.org/comp_opkgc) that allows us to automatically create binary packages for OSCAR Packages.
 
-Status: Temporary online repositories are now available. They have been created for OSCAR-5.2 which is still under development. If you want to use those repositories, please read the following web page: http://svn.oscar.openclustergroup.org/trac/oscarwiki/trunkTesting. Note that documentation for the use of binary package only is still missing but should be available shortly. 
+Status: Temporary online repositories are now available. They have been created for OSCAR-5.2 which is still under development. If you want to use those repositories, please read the following web page: http://svn.oscar.openclustergroup.org/trac/oscar/wiki/trunkTesting. Note that documentation for the use of binary package only is still missing but should be available shortly. 
 
 ### Support of images based on different distributions and architectures
 
@@ -53,8 +53,8 @@ Status: we contacted the APItest developer in order to find a long term solution
 
 ## Usefull Links
 
- * [News - Archive (until December 2008)](wiki/ood_news_archive)
+ * [News - Archive (until December 2008)](ood_news_archive)
 
- * [Partners](wiki/ood_partners)
+ * [Partners](ood_partners)
 
- * [OSCAR Packages Status](wiki/ood_opkg_status)
+ * [OSCAR Packages Status](ood_opkg_status)

@@ -21,7 +21,7 @@ From the *oscar* project page of GForge, subscribe to `oscar-package` maillist t
 
 ## Package authentication
 
-Packages must be signed with gpg. The way it is done [depends on the packaging system](wiki/Packaging#PackageSignature) (.deb or RPM).
+Packages must be signed with gpg. The way it is done [depends on the packaging system](Packaging#PackageSignature) (.deb or RPM).
 
 For packages to be accepted on repository, your gpg public key must be in the OSCAR keyring. For the moment, to add an identity into OSCAR keyring, please contact Jean Parpaillon.
 

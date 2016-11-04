@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 17 -->
 <!-- Author: valleegr -->
 
-[wiki/DevelDocs] > [ODA](wiki/DevODA) > Architecture
+[DevelDocs] > [ODA](DevODA) > Architecture
 
 !!! WARNING: THIS DOCUMENT DOES NOT REFLECT THE LATEST MODIFICATION OF THE DATABASE SCHEMA !!!
 
@@ -75,7 +75,7 @@ Nodes, Packages, and Status entity are designed for OSCAR Packages Manager[[BR]]
 keep track of the status of installation of each of the OSCAR packages[[BR]] 
 on the specific node.[[BR]]
 ----
- * [oda.pm](wiki/DevODA_oda.pm)
- * [Database.pm](wiki/DevODA_Database.pm)
- * [Maintenance](wiki/DevODA_maintenance) of ODA
+ * [oda.pm](DevODA_oda.pm)
+ * [Database.pm](DevODA_Database.pm)
+ * [Maintenance](DevODA_maintenance) of ODA
  * [Database Schema](http://svn.oscar.openclustergroup.org/trac/oscar/export/7368/pkgsrc/oda/trunk/doc/oscar_oda.svg)

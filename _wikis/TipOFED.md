@@ -11,7 +11,7 @@ category: wiki
 
 These are some notes on seting up the OpenFabrics 1.2.5 infiniband driver/utility/mpi package set from source on an OSCAR 5.0 cluster.  I successfully installed OFED on RHEL 4, but your milage may vary.
 
-  * Install OSCAR 5.0 up through step 3 "Install Server Packages" as described in the installation guide ([http://svn.oscar.openclustergroup.org/trac/oscarwiki/InstallGuideClusterInstall])
+  * Install OSCAR 5.0 up through step 3 "Install Server Packages" as described in the installation guide ([http://svn.oscar.openclustergroup.org/trac/oscar/wiki/InstallGuideClusterInstall])
   * Get OFED source ([http://www.openfabrics.org/builds/ofed-1.2.5/release/])
   * yume install tcl-devel 
 

@@ -11,13 +11,13 @@ category: wiki
 
 [[TOC]]
 
-[Back the Documentation Main Page](wiki/Document)
+[Back the Documentation Main Page](Document)
 
 ## Frequently Asked Questions
 
 If you are having problems with OSCAR, chances are someone else have encountered the same problem too - this FAQ is a great source of information for commonly encountered issues.
 
- * [FAQ for Developers](wiki/faq_development)
- * [FAQ related to Cluster Installation](wiki/faq_install)
- * [FAQ related to Cluster Usage](wiki/faq_usaqge)
+ * [FAQ for Developers](faq_development)
+ * [FAQ related to Cluster Installation](faq_install)
+ * [FAQ related to Cluster Usage](faq_usaqge)
 

@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 2 -->
 <!-- Author: bli -->
 
-[Cluster Administrator Documentation](wiki/UserDocs) > Uninstalling OSCAR - starting over
+[Cluster Administrator Documentation](UserDocs) > Uninstalling OSCAR - starting over
 
 # Uninstalling OSCAR - starting over
 

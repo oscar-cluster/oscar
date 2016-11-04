@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 55 -->
 <!-- Author: olahaye74 -->
 
-[Developer Documentation](wiki/DevelDocs) > Distribution Support
+[Developer Documentation](DevelDocs) > Distribution Support
 
 ## Distribution Support for OSCAR >= 6.x
 
@@ -30,11 +30,11 @@ Please refer to the documentation associated to each release to get the updated 
 
 The OSCAR project aims to support as many different Linux distributions as possible.  As such, when new codes are added to OSCAR (e.g., updated packages, new core component), they need to be ported/tested on previously supported distributions.
 
-That usually involves rebuilding binary packages (eg. [RPMs](wiki/BuildRPM)) on the target platform and distribution and checking them into the source tree. For the Debian support, please visit the [OSCAR on Debian website](http://oscarondebian.gforge.inria.fr).
+That usually involves rebuilding binary packages (eg. [RPMs](BuildRPM)) on the target platform and distribution and checking them into the source tree. For the Debian support, please visit the [OSCAR on Debian website](http://oscarondebian.gforge.inria.fr).
 
 In the OSCAR release/checkout, there is a script called [browser:trunk/scripts/build_oscar_rpms build_oscar_rpms] which will help you build RPMs from OSCAR Packages on your running Linux distribution/architecture.  All you need to do is pass it the name(s) of OSCAR Package(s) and they will be built and copied to `packages/<package_name>/distro/<distro>-<arch>`.  If you are reasonably comfortable with building RPMs, this is an easy way to get RPMs built for an unsupported distribution/architecture quickly.  There are some documentation provided in the source code.
 
-The new version(branch-5-1) of OSCAR requires to build [opkg meta rpms](wiki/opkgAPI) and there is a simple way to build the meta rpms [here](wiki/Building_Opkgs).
+The new version(branch-5-1) of OSCAR requires to build [opkg meta rpms](opkgAPI) and there is a simple way to build the meta rpms [here](Building_Opkgs).
 
 The following matrix lists people who intend to test on a particular distro/arch for the upcoming (5.1) release:
 

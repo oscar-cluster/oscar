@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 3 -->
 <!-- Author: valleegr -->
 
-[Developer Documentation](wiki/DevelDocs) > Opkg
+[Developer Documentation](DevelDocs) > Opkg
 
 # How OPKGs are handled by OSCAR?
 

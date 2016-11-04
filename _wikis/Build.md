@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 7 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](wiki/DevelDocs) > [Command Line Interface](wiki/CLI) > Build Client Image
+[Development Documentation](DevelDocs) > [Command Line Interface](CLI) > Build Client Image
 
 # Build Client Image
 

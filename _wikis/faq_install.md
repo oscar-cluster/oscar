@@ -11,7 +11,7 @@ category: wiki
 
 [[TOC]]
 
-[Back to the FAQ main page](wiki/faq)
+[Back to the FAQ main page](faq)
 
 # FAQ Related to Cluster Installation
 
@@ -148,7 +148,7 @@ When you are in the process of imaging your nodes, you see a similar message as 
     This is system Installer auto install system .
     <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-This is because your hard drive is not supported by the SystemImager kernel - please refer to FAQ item about [SystemImager kernel](wiki/faq#TheSystemImagerkerneldoesnotsupportmySATASCSIornetworkhardwarewhatcanIdo) to solve this problem.
+This is because your hard drive is not supported by the SystemImager kernel - please refer to FAQ item about [SystemImager kernel](faq#TheSystemImagerkerneldoesnotsupportmySATASCSIornetworkhardwarewhatcanIdo) to solve this problem.
 
 ## What if the network boot fails?
 

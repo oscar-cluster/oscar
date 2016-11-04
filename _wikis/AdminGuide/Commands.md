@@ -12,7 +12,7 @@ folder: wiki
 
 [[TOC]]
 
-[back to Table of Contents](wiki/AdminGuide)
+[back to Table of Contents](AdminGuide)
 
 # Chapter 3: OSCAR Management Commands
 

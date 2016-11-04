@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 2 -->
 <!-- Author: valleegr -->
 
-[wiki/OSCARonDebian] > [wiki/ood_opkg_status]
+[OSCARonDebian] > [ood_opkg_status]
 
 # Status of OSCAR packages on Debian
 

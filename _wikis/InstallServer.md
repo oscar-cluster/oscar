@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 2 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](wiki/DevelDocs) > [Command Line Interface](wiki/CLI) > Install Server RPMs
+[Development Documentation](DevelDocs) > [Command Line Interface](CLI) > Install Server RPMs
 
 # Install Server RPMs
 

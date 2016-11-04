@@ -17,7 +17,7 @@ This was developed and tested on OSCAR 5.0 on a 30 node cluster of Dell PE1950's
 
  * Install RHEL 4 - Add development tools at least, and graphical internet
  * run [http://linux.dell.com/files/name_eths/] to switch the eth0 and eth1 ports to match gig1 and gig2
- * Install OSCAR as described here [wiki/InstallGuide]
+ * Install OSCAR as described here [InstallGuide]
  * Gotchas:
    * Set `/etc/ssh.conf` to allowrootlogin yes
    * fix `/etc/hosts` so the localhost and hostname are in different lines.  hostname and public interface IP should be together.  Use a fake name for internal IP

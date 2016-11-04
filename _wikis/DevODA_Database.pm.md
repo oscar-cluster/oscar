@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 14 -->
 <!-- Author: dikim -->
 
-[wiki/DevelDocs] > [ODA](wiki/DevODA) > Database.pm
+[DevelDocs] > [ODA](DevODA) > Database.pm
 ## Database.pm
 
 `Database.pm`, located at the next level of the ODA hierarchy, is an[[BR]]
@@ -69,6 +69,6 @@ is successfully implemented to the caller or another subroutine.[[BR]]
 The source is available on the following link: [[BR]]
 [https://svn.oscar.openclustergroup.org/trac/oscar/browser/trunk/lib/OSCAR/Database.pm]
 ----
- * [oda.pm](wiki/DevODA_oda.pm)
- * [Architecture](wiki/DevODA_architecture)
- * [Maintenance](wiki/DevODA_maintenance) of ODA
+ * [oda.pm](DevODA_oda.pm)
+ * [Architecture](DevODA_architecture)
+ * [Maintenance](DevODA_maintenance) of ODA

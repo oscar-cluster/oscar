@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 8 -->
 <!-- Author: dikim -->
 
-[Developer Documentation](wiki/DevelDocs) > OSCAR Package Maintainers
+[Developer Documentation](DevelDocs) > OSCAR Package Maintainers
 
 # OSCAR Package Maintainers
 

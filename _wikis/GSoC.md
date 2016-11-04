@@ -13,6 +13,6 @@ Google Summer of Code Pages
 
 2008
 
- * [NFS Project](wiki/GSoC/NFS)
- * [V2M Extension Project](wiki/GSoC/V2M)
-  * [V2M Extension Development Track](wiki/GSoC/V2M_Track)
+ * [NFS Project](GSoC/NFS)
+ * [V2M Extension Project](GSoC/V2M)
+  * [V2M Extension Development Track](GSoC/V2M_Track)

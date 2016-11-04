@@ -45,7 +45,7 @@ And optionally, if a new packaging system or/and a new package format is to be s
 
 For this document, we will assume you want to port trunk. To port OSCAR to a new Linux distribution perform the following steps:
 
-On a yum based distro, you can use the following Quick start guide / script: wiki/DevelNewDistro
+On a yum based distro, you can use the following Quick start guide / script: DevelNewDistro
 
 For other distro, you can try to follow the procedure below: (not up to date)
     1. Check-out oscar-packager:

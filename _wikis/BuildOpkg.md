@@ -15,9 +15,9 @@ The goals of the OSCAR package system is to describe software:
  * in a distribution-indepedant way,
  * with cluster-wide actions.
 
-An _opkg_ description is made of a _config.xml_ file plus some others files (pre|post)-install scripts. Have a look at [wiki/opkgAPI] to get a full description of _opkg_ packaging.
+An _opkg_ description is made of a _config.xml_ file plus some others files (pre|post)-install scripts. Have a look at [opkgAPI] to get a full description of _opkg_ packaging.
 
-_opkg_ description is compiled with [wiki/opkg_opkgc] to produce native packages (means _RPM_ or _.deb_).
+_opkg_ description is compiled with [opkg_opkgc] to produce native packages (means _RPM_ or _.deb_).
 
 # How to build an OSCAR Package (old way)
 
@@ -35,7 +35,7 @@ _[EF: the HOWTO content should move to some wiki pages, it will be easier to kee
 ## __Important Notes__
 
 ### config.xml
-The `config.xml` file structure has changed in trunk, i.e. for OSCAR 5.0. The new format is documented on the [wiki/ConfigXML] page.  A script to convert from the pre-5.0 format to 5.0+ format is available here: [browser:trunk/scripts/config-xml-convert.pl].
+The `config.xml` file structure has changed in trunk, i.e. for OSCAR 5.0. The new format is documented on the [ConfigXML] page.  A script to convert from the pre-5.0 format to 5.0+ format is available here: [browser:trunk/scripts/config-xml-convert.pl].
 
 ### generic-setup package structure
-The `RPMS` directory is not used any more. Instead, each package needs to follow the [generic-setup](wiki/GenericSetup) structure. Starting with OSCAR 5.0 the wizard calls `generic-setup` for copying binary packages to `/tftpboot/oscar/*`. The `scripts/setup` script doesn't need to take care of this any more.
+The `RPMS` directory is not used any more. Instead, each package needs to follow the [generic-setup](GenericSetup) structure. Starting with OSCAR 5.0 the wizard calls `generic-setup` for copying binary packages to `/tftpboot/oscar/*`. The `scripts/setup` script doesn't need to take care of this any more.

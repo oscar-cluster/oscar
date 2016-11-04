@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 4 -->
 <!-- Author: bli -->
 
-[Developer Documentation](wiki/DevelDocs) > How to create RPMs
+[Developer Documentation](DevelDocs) > How to create RPMs
 
 If the OSCAR Package you are trying to create does not already come in RPM binary format, then you will need to build one from scratch.
 
@@ -19,7 +19,7 @@ Macroes such as `%if %{?suse_version:1}0` are useful to determine what distribut
 
 The following are some good resources on how to build RPMs from scratch:
 
- * http://fedoraproject.orgwiki/Packaging/Guidelines?action=show&redirect=PackagingGuidelines
+ * http://fedoraproject.orgPackaging/Guidelines?action=show&redirect=PackagingGuidelines
  * http://www.rpm.org/max-rpm/
  * IBM Packaging software with RPM (3 part series):
    * http://www.ibm.com/developerworks/linux/library/l-rpm1/

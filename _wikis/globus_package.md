@@ -35,7 +35,7 @@ Ans.
 
 Q. 
 ## How to create a package
-[OSCAR Package creation method](wiki/BuildOpkg) 
+[OSCAR Package creation method](BuildOpkg) 
 
 ### What's specific regarding Globus package
 

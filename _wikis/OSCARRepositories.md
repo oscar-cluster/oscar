@@ -55,7 +55,7 @@ OSCAR (OSCAR base).
 
 OSCAR infrastructure can deploy regular RPM/deb packages but some softwares
 need to use specific services provided by OSCAR infrastructure: they are Opkg OSCAR
-packages ([wiki/Opkg]).
+packages ([Opkg]).
 
 ### OSCAR Version
 

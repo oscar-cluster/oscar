@@ -9,7 +9,7 @@ folder: wiki
 <!-- Name: InstallGuide/Appendices/SISBoot -->
 <!-- Version: 1 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](wiki/InstallGuide)
+[back to Table of Contents](InstallGuide)
 
 # Appendix B: What Happens During Client Installation
 

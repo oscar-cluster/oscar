@@ -11,7 +11,7 @@ category: wiki
 
 # Initial Implementation of Package Sets
 
-OSCAR provides a basic notion of _package sets_, however the capability has never been fully implemented.  This document presents the current status for an initial implementation of _package sets_, which will be enhanced/extended by the more complete implementation being pursued by Wesley Bland ([Package Set Manager](wiki/SetManager)).
+OSCAR provides a basic notion of _package sets_, however the capability has never been fully implemented.  This document presents the current status for an initial implementation of _package sets_, which will be enhanced/extended by the more complete implementation being pursued by Wesley Bland ([Package Set Manager](SetManager)).
 
 The current notion of a _Default Package Set_ has been implemented, which is used to exclude OPKGs on a given Linux distribution.
 

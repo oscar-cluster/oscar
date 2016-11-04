@@ -13,16 +13,16 @@ category: wiki
 
 ## On RPM Based Systems
 
-On RPM based systems, please follow instrucation available there: [wiki/Building_Opkgs]
+On RPM based systems, please follow instrucation available there: [Building_Opkgs]
 
 ## On Debian Based Systems
 
-First, you need to install [OPKGC](wiki/opkg_opkgc):
+First, you need to install [OPKGC](opkg_opkgc):
     1. Please, add the following line to your ''/etc/apt/sources.list'' file:
         * For x86 systems: ''deb http://bear.csm.ornl.gov/repos/debian-4-i386/ etch /''
         * For x86_64 systems: ''deb http://bear.csm.ornl.gov/repos/debian-4-x86_64/ etch /''
     1. As root, execute the following command: ''aptitude update''
-    1. As root, execute the following command in order to install [wiki/opkg_opkgc OPKGC]: ''aptitude install opkgc''
+    1. As root, execute the following command in order to install [opkg_opkgc OPKGC]: ''aptitude install opkgc''
 
 ## Compilation of Core OPKGS
 

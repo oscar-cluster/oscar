@@ -35,7 +35,7 @@ package repository, making it difficult to keep the repository clean and updated
 
 ### New repository location
 
-Starting with OSCAR 5.0 the package repository structure has been redesigned by  [EF](wiki/ErichFocht) and split up such that multiple distributions and architectures can be supported in parallel. The new directory structure separates _distribution-_ and _OSCAR-_specific packages. The packages are separated by their architecture and distribution, the generic path being:
+Starting with OSCAR 5.0 the package repository structure has been redesigned by  [EF](ErichFocht) and split up such that multiple distributions and architectures can be supported in parallel. The new directory structure separates _distribution-_ and _OSCAR-_specific packages. The packages are separated by their architecture and distribution, the generic path being:
 
 
     /tftpboot/distro/$DISTRIBUTION-$VERSION-$ARCHITECTURE

@@ -9,7 +9,7 @@ folder: wiki
 <!-- Name: InstallGuide/Appendices/NetworkBooting -->
 <!-- Version: 2 -->
 <!-- Author: olahaye74 -->
-[back to Table of Contents](wiki/InstallGuide)
+[back to Table of Contents](InstallGuide)
 
 # Appendix A: Network Booting Client Nodes
 

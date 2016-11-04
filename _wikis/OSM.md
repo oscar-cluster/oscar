@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 2 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](wiki/DevelDocs) > OSCAR Set Manager
+[Development Documentation](DevelDocs) > OSCAR Set Manager
 
 # OSCAR Set Manager (OSM)
 
@@ -29,7 +29,7 @@ This is an example of using the PSM, MSM, and OSM together to setup a complex OS
 
 ### Machine Set Definitions
 
-First the machine sets need to be defined in an XML file.  For this example we will use 2 servers and 10 client nodes.  This is a simplified version of the definition.  For more details about the specific implementation of the machine sets XML file, see the [Machine Set Manager](wiki/MSM) wiki page.
+First the machine sets need to be defined in an XML file.  For this example we will use 2 servers and 10 client nodes.  This is a simplified version of the definition.  For more details about the specific implementation of the machine sets XML file, see the [Machine Set Manager](MSM) wiki page.
 
 
     I want 2 servers:
@@ -81,7 +81,7 @@ First the machine sets need to be defined in an XML file.  For this example we w
 
 ### OPKG Set Definitions
 
-Next the OPKG Sets need to be defined in an XML file.  For examples of this, see the trunk [source:trunk/src/OscarSets/pkgsetexample-fedora-6-i386.xml example] and the [Package Set Manager](wiki/SetManager) wiki page.
+Next the OPKG Sets need to be defined in an XML file.  For examples of this, see the trunk [source:trunk/src/OscarSets/pkgsetexample-fedora-6-i386.xml example] and the [Package Set Manager](SetManager) wiki page.
 
 ### OSM Functions
 
@@ -106,7 +106,7 @@ OSM will take the previous statements and convert them into a more explicit set 
     Put sets core, xen, nfs, and lam on oscarnode4
     Put sets core, xen, torque, and lam on oscarnode8 and oscarnode10
 
-It will also combine the sets into one larger set and resolve any conflicts at the set level (different versions of the same package, see [PSM](wiki/SetManager)).
+It will also combine the sets into one larger set and resolve any conflicts at the set level (different versions of the same package, see [PSM](SetManager)).
 
 The result of all of this will be a hash that is ready to be passed into the installation tool.
 

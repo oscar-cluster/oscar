@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 3 -->
 <!-- Author: bli -->
 
-[Developer Documentation](wiki/DevelDocs) > SVN > Merges
+[Developer Documentation](DevelDocs) > SVN > Merges
 
 # SVN Merges
 

@@ -11,7 +11,7 @@ category: wiki
 
 [[TOC]]
 
-[Back to the FAQ main page](wiki/faq)
+[Back to the FAQ main page](faq)
 
 # FAQ for Developers
 
@@ -38,7 +38,7 @@ Update-rpms will then provide more verbose information during execution (why cer
 
 ## How do I check code out of SVN?
 
-Have a look at [SVN instructions](wiki/SVNinstructions).
+Have a look at [SVN instructions](SVNinstructions).
 
 ## How to revert my SVN working directory back to a clean state?
 

@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 22 -->
 <!-- Author: dikim -->
 
-[wiki/DevelDocs] > ODA
+[DevelDocs] > ODA
 ## OSCAR Database API (ODA)
 
 ODA is an OSCAR Database API to make it easy for users to use the OSCAR[[BR]]
@@ -45,7 +45,7 @@ In particular, ODA does the following:
 ODA is implemented with the two Perl modules: `oda.pm` and
 `Database.pm`.
 ----
- * [oda.pm](wiki/DevODA_oda.pm)
- * [Database.pm](wiki/DevODA_Database.pm)
- * [Architecture](wiki/DevODA_architecture)
- * [Maintenance](wiki/DevODA_maintenance) of ODA
+ * [oda.pm](DevODA_oda.pm)
+ * [Database.pm](DevODA_Database.pm)
+ * [Architecture](DevODA_architecture)
+ * [Maintenance](DevODA_maintenance) of ODA

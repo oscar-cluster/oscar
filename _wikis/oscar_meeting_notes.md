@@ -174,4 +174,4 @@ category: wiki
           and debian 4 x86/x86_64
     
 
-A TODO list for OSCAR 5.2 is available [here](wiki/oscar-5.2-todo).
+A TODO list for OSCAR 5.2 is available [here](oscar-5.2-todo).

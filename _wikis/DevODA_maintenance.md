@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 10 -->
 <!-- Author: dikim -->
 
-[wiki/DevelDocs] > [ODA](wiki/DevODA) > Maintenance
+[DevelDocs] > [ODA](DevODA) > Maintenance
 
 ## Maintenance of ODA
 More functionality needs to be added to `Database.pm`: the OSCAR[[BR]]
@@ -47,5 +47,5 @@ the database module for only OPM would be named as[[BR]]
 Database, for only OSCAR sub-projects or additional ODA modules.[[BR]]
 
 ----
- * [oda.pm](wiki/DevODA_oda.pm)
- * [Database.pm](wiki/DevODA_Database.pm)
+ * [oda.pm](DevODA_oda.pm)
+ * [Database.pm](DevODA_Database.pm)

@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 3 -->
 <!-- Author: bli -->
 
-[Cluster Administrator Documentation](wiki/UserDocs) > SystemImager
+[Cluster Administrator Documentation](UserDocs) > SystemImager
 
 # SystemImager
 

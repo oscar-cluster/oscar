@@ -10,7 +10,7 @@ category: wiki
 <!-- Author: dikim -->
 
 ** Release features
-  * [Supported distributions](wiki/DistroSupport)[[BR]]
+  * [Supported distributions](DistroSupport)[[BR]]
     Many of these distros are new for OSCAR, which shows that the infrastructure is now quite flexible. And the PS3 support is something quite unique, a big thanks to DongInn and Bernard for it!
   * OSCAR database (ODA):
     * Postgresql support
@@ -40,7 +40,7 @@ yum install createrepo /tftpboot/oscar/common-rpms/yume*.rpm
     rpm -ivh yum-oscar-2.4.3-1.noarch.rpm python-elementtree-1.2.6-6.1ef.i686.rpm \
     python-urlgrabber-2.9.8-2ef.noarch.rpm ../common-rpms/yume-2.7-2.noarch.rpm \
     ../common-rpms/createrepo-0.4.3-5.1e.noarch.rpm
-   1. set up the distro repository in /tftpboot/distro/... Look at [this](wiki/InstallGuidePreparing#DistributionRepositories) for instructions.
+   1. set up the distro repository in /tftpboot/distro/... Look at [this](InstallGuidePreparing#DistributionRepositories) for instructions.
    1. install oscar-base rpm
 
     yume --repo /tftpboot/oscar/common-rpms install oscar-base
@@ -51,4 +51,4 @@ yum install createrepo /tftpboot/oscar/common-rpms/yume*.rpm
      (ETH_INTERFACE is the cluster internal interface on the head node, e.g. eth0).
 
     * Repositories
-      Instead of copying distro RPMs locally to the master node you can use online repositories: [wiki/oscar:5.1:install_guide:ch3.5_advanced_repo]
+      Instead of copying distro RPMs locally to the master node you can use online repositories: [oscar:5.1:install_guide:ch3.5_advanced_repo]

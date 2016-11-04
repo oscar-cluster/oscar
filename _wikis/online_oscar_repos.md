@@ -21,4 +21,4 @@ http://bear.csm.ornl.gov/repos *This server may be shutdown at any time, without
 
 ## Creation of Your Own Mirror
 
-Currently the only solution is to create a new online repository from scratch. For that, the WebORM tool has been developed (PHP5 interface for the creation and management of OSCAR respositories). For more information, visit the [WebORM wiki page](wiki/weborm).
+Currently the only solution is to create a new online repository from scratch. For that, the WebORM tool has been developed (PHP5 interface for the creation and management of OSCAR respositories). For more information, visit the [WebORM wiki page](weborm).

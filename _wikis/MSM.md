@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 5 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](wiki/DevelDocs) > [Oscar Set Manager](wiki/OSM) > Machine Set Manager
+[Development Documentation](DevelDocs) > [Oscar Set Manager](OSM) > Machine Set Manager
 
 # Machine Set Manager
 

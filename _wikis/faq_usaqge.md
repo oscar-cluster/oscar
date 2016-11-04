@@ -11,7 +11,7 @@ category: wiki
 
 [[TOC]]
 
-[Back to the FAQ Main Page](wiki/faq)
+[Back to the FAQ Main Page](faq)
 
 # Usage
 

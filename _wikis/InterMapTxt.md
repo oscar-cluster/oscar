@@ -52,7 +52,7 @@ Also note that InterWiki prefixes are case insensitive.
     Trac-ML  http://thread.gmane.org/gmane.comp.version-control.subversion.trac.general/ # Message $1 in Trac Mailing List
     trac-dev http://thread.gmane.org/gmane.comp.version-control.subversion.trac.devel/   # Message $1 in Trac Development Mailing List
     
-    Mercurial http://www.selenic.com/mercurialwiki/index.cgi/ # the wiki for the Mercurial distributed SCM
+    Mercurial http://www.selenic.com/mercurialindex.cgi/ # the wiki for the Mercurial distributed SCM
     RFC       http://rfc.net/rfc$1.html # IETF's RFC $1
     
     #
@@ -70,9 +70,9 @@ Also note that InterWiki prefixes are case insensitive.
     JargonFile       http://downlode.org/perl/jargon-redirect.cgi?term=
     MeatBall         http://www.usemod.com/cgi-bin/mb.pl?
     MetaWiki         http://sunir.org/apps/meta.pl?
-    MetaWikiPedia    http://meta.wikipedia.orgwiki/
+    MetaWikiPedia    http://meta.wikipedia.org
     MoinMoin         http://moinmoin.wikiwikiweb.de/
     WhoIs            http://www.whois.sc/
     Why              http://clublet.com/c/c/why?
     c2Wiki             http://c2.com/cgi/wiki?
-    WikiPedia        http://en.wikipedia.orgwiki/
+    WikiPedia        http://en.wikipedia.org

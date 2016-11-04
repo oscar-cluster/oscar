@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 5 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](wiki/DevelDocs) > [Command Line Interface](wiki/CLI) > Setup Network
+[Development Documentation](DevelDocs) > [Command Line Interface](CLI) > Setup Network
 
 # Setup Networking
 

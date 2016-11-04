@@ -9,6 +9,6 @@ category: wiki
 <!-- Version: 4 -->
 <!-- Author: bli -->
 
-[Developer Documentation](wiki/DevelDocs) > SVN > Rollback
+[Developer Documentation](DevelDocs) > SVN > Rollback
 
 http://www.mail-archive.com/oscar-devel@lists.sourceforge.net/msg05634.html

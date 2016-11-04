@@ -9,13 +9,13 @@ folder: wiki
 <!-- Name: InstallGuide/Appendices/Tips -->
 <!-- Version: 8 -->
 <!-- Author: olahaye74 -->
-[back to Table of Contents](wiki/InstallGuide)
+[back to Table of Contents](InstallGuide)
 
 # Appendix C: Tips and Troubleshooting
 
 This is a rough colection of tips and tricks for when things don't work quite the way we might expect them to.  If you carefully follow the documentation provided here, these suggestions should not be neccesary.  However, the suggestions here might be helpful if something does not work and you need a place to start.
 
-Also, please check out the OSCAR website ([wiki/Support]) for more support tips and tricks.
+Also, please check out the OSCAR website ([Support]) for more support tips and tricks.
 
 ### Q1) When trying to PXE boot a node (for imaging), I get a TFTP timeout.
 tftp server is started by xinetd.
@@ -111,7 +111,7 @@ Check:
 ### More things to cross-check:
 
 1. sshd_config
-Edit _/etc/ssh/sshd.config_ and ensure the `PermitRootLogin` is set to `Yes`. See [Build Client Images](wiki/InstallGuideClusterInstall#BuildImage)
+Edit _/etc/ssh/sshd.config_ and ensure the `PermitRootLogin` is set to `Yes`. See [Build Client Images](InstallGuideClusterInstall#BuildImage)
 
 Then run */etc/init.d/sshd reload*
 
@@ -133,7 +133,7 @@ Note: the systemimager will determine the correct type of drive (hda/sda) so the
 1. Adding own packages when deploying nodes.
 Copy your application (rpm) to the repository _/tftpboot/distro/your-os-version/_ and add the name to _/usr/share/oscar/oscarsamples/your-os-version.rpmlist_. Make sure to select the correct file for the creation of the image.
 
-Other methods of installing your applications after OSCAR has been installed will be covered in the [Administration Guide](wiki/AdminGuide).
+Other methods of installing your applications after OSCAR has been installed will be covered in the [Administration Guide](AdminGuide).
 
 
      cpush xyz.rpm /usr/src/ & cexec rpm -i /usr/src/xyz.rpm

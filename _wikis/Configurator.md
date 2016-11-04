@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 10 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](wiki/DevelDocs) > [Command Line Interface](wiki/CLI) > Configurator
+[Development Documentation](DevelDocs) > [Command Line Interface](CLI) > Configurator
 
 # Configurator
 
@@ -46,4 +46,4 @@ This version was included because of the way Ganglia uses the Configurator.  It 
 
 ## configurator.html
 
-Due to problems using the HTML version of the configurator as a command line tool, some changes had to occur to make the configurator.html files usable.  These changes are documented [here](wiki/Configurator.html).
+Due to problems using the HTML version of the configurator as a command line tool, some changes had to occur to make the configurator.html files usable.  These changes are documented [here](Configurator.html).

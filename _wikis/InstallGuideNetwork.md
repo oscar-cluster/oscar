@@ -11,7 +11,7 @@ category: wiki
 
 [[TOC]]
 
-[back to Table of Content](wiki/InstallGuide)
+[back to Table of Content](InstallGuide)
 
 # Chapter 4: Network Setup
 

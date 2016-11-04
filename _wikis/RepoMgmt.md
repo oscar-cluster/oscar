@@ -11,7 +11,7 @@ category: wiki
 
 # Managing Distribution Repositories
 
-[Distribution repositories](wiki/RepoPrepare) contain the packages needed for
+[Distribution repositories](RepoPrepare) contain the packages needed for
  * building client node images
  * resolving dependencies when installing OSCAR packages onto the master node or the client nodes
 

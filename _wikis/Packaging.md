@@ -17,11 +17,11 @@ As a deployment tool, *OSCAR* heavily uses packaging systems. Currently, distrib
 
 _opkg_ system is specific to *OSCAR*. It allows developers to describe software with a cluster-wide view and in a multi-distribution way.
 
-The _opkg_ description is then compiled with [opkgc](wiki/opkg_opkgc) to produce packages in distribution native systems (RPM or deb).
+The _opkg_ description is then compiled with [opkgc](opkg_opkgc) to produce packages in distribution native systems (RPM or deb).
 
 Here are useful resources about _opkg_ system:
- * [Describing a software with opkg](wiki/opkgAPI)
- * [The opkg compiler](wiki/opkg_opkgc)
+ * [Describing a software with opkg](opkgAPI)
+ * [The opkg compiler](opkg_opkgc)
 
 ## RPM packaging
 
@@ -33,7 +33,7 @@ Macroes such as `%if %{?suse_version:1}0` are useful to determine what distribut
 
 The following are some good resources on how to build RPMs from scratch:
 
- * [Packaging Guidelines, by Fedora](http://fedoraproject.orgwiki/Packaging/Guidelines?action=show&redirect=PackagingGuidelines)
+ * [Packaging Guidelines, by Fedora](http://fedoraproject.orgPackaging/Guidelines?action=show&redirect=PackagingGuidelines)
  * [RPM guide, by Fedora](http://docs.fedoraproject.org/drafts/rpm-guide-en)
  * [RPM HOW-TO (rpm.org)](http://www.rpm.org/support/RPM-HOWTO.html)
  * [Maximum RPM guide](http://www.rpm.org/max-rpm)
@@ -41,7 +41,7 @@ The following are some good resources on how to build RPMs from scratch:
    * [Introductory](http://www.ibm.com/developerworks/linux/library/l-rpm1)
    * [Building without root, patching software, and distributing RPMs](http://www.ibm.com/developerworks/linux/library/l-rpm2)
    * [Part 3](http://www.ibm.com/developerworks/linux/library/l-rpm3.html)
- * [Specific notes for building RPM for OSCAR](wiki/BuildRPM)
+ * [Specific notes for building RPM for OSCAR](BuildRPM)
 
 ### Do not build debuginfo package
 
@@ -96,12 +96,12 @@ Useful resources:
 
 ## Package repositories
 
-For instructions on uploading packages, have a look at [Repositories for Developers](wiki/DevelRepositories) page.
+For instructions on uploading packages, have a look at [Repositories for Developers](DevelRepositories) page.
 
-To get packages from repositories, have a look at [Repositories](wiki/Repositories) page.
+To get packages from repositories, have a look at [Repositories](Repositories) page.
 
-To know how OSCAR package repositories are maintained see [Repositories Internals](wiki/RepositoriesInternals) page.
+To know how OSCAR package repositories are maintained see [Repositories Internals](RepositoriesInternals) page.
 
 ## Modification of the Default Package Set
 
-Have a look at [How to exclude OSCAR package from the default package set](wiki/ExcludeOSCARPackagesByDefault)
+Have a look at [How to exclude OSCAR package from the default package set](ExcludeOSCARPackagesByDefault)

@@ -11,7 +11,7 @@ category: wiki
 
 [[TOC]]
 
-[back to Table of Contents](wiki/InstallGuide)
+[back to Table of Contents](InstallGuide)
 
 # Chapter 2: Release Notes
 
@@ -139,7 +139,7 @@ Change the value of *USE_INETD* to false:
 Please refer to the notes at the following page:
 
 
-    https://bitbucket.org/gvallee/systemimager-4.1.6-ubuntuprecisewiki/Home
+    https://bitbucket.org/gvallee/systemimager-4.1.6-ubuntupreciseHome
 
 #### After Imaging the Compute Nodes, On the Compute Nodes
 

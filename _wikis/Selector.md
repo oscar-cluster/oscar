@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 7 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](wiki/DevelDocs) > [Command Line Interface](wiki/CLI) > Selector
+[Development Documentation](DevelDocs) > [Command Line Interface](CLI) > Selector
 
 # Selector
 

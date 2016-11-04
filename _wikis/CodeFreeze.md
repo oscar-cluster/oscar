@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 6 -->
 <!-- Author: valleegr -->
 
-[Developer Documentation](wiki/DevelDocs) > Code Freeze and Release
+[Developer Documentation](DevelDocs) > Code Freeze and Release
 
 # Code Freeze for the Preparation of a New Release
 
@@ -23,5 +23,5 @@ Weekly bug reviews are held on the IRC channel irc.freenode.net #oscar-cluster t
 
 Bugs regardless should be fixed in trunk.  If the fix is for a bug assigned to a milestone we are currently trying to reach, then it is necessary to merge the change to the branch.  Please make sure that you are merging the code and not simply copying the code from trunk -> branch as the code might have changed in trunk which may then introduce some new features into branch.
 
-Please refer to page [SVN Merges](wiki/SvnMerges) for more information on how this is performed.
+Please refer to page [SVN Merges](SvnMerges) for more information on how this is performed.
 

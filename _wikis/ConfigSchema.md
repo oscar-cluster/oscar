@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 3 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](wiki/DevelDocs) > [Command Line Interface](wiki/CLI) > [wiki/Configurator] > Schema
+[Development Documentation](DevelDocs) > [Command Line Interface](CLI) > [Configurator] > Schema
 
 # Schema
 

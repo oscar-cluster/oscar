@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 2 -->
 <!-- Author: valleegr -->
 
-[wiki/OSCARonDebian] > [wiki/ood_partners]
+[OSCARonDebian] > [ood_partners]
 
 Work on OSCARonDebian is currently funded thanks to cooperations with our partners: 
 

@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 12 -->
 <!-- Author: dikim -->
 
-[wiki/DevelDocs] > [ODA](wiki/DevODA) > oda.pm
+[DevelDocs] > [ODA](DevODA) > oda.pm
 ## oda.pm
 
 The highest level of ODA hierarchy is `oda.pm`, which implements[[BR]]
@@ -44,6 +44,6 @@ can not treat the return values that _do_query_ needs to transfer.[[BR]]
 The source is available on the following link: [[BR]]
 [https://svn.oscar.openclustergroup.org/trac/oscar/browser/trunk/lib/OSCAR/oda.pm]
 ----
- * [Database.pm](wiki/DevODA_Database.pm)
- * [Architecture](wiki/DevODA_architecture)
- * [Maintenance](wiki/DevODA_maintenance) of ODA
+ * [Database.pm](DevODA_Database.pm)
+ * [Architecture](DevODA_architecture)
+ * [Maintenance](DevODA_maintenance) of ODA

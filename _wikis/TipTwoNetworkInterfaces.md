@@ -18,7 +18,7 @@ This example makes the head node into a true gateway, with one interface (eth0) 
 This was developed and tested on OSCAR 5.0 on a 30 node cluster of Dell PE1950's using RedHat Enterprise Linux AS 4 Update 4.  Your mileage may vary.  I have tried to remove the pieces which are specific to that hardware.
 
  * Install RHEL 4 - Add development tools at least, and graphical internet
- * Install OSCAR as described here [wiki/InstallGuide]
+ * Install OSCAR as described here [InstallGuide]
  * fix `/etc/hosts` so the localhost and hostname are in different lines.  hostname and public interface IP should be together.  Use a fake name for internal IP
 
 

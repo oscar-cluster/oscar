@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 6 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](wiki/DevelDocs) > [Command Line Interface](wiki/CLI) > Configurator.html
+[Development Documentation](DevelDocs) > [Command Line Interface](CLI) > Configurator.html
 
 # configurator.html
 

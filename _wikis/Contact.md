@@ -26,7 +26,7 @@ Join us at #oscar-cluster on irc.freenode.net.
 
 ## Wiki
 
-Many information can be found on the wiki, through [user doc](wiki/Support) or [developers docs](wiki/DevelDocs).
+Many information can be found on the wiki, through [user doc](Support) or [developers docs](DevelDocs).
 
 ## Bug tracker
 
@@ -36,8 +36,8 @@ OSCAR is an Open Source project with key representatives in the High Performance
 
 ## Package Maintainers
 
-If you need to contact the maintainer of a particular package, have a look at [OSCAR Package Maintainers](wiki/PackageMaintainers).
+If you need to contact the maintainer of a particular package, have a look at [OSCAR Package Maintainers](PackageMaintainers).
 
 ## Team and Partners
 
-OSCAR is composed of a bunch of [developers](wiki/Team), and funded by [Academia/Research and Industrial partners](wiki/Partners). We want also to thanks [former contributors](wiki/OldTeam).
+OSCAR is composed of a bunch of [developers](Team), and funded by [Academia/Research and Industrial partners](Partners). We want also to thanks [former contributors](OldTeam).

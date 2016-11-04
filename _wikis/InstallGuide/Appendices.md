@@ -9,10 +9,10 @@ folder: wiki
 <!-- Name: InstallGuide/Appendices -->
 <!-- Version: 1 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](wiki/InstallGuide)
+[back to Table of Contents](InstallGuide)
 
 # Appendices
 
- A. [Network Booting](wiki/InstallGuide/Appendices/NetworkBooting)
- A. [SIS Boot Description](wiki/InstallGuide/Appendices/SISBoot)
- A. [Tips & Troubleshooting](wiki/InstallGuide/Appendices/Tips)
+ A. [Network Booting](InstallGuide/Appendices/NetworkBooting)
+ A. [SIS Boot Description](InstallGuide/Appendices/SISBoot)
+ A. [Tips & Troubleshooting](InstallGuide/Appendices/Tips)

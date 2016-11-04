@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 3 -->
 <!-- Author: valleegr -->
 
-[wiki/OSCARonDebian] > [News Archive](wiki/ood_news_archive)
+[OSCARonDebian] > [News Archive](ood_news_archive)
 
 The news are currently handled by Geoffroy Vallee (Oak Ridge National Laboratory). 
 

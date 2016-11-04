@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 9 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](wiki/DevelDocs) > [OSCAR Set Manager](wiki/OSM) > [Package Set Manager](wiki/SetManager) > OPKG Versioning
+[Development Documentation](DevelDocs) > [OSCAR Set Manager](OSM) > [Package Set Manager](SetManager) > OPKG Versioning
 
 # OPKG Versioning
 

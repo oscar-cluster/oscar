@@ -11,6 +11,6 @@ category: wiki
 
 # Documentation
 
- * [User Documentations](wiki/Support)
- * [Devel Documentations](wiki/DevelDocs)
- * [FAQ](wiki/faq)
+ * [User Documentations](Support)
+ * [Devel Documentations](DevelDocs)
+ * [FAQ](faq)

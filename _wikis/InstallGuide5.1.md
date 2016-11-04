@@ -11,12 +11,12 @@ category: wiki
 
 # OSCAR 5.1 Install Guide
 
- 1. [Introduction](wiki/InstallGuideIntroduction)
-   1. [Overview](wiki/InstallGuideIntroduction#Overview)
-   1. [Terminology](wiki/InstallGuideIntroduction#Terminology)
-   1. [System Installation Suite](wiki/InstallGuideIntroduction#SIS)
-   1. [Supported Distributions](wiki/InstallGuideIntroduction#SupportedDistributions)
-   1. [System Requirements](wiki/InstallGuideIntroduction#SystemRequirements)
-   1. [Document Organization](wiki/InstallGuideIntroduction#DocumentOrganization)
- 1. [Release Notes](wiki/InstallGuideReleaseNotes)
-   1. [Release Features](wiki/InstallGuideReleaseNotes#Features)
+ 1. [Introduction](InstallGuideIntroduction)
+   1. [Overview](InstallGuideIntroduction#Overview)
+   1. [Terminology](InstallGuideIntroduction#Terminology)
+   1. [System Installation Suite](InstallGuideIntroduction#SIS)
+   1. [Supported Distributions](InstallGuideIntroduction#SupportedDistributions)
+   1. [System Requirements](InstallGuideIntroduction#SystemRequirements)
+   1. [Document Organization](InstallGuideIntroduction#DocumentOrganization)
+ 1. [Release Notes](InstallGuideReleaseNotes)
+   1. [Release Features](InstallGuideReleaseNotes#Features)

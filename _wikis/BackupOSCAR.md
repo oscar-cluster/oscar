@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 10 -->
 <!-- Author: bli -->
 
-[Developer Documentation](wiki/DevelDocs) > Backup up OSCAR
+[Developer Documentation](DevelDocs) > Backup up OSCAR
 
 This document outlines the steps that need to be carried out to backup and restore a OSCAR headnode.
 

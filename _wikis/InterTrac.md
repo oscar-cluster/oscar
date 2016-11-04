@@ -82,9 +82,9 @@ a _compatibility_ mode:
 
 Now, given the above configuration, one could create the following links:
  * to this InterTrac page:
-   * `trac:wiki/InterTrac` trac:wiki/InterTrac
-   * `t:wiki/InterTrac` t:wiki/InterTrac
-   * Keys are case insensitive: `T:wiki/InterTrac` T:wiki/InterTrac
+   * `trac:InterTrac` trac:InterTrac
+   * `t:InterTrac` t:InterTrac
+   * Keys are case insensitive: `T:InterTrac` T:InterTrac
  * to the ticket #234:
    * `trac:ticket:234` trac:ticket:234
    * `trac:#234` trac:#234 

@@ -16,84 +16,84 @@ category: wiki
 ### Table of Contents
 
  1. Development Process
-    * [wiki/CodingStyle Coding Style]
+    * [CodingStyle Coding Style]
     * Release Management
-      * [wiki/CodeFreeze Code Freeze and Release]
-      * [wiki/ReleaseProcess Release Processes]
+      * [CodeFreeze Code Freeze and Release]
+      * [ReleaseProcess Release Processes]
     * SVN
-      * [wiki/SVNinstructions Checkout Instructions]
-      * [wiki/SvnMerges Merges]
-      * [wiki/SvnTrac Integration with Trac]
-      * [wiki/SvnRollback Rollback]
+      * [SVNinstructions Checkout Instructions]
+      * [SvnMerges Merges]
+      * [SvnTrac Integration with Trac]
+      * [SvnRollback Rollback]
  1. Preparations
-   * [Autoinstalling the headnode](wiki/AutoInstallHead)
-   * [Build servers at Indiana University](wiki/IndianaServers)
-   * [OSCAR debug parameters](wiki/DebugOSCAR)
+   * [Autoinstalling the headnode](AutoInstallHead)
+   * [Build servers at Indiana University](IndianaServers)
+   * [OSCAR debug parameters](DebugOSCAR)
  1. OSCAR infrastructure
    * OSCAR Overview
-     * [wiki/roadmap Future & Ongoing Work]
-     * [wiki/architecture Architecture]
+     * [roadmap Future & Ongoing Work]
+     * [architecture Architecture]
    * OSCAR Packages (opkg)
-     * [wiki/opkgAPI The OPKG API]
-     * [wiki/Opkg]
-     * [wiki/Packaging Packaging for OSCAR]
-     * [wiki/PackageInUn PackageInUn] (deprecated)
-     * [wiki/OPM]: OSCAR Package Manger
-   * [OCA](wiki/DevOCA): OSCAR Component Architecture
-     * [wiki/DevOSdetect OS_Detect]
-     * [wiki/DevOSsettings OS_Settings]
-     * [wiki/DevRMdetect RM_Detect]
-     * [wiki/DevSanityCheck Sanity_Check]
-   * [OSCAR Configuration Files](wiki/ConfigFile)
-   * [ODA](wiki/DevODA): OSCAR Database
-     * [wiki/DevODA_Bootstrap Bootstrap]
-     * [wiki/DevODA_architecture Architecture]
-     * [wiki/DevODA_code Code Source, Installation and Packaging]
-     * [wiki/DevODA_maintenance Maintenance of ODA]
+     * [opkgAPI The OPKG API]
+     * [Opkg]
+     * [Packaging Packaging for OSCAR]
+     * [PackageInUn PackageInUn] (deprecated)
+     * [OPM]: OSCAR Package Manger
+   * [OCA](DevOCA): OSCAR Component Architecture
+     * [DevOSdetect OS_Detect]
+     * [DevOSsettings OS_Settings]
+     * [DevRMdetect RM_Detect]
+     * [DevSanityCheck Sanity_Check]
+   * [OSCAR Configuration Files](ConfigFile)
+   * [ODA](DevODA): OSCAR Database
+     * [DevODA_Bootstrap Bootstrap]
+     * [DevODA_architecture Architecture]
+     * [DevODA_code Code Source, Installation and Packaging]
+     * [DevODA_maintenance Maintenance of ODA]
    * OPD: OSCAR Package Downloader
-     * [wiki/DevOPD2 OPD2 Architecture]
-   * [generic-setup](wiki/GenericSetup)
-   * [prereqs](wiki/DevPrereqs)
-   * [system-sanity](wiki/SystemSanity)
-   * [packman](wiki/DevPackman)
-   * [OSCAR::PackagePath](wiki/PackagePath)
-   * [KernelPicker](wiki/KernelPicker)
-   * [Switcher](wiki/switcher)
-   * [wiki/SystemInstaller]
-   * [wiki/SystemConfigurator]
-   * [Command Line Interface](wiki/CLI)
-     * [wiki/Selector]
-     * [wiki/Configurator]
-     * [wiki/InstallServer Install Server RPMs]
-     * [wiki/Build Build Client Image]
-     * [wiki/Define Define OSCAR Clients]
-     * [wiki/SetupNetwork Setup Networking]
-     * [wiki/CompleteTest Complete and Test Cluster Installation]
-   * [Oscar Set Manager](wiki/OSM)
-     * [wiki/SetManager Package Set Manager]
-       * [wiki/OPKGVersioning OPKG Versioning]
-       * [wiki/OPKGSetTemp Initial Implementation of Package Sets]
-     * [wiki/MSM Machine Set Manager]
-   * [RAPT](wiki/RAPT)
-   * [Monitoring Framework](wiki/monitoring_framework)
- 1. [Backing up OSCAR](wiki/BackupOSCAR) (-> this should move to the user/admin docs!)
+     * [DevOPD2 OPD2 Architecture]
+   * [generic-setup](GenericSetup)
+   * [prereqs](DevPrereqs)
+   * [system-sanity](SystemSanity)
+   * [packman](DevPackman)
+   * [OSCAR::PackagePath](PackagePath)
+   * [KernelPicker](KernelPicker)
+   * [Switcher](switcher)
+   * [SystemInstaller]
+   * [SystemConfigurator]
+   * [Command Line Interface](CLI)
+     * [Selector]
+     * [Configurator]
+     * [InstallServer Install Server RPMs]
+     * [Build Build Client Image]
+     * [Define Define OSCAR Clients]
+     * [SetupNetwork Setup Networking]
+     * [CompleteTest Complete and Test Cluster Installation]
+   * [Oscar Set Manager](OSM)
+     * [SetManager Package Set Manager]
+       * [OPKGVersioning OPKG Versioning]
+       * [OPKGSetTemp Initial Implementation of Package Sets]
+     * [MSM Machine Set Manager]
+   * [RAPT](RAPT)
+   * [Monitoring Framework](monitoring_framework)
+ 1. [Backing up OSCAR](BackupOSCAR) (-> this should move to the user/admin docs!)
  1. OSCAR Distribution Support
-   * [Distribution support for new OSCAR releases](wiki/DistroSupport)
-   * [Porting OSCAR to a new distribution](wiki/DistroPort)
-   * [OSCAR binary packages repositories](wiki/OSCARRepositories)
+   * [Distribution support for new OSCAR releases](DistroSupport)
+   * [Porting OSCAR to a new distribution](DistroPort)
+   * [OSCAR binary packages repositories](OSCARRepositories)
  1. Build system
-   * [Overview](wiki/BuildOverview)
-   * [New OSCAR distribution format](wiki/Distribution)
+   * [Overview](BuildOverview)
+   * [New OSCAR distribution format](Distribution)
  1. Build OSCAR packages
-   * [Building all packages required by OSCAR](wiki/Building_OSCAR_Packages)
-   * [Building OSCAR meta packages (opkgs)](wiki/Building_Opkgs)
+   * [Building all packages required by OSCAR](Building_OSCAR_Packages)
+   * [Building OSCAR meta packages (opkgs)](Building_Opkgs)
  1. Testing
-   * [Manual Testing of PVM](wiki/PvmTesting)
-   * [wiki/OscarReleaseTesting]
-   * [Testing of OSCAR trunk](wiki/trunkTesting)
-   * [Testing the OSCAR version available via our repositories](wiki/repoTesting)
+   * [Manual Testing of PVM](PvmTesting)
+   * [OscarReleaseTesting]
+   * [Testing of OSCAR trunk](trunkTesting)
+   * [Testing the OSCAR version available via our repositories](repoTesting)
  1. Ongoing work ...
-    * [wiki/roadmap Roadmap]
-    * [wiki/weborm WebORM]
-    * [wiki/OSCARonDebian OSCARonDebian]
-    * [wiki/opkg_opkgc OSCAR Package Compiler (opkgc)]
+    * [roadmap Roadmap]
+    * [weborm WebORM]
+    * [OSCARonDebian OSCARonDebian]
+    * [opkg_opkgc OSCAR Package Compiler (opkgc)]

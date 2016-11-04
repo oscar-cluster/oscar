@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 2 -->
 <!-- Author: wesbland -->
 
-[Development Documentation](wiki/DevelDocs) > [Command Line Interface](wiki/CLI) > Complete and Test Cluster Setup
+[Development Documentation](DevelDocs) > [Command Line Interface](CLI) > Complete and Test Cluster Setup
 
 # Complete and Test Cluster Setup
 

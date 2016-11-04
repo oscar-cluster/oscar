@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 7 -->
 <!-- Author: bli -->
 
-[Developer Documentation](wiki/DevelDocs) > OSCAR Component Architecture
+[Developer Documentation](DevelDocs) > OSCAR Component Architecture
 ## 
 
 *Introduction*

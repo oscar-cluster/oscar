@@ -20,19 +20,19 @@ This page is the entry point for the so called User Docs, meaning it is aimed at
    * Designing an OSCAR cluster
    * Preparing the master node
      * Installing the master node
-     * [wiki/RepoPrepare Preparing the package repositories]
-     * [wiki/MasterUpdate Updating the master node]
+     * [RepoPrepare Preparing the package repositories]
+     * [MasterUpdate Updating the master node]
      * Downloading OSCAR
    * Installing an OSCAR cluster
-     * [wiki/OscarWizard OSCAR Wizard]
-     * [wiki/SystemImager SystemImager]
-     * [wiki/StartOver Uninstalling OSCAR - starting over]
+     * [OscarWizard OSCAR Wizard]
+     * [SystemImager SystemImager]
+     * [StartOver Uninstalling OSCAR - starting over]
  * Cluster Administration
    * User accounts
    * Managing node images
-     * [wiki/DeleteImage Deleting node images]
-   * [Managing distribution repositories](wiki/RepoMgmt)
-   * [Updating nodes](wiki/NodeUpdate)
+     * [DeleteImage Deleting node images]
+   * [Managing distribution repositories](RepoMgmt)
+   * [Updating nodes](NodeUpdate)
    * Re-installing a node
    * Adding nodes to the cluster
    * Using env-switcher / modules
