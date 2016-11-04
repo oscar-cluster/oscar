@@ -14,6 +14,7 @@ There are many ways to contact people from OSCAR project.
 ## Mail lists
 
 [OSCAR mail lists](http://sourceforge.net/mail/?group_id=9368) are hosted by [SourceForge](http://sourceforge.net/projects/oscar):
+
  * [oscar-annouce](http://lists.sourceforge.net/mailman/listinfo/oscar-announce): Announcements of important Oscar events.
  * [oscar-checkins](http://lists.sourceforge.net/mailman/listinfo/oscar-checkins): A list for all SVN checkins to OSCAR
  * [oscar-devel](http://lists.sourceforge.net/mailman/listinfo/oscar-devel): List for development issues and discussion.
