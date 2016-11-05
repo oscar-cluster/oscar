@@ -39,4 +39,4 @@ To build OSCAR from SVN, check [SVN instructions](SVNinstructions).
 
 ### Packages
 
-Package repositories are available. See [there](http://svn.oscar.openclustergroup.org/trac/oscar/wiki/repoTesting) for including their address in your preferred package management tool.
+Package repositories are available. See [there](repoTesting) for including their address in your preferred package management tool.
