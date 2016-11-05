@@ -15,7 +15,7 @@ category: wiki
 
 # Chapter 4: Network Setup
 
-== 4.1 Configure the ethernet adapter for the cluster == #NIC
+## <a name='nic'></a>4.1 Configure the ethernet adapter for the cluster
 
 Assuming you want your server to be connected to both a public network and the private cluster subnet, you will need to have two ethernet adapters installed in the server. This is the preferred OSCAR configuration because exposing your cluster may be a security risk and certain software used in OSCAR (such as DHCP) may conflict with your external network.
 

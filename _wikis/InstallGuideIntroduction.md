@@ -15,7 +15,7 @@ category: wiki
 
 # Chapter 1: Introduction
 
-== 1.1 Overview == #Overview
+## <a name='overview'></a>1.1 Overview 
 
 OSCAR version 6.1 is a snapshot of the best known methods for building, programming,
 and using clusters. It consists of a fully integrated and easy to install software bundle designed
@@ -29,7 +29,7 @@ This document provides a step-by-step installation guide for system administrato
 Please be sure that you have the latest version of this document. The PDF version of this document which is included in the distribution is a snapshot of the OSCAR Trac wiki [http://svn.oscar.openclustergroup.org/trac/oscar/wiki] which may have been updated since this version was released.
 
 
-== 1.2 Terminology == #Terminology
+## <a name='terminology'></a>1.2 Terminology
 
 A common term used in this document is cluster, which refers to a group of individual computers bundled
 together using hardware and software in order to make them work as a single machine.
@@ -46,7 +46,7 @@ OSCAR packages fall into one of three categories:
  * Included packages are shipped in the official OSCAR distribution. These are usually authored and/or packaged by OSCAR developers, and have some degree of official testing before release.
  * Third party packages are not included in the official OSCAR distribution; they are _add-ons_ that can be unpacked in the OSCAR tree, and therefore installed using the OSCAR installation framework.
 
-== 1.3: Overview of System Installation Suite (SIS) == #SIS
+## <a name='sis'></a>1.3: Overview of System Installation Suite (SIS)
 
 The System Installation Suite (SIS) is a cluster installation tool developed by the collaboration of the IBM Linux Technology Center and the SystemImager team. SIS was chosen to be the installation mechanism for OSCAR for multiple reasons:
 
@@ -63,7 +63,7 @@ Each of these pieces of information will be discussed further as part of the det
 
 For additional information on the concepts in SIS and how to use it, you should refer to the SIS(1) man page. In addition, you can visit the SIS web site at [http://wiki.systemimager.org/] for recent updates.
 
-== 1.4 Supported Distributions == #SupportedDistributions
+## <a name='supportedDistributions'></a>1.4 Supported Distributions
 This version of OSCAR has been tested to work with a single Linux distribution. It is, however, known to have certain compatibility issues with some of the distributions. The suggested workarounds in such cases have been discussed in this document. Table 1 lists each distribution and version and
 specifies the level of support for each. In order to ensure a successful installation, most users should stick to a distribution that is listed as Fully supported.
 
@@ -129,7 +129,7 @@ specifies the level of support for each. In order to ensure a successful install
 Clones of supported distributions, especially open source rebuilds of Red Hat Enterprise Linux such as
 CentOS and Scientific Linux, should work but are not officially tested. See the release notes (Section 3) for your distribution for known issues.
 
-== 1.5 Minimum System Requirements == #SystemRequirements
+## <a name='systemRequirements'></a>1.5 Minimum System Requirements
 
 The following is a list of minimum system requirements for the OSCAR server node:
 
@@ -150,7 +150,7 @@ Monitors and keyboards are helpful, but are not required.
 
 Given the wide variety of software and hardware combinations possible in a compute clusters, it is impossible for us to keep an accurate list of hardware which OSCAR supports. If the hardware works on a stock install of the host operating system, there are fair odds that it will not cause any problems with OSCAR.
 
-== 1.6 Document Organization == #DocumentOrganization
+## <a name='documentOrganization'></a>1.6 Document Organization
 
 Due to the complicated nature of putting together a high-performance cluster, it is strongly suggested that even experienced system administrators read this document through, without skipping any sections, and then use the detailed installation procedure to install your OSCAR cluster. Novice users will be comforted to know that anyone who has installed and used Linux can successfully navigate through the OSCAR cluster install.
 

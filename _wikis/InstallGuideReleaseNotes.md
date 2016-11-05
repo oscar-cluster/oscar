@@ -15,7 +15,7 @@ category: wiki
 
 # Chapter 2: Release Notes
 
-== 2.1 Release Features == #ReleaseFeatures
+## <a name='releaseFeatures'></a>2.1 Release Features
 
 The major new features for OSACR 6.x are:
  * OSCAR is not installed in /opt anymore but directly on the system (for instance, binaries are in /usr/sbin).
@@ -27,7 +27,7 @@ The major new features for OSACR 6.x are:
 
 For more details, please refer to the ChangeLog http://svn.oscar.openclustergroup.org/trac/oscar/browser/trunk/ChangeLog
 
-== 2.2 General Installation Notes == #GeneralNotes
+## <a name='generalNotes'></a>2.2 General Installation Notes
 
  * The OSCAR installer GUI provides little protection for user mistakes. If the user executes steps out of order, or provides erroneous input, Bad Things may happen. Users are strongly encouraged to closely follow the instructions provided in this document.
  * Each package in OSCAR has its own installation and release notes. See Section 6 for additional release notes.
@@ -38,7 +38,7 @@ For more details, please refer to the ChangeLog http://svn.oscar.openclustergrou
 
     export LC_ALL=C
 
-== 2.3 Networking Notes == #NetworkingNotes
+## <a name='networkingNotes'></a>2.3 Networking Notes
 
  * All nodes must have a hostname other than `localhost` that does not contain any underscores "_" or periods "." Some distributions complicate this by putting a line such as as the following in /etc/hosts:
 
@@ -67,7 +67,7 @@ Note that this is actually an ssh problem, not a C3 problem. As such, you need t
 
 The warnings about xauth should no longer appear (and the <Install/Uninstall Packages> button should work properly).
 
-== 2.4 SELinux Conflict == #SELinuxNote
+## <a name='selinuxNote'></a>2.4 SELinux Conflict
 
 According to the NSA [http://www.nsa.gov/selinux/info/faq.cfm], the purpose of SE Linux is as follows: 
 
@@ -75,7 +75,7 @@ According to the NSA [http://www.nsa.gov/selinux/info/faq.cfm], the purpose of S
 
  * Due to issues with displaying graphs under Ganglia, and installing RPMs in a chroot environment (needed to build OSCAR images), SELinux should be disabled before installing OSCAR. During installation, it can be deactivated on the same screen as the firewall. If it is currently active it can be turned off using the selinux OSCAR package (make sure you manually select the selinux OSCAR package to do so).
 
-== 2.5 Distribution Specific Notes == #DistributionNotes
+## <a name='distributionNotes'></a>2.5 Distribution Specific Notes
 
  * This section discuss issues that may be encountered when installing OSCAR on specific Linux distribution versions/architectures.
 
@@ -153,7 +153,7 @@ To know what domain name is used, on the compute nodes, check the content of _/v
 
 The ''mydomain token is what you are looking for.
 
-== 2.6 pfilter Notes == #pFilterNotes
+## <a name='pFilterNotes'></a>2.6 pfilter Notes
 
  * pfilter is the firewall which is bundled with OSCAR.  Besides its normal function as a firewall, it also provides NAT access for the compute nodes in your cluster
 

@@ -15,7 +15,7 @@ category: wiki
 
 # Chapter 3: Preparing to Install OSCAR
 
-== 3.1 Installing Linux on the Server Node == #InstallLinux
+## <a name='installLinux'></a>3.1 Installing Linux on the Server Node
 
 To install OSCAR, your server node must have a linux distribution installed. It should be noted that OSCAR is only supported on the distributions listed in Table 1 (page 8). As such, use of distributions other than those listed will likely require some porting of OSCAR, as many of the scripts and software within OSCAR are dependent on those distributions.
 
@@ -23,7 +23,7 @@ When installing Linux, it is not necessary to perform a _custom_ install since O
 
 *OSCAR-6.0.x assumes the server node has access to internet in order to be able to access on-line repositories. So, please, check that your server node has an active internet connection.*
 
-== 3.2 Disk space and directory considerations == #DiskSpace
+## <a name='diskSpace'></a>3.2 Disk space and directory considerations
 
 OSCAR has certain requirements for server disk space. Space will be needed to store the Linux binary packages and to store the images. The images are stored in _/var/lib/systemimager_ and will need approximately 2GB per image. Although only one image is required for OSCAR, you may want to create more images in the future. If you are installing a new server, it is suggested that you allow for 4GB in both the _/_ and _/var_ filesystems when partitioning the disk on your server.
 
@@ -33,7 +33,7 @@ You can check the amount of free space on your drive’s partitions by issuing t
 
 The same procedure should be repeated for the _/var/lib/systemimager_ subdirectory, which will later contain the images used for the compute nodes.
 
-== 3.3 Configuration for the Usage of the On-line OSCAR Repositories == #Repositories
+## <a name='repositories'></a>3.3 Configuration for the Usage of the On-line OSCAR Repositories
 
 Note that if you login as a regular user and use the su command to change to the root user, you must use *su -* to get the full root environment. Using `su` (with no arguments) is not sufficient, and will cause obscure errors during an OSCAR installation.
 
