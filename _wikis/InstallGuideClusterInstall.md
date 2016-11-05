@@ -18,8 +18,9 @@ category: wiki
 ## <a name='wizard'></a>5.1 Launching the OSCAR Installer
 
 Change directory to the top-level OSCAR directory and start the OSCAR install wizard.  If you placed the source in the location suggested in the earlier example, the commands to start the installer would be:
- 1. Execute as root *oscar-config --bootstrap*
- 1. Execute as root *oscar_wizard install*
+
+1. Execute as root *oscar-config --bootstrap*
+1. Execute as root *oscar_wizard install*
 
 The *oscar-config --bootstrap* command will execute some setup / configuration steps, including (but not limited to):
 
@@ -35,7 +36,7 @@ The wizard, as shown in Figure 1, is provided to guide you through the rest of t
 
 *Figure 1: OSCAR Wizard.*
 
-[[Image(InstallGuideClusterInstall:figure1_oscar_wizard.png)]]
+![OSCAR Wizard](/images/wiki/InstallGuideClusterInstall/figure1_oscar_wizard.png)
 
 In brief, the functions of the various buttons is as follows:
 
@@ -69,11 +70,11 @@ _Note:_ This step is disabled and it will be available in a future release.
 
 ## <a name='selectOpkg'></a>5.3 Selecting Packages to Install
 
-If you wish to change the list of packages that are installed, click on the <Select OSCAR Packages To Install> button. This step is optional – by default all packages directly included in OSCAR are selected and installed. However, if you downloaded any additional packages, e.g., via OPD/OPDer, they will not be selected for installation by default. Therefore you will need to click this button and select the appropriate OSCAR Packages to install on the cluster. When you click on the button, a window similar to the one shown in Figure 3 appears. Each of the packages that the OSCAR installer has found are listed in the main frame. Core packages must be installed and cannot be unselected. Included packages can be unselected if desired.
+If you wish to change the list of packages that are installed, click on the ```<Select OSCAR Packages To Install>``` button. This step is optional – by default all packages directly included in OSCAR are selected and installed. However, if you downloaded any additional packages, e.g., via OPD/OPDer, they will not be selected for installation by default. Therefore you will need to click this button and select the appropriate OSCAR Packages to install on the cluster. When you click on the button, a window similar to the one shown in Figure 3 appears. Each of the packages that the OSCAR installer has found are listed in the main frame. Core packages must be installed and cannot be unselected. Included packages can be unselected if desired.
 
 *Figure 3: OSCAR package selection.*
 
-[[Image(InstallGuideClusterInstall:figure3_package_selector.png)]]
+![Package Selector](/images/wiki/InstallGuideClusterInstall/figure3_package_selector.png)
 
 Note that this window only shows OSCAR packages -- it does not show individual RPMs. Once you have a selected a set of OSCAR packages to install, click on the <Exit> button to save your selections and return to the main OSCAR window. Note that closing the window yields the same result and there is no way of ‘defaulting’ to the original settings, so make sure your package list is complete before proceeding to the next step.
 
@@ -85,7 +86,7 @@ Some OSCAR packages allow themselves to be configured. Clicking on the<Configure
 
 *Figure 4: OSCAR package configuration.*
 
-[[Image(InstallGuideClusterInstall:figure_3_package_configuration.png)]]
+![Package Configuration](/images/wiki/InstallGuideClusterInstall/figure_3_package_configuration.png)
 
 This step is optional. If you do not click on the <Configure Selected OSCAR Packages> button, defaults for all packages will be used.
 
@@ -127,7 +128,7 @@ A sample dialog is shown in Figure 4.
 
 *Figure 4: Build the image.*
 
-[[Image(InstallGuideClusterInstall:figure5_build_client_image.png)]]
+![Build Client Image](/images/wiki/InstallGuideClusterInstall/figure5_build_client_image.png)
 
 Customizing your image::
   The defaults of this panel use the sample disk partition and RPM package files that can be found in the _oscarsamples_ directory. You may want to customize these files to make the image suit your particular requirements.
@@ -135,7 +136,7 @@ Customizing your image::
 Disk partitioning::
   The disk partition file contains a line for each partition desired, where each line is in the following format:
 
-```html
+```
 <partition> <size in megabytes> <type> <mount point> <options>
 ```
       
@@ -151,114 +152,117 @@ An * in the size column causes that partition to grow to fill the entire disk. Y
       
 The disk partition file is auto-selected based on the type of disk(s) available on your headnode.  However, SystemImager has the functionality where it can deploy images and be agnostic with the target client's disks, whether they are ''hda'', ''sda'', or other.  In other words, even if you built your image with ''ide.disk'', you can deploy the image to clients with SCSI/SATA hard disks and vice versa.
     
-    Package lists::
-The package list is simply a list of RPM file names (one per line). Be sure to include all prerequisites that any packages you might add. You do not need to specify the version, architecture, or extension of the RPM filename. For example, bash-2.05-8.i386.rpm need only be listed as "bash".
+Package lists::
+
+  The package list is simply a list of RPM file names (one per line). Be sure to include all prerequisites that any packages you might add. You do not need to specify the version, architecture, or extension of the RPM filename. For example, bash-2.05-8.i386.rpm need only be listed as "bash".
     
-    Build the Image::
-Once you are satisfied with the input, click the <Build Image> button. When the image completes, a popup window will appear indicating whether the build succeeded or failed. If successful, click the <Close> button to close the popup, and then press the <Close> button on the build image window. You will be back at the main OSCAR wizard menu.
+Build the Image::
+
+  Once you are satisfied with the input, click the <Build Image> button. When the image completes, a popup window will appear indicating whether the build succeeded or failed. If successful, click the <Close> button to close the popup, and then press the <Close> button on the build image window. You will be back at the main OSCAR wizard menu.
       
 If the build fails, look through the console output for some indication as to what happened to cause the failure. Common causes include: prerequisite failure, ran out of disk space, and missing package files. Also see the Release Notes for this version of OSCAR in Chapter 3.
     
 ## <a name='defineClients'></a>5.7 Define OSCAR Clients
     
-    Press the <Define OSCAR Clients> button. In the dialog box that is displayed, enter the appropriate information. Although the defaults will be sufficient for most cases, you will need to enter a value in the Number of Hosts field to specify how many clients you want to create.
+Press the ```<Define OSCAR Clients>``` button. In the dialog box that is displayed, enter the appropriate information. Although the defaults will be sufficient for most cases, you will need to enter a value in the Number of Hosts field to specify how many clients you want to create.
     
-     1. The Image Name field should specify the image name that was used to create the image in the previous step.
-     1. The Domain Name field should be used to specify the client’s IP domain name. It should contain the server node’s domain (if it has one); if the server does not have a domain name, the default name oscardomain will be put in the field (although you may change it). This field must have a value -- it cannot be blank. Note that especially for compute nodes on a private network, the domain name does not necessarily matter much. The domain name supplied in this field is used to form the fullyqualified name of each host in the OSCAR cluster. For example: oscarnode1.oscardomain, oscarnode2.oscardomain, etc. If your compute nodes are on a public network, you may want to use the "real" domain name that is part of their fully-qualified domain names.
-     1. The Base name field is used to specify the first part of the client name and hostname. It will have an index appended to the end of it. This name cannot contain an underscore character "_" or a period ".".
-     1. The Number of Hosts field specifies how many clients to create. This number must be greater than 0.
-     1. The Starting Number specifies the index to append to the Base Name to derive the first client name. It will be incremented for each subsequent client.
-     1. The Padding specifies the number of digits to pad the client names, e.g., 3 digits would yield oscarnode001. The default is 0 to have no padding between base name and number (index).
-     1. The Starting IP specifies the IP address of the first client. It will be incremented for each subsequent client. See Footnote 3 on page 20 for more information on how to pick a starting IP address. Clients will be given IP addresses starting with this IP address, and incrementing by 1 for each successive client. Ensure that the range of [starting ip, (starting ip+num clients)] does not conflict with the IP addresses of any other nodes on your network.
-     1. The Subnet Mask specifies the IP netmask for all clients. See Footnote 4 on page 20 for more information on how to select a netmask for your cluster.
-     1. The Default Gateway specifies the default route for all clients.
+   1. The Image Name field should specify the image name that was used to create the image in the previous step.
+   1. The Domain Name field should be used to specify the client’s IP domain name. It should contain the server node’s domain (if it has one); if the server does not have a domain name, the default name oscardomain will be put in the field (although you may change it). This field must have a value -- it cannot be blank. Note that especially for compute nodes on a private network, the domain name does not necessarily matter much. The domain name supplied in this field is used to form the fullyqualified name of each host in the OSCAR cluster. For example: oscarnode1.oscardomain, oscarnode2.oscardomain, etc. If your compute nodes are on a public network, you may want to use the "real" domain name that is part of their fully-qualified domain names.
+   1. The Base name field is used to specify the first part of the client name and hostname. It will have an index appended to the end of it. This name cannot contain an underscore character "_" or a period ".".
+   1. The Number of Hosts field specifies how many clients to create. This number must be greater than 0.
+   1. The Starting Number specifies the index to append to the Base Name to derive the first client name. It will be incremented for each subsequent client.
+   1. The Padding specifies the number of digits to pad the client names, e.g., 3 digits would yield oscarnode001. The default is 0 to have no padding between base name and number (index).
+   1. The Starting IP specifies the IP address of the first client. It will be incremented for each subsequent client. See Footnote 3 on page 20 for more information on how to pick a starting IP address. Clients will be given IP addresses starting with this IP address, and incrementing by 1 for each successive client. Ensure that the range of [starting ip, (starting ip+num clients)] does not conflict with the IP addresses of any other nodes on your network.
+   1. The Subnet Mask specifies the IP netmask for all clients. See Footnote 4 on page 20 for more information on how to select a netmask for your cluster.
+   1. The Default Gateway specifies the default route for all clients.
     
-    IMPORTANT NOTE::
-      Be sure that the resulting range of IP addresses does not include typical broadcast addresses such as X.Y.Z.255! If you have more hosts than will fit in a single address range, see the note at the end of this section about how to make multiple IP address ranges.
+IMPORTANT NOTE::
+  Be sure that the resulting range of IP addresses does not include typical broadcast addresses such as X.Y.Z.255! If you have more hosts than will fit in a single address range, see the note at the end of this section about how to make multiple IP address ranges.
     
-    When finished entering information, press the <Addclients> button. When those clients have been created in the database, a popup will appear indicating the completion status. A sample dialog is shown in Figure 5.
+When finished entering information, press the <Addclients> button. When those clients have been created in the database, a popup will appear indicating the completion status. A sample dialog is shown in Figure 5.
     
-    '''Figure 5: Define the Clients.'''
+*Figure 5: Define the Clients.*
+
+![Define Clients](/images/wiki/InstallGuideClusterInstall/figure6_define_clients.png)
     
-    [[Image(InstallGuideClusterInstall:figure6_define_clients.png)]]
+Note that this step can be executed multiple times. The GUI panel that is presented has limited flexibility in IP address numbering -- the starting IP address will only increment the least significant byte by one for each successive client. Hence, if you need to define more than 254 clients (beware of broadcast addresses!), you will need to run this step multiple times and change the starting IP address. There is no need to close the panel and return to the main OSCAR menu before executing it again; simply edit the information and click on the <Addclients> button as many times as is required.
     
-    Note that this step can be executed multiple times. The GUI panel that is presented has limited flexibility in IP address numbering -- the starting IP address will only increment the least significant byte by one for each successive client. Hence, if you need to define more than 254 clients (beware of broadcast addresses!), you will need to run this step multiple times and change the starting IP address. There is no need to close the panel and return to the main OSCAR menu before executing it again; simply edit the information and click on the <Addclients> button as many times as is required.
+Additionally, you can run this step multiple times to use more structured IP addressing schemes. With a larger cluster, for example, it may be desirable to assign IP addresses based on the top-level switch that they are connected to. For example, the 32 clients connected to switch 1 should have an address of the form 192.168.1.x. The next 32 clients will be connected to switch 2, and should therefore have an address of the form 192.168.2.x. And so on.
     
-    Additionally, you can run this step multiple times to use more structured IP addressing schemes. With a larger cluster, for example, it may be desirable to assign IP addresses based on the top-level switch that they are connected to. For example, the 32 clients connected to switch 1 should have an address of the form 192.168.1.x. The next 32 clients will be connected to switch 2, and should therefore have an address of the form 192.168.2.x. And so on.
-    
-    After all clients have been created, you may press the <Close> button in the build clients dialogue and continue with the next step.
+After all clients have been created, you may press the <Close> button in the build clients dialogue and continue with the next step.
     
 ## <a name='networking'></a>5.8 Setup Networking
     
-    The MAC address of a client is a twelve hex-digit hardware address embedded in the client’s ethernet adapter. For example, "00:0A:CC:01:02:03", as opposed to the familiar format of IP addresses. These MAC addresses uniquely identify client machines on a network before they are assigned IP addresses. DHCP uses the MAC address to assign IP addresses to the clients.
+The MAC address of a client is a twelve hex-digit hardware address embedded in the client’s ethernet adapter. For example, "00:0A:CC:01:02:03", as opposed to the familiar format of IP addresses. These MAC addresses uniquely identify client machines on a network before they are assigned IP addresses. DHCP uses the MAC address to assign IP addresses to the clients.
     
-    In order to collect the MAC addresses, press the <Setup Networking> button. The OSCAR network utility dialog box will be displayed. A sample dialog is shown in Figure 6.
+In order to collect the MAC addresses, press the <Setup Networking> button. The OSCAR network utility dialog box will be displayed. A sample dialog is shown in Figure 6.
     
-    '''Figure 6: Collect client MAC addresses.'''
+*Figure 6: Collect client MAC addresses.*
     
-    [[Image(InstallGuideClusterInstall:setup_networking.png)]]
+![Setup Networking](/images/wiki/InstallGuideClusterInstall/setup_networking.png)
     
-    To use this tool, you will need to know how to network boot your client nodes, or have a file that lists all the MACs from your cluster. For instructions on doing network booting, see Appendix A.
+To use this tool, you will need to know how to network boot your client nodes, or have a file that lists all the MACs from your cluster. For instructions on doing network booting, see Appendix A.
     
-    == 5.8.1 Collect Client Node MAC Addresses ==
+### 5.8.1 Collect Client Node MAC Addresses
     
-    If you need to collect the MACs in your cluster, start the collection by pressing the <Collect MAC Address> button and then network boot the first client. As the clients boot up, their MAC addresses will show up in the left hand window. You have multiple options for assigning MACs to nodes. You can either:
+If you need to collect the MACs in your cluster, start the collection by pressing the <Collect MAC Address> button and then network boot the first client. As the clients boot up, their MAC addresses will show up in the left hand window. You have multiple options for assigning MACs to nodes. You can either:
     
-     * manually select MAC address and the appropriate client in the right side window. Click <Assign MAC to Node> to associate that MAC address with that node.
-     * click <Assign all MACs> button to assign all the MACs in the left hand window to all the open nodes in the right hand window.
+   * manually select MAC address and the appropriate client in the right side window. Click <Assign MAC to Node> to associate that MAC address with that node.
+   * click <Assign all MACs> button to assign all the MACs in the left hand window to all the open nodes in the right hand window.
     
-    Some notes that are relevant to collecting MAC addresses from the network:
+Some notes that are relevant to collecting MAC addresses from the network:
+   
+   * The <Dynamic DHCP Update> checkbox at the bottom right of the window controls refreshing the DHCP server. If it is selected (the default), the DHCP server configuration will be refreshed each time a MAC is assigned to a node. Note that if the DHCP reconfiguration takes place quick enough, you may not need to reboot the nodes a second time (i.e., if the DHCP server answers the request quick enough, the node may start downloading its image immediately). If this option is off, you will need to click the <Configure DHCP Server> (at least once) to give it the associations between MACs and IP addresses.
+   * To remove extraneous MAC addresses from the left hand window (e.g., if the collector finds MACs that are not part of your cluster), select the address and click on the <Remove> button. Or click on the <Remove All> button to remove all of them.
+   * At any time, you may click on the <Export MACs to file...> button to save the MAC address list to a file. If you need to re-run the OSCAR installation, you can later click on <Import MACs from file...> to import this file rather than re-collecting all the MACs.
+   * When you have collected all of the MAC addresses, click the <Stop Collecting MACs> button.
     
-     * The <Dynamic DHCP Update> checkbox at the bottom right of the window controls refreshing the DHCP server. If it is selected (the default), the DHCP server configuration will be refreshed each time a MAC is assigned to a node. Note that if the DHCP reconfiguration takes place quick enough, you may not need to reboot the nodes a second time (i.e., if the DHCP server answers the request quick enough, the node may start downloading its image immediately). If this option is off, you will need to click the <Configure DHCP Server> (at least once) to give it the associations between MACs and IP addresses.
-     * To remove extraneous MAC addresses from the left hand window (e.g., if the collector finds MACs that are not part of your cluster), select the address and click on the <Remove> button. Or click on the <Remove All> button to remove all of them.
-     * At any time, you may click on the <Export MACs to file...> button to save the MAC address list to a file. If you need to re-run the OSCAR installation, you can later click on <Import MACs from file...> to import this file rather than re-collecting all the MACs.
-     * When you have collected all of the MAC addresses, click the <Stop Collecting MACs> button.
+If you do not have <Dynamic DHCP update> selected, you need to click the <Configure DHCP Server> button to configure the DHCP server.
     
-    If you do not have <Dynamic DHCP update> selected, you need to click the <Configure DHCP Server> button to configure the DHCP server.
+### 5.8.2 Select Installation Mode
     
-    === 5.8.2 Select Installation Mode ===
+[http://www.systemimager.org SystemImager] is the tool that OSCAR uses for deploying images to cluster nodes.  It is part of a bigger suite of tools called the System Installation Suite (thus the package name in OSCAR is SIS).
     
-    [http://www.systemimager.org SystemImager] is the tool that OSCAR uses for deploying images to cluster nodes.  It is part of a bigger suite of tools called the System Installation Suite (thus the package name in OSCAR is SIS).
+SystemImager is responsible for deploying the OS image to your compute nodes over the network.  It supports (as of version 3.7.3) three different transports: ''systemimager-rsync'' (default), ''systemimager-multicast'' (flamethrower), and ''systemimager-bt'' (bittorrent).
     
-    SystemImager is responsible for deploying the OS image to your compute nodes over the network.  It supports (as of version 3.7.3) three different transports: ''systemimager-rsync'' (default), ''systemimager-multicast'' (flamethrower), and ''systemimager-bt'' (bittorrent).
+By default, systemimager uses a program called rsync to push files to your client nodes.  To use one of these other installation modes click on the pull down list which by default displays "systemimager-rsync" and choose one of the other options.  Then click the "Enable Install Mode" button to configure the server to use that method to install images on the client nodes. Especially with the multicast option, please make sure your router supports your desired transport method.
     
-    By default, systemimager uses a program called rsync to push files to your client nodes.  To use one of these other installation modes click on the pull down list which by default displays "systemimager-rsync" and choose one of the other options.  Then click the "Enable Install Mode" button to configure the server to use that method to install images on the client nodes. Especially with the multicast option, please make sure your router supports your desired transport method.
+In case you cannot get your nodes to image using one of these optional install modes and want to switch back to using rsync, simply go back to the <Setup Networking> menu, select <systemimager-rsync> from the pull down list, and click on <Enable Install Mode>.
     
-    In case you cannot get your nodes to image using one of these optional install modes and want to switch back to using rsync, simply go back to the <Setup Networking> menu, select <systemimager-rsync> from the pull down list, and click on <Enable Install Mode>.
+### 5.8.3 Setup Boot Environment
     
-    === 5.8.3 Setup Boot Environment ===
+This menu also allows you to choose your remote boot method.
     
-    This menu also allows you to choose your remote boot method.
+You '''must''' do one of two things in order for your client nodes to be able to get images from the master node:
     
-    You '''must''' do one of two things in order for your client nodes to be able to get images from the master node:
+   * The <Build Autoinstall CD> button will build an iso image for a bootable CD and gives a simple example for using the cdrecord utility to burn the CD. This option is useful for client nodes that do not support PXE booting. In a terminal, execute the command cdrecord -scanbus to list the drives cdrecord is aware of and their dev number. Use this trio of numbers in place of dev=1,0,0 when you execute the command cdrecord -v speed=2 dev=1,0,0 /tmp/oscar bootcd.iso.
+   * The <Setup Network Boot> button will configure the server to answer PXE boot requests if your client hardware supports it. See Appendix A for more details.
     
-     * The <Build Autoinstall CD> button will build an iso image for a bootable CD and gives a simple example for using the cdrecord utility to burn the CD. This option is useful for client nodes that do not support PXE booting. In a terminal, execute the command cdrecord -scanbus to list the drives cdrecord is aware of and their dev number. Use this trio of numbers in place of dev=1,0,0 when you execute the command cdrecord -v speed=2 dev=1,0,0 /tmp/oscar bootcd.iso.
-     * The <Setup Network Boot> button will configure the server to answer PXE boot requests if your client hardware supports it. See Appendix A for more details.
+### 5.8.4 Use Your Own Kernel (UYOK)
     
-    === 5.8.4 Use Your Own Kernel (UYOK) ===
+SystemImager ships with its own kernel and ramdisk (initrd.img) used for starting up a minimal system for imaging your nodes.  Although the SystemImager developers try their best to keep this kernel up-to-date with new hardware modules support, this is not always possible.  Therefore, starting in version 3.6.x, a new functionality called UseYourOwnKernel (UYOK) was introduced.
     
-    SystemImager ships with its own kernel and ramdisk (initrd.img) used for starting up a minimal system for imaging your nodes.  Although the SystemImager developers try their best to keep this kernel up-to-date with new hardware modules support, this is not always possible.  Therefore, starting in version 3.6.x, a new functionality called UseYourOwnKernel (UYOK) was introduced.
+Let's say that you have installed a Linux distribution that supports your hardware on the server, UYOK allows you to take the running kernel (from the Linux distribution) and uses that as the SystemImager boot kernel.  This, combined with a ramdisk generated on the fly from an architecture specific ''initrd_template'' package (eg. ''systemimager-i386initrd_template'') allows the user to be able to boot and image a node as long as the target OS to be deployed supports the hardware.
     
-    Let's say that you have installed a Linux distribution that supports your hardware on the server, UYOK allows you to take the running kernel (from the Linux distribution) and uses that as the SystemImager boot kernel.  This, combined with a ramdisk generated on the fly from an architecture specific ''initrd_template'' package (eg. ''systemimager-i386initrd_template'') allows the user to be able to boot and image a node as long as the target OS to be deployed supports the hardware.
+If you had to install any custom kernel modules to get your hardware to work after installing the operating system, or if you have trouble getting your nodes to boot after trying the stock systemimager kernel, click "Enable UYOK" button in the "Setup Networking" step and then either select "Build AutoInstall CD..." or "Setup Network Boot".  Then SystemImager will configure itself to use the kernel running on the head node.
     
-    If you had to install any custom kernel modules to get your hardware to work after installing the operating system, or if you have trouble getting your nodes to boot after trying the stock systemimager kernel, click "Enable UYOK" button in the "Setup Networking" step and then either select "Build AutoInstall CD..." or "Setup Network Boot".  Then SystemImager will configure itself to use the kernel running on the head node.
+#### Manual Setup for UYOK
     
-    ==== Manual Setup for UYOK ====
+If for some reason you wish to set up the UYOK functionality by hand, instead of using the wizard, please do the following.  This should not be neccesary if the hardware of your client nodes and head node are sufficiently similar.
     
-    If for some reason you wish to set up the UYOK functionality by hand, instead of using the wizard, please do the following.  This should not be neccesary if the hardware of your client nodes and head node are sufficiently similar.
-    
-    First use UYOK to generate a kernel/ramdisk pair, execute the following command on the headnode:
+First use UYOK to generate a kernel/ramdisk pair, execute the following command on the headnode:
     ```
     # si_prepareclient --server servername --no-rsyncd
+    ```
 
 If you specify the `--no-rsyncd` argument, it will not restart `rsyncd`.
 
 The resulting kernel and ramdisk will be stored in `/etc/systemimager/boot`.  Now copy these files to `/tftpboot` if you are PXE-booting.  Make sure to edit your `/tftpboot/pxelinux.cfg/default` file with a sufficiently large `ramdisk_size` in the kernel append statement, eg.:
-
+    ```
     LABEL systemimager
     KERNEL kernel
     APPEND vga=extended initrd=initrd.img root=/dev/ram MONITOR_SERVER=192.168.0.2 MONITOR_CONSOLE=yes ramdisk_size=80000
-
+    ```
 Now SystemImager will use the UYOK boot package (which should recognize your hardware) to boot your nodes and successfully image them.
 
 ## <a name='monitorDeployment'></a>5.9 Monitor Cluster Deployment
@@ -319,7 +323,7 @@ A sample dialog is shown in Figure 8. If any of the test fail, then there may be
 
 *Figure 8: Testing your cluster setup*
 
-[[Image(InstallGuideClusterInstall:test_cluster_setup.png)]]
+![Test Cluster](/images/wiki/InstallGuideClusterInstall/test_cluster_setup.png)
 
 If all the tests pass, then your OSCAR cluster is ready to use.  Congratulations!
 

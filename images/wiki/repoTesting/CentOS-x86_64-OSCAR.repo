@@ -1,0 +1,14 @@
+# CentOS-OSCAR.repo
+#
+# If the mirrorlist= does not work for you, as a fall back you can try the 
+# remarked out baseurl= line instead.
+#
+#
+
+[oscar]
+name=CentOS-$releasever - OSCAR
+#mirrorlist=http://bear.csm.ornl.gov/repos/rhel-5-i386
+baseurl=http://bison.csm.ornl.gov/repos/rhel-5-x86_64
+gpgcheck=0
+#gpgkey=http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-5
+

@@ -1,0 +1,915 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://inkscape.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="841.88977pt"
+   height="595.27557pt"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.43"
+   sodipodi:docbase="/home/jparpail/notes/OSCAR/kernel_picker/img"
+   sodipodi:docname="kp_obj.svg"
+   inkscape:export-filename="/home/jparpail/notes/OSCAR/kernel_picker/img/oscar_oda.png"
+   inkscape:export-xdpi="200"
+   inkscape:export-ydpi="200"
+   version="1.0">
+  <defs
+     id="defs4">
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lend"
+       style="overflow:visible">
+      <path
+         id="path6129"
+         d="M 0,0 L 5,-5 L -12.5,0 L 5,5 L 0,0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;marker-start:none"
+         transform="scale(-0.8,-0.8)" />
+    </marker>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.979899"
+     inkscape:cx="567.93145"
+     inkscape:cy="465.15979"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     inkscape:grid-points="true"
+     gridspacingx="5px"
+     gridspacingy="5px"
+     inkscape:guide-points="true"
+     gridtolerance="5px"
+     gridempspacing="5"
+     inkscape:window-width="1237"
+     inkscape:window-height="964"
+     inkscape:window-x="33"
+     inkscape:window-y="6"
+     showguides="true"
+     inkscape:guide-bbox="true" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#9e9e9e;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1.27060592;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect44468"
+       width="555"
+       height="524.69281"
+       x="398.46109"
+       y="104.44456"
+       rx="4.0406103"
+       ry="4.0406103" />
+    <rect
+       style="fill:#dcdcdc;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect42710"
+       width="220.12691"
+       height="504.54285"
+       x="723.33417"
+       y="114.59448"
+       rx="4.0406103"
+       ry="4.0406103" />
+    <g
+       id="g42594"
+       transform="translate(-91.53891,105.0429)">
+      <path
+         sodipodi:nodetypes="ccscscc"
+         id="path20716"
+         d="M 825.33649,49.742991 L 825.4872,134.59448 C 825.4872,134.59448 825.4872,139.59448 830.4872,139.59448 C 835.4872,139.59448 1020.4872,139.59448 1020.4872,139.59448 C 1020.4872,139.59448 1025.4872,139.59448 1025.4872,134.59448 C 1025.4872,131.12631 1025.16,49.422001 1025.16,49.422001 L 1025.16,49.422001"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#f9ffb3;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans" />
+      <path
+         sodipodi:nodetypes="cccc"
+         id="path22474"
+         d="M 825.33649,39.594482 L 825.33649,49.594482 L 1025.16,49.594482 L 1025.16,39.594482"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#f9ffb3;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans" />
+      <path
+         sodipodi:nodetypes="ccscscc"
+         id="path21591"
+         d="M 825.33649,39.594482 L 825.33649,24.594482 C 825.33649,24.594482 825.33649,19.594482 832.18575,19.594482 C 839.03501,19.594482 1020.16,19.594482 1020.16,19.594482 C 1020.16,19.594482 1025.16,19.594482 1025.16,24.594482 C 1025.16,29.594482 1025.16,39.594482 1025.16,39.594482 L 825.33649,39.594482 z "
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffea00;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text16690"
+         y="34.199245"
+         x="897.66278"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           id="tspan16692"
+           y="34.199245"
+           x="897.66278"
+           sodipodi:role="line">BootConfig</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="830.16003"
+         y="59.594482"
+         id="text23349"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan23351"
+           sodipodi:role="line"
+           x="830.16003"
+           y="59.594482">Image getImage()</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="830.16003"
+         y="74.594482"
+         id="text23353"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan23355"
+           sodipodi:role="line"
+           x="830.16003"
+           y="74.594482">void setImage(Image img)</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="829.86218"
+         y="89.594482"
+         id="text23357"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan23359"
+           sodipodi:role="line"
+           x="829.86218"
+           y="89.594482">BootMethod getBootMethod()</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="830.16003"
+         y="104.59448"
+         id="text23361"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan23363"
+           sodipodi:role="line"
+           x="830.16003"
+           y="104.59448">void setBootMethod(BootMethod mtd)</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="829.86218"
+         y="119.59448"
+         id="text23365"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan23367"
+           sodipodi:role="line"
+           x="829.86218"
+           y="119.59448">BootKernel getBootKernel()</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="830.16003"
+         y="134.59448"
+         id="text23369"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan23371"
+           sodipodi:role="line"
+           x="830.16003"
+           y="134.59448">void setBootKernel(BootKernel bk)</tspan></text>
+    </g>
+    <g
+       id="g42564"
+       transform="translate(-91.53891,105.0429)">
+      <path
+         sodipodi:nodetypes="ccscscc"
+         id="path26026"
+         d="M 826.0517,199.53483 L 826.0517,239.53483 C 826.0517,239.53483 826.0517,244.53483 831.0517,244.53483 C 836.0517,244.53483 976.0517,244.53483 976.0517,244.53483 C 976.0517,244.53483 981.0517,244.53483 981.0517,239.53483 C 981.0517,234.53483 981.0517,200.08805 981.0517,200.08805 L 981.0517,199.53483"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#f9ffb3;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.97442448;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans" />
+      <path
+         sodipodi:nodetypes="cccc"
+         id="path26028"
+         d="M 825.92757,189.53483 L 825.92757,199.53483 L 981.0517,199.53483 L 981.0517,189.53483"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#f9ffb3;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.88069326;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans" />
+      <path
+         sodipodi:nodetypes="ccscscc"
+         id="path26030"
+         d="M 825.92757,189.53483 L 825.92757,174.53483 C 825.92757,174.53483 825.92757,169.53483 829.80567,169.53483 C 835.1181,169.53483 977.1736,169.53483 977.1736,169.53483 C 977.1736,169.53483 981.0517,169.53483 981.0517,174.53483 C 981.0517,179.53483 981.0517,189.53483 981.0517,189.53483 L 825.92757,189.53483 z "
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffea00;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.88069326;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text26032"
+         y="184.6396"
+         x="873.18933"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           id="tspan26034"
+           y="184.6396"
+           x="873.18933"
+           sodipodi:role="line">BootMethod</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="831.0517"
+         y="209.53484"
+         id="text26036"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan26038"
+           sodipodi:role="line"
+           x="831.0517"
+           y="209.53484">String getServer()</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="831.0517"
+         y="224.53484"
+         id="text29560"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan29562"
+           sodipodi:role="line"
+           x="831.0517"
+           y="224.53484">void setServer(String server)</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="831.0517"
+         y="239.53484"
+         id="text29596"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan29598"
+           sodipodi:role="line"
+           x="831.0517"
+           y="239.53484">String getLoader()</tspan></text>
+    </g>
+    <g
+       id="g42520"
+       transform="translate(-91.53891,105.0429)">
+      <path
+         sodipodi:nodetypes="ccscscc"
+         id="path29619"
+         d="M 825.4872,339.09448 L 825.4872,484.09448 C 825.4872,484.09448 825.4872,489.58169 830.4872,489.58169 C 835.4872,489.58169 985.4872,489.58169 985.4872,489.58169 C 985.4872,489.58169 990.4872,489.58169 990.4872,484.58169 C 990.4872,479.58169 990.4872,339.09448 990.4872,339.09448 L 990.4872,339.09448"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#f9ffb3;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.97442448;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans" />
+      <path
+         sodipodi:nodetypes="cccc"
+         id="path29621"
+         d="M 825.4872,289.09448 L 825.4872,339.09448 L 990.4872,339.09448 L 990.4872,289.09448"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#f9ffb3;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.88069326;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans" />
+      <path
+         sodipodi:nodetypes="ccscscc"
+         id="path29623"
+         d="M 825.4872,289.53483 L 825.4872,274.53483 C 825.4872,274.53483 825.4872,269.53483 830.4872,269.53483 C 835.4872,269.53483 985.4872,269.53483 985.4872,269.53483 C 985.4872,269.53483 990.4872,269.53483 990.4872,274.53483 C 990.4872,279.53483 990.4872,289.53483 990.4872,289.53483 L 825.4872,289.53483 z "
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffea00;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.88069326;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text29625"
+         y="285.07993"
+         x="880.73621"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           id="tspan29627"
+           y="285.07993"
+           x="880.73621"
+           sodipodi:role="line">BootKernel</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="831.05164"
+         y="349.53482"
+         id="text29629"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan29631"
+           sodipodi:role="line"
+           x="831.05164"
+           y="349.53482">String getName()</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="831.05164"
+         y="364.53482"
+         id="text29633"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan29635"
+           sodipodi:role="line"
+           x="831.05164"
+           y="364.53482">void setName(String name)</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="830.48718"
+         y="379.09448"
+         id="text29652"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan29654"
+           sodipodi:role="line"
+           x="830.48718"
+           y="379.09448">List getBootParams()</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="830.48718"
+         y="394.09448"
+         id="text29656"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan29658"
+           sodipodi:role="line"
+           x="830.48718"
+           y="394.09448">void setBootParams(List bp)</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="830.48718"
+         y="409.09448"
+         id="text29660"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan29662"
+           sodipodi:role="line"
+           x="830.48718"
+           y="409.09448">String getVersion()</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="830.48718"
+         y="424.09448"
+         id="text29664"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan29666"
+           sodipodi:role="line"
+           x="830.48718"
+           y="424.09448">void setVersion(String version)</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="830.48718"
+         y="439.09448"
+         id="text29668"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan29670"
+           sodipodi:role="line"
+           x="830.48718"
+           y="439.09448">String getKernelPath()</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="830.48718"
+         y="454.09448"
+         id="text29672"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan29674"
+           sodipodi:role="line"
+           x="830.48718"
+           y="454.09448">void setKernelPath(String path)</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="830.48718"
+         y="469.09448"
+         id="text29676"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan29678"
+           sodipodi:role="line"
+           x="830.48718"
+           y="469.09448">String getInitrdPath()</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="830.48718"
+         y="484.09448"
+         id="text29680"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan29682"
+           sodipodi:role="line"
+           x="830.48718"
+           y="484.09448">void setInitrdPath(String path)</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="830.48718"
+         y="304.09448"
+         id="text29684"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan29686"
+           sodipodi:role="line"
+           x="830.48718"
+           y="304.09448">BK_NODE_ID</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="830.48718"
+         y="319.09448"
+         id="text29688"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan29690"
+           sodipodi:role="line"
+           x="830.48718"
+           y="319.09448">BK_NODE_RANK</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="830.48718"
+         y="334.09448"
+         id="text29692"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan29694"
+           sodipodi:role="line"
+           x="830.48718"
+           y="334.09448">BK_CLUSTER_ID</tspan></text>
+    </g>
+    <rect
+       style="fill:#dcdcdc;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.97508043;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect44462"
+       width="269.87189"
+       height="373.95667"
+       x="408.5892"
+       y="114.70527"
+       rx="4.0406103"
+       ry="4.0406103" />
+    <g
+       id="g42638"
+       transform="translate(-131.5389,105.0429)">
+      <path
+         sodipodi:nodetypes="ccscsc"
+         id="path31341"
+         d="M 550,49.094482 L 550,104.09448 C 550,104.09448 550,109.09448 555,109.09448 C 560,109.09448 745,109.09448 745,109.09448 C 745,109.09448 750,109.09448 750,104.09448 C 750,99.094482 750,49.094482 750,49.094482"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#c8f4ff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans" />
+      <path
+         sodipodi:nodetypes="cccc"
+         id="path31343"
+         d="M 550,39.094482 L 550,49.094482 L 750,49.094482 L 750,39.094482"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#c8f4ff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans" />
+      <path
+         sodipodi:nodetypes="ccscscc"
+         id="path31345"
+         d="M 550,39.094482 L 550,24.094482 C 550,24.094482 550,19.094482 555,19.094482 C 560,19.094482 745,19.094482 745,19.094482 C 745,19.094482 750,19.094482 750,24.094482 C 750,29.094482 750,39.094482 750,39.094482 L 550,39.094482 z "
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#0ccfff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text31347"
+         y="34.199249"
+         x="604.07642"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           id="tspan31349"
+           y="34.199249"
+           x="604.07642"
+           sodipodi:role="line">BootConfigFactory</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="555.16003"
+         y="59.594482"
+         id="text31351"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan31353"
+           sodipodi:role="line"
+           x="555.16003"
+           y="59.594482">List getBootConfig(Image img)</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="555.33649"
+         y="74.094482"
+         id="text36303"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan36305"
+           sodipodi:role="line"
+           x="555.33649"
+           y="74.094482">BootConfig getDefaultBootConfig(</tspan><tspan
+           id="tspan42636"
+           sodipodi:role="line"
+           x="555.33649"
+           y="86.594482">                                       Image img)</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="555.06348"
+         y="104.09448"
+         id="text37678"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan37680"
+           sodipodi:role="line"
+           x="555.06348"
+           y="104.09448">void saveBootConfig(BootConfig bc)</tspan></text>
+    </g>
+    <path
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#c8f4ff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       d="M 425,299.09448 L 425,339.09448 C 425,339.09448 425,344.09448 430,344.09448 C 435,344.09448 645,344.09448 645,344.09448 C 645,344.09448 650,344.09448 650,339.09448 L 650,299.09448"
+       id="path37756"
+       sodipodi:nodetypes="ccscsc" />
+    <path
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#c8f4ff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.0475322;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       d="M 425.04866,269.09448 L 425.04866,299.09448 L 650,299.09448 L 650,269.09448"
+       id="path37758"
+       sodipodi:nodetypes="cccc" />
+    <path
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#0ccfff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       d="M 425,269.09448 L 425,254.09448 C 425,254.09448 425,249.09448 430,249.09448 C 435,249.09448 645,249.09448 645,249.09448 C 645,249.09448 650,249.09448 650,254.09448 C 650,259.09448 650,269.09448 650,269.09448 L 425,269.09448 z "
+       id="path37760"
+       sodipodi:nodetypes="ccscscc" />
+    <text
+       xml:space="preserve"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="478.61328"
+       y="264.69925"
+       id="text37762"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="478.61328"
+         y="264.69925"
+         id="tspan37764">BootMethodFactory</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text37766"
+       y="310.09448"
+       x="430.31079"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         y="310.09448"
+         x="430.31079"
+         sodipodi:role="line"
+         id="tspan37768">List getBootMethods()</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text37770"
+       y="324.59448"
+       x="430.48718"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         y="324.59448"
+         x="430.48718"
+         sodipodi:role="line"
+         id="tspan37772">BootMethod getBootMethod(String loader)</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text37774"
+       y="339.59448"
+       x="430.48718"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         y="339.59448"
+         x="430.48718"
+         sodipodi:role="line"
+         id="tspan37776">void saveBootMethod(BootMethod bm)</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text37778"
+       y="279.59448"
+       x="430.48718"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         y="279.59448"
+         x="430.48718"
+         sodipodi:role="line"
+         id="tspan37780">BM_GRUB</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text37782"
+       y="294.59448"
+       x="430.48718"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         y="294.59448"
+         x="430.48718"
+         sodipodi:role="line"
+         id="tspan37784">BM_ISOLINUX</tspan></text>
+    <g
+       id="g42478"
+       transform="translate(-131.5389,85.04285)">
+      <path
+         sodipodi:nodetypes="ccscscc"
+         id="path37786"
+         d="M 550.4872,350.59448 L 550.63791,376.09448 C 550.63791,376.09448 550.63791,381.09448 555.63791,381.09448 C 560.63791,381.09448 795.4872,380.59448 795.4872,380.59448 C 795.4872,380.59448 800.4872,380.59448 800.4872,375.59448 C 800.4872,370.59448 800.4872,350.59448 800.4872,350.59448 L 800.4872,350.59448"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#c8f4ff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans" />
+      <path
+         sodipodi:nodetypes="cccc"
+         id="path37788"
+         d="M 550.4872,339.59448 L 550.4872,350.09448 L 800.4872,349.59448 L 800.4872,339.59448"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#c8f4ff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans" />
+      <path
+         sodipodi:nodetypes="ccscscc"
+         id="path37790"
+         d="M 550.4872,340.09448 L 550.4872,325.09448 C 550.4872,325.09448 550.4872,320.09448 557.33646,320.09448 C 564.18572,320.09448 795.4872,319.59448 795.4872,319.59448 C 795.4872,319.59448 800.4872,319.59448 800.4872,324.59448 C 800.4872,329.59448 800.4872,339.59448 800.4872,339.59448 L 550.4872,340.09448 z "
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#0ccfff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text37792"
+         y="334.69925"
+         x="629.63757"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           id="tspan37794"
+           y="334.69925"
+           x="629.63757"
+           sodipodi:role="line">BootKernelFactory</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="555.31079"
+         y="361.09448"
+         id="text37796"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan37798"
+           sodipodi:role="line"
+           x="555.31079"
+           y="361.09448">List getBootKernels(String name, String version)</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="555.48718"
+         y="375.59448"
+         id="text37804"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan37806"
+           sodipodi:role="line"
+           x="555.48718"
+           y="375.59448">void saveBootKernel(BootKernel bk)</tspan></text>
+    </g>
+    <g
+       id="g42664"
+       transform="translate(-112.0247,140.5286)">
+      <path
+         sodipodi:nodetypes="ccscsc"
+         id="path40468"
+         d="M 225,104.09448 L 225,383.6087 C 225,383.6087 225,388.6087 230,388.6087 C 234.97062,388.6087 470,388.6087 470,388.6087 C 470,388.6087 475,388.6087 475,383.6087 L 475,104.09448"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#efffc5;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.9715569;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans" />
+      <path
+         sodipodi:nodetypes="cccc"
+         id="path40470"
+         d="M 225.4843,39.09448 L 225,104.09448 L 475,104.09448 L 475,39.094482"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#efffc5;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.87810153;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans" />
+      <path
+         sodipodi:nodetypes="ccscscc"
+         id="path40472"
+         d="M 225.48434,39.53483 L 225.48434,24.53483 C 225.48434,24.53483 225.48434,19.53483 230.45495,19.53483 C 235.42557,19.53483 470,19.094482 470,19.094482 C 470,19.094482 475,19.094482 475,24.094482 C 475,29.094482 475,39.094482 475,39.094482 L 225.48434,39.53483 z "
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#b9ff0c;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.87810153;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans" />
+      <text
+         transform="scale(0.997057,1.002952)"
+         sodipodi:linespacing="125%"
+         id="text40474"
+         y="33.994144"
+         x="315.14069"
+         style="font-size:10.00000381px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           id="tspan40476"
+           y="33.994144"
+           x="315.14069"
+           sodipodi:role="line">KernelPicker</tspan></text>
+      <text
+         transform="scale(0.997057,1.002952)"
+         xml:space="preserve"
+         style="font-size:9.99999809px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="231.69801"
+         y="134.62347"
+         id="text40478"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan40480"
+           sodipodi:role="line"
+           x="231.69801"
+           y="134.62347">String getKernelPackageList(List capacities)</tspan></text>
+      <text
+         transform="scale(0.997057,1.002952)"
+         xml:space="preserve"
+         style="font-size:9.99999809px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="231.13539"
+         y="53.935345"
+         id="text40518"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan40520"
+           sodipodi:role="line"
+           x="231.13539"
+           y="53.935345">KP_CAPS_SSI</tspan></text>
+      <text
+         transform="scale(0.997057,1.002952)"
+         xml:space="preserve"
+         style="font-size:9.99999809px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="231.13539"
+         y="68.891205"
+         id="text40522"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan40524"
+           sodipodi:role="line"
+           x="231.13539"
+           y="68.891205">KP_CAPS_SMP</tspan></text>
+      <text
+         transform="scale(0.997057,1.002952)"
+         xml:space="preserve"
+         style="font-size:9.99999809px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="231.13539"
+         y="83.847115"
+         id="text40526"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan40528"
+           sodipodi:role="line"
+           x="231.13539"
+           y="83.847115">KP_CAPS_x86</tspan></text>
+      <text
+         transform="scale(0.997057,1.002952)"
+         xml:space="preserve"
+         style="font-size:9.99999809px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="230.6792"
+         y="98.80294"
+         id="text42307"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan42309"
+           sodipodi:role="line"
+           x="230.6792"
+           y="98.80294">KP_CAPS_AMD64</tspan></text>
+      <text
+         transform="scale(0.997057,1.002952)"
+         xml:space="preserve"
+         style="font-size:9.99999809px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="230.67923"
+         y="148.65581"
+         id="text42311"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan42313"
+           sodipodi:role="line"
+           x="230.67923"
+           y="148.65581">BootConfig setKernelFromPackage(</tspan><tspan
+           id="tspan42321"
+           sodipodi:role="line"
+           x="230.67923"
+           y="161.15581">                             Image img, </tspan><tspan
+           id="tspan42323"
+           sodipodi:role="line"
+           x="230.67923"
+           y="173.6558">                             String package)</tspan></text>
+      <text
+         transform="scale(0.997057,1.002952)"
+         xml:space="preserve"
+         style="font-size:9.99999809px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="230.67896"
+         y="188.53798"
+         id="text42315"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan42317"
+           sodipodi:role="line"
+           x="230.67896"
+           y="188.53798">BootConfig setKernelFromSources(</tspan><tspan
+           id="tspan42325"
+           sodipodi:role="line"
+           x="230.67896"
+           y="201.03798">                             Image img,</tspan><tspan
+           id="tspan42327"
+           sodipodi:role="line"
+           x="230.67896"
+           y="213.53797">                             String sourceDir)</tspan></text>
+      <text
+         transform="scale(0.997057,1.002952)"
+         xml:space="preserve"
+         style="font-size:9.99999809px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="230.67896"
+         y="228.42024"
+         id="text42329"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan42331"
+           sodipodi:role="line"
+           x="230.67896"
+           y="228.42024">BootConfig setKernelFromFiles(</tspan><tspan
+           id="tspan42333"
+           sodipodi:role="line"
+           x="230.67896"
+           y="240.92024">                             Image img,</tspan><tspan
+           id="tspan42335"
+           sodipodi:role="line"
+           x="230.67896"
+           y="253.42024">                             String kernelPath,</tspan><tspan
+           id="tspan42337"
+           sodipodi:role="line"
+           x="230.67896"
+           y="265.92024">                             String initrdPath,</tspan><tspan
+           id="tspan42339"
+           sodipodi:role="line"
+           x="230.67896"
+           y="278.42023">                             String modulesPath,</tspan><tspan
+           id="tspan42341"
+           sodipodi:role="line"
+           x="230.67896"
+           y="290.92023">                             String headersPath)</tspan></text>
+      <text
+         transform="scale(0.997057,1.002952)"
+         xml:space="preserve"
+         style="font-size:8.99999905px;font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="230.67892"
+         y="118.74397"
+         id="text42409"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan42411"
+           sodipodi:role="line"
+           x="230.67892"
+           y="118.74397">/* Kernel selection and installation */</tspan></text>
+      <text
+         transform="scale(0.997057,1.002952)"
+         xml:space="preserve"
+         style="font-size:10.00000381px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="230.67892"
+         y="323.14062"
+         id="text42613"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan42615"
+           sodipodi:role="line"
+           x="230.67892"
+           y="323.14062">List getBootConfigs(Image img)</tspan></text>
+      <text
+         transform="scale(0.997057,1.002952)"
+         xml:space="preserve"
+         style="font-size:9.00000191px;font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="229.65984"
+         y="307.26114"
+         id="text42617"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan42619"
+           sodipodi:role="line"
+           x="229.65984"
+           y="307.26114">/* Installed kernel operations */</tspan></text>
+      <text
+         transform="scale(0.997057,1.002952)"
+         xml:space="preserve"
+         style="font-size:10.00000763px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="230.67892"
+         y="338.09647"
+         id="text42621"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan42623"
+           sodipodi:role="line"
+           x="230.67892"
+           y="338.09647">BootConfig getDefaultBootConfig(Image img)</tspan></text>
+      <text
+         transform="scale(0.997057,1.002952)"
+         xml:space="preserve"
+         style="font-size:10.00000763px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="230.67892"
+         y="353.05234"
+         id="text42652"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan42654"
+           sodipodi:role="line"
+           x="230.67892"
+           y="353.05234">BootConfig setDefaultBootConfig(BootConfig bc)</tspan></text>
+      <text
+         transform="scale(0.997057,1.002952)"
+         xml:space="preserve"
+         style="font-size:10.00000763px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="230.67892"
+         y="382.96402"
+         id="text42656"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan42658"
+           sodipodi:role="line"
+           x="230.67892"
+           y="382.96402">BootConfig updateBootConfig(BootConfig bc)</tspan></text>
+      <text
+         transform="scale(0.997057,1.002952)"
+         xml:space="preserve"
+         style="font-size:9.00000381px;font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="229.65984"
+         y="367.08453"
+         id="text42660"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan42662"
+           sodipodi:role="line"
+           x="229.65984"
+           y="367.08453">/* Installed kernel configuration */</tspan></text>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="857.28333"
+       y="611.64124"
+       id="text42712"><tspan
+         sodipodi:role="line"
+         id="tspan42714"
+         x="857.28333"
+         y="611.64124">Base objects</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="592.76379"
+       y="481.64124"
+       id="text44464"><tspan
+         sodipodi:role="line"
+         id="tspan44466"
+         x="592.76379"
+         y="481.64124">Factories</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="410.3107"
+       y="618.25452"
+       id="text44470"><tspan
+         sodipodi:role="line"
+         id="tspan44472"
+         x="410.3107"
+         y="618.25452">ODA package</tspan></text>
+  </g>
+</svg>

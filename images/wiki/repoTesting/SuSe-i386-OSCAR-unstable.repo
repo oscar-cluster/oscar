@@ -1,0 +1,13 @@
+# CentOS-OSCAR.repo
+#
+# If the mirrorlist= does not work for you, as a fall back you can try the 
+# remarked out baseurl= line instead.
+#
+#
+
+[oscar]
+name=suse-$releasever - OSCAR
+baseurl=http://bison.csm.ornl.gov/repos/unstable/suse-10-i386
+gpgcheck=0
+#gpgkey=http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-5
+

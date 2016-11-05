@@ -1,0 +1,247 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile SYSTEM "/usr/share/autoinstall/dtd/profile.dtd">
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <bootloader>
+    <activate config:type="boolean">false</activate>
+    <loader_type>grub</loader_type>
+    <repl_mbr config:type="boolean">false</repl_mbr>
+    <sections config:type="list"/>
+  </bootloader>
+  <general>
+    <clock>
+      <hwclock>localtime</hwclock>
+      <timezone>Canada/Pacific</timezone>
+    </clock>
+    <keyboard>
+      <keymap>english-us</keymap>
+    </keyboard>
+    <language>en_US</language>
+    <mode>
+      <confirm config:type="boolean">false</confirm>
+      <forceboot config:type="boolean">true</forceboot>
+    </mode>
+    <mouse>
+      <id>none</id>
+      <xemu3 config:type="boolean">false</xemu3>
+    </mouse>
+  </general>
+  <groups config:type="list"/>
+  <host>
+    <hosts config:type="list">
+      <hosts_entry>
+        <host_address>192.168.0.1</host_address>
+        <names config:type="list">
+          <name>server</name>
+        </names>
+      </hosts_entry>
+    </hosts>
+  </host>
+  <init>
+    <gateway>192.168.0.1</gateway>
+    <instmode>nfs</instmode>
+    <ip>192.168.0.2</ip>
+    <nameserver>192.168.0.10</nameserver>
+    <netdevice>eth0</netdevice>
+    <netmask>255.255.255.0</netmask>
+    <server>192.168.0.1</server>
+    <serverdir>/var/local/linux/suse10.0</serverdir>
+  </init>
+  <networking>
+    <dns>
+      <dhcp_hostname config:type="boolean">false</dhcp_hostname>
+      <dhcp_resolv config:type="boolean">false</dhcp_resolv>
+      <domain>ocg.org</domain>
+      <hostname>suse10-0-x86</hostname>
+      <nameservers config:type="list">
+        <nameserver>192.168.0.11</nameserver>
+        <nameserver>192.168.0.12</nameserver>
+      </nameservers>
+      <searchlist config:type="list">
+        <search>ocg.org</search>
+      </searchlist>
+    </dns>
+    <interfaces config:type="list">
+      <interface>
+        <bootproto>static</bootproto>
+        <device>eth0</device>
+        <ipaddr>192.168.0.2</ipaddr>
+        <name>Ethernet Network Card</name>
+        <netmask>255.255.255.0</netmask>
+        <startmode>auto</startmode>
+        <usercontrol>no</usercontrol>
+      </interface>
+    </interfaces>
+    <routing>
+      <ip_forward config:type="boolean">false</ip_forward>
+      <routes config:type="list">
+        <route>
+          <destination>default</destination>
+          <device>-</device>
+          <gateway>192.168.0.1</gateway>
+          <netmask>-</netmask>
+        </route>
+      </routes>
+    </routing>
+  </networking>
+  <nfs config:type="list">
+    <nfs_entry>
+      <mount_point>/home</mount_point>
+      <nfs_options>defaults</nfs_options>
+      <server_path>server:/home</server_path>
+    </nfs_entry>
+    <nfs_entry>
+      <mount_point>/mnt/linux</mount_point>
+      <nfs_options>defaults</nfs_options>
+      <server_path>server:/var/local/linux</server_path>
+    </nfs_entry>
+  </nfs>
+  <ntp-client>
+    <configure_dhcp config:type="boolean">false</configure_dhcp>
+    <peers config:type="list">
+      <peer>
+        <address>pool.ntp.org</address>
+        <initial_sync config:type="boolean">true</initial_sync>
+        <options></options>
+        <type>server</type>
+      </peer>
+    </peers>
+    <start_at_boot config:type="boolean">true</start_at_boot>
+    <start_in_chroot config:type="boolean">false</start_in_chroot>
+  </ntp-client>
+  <partitioning config:type="list">
+    <drive>
+      <partitions config:type="list">
+        <partition>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <mount>/boot</mount>
+          <size>100mb</size>
+        </partition>
+        <partition>
+          <crypt>twofish256</crypt>
+          <filesystem config:type="symbol">swap</filesystem>
+          <format config:type="boolean">true</format>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mount>swap</mount>
+          <partition_id config:type="integer">130</partition_id>
+          <size>512mb</size>
+        </partition>
+        <partition>
+          <crypt>twofish256</crypt>
+          <filesystem config:type="symbol">ext3</filesystem>
+          <format config:type="boolean">true</format>
+          <grow config:type="boolean">true</grow>
+          <loop_fs config:type="boolean">false</loop_fs>
+          <mount>/</mount>
+          <partition_id config:type="integer">131</partition_id>
+          <size>max</size>
+        </partition>
+      </partitions>
+      <type config:type="symbol">CT_DISK</type>
+      <use>all</use>
+    </drive>
+  </partitioning>
+  <scripts>
+    <post-scripts config:type="list">
+      <script>
+        <filename>kspost</filename>
+        <interpreter>shell</interpreter>
+        <location></location>
+        <source><![CDATA[
+mkdir -p /tftpboot/distro/suse-10.0-i386
+</source>
+      </script>
+    </post-scripts>
+  </scripts>
+  <security>
+    <console_shutdown>reboot</console_shutdown>
+    <cwd_in_root_path>no</cwd_in_root_path>
+    <cwd_in_user_path>no</cwd_in_user_path>
+    <displaymanager_remote_access>no</displaymanager_remote_access>
+    <enable_sysrq>no</enable_sysrq>
+    <fail_delay>3</fail_delay>
+    <gid_max>60000</gid_max>
+    <gid_min>1000</gid_min>
+    <group_encryption>des</group_encryption>
+    <kdm_shutdown>auto</kdm_shutdown>
+    <lastlog_enab>yes</lastlog_enab>
+    <obscure_checks_enab>yes</obscure_checks_enab>
+    <pass_max_days>99999</pass_max_days>
+    <pass_min_days>0</pass_min_days>
+    <pass_min_len>5</pass_min_len>
+    <pass_warn_age>7</pass_warn_age>
+    <passwd_encryption>md5</passwd_encryption>
+    <passwd_use_cracklib>no</passwd_use_cracklib>
+    <permission_security>easy</permission_security>
+    <run_updatedb_as></run_updatedb_as>
+    <system_gid_max>499</system_gid_max>
+    <system_gid_min>100</system_gid_min>
+    <system_uid_max>499</system_uid_max>
+    <system_uid_min>100</system_uid_min>
+    <uid_max>60000</uid_max>
+    <uid_min>1000</uid_min>
+    <useradd_cmd>/usr/sbin/useradd.local</useradd_cmd>
+    <userdel_postcmd>/usr/sbin/userdel-post.local</userdel_postcmd>
+    <userdel_precmd>/usr/sbin/userdel-pre.local</userdel_precmd>
+  </security>
+  <software>
+    <addons config:type="list">
+      <addon>Basis-Sound</addon>
+      <addon>Kde-Desktop</addon>
+      <addon>Min</addon>
+      <addon>SuSE-Documentation</addon>
+      <addon>X11</addon>
+    </addons>
+    <base>default</base>
+    <packages config:type="list">
+      <package>ImageMagick</package>
+      <package>dia</package>
+      <package>gimp</package>
+      <package>gtkam</package>
+      <package>netpbm</package>
+      <package>subversion</package>
+      <package>xen</package>
+      <package>xsane</package>
+    </packages>
+    <remove-packages config:type="list">
+      <package>pvm.i386</package>
+    </remove-packages>
+  </software>
+  <user_defaults>
+    <group>100</group>
+    <groups>video,dialout</groups>
+    <home>/home</home>
+    <inactive>-1</inactive>
+    <shell>/bin/bash</shell>
+    <skel>/etc/skel</skel>
+  </user_defaults>
+  <users config:type="list">
+    <user>
+      <encrypted config:type="boolean">true</encrypted>
+      <fullname>root</fullname>
+      <gid>0</gid>
+      <home>/root</home>
+      <shell>/bin/bash</shell>
+      <uid>0</uid>
+      <user_password>PASSWORD</user_password>
+      <username>root</username>
+    </user>
+  </users>
+  <x11>
+    <color_depth config:type="integer">32</color_depth>
+    <display_manager>kdm</display_manager>
+    <enable_3d config:type="boolean">true</enable_3d>
+    <monitor>
+      <display>
+        <max_hsync config:type="integer">82</max_hsync>
+        <max_vsync config:type="integer">60</max_vsync>
+        <min_hsync config:type="integer">30</min_hsync>
+        <min_vsync config:type="integer">30</min_vsync>
+      </display>
+      <monitor_device>1280X1024@60HZ</monitor_device>
+      <monitor_vendor>--&gt; LCD</monitor_vendor>
+    </monitor>
+    <resolution>1280x1024 (SXGA)</resolution>
+    <window_manager>kde</window_manager>
+  </x11>
+</profile>
