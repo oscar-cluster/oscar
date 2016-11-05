@@ -9,7 +9,7 @@ folder: wiki
 <!-- Name: AdminGuide/Licenses/pFilter -->
 <!-- Version: 2 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](AdminGuide)
+[back to Table of Contents](../LicensesDoc)
 
 ===== 5.6 pfilter License =====
 

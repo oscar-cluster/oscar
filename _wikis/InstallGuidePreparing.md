@@ -11,7 +11,7 @@ category: wiki
 
 [[TOC]]
 
-[back to the Table of Content](InstallGuide)
+[back to the Table of Content](InstallGuideDoc)
 
 # Chapter 3: Preparing to Install OSCAR
 

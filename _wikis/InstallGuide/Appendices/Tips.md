@@ -9,7 +9,7 @@ folder: wiki
 <!-- Name: InstallGuide/Appendices/Tips -->
 <!-- Version: 8 -->
 <!-- Author: olahaye74 -->
-[back to Table of Contents](InstallGuide)
+[back to Table of Contents](../AppendicesDoc)
 
 # Appendix C: Tips and Troubleshooting
 

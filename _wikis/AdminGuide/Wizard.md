@@ -11,7 +11,7 @@ folder: wiki
 <!-- Author: valleegr -->
 [[TOC]]
 
-[back to Table of Contents](AdminGuide)
+[back to Table of Contents](../AdminGuideDoc)
 
 # Chapter 2: OSCAR Management Wizard
 

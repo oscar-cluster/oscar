@@ -9,7 +9,7 @@ folder: wiki
 <!-- Name: AdminGuide/Licenses/LAM -->
 <!-- Version: 1 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](AdminGuide)
+[back to Table of Contents](../LicensesDoc)
 
 ## 5.3 LAM/MPI License
 

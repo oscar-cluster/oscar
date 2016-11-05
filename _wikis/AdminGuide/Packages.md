@@ -11,7 +11,7 @@ category: wiki
 
 [[TOC]]
 
-[back to Table of Contents](AdminGuide)
+[back to Table of Contents](../AdminGuideDoc)
 
 # 4 Package Notes
 

@@ -2,7 +2,7 @@
 layout: wiki
 title: AdminGuide
 meta: 
-permalink: "wiki/AdminGuide"
+permalink: "wiki/AdminGuideDoc"
 category: wiki
 ---
 <!-- Name: AdminGuide -->
@@ -11,16 +11,16 @@ category: wiki
 
 # Administration Guide
 
- 1. [Introduction](AdminGuide/Introduction)
+1. [Introduction](AdminGuide/Introduction)
    1. [Overview](AdminGuide/Introduction#Overview)
- 1. [Wizard Management](AdminGuide/Wizard)
+1. [Wizard Management](AdminGuide/Wizard)
    1. [Overview](AdminGuide/Wizard#Overview)
    1. [Launching the OSCAR Wizard](AdminGuide/Wizard#Launching)
- 1. [Commands Management](AdminGuide/Commands)
+1. [Commands Management](AdminGuide/Commands)
    1. [Overview](AdminGuide/Commands#Overview)
    1. [Deleting Images](AdminGuide/Commands#DeletingImages)
    1. [Managing Repositories](AdminGuide/Commands#ManagingRepositories)
- 1. [Package Notes](AdminGuide/Packages)
+1. [Package Notes](AdminGuide/Packages)
    1. [Torque Resource Manager](AdminGuide/Packages#Torque)
    1. [Maui Scheduler](AdminGuide/Packages#Maui)
    1. [C3](AdminGuide/Packages#C3)
@@ -32,7 +32,7 @@ category: wiki
    1. [PVM](AdminGuide/Packages#PVM)
    1. [System Imager Suite (SIS)](AdminGuide/Packages#SIS)
    1. [Switcher Environment Switcher](AdminGuide/Packages#Switcher)
- 1. [Licenses and Copyrights](AdminGuide/Licenses)
+1. [Licenses and Copyrights](AdminGuide/LicensesDoc)
    1. [C3](AdminGuide/Licenses/C3)
    1. [Disable Services](AdminGuide/Licenses/DisableService)
    1. [LAM/MPI](AdminGuide/Licenses/LAM)

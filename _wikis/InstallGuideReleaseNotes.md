@@ -11,7 +11,7 @@ category: wiki
 
 [[TOC]]
 
-[back to Table of Contents](InstallGuide)
+[back to Table of Contents](InstallGuideDoc)
 
 # Chapter 2: Release Notes
 

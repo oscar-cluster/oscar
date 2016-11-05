@@ -2,14 +2,14 @@
 layout: wiki
 title: AdminGuide/Licenses
 meta: 
-permalink: "wiki/AdminGuide/Licenses"
+permalink: "wiki/AdminGuide/LicensesDoc"
 category: wiki
 folder: wiki
 ---
 <!-- Name: AdminGuide/Licenses -->
 <!-- Version: 2 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](AdminGuide)
+[back to Table of Contents](../AdminGuideDoc)
 
 # 5 Licenses and Copyrights
 
