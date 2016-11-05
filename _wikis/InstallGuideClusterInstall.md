@@ -141,11 +141,12 @@ Disk partitioning::
 ```
       
 Here is a sample (for a SCSI disk):
+
 ```
-/dev/sda1 24 ext3 /boot defaults
-/dev/sda5 128 swap
-/dev/sda6 * ext3 / defaults
-nfs_oscar:/home - nfs /home rw
+    /dev/sda1 24 ext3 /boot defaults
+    /dev/sda5 128 swap
+    /dev/sda6 * ext3 / defaults
+    nfs_oscar:/home - nfs /home rw
 ```
       
 An * in the size column causes that partition to grow to fill the entire disk. You can create your own partition files, but make sure that you do not exceed the physical capacity of your client hardware. Also be careful to not specify duplicate filesystems as this will cause problems during the installation. The sample listed above, and some others, are in the ''oscarsamples'' directory.
