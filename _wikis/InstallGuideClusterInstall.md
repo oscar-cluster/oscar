@@ -36,7 +36,7 @@ The wizard, as shown in Figure 1, is provided to guide you through the rest of t
 
 *Figure 1: OSCAR Wizard.*
 
-![OSCAR Wizard](/images/wiki/InstallGuideClusterInstall/figure1_oscar_wizard.png)
+![OSCAR Wizard](../../images/wiki/InstallGuideClusterInstall/figure1_oscar_wizard.png)
 
 In brief, the functions of the various buttons is as follows:
 
@@ -74,7 +74,7 @@ If you wish to change the list of packages that are installed, click on the ```<
 
 *Figure 3: OSCAR package selection.*
 
-![Package Selector](/images/wiki/InstallGuideClusterInstall/figure3_package_selector.png)
+![Package Selector](../../images/wiki/InstallGuideClusterInstall/figure3_package_selector.png)
 
 Note that this window only shows OSCAR packages -- it does not show individual RPMs. Once you have a selected a set of OSCAR packages to install, click on the <Exit> button to save your selections and return to the main OSCAR window. Note that closing the window yields the same result and there is no way of ‘defaulting’ to the original settings, so make sure your package list is complete before proceeding to the next step.
 
@@ -86,7 +86,7 @@ Some OSCAR packages allow themselves to be configured. Clicking on the<Configure
 
 *Figure 4: OSCAR package configuration.*
 
-![Package Configuration](/images/wiki/InstallGuideClusterInstall/figure_3_package_configuration.png)
+![Package Configuration](../../images/wiki/InstallGuideClusterInstall/figure_3_package_configuration.png)
 
 This step is optional. If you do not click on the <Configure Selected OSCAR Packages> button, defaults for all packages will be used.
 
@@ -128,7 +128,7 @@ A sample dialog is shown in Figure 4.
 
 *Figure 4: Build the image.*
 
-![Build Client Image](/images/wiki/InstallGuideClusterInstall/figure5_build_client_image.png)
+![Build Client Image](../../images/wiki/InstallGuideClusterInstall/figure5_build_client_image.png)
 
 Customizing your image::
   The defaults of this panel use the sample disk partition and RPM package files that can be found in the _oscarsamples_ directory. You may want to customize these files to make the image suit your particular requirements.
@@ -183,7 +183,7 @@ When finished entering information, press the <Addclients> button. When those cl
     
 *Figure 5: Define the Clients.*
 
-![Define Clients](/images/wiki/InstallGuideClusterInstall/figure6_define_clients.png)
+![Define Clients](../../images/wiki/InstallGuideClusterInstall/figure6_define_clients.png)
     
 Note that this step can be executed multiple times. The GUI panel that is presented has limited flexibility in IP address numbering -- the starting IP address will only increment the least significant byte by one for each successive client. Hence, if you need to define more than 254 clients (beware of broadcast addresses!), you will need to run this step multiple times and change the starting IP address. There is no need to close the panel and return to the main OSCAR menu before executing it again; simply edit the information and click on the <Addclients> button as many times as is required.
     
@@ -199,7 +199,7 @@ In order to collect the MAC addresses, press the <Setup Networking> button. The 
     
 *Figure 6: Collect client MAC addresses.*
     
-![Setup Networking](/images/wiki/InstallGuideClusterInstall/setup_networking.png)
+![Setup Networking](../../images/wiki/InstallGuideClusterInstall/setup_networking.png)
     
 To use this tool, you will need to know how to network boot your client nodes, or have a file that lists all the MACs from your cluster. For instructions on doing network booting, see Appendix A.
     
@@ -323,7 +323,7 @@ A sample dialog is shown in Figure 8. If any of the test fail, then there may be
 
 *Figure 8: Testing your cluster setup*
 
-![Test Cluster](/images/wiki/InstallGuideClusterInstall/test_cluster_setup.png)
+![Test Cluster](../../images/wiki/InstallGuideClusterInstall/test_cluster_setup.png)
 
 If all the tests pass, then your OSCAR cluster is ready to use.  Congratulations!
 
