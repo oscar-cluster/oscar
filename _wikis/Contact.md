@@ -21,7 +21,8 @@ There are many ways to contact people from OSCAR project.
  * [oscar-tracker](http://lists.sourceforge.net/mailman/listinfo/oscar-tracker): List for tracking bug and RFE reports/updates
  * [oscar-users](http://lists.sourceforge.net/mailman/listinfo/oscar-users): List for user questions and problems
 
-### Slack
+## Slack
+
 Join us at oscar-cluster.slack.com
 
 ## IRC
