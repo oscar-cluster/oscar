@@ -25,6 +25,8 @@ category: wiki
  * See [this page](DistroSupport) for OSCAR 5.1 beta
  * See [this page](SupportedDistros) for OSCAR 5.0
 
+<!--     
 ### SVN Check-in status
 
 See [this page](http://svn.oscar.openclustergroup.org/php/svnstatus.php).
+-->
