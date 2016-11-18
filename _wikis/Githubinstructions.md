@@ -28,4 +28,4 @@ For cloning the oscar github repository, the command is:
 
     
  * Previous versions are available [here](https://github.com/oscar-cluster/tags).
-    After you have successfully checked the code out, to install OSCAR, please refer to the install guide (http://svn.oscar.openclustergroup.org/trac/oscar/wiki/quick_start_guide_for_rhel).
+    After you have successfully checked the code out, to install OSCAR, please refer to the [install guide](quick_start_guide_for_rhel).
