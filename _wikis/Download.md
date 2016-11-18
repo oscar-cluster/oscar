@@ -33,9 +33,12 @@ Please give it a try and let us know if you have any problems.
 
 Nightly snapshots are available [here](http://svn.oscar.openclustergroup.org/php/download.php?d_name=nightly).
 
-### Subversion
+### Subversion (deprecated)
 
 To build OSCAR from SVN, check [SVN instructions](SVNinstructions).
+
+### Github
+To build OSCAR from github, check [Github instructions](Githubinstructions).
 
 ### Packages
 

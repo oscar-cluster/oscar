@@ -15,7 +15,7 @@ Other types of applications which use clusters of computers, such as load balanc
 Anyone is welcome to [contribute](/wiki/DevelDocs/) to OSCAR core development, or to submit packages to be included in the default OSCAR repositories. We are a community driven project and are always on the lookout for new talent and ideas.
 
 # How can I contribute?
-Email sysadmin@ crest . iu . edu or post a message to oscar-devel@lists.sourceforge.net to get your subversion and trac account. We will send an invitation mail to let you create your own account for our systems(i.e., subversion and trac).
+Email sysadmin@ crest . iu . edu or post a message to oscar-devel@lists.sourceforge.net to get the access to the oscar-cluster github project. We will send an invitation mail to establish your access.
 
 # Latest release
 
