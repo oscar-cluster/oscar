@@ -15,7 +15,7 @@ category: wiki
 
  * [Installation Guide](InstallGuideDoc)
  * [Administration Guide](AdminGuideDoc)
- * [Quick start guide for RHEL6](quick_start_guide_for_rhel) (Only for people who already knows OSCAR and knows what they do. NOT FOR GEGINNERS)
+ * [Quick start guide for RHEL6](quick_start_guide_for_rhel) (Only for people who already knows OSCAR and knows what they do. NOT FOR BEGINNERS)
 
 ### [Old Versions](OldManuals)
 
@@ -67,6 +67,7 @@ For `oscarinstall.log` and/or typescript, please consider using [pastebin](http:
 ### Tutorials
 
 List of OSCAR related tutorials:
+
   * System-level Virtualization and Management using OSCAR, In Proceeding of the 5th Annual OSCAR Symposium (OSCAR 2007), Saskatoon, Saskatchewan, Canada, Co-hosted with HPCS 2007, May 15, 2007.
   * Towards Highly Available, Scalable and Secure HPC Clusters with HA-OSCAR. LinuxWorld Conference & Expo. August 14-17 2006. San Francisco, California, USA.
   * Non-Stop HPC and Grid-Enabled Cluster, a half day tutorial, 6th IEEE/ACM International Symposium on Cluster Computing and the Grid (CCGrid) 2006, Singapore, May 16-19, 2006.
