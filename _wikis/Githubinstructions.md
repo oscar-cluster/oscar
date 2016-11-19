@@ -22,9 +22,15 @@ Let's try to check code out...
 For cloning the oscar github repository, the command is:
 
  * By using SSH
+
+     ```
     % git clone git@github.com:oscar-cluster/oscar.git
+     ```
  * By using HTTPS
+
+     ```
     % git clone https://github.com/oscar-cluster/oscar.git
+     ```
 
     
  * Previous versions are available [here](https://github.com/oscar-cluster/tags).
