@@ -22,14 +22,14 @@ To build OSCAR from github, check [Github instructions](Githubinstructions).
 
  * [OSCAR on SourceForge](http://sourceforge.net/project/showfiles.php?group_id=9368)
  * [IU HTTP](http://ftp.ussg.iu.edu/oscar)
- * [ftp://ftp.ussg.iu.edu/pub/oscar/ IU FTP]
+ * [IU FTP](ftp://ftp.ussg.iu.edu/pub/oscar)
 
 ### Old releases
 
 For old releases, please check out our [SourceForge Project Filelist Page](http://sourceforge.net/project/showfiles.php?group_id=9368).
 
 ##### OSCAR 5.1 beta2
-OSCAR 5.1 beta2 has been tagged and the OSCAR 5.1 b2 tarballs for [all the supported distros](DistroSupport) are available [here](http://svn.oscar.openclustergroup.org/php/download.php?d_name=beta) now.[[BR]]
+OSCAR 5.1 beta2 has been tagged and the OSCAR 5.1 b2 tarballs for [all the supported distros](DistroSupport) are available [here](http://svn.oscar.openclustergroup.org/php/download.php?d_name=beta) now.
 Please give it a try and let us know if you have any problems.
 
 
