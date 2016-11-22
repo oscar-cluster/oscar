@@ -50,7 +50,7 @@ Having problems building a cluster with OSCAR?  We are here to help!  However, p
  * Read the OSCAR [User Documentation](http://svn.oscar.openclustergroup.org/trac/oscar/wiki)
  * Check the [oscar-users](http://sourceforge.net/mailarchive/forum.php?forum_name=oscar-users) and [oscar-devel](http://sourceforge.net/mailarchive/forum.php?forum_name=oscar-devel) mailing-lists archives.  Searching through the archives usually brings up solutions to common problems.
  * For SIS (imaging) related questions, also search the [sisuite-users](http://sourceforge.net/mailarchive/forum.php?forum_name=sisuite-users) mailing-list archives.
- * If after going through the above steps, and you did not find a solution to your problem, feel free to email us at the [mailto:oscar-users@lists.sourceforge.net oscar-users mailing-list]. Please be verbose about your problem and provide us with the following:
+ * If after going through the above steps, and you did not find a solution to your problem, feel free to email us at the [oscar-users](mailto:oscar-users@lists.sourceforge.net) mailing list. Please be verbose about your problem and provide us with the following:
    * OSCAR version (eg. 4.2)
    * Linux Distribution and version (eg. Fedora Core 2)
    * Hardware type (eg. x86, ia64, x86_64)
