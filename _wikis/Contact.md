@@ -23,7 +23,7 @@ There are many ways to contact people from OSCAR project.
 
 ## Slack
 
-Join us at oscar-cluster.slack.com
+Join us at the [oscar-cluster](https://oscar-cluster.slack.com/) slack channel.
 
 ## IRC
  
