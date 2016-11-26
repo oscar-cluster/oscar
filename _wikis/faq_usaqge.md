@@ -15,7 +15,7 @@ category: wiki
 
 # Usage
 
-## How do I add another MPI implementation to my OSCAR cluster?
+### How do I add another MPI implementation to my OSCAR cluster?
 
 There are two aspects to adding an MPI implementation to your OSCAR cluster:
 
@@ -83,7 +83,7 @@ Or the system-default MPI can be changed by root (this must be executed on all n
 
 The `module(1)`, `modulefile(4)`, and `switcher(1)` man pages on OSCAR clusters provide much more detail than is provided here in this FAQ entry.  Additionally, sections in the OSCAR Installation and User's Guides provide more information and common scenarios about the switcher command.
 
-## How do I turn the headnode into an job execution node in Torque/PBS?
+### How do I turn the headnode into an job execution node in Torque/PBS?
 
 On the server (head node): Add the hostname of the server node to /var/spool/pbs/server_priv/nodes.
 
@@ -94,7 +94,7 @@ Then verify that your server is now listed as a compute node:
 
     pbsnodes -a
 
-## I got an error message while trying to compile a MPI program on the headnode using LAM/MPI's mpicc, what's the problem?
+### I got an error message while trying to compile a MPI program on the headnode using LAM/MPI's mpicc, what's the problem?
 
 When using OSCAR 4.1 on Fedora Core 2 and 3 systems, you may see the following error messages when trying to compile MPI code using LAM/MPI's mpicc on the headnode:
 
@@ -104,7 +104,7 @@ When using OSCAR 4.1 on Fedora Core 2 and 3 systems, you may see the following e
 
 This can be solved by installing the libaio-devel RPM on the headnode which should be in the /tftpboot/rpm directory. The compute nodes should have the RPM installed already. 
 
-## How do i add a user to the cluster?
+### How do i add a user to the cluster?
 
 All the following commands should be executed with root privileges.
   * Make sure both the OPIUM and the sync_files OSCAR packages are installed.
