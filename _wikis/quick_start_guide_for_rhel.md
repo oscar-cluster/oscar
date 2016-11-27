@@ -47,8 +47,8 @@ category: wiki
     `oscar-config --bootstrap`
 12. Start the OSCAR installer wizard;
 
-    oscar_wizard -d install
-13. Wizard STEP1: Select experimental, then select: (*bold* means mandatory)
+    `oscar_wizard -d install`
+13. Wizard STEP1: Select experimental, then select: (**bold** means mandatory)
 * **apitest**
 * **base**
 * blcr
