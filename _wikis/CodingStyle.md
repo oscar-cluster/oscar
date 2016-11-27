@@ -28,9 +28,12 @@ Keep code within 80 characters width. If this is exceeded significantly and in b
 Don't put multiple statements on a single line unless you have
 something to hide:
 
-            if (condition) { do_this;
-            do_that; $a = $a + 1; ...
-            }
+``` perl
+    if (condition) { 
+        do_this;
+        do_that; $a = $a + 1; ...
+    }
+```
 
 The Perl style "if" located after the statement is hard to read and see. If you have no good reason for it (some symmetry in the code which makes it easy to see the structure), avoid it.
 Perl offers loads of ways to obfuscate code and make it "write-only". Try to discipline yourself and think whether other will understand easily the code you write.
@@ -54,27 +57,32 @@ choose one placement strategy over the other, but the preferred way, as
 shown to us by the Kernighan and Ritchie, is to put the opening
 brace last on the line, and put the closing brace first:
 
-            if (x is true) {
-                we do y
-            }
-
+``` perl
+    if (x is true) {
+        we do y
+    }
+```
 Note that the closing brace is empty on a line of its own, _except_ in
 the cases where it is followed by a continuation of the same statement,
 i.e., a "while" in a do-statement or an "else" in an if-statement, like
 this:
 
-            do {
-                body of do-loop
-            |
+``` perl
+    do {
+        body of do-loop
+    |
+```
 and
 
-            if (x == y) {
-                ..
-            } elsif (x > y) {
-                ...
-            } else {
-                ....
-            }
+``` perl
+    if (x == y) {
+        ..
+    } elsif (x > y) {
+        ...
+    } else {
+        ....
+    }
+```
 Rationale: K&R.
 
 Also, note that this brace-placement also minimizes the number of empty
@@ -85,15 +93,18 @@ comments on.
 
 Following constructs are considered bad style and should be wiped from our code:
 
-         if (condition)
-         {
-             do_something;
-         }
-         else
-         {
-             do_something_else;
-         }
+```perl
+use strict;
 
+    if (condition)
+    {
+        do_something;
+    }
+    else
+    {
+        do_something_else;
+    }
+```
 
 ## Naming, Variables and Subroutines
 

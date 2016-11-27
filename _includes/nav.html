@@ -1,11 +1,11 @@
        <div class="sidebox">
         <ul>
             <li><a href="{{site.baseurl}}/" title="home" class="{% if page.url == '/' %}current{% endif %}" ><span>Main Page</span></a></li>
-            <li><a href="{{site.baseurl}}/wiki/Status" title="home" class="{% if page.url == 'wiki/Status' %}current{% endif %}" ><span>Current Status</span></a></li>
-            <li><a href="{{site.baseurl}}/wiki/Download" title="download" class="{% if page.url == 'wiki/Download' %}current{% endif %}" ><span>Download</span></a></li>
-            <li><a href="{{site.baseurl}}/wiki/Document" title="document" class="{% if page.url == 'wiki/Document' %}current{% endif %}" ><span>Documentations</span></a></li>
-            <li><a href="{{site.baseurl}}/wiki/Contact" title="contact" class="{% if page.url == 'wiki/Contact' %}current{% endif %}" ><span>Contact</span></a></li>
-            <li><a href="{{site.baseurl}}/blog.html" title="blog" class="{% if page.url contains 'blog' or page.layout == 'blog-article' %}current{% endif %}" ><span>Blog</span></a></li>
+            <li><a href="{{site.baseurl}}/wiki/Status" title="home" class="{% if page.url contains 'Status' %}current{% endif %}" ><span>Current Status</span></a></li>
+            <li><a href="{{site.baseurl}}/wiki/Download" title="download" class="{% if page.url contains 'Download' %}current{% endif %}" ><span>Download</span></a></li>
+            <li><a href="{{site.baseurl}}/wiki/Document" title="document" class="{% if (page.meta != 'top' and page.layout != 'blog')  %}current{% endif %}" ><span>Documentations</span></a></li>
+            <li><a href="{{site.baseurl}}/wiki/Contact" title="contact" class="{% if page.url contains 'Contact' %}current{% endif %}" ><span>Contact</span></a></li>
+            <li><a href="{{site.baseurl}}/blog.html" title="blog" class="{% if page.url contains 'blog' or page.layout contains 'blog' %}current{% endif %}" ><span>Blog</span></a></li>
             <!--
             <li><a href="{{site.baseurl}}/publications" title="contact" class="{% if page.url == '/publications/' %}current{% endif %}" ><span>Publications</span></a></li>
             -->

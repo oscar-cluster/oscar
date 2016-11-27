@@ -1,7 +1,7 @@
 ---
 layout: wiki
 title: Contact
-meta: 
+meta: top
 permalink: "wiki/Contact"
 category: wiki
 ---
