@@ -19,7 +19,7 @@ Jeff Squyres has written an excellent [email](http://www.mail-archive.com/oscar-
 
 ## Assisted half-automatic merges
 
-Erich Focht has written a tool for merging changes between repositories one by one. The tool is available at [http://home.arcor.de/efocht/tools/svnmerge_1by1]. Its advantage is that it merges a given range of svn checkins one by one, keeping the original checkin messages. This way the checkin logs (which usually contain a lot of information on why the change happened) are surviving even big merges of many revisions.
+Erich Focht has written a tool for merging changes between repositories one by one. The tool is available at [here](http://home.arcor.de/efocht/tools/svnmerge_1by1). Its advantage is that it merges a given range of svn checkins one by one, keeping the original checkin messages. This way the checkin logs (which usually contain a lot of information on why the change happened) are surviving even big merges of many revisions.
 
 Suppose your development repository is checked out to `/home/me/devel`
 and the target repository is checked out to `/home/me/target` .

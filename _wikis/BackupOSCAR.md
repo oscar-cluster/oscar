@@ -13,7 +13,7 @@ category: wiki
 
 This document outlines the steps that need to be carried out to backup and restore a OSCAR headnode.
 
-***NOTE*** These steps have been verified minimally - use only in an ***experimental*** environment and provide us with your comments/feedback at [mailto:oscar-devel@lists.sourceforge.net oscar-devel].
+***NOTE*** These steps have been verified minimally - use only in an ***experimental*** environment and provide us with your comments/feedback at [oscar-devel](mailto:oscar-devel@lists.sourceforge.net).
 
 ### Backing up OSCAR
 
