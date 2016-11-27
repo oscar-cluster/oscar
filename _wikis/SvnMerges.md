@@ -33,6 +33,7 @@ What you need to do is
     svnmerge_1by1 --rev 330:340 /home/me/devel /home/me/target
 
 This will go revision by revision:
+
  * extract the log message
  * merge the changes to the target
  * detect conflicts
@@ -46,6 +47,7 @@ This will go revision by revision:
 If you have conflicts in one merge you will see a text telling you that and
 listing the files with conflicts. Now you must go to another shell and resolve
 the conflict in the file(s). Once you did that you'll need to do (manually):
+
   * `svn cleanup`
   * `svn resolved path_to_file`
 
