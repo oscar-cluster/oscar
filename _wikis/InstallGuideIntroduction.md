@@ -42,6 +42,7 @@ OSCAR package can be as simple as a single binary file, or it can be more comple
 mixture of binary and other auxiliary configuration / installation files. OSCAR packages provide the majority of functionality in OSCAR clusters.
 
 OSCAR packages fall into one of three categories:
+
  * Core packages are required for the operation of OSCAR itself (mostly involved with the installer).
  * Included packages are shipped in the official OSCAR distribution. These are usually authored and/or packaged by OSCAR developers, and have some degree of official testing before release.
  * Third party packages are not included in the official OSCAR distribution; they are _add-ons_ that can be unpacked in the OSCAR tree, and therefore installed using the OSCAR installation framework.
