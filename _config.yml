@@ -26,6 +26,10 @@ github_username:  dikim33
 
 # Build settings
 markdown: kramdown
+#markdown: redcarpet
+#redcarpet:
+#      extensions: ["tables", "fenced_code_blocks"]
+
 #theme: sinatra
 theme: minima
 
