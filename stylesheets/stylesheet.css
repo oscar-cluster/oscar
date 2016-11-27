@@ -242,8 +242,10 @@ table {
 th {
   font-family: 'Lucida Grande', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   padding: 10px;
-  background: #575757;
+  background: #888888;
   color: #fff;
+  border: 1px solid #373737;
+  text-align: center;
  }
 
 td {
