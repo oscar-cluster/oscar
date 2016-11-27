@@ -9,15 +9,14 @@ category: wiki
 <!-- Version: 20 -->
 <!-- Author: valleegr -->
 
-[[TOC]]
+[Documentations](Document) > [User Documentations](Support) > [OSCAR Install Guide](InstallGuideDoc)
 
-[back to Table of Contents](InstallGuideDoc)
+## Chapter 2: Release Notes
 
-# Chapter 2: Release Notes
-
-## <a name='releaseFeatures'></a>2.1 Release Features
+### <a name='releaseFeatures'></a>2.1 Release Features
 
 The major new features for OSACR 6.x are:
+
  * OSCAR is not installed in /opt anymore but directly on the system (for instance, binaries are in /usr/sbin).
  * Full support of on-line repositories.
  * New bootstrapping mechanism.
@@ -27,7 +26,7 @@ The major new features for OSACR 6.x are:
 
 For more details, please refer to the ChangeLog http://svn.oscar.openclustergroup.org/trac/oscar/browser/trunk/ChangeLog
 
-## <a name='generalNotes'></a>2.2 General Installation Notes
+### <a name='generalNotes'></a>2.2 General Installation Notes
 
  * The OSCAR installer GUI provides little protection for user mistakes. If the user executes steps out of order, or provides erroneous input, Bad Things may happen. Users are strongly encouraged to closely follow the instructions provided in this document.
  * Each package in OSCAR has its own installation and release notes. See Section 6 for additional release notes.
@@ -38,7 +37,7 @@ For more details, please refer to the ChangeLog http://svn.oscar.openclustergrou
 
     export LC_ALL=C
 
-## <a name='networkingNotes'></a>2.3 Networking Notes
+### <a name='networkingNotes'></a>2.3 Networking Notes
 
  * All nodes must have a hostname other than `localhost` that does not contain any underscores "_" or periods "." Some distributions complicate this by putting a line such as as the following in /etc/hosts:
 
@@ -67,7 +66,7 @@ Note that this is actually an ssh problem, not a C3 problem. As such, you need t
 
 The warnings about xauth should no longer appear (and the <Install/Uninstall Packages> button should work properly).
 
-## <a name='selinuxNote'></a>2.4 SELinux Conflict
+### <a name='selinuxNote'></a>2.4 SELinux Conflict
 
 According to the NSA [http://www.nsa.gov/selinux/info/faq.cfm], the purpose of SE Linux is as follows: 
 
@@ -75,23 +74,23 @@ According to the NSA [http://www.nsa.gov/selinux/info/faq.cfm], the purpose of S
 
  * Due to issues with displaying graphs under Ganglia, and installing RPMs in a chroot environment (needed to build OSCAR images), SELinux should be disabled before installing OSCAR. During installation, it can be deactivated on the same screen as the firewall. If it is currently active it can be turned off using the selinux OSCAR package (make sure you manually select the selinux OSCAR package to do so).
 
-## <a name='distributionNotes'></a>2.5 Distribution Specific Notes
+### <a name='distributionNotes'></a>2.5 Distribution Specific Notes
 
  * This section discuss issues that may be encountered when installing OSCAR on specific Linux distribution versions/architectures.
 
-### 2.5.1 RHEL 5
+#### 2.5.1 RHEL 5
 RHEL 5 users needs to create a local repository for RHEL 5 RPMs, right after the installation of the oscar RPM. For that, copy all RPMs from the installation CDs or DVD in _/tftpboot/distro/redhat-el-5-i386_ (*always replace i386 by x86_64 if you are using a x86_64 machine*). Note that RPMs may be in different directories on the CDs/DVD and you really need all of them. 
 Then execute the following command as root: 
   * _yum update && yum -y install packman createrepo_
   * _cd /tftpboot/distro/redhat-el-5-i386 && packman --prepare-repo /tftpboot/distro/redhat-el-5-i386_.
 
-### Ubuntu 12.04 (Precise)
+#### Ubuntu 12.04 (Precise)
 
-#### Before Creating a Golden Image
+##### Before Creating a Golden Image
 
 Note that the Selector graphical interface does NOT work on Ubuntu 12.04 because it is based on Qt3 for Perl, which is not available on Ubuntu 12.04. If you really need to use Selector, please use the command line interface rather than the graphical interface to do so.
 
-#### After Creating a Golden Image
+##### After Creating a Golden Image
 
 * Update the SystemConfigurator Configuration File
 
@@ -118,7 +117,7 @@ Please update the content of the file to have something similar to:
         INITRD = /boot/initrd.img-3.2.0-34-generic
         LABEL = default
 
-#### Before Imaging the Compute Nodes
+##### Before Imaging the Compute Nodes
 
 * ATFTP
 
@@ -141,7 +140,7 @@ Please refer to the notes at the following page:
 
     https://bitbucket.org/gvallee/systemimager-4.1.6-ubuntupreciseHome
 
-#### After Imaging the Compute Nodes, On the Compute Nodes
+##### After Imaging the Compute Nodes, On the Compute Nodes
 
 Depending on the way the network domain was set up, the NFS mount may fail on the compute nodes: the file system is mounted but all directories in _/home_ are reported with a nobody user.
 
@@ -153,7 +152,7 @@ To know what domain name is used, on the compute nodes, check the content of _/v
 
 The ''mydomain token is what you are looking for.
 
-## <a name='pFilterNotes'></a>2.6 pfilter Notes
+### <a name='pFilterNotes'></a>2.6 pfilter Notes
 
  * pfilter is the firewall which is bundled with OSCAR.  Besides its normal function as a firewall, it also provides NAT access for the compute nodes in your cluster
 

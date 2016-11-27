@@ -8,18 +8,17 @@ category: wiki
 <!-- Name: SetManager -->
 <!-- Version: 15 -->
 <!-- Author: wesbland -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > [OSCAR Set Manager](OSM)
 
-[Development Documentation](DevelDocs) > [Oscar Set Manager](OSM) > Package Set Manager
-
-# Package Set Manager
+## Package Set Manager
 
 The Package Set Manager is a tool that has the ability to manage package sets and some limited repository management (by calling into opd2).  The result of the tool will be a set of OPKGs to be installed at a later time.  Configuration for the package may be added into the XML schema later.
 
-## Manage Repositories
+### Manage Repositories
 
 Using [OPD2](DevOPD2) the Package Set Manager will have the ability to add repositories and keep track of what packages are available in each repository.
 
-## Manage Package Set Descriptions
+### Manage Package Set Descriptions
 
 The core of the Package Set Manager are the descriptions of the actual package sets.  The descriptions are in XML format which is shown in the [source:trunk/share/schemas/pkgset.xsd schema] file in trunk.  *The package sets should be stored in the directory `trunk/share/package_sets`.*  Directories can be placed underneath this for easier organization (i.e. Default).  For more information about how the descriptions should be formed, see this [source:trunk/src/pkg-set/README README] file.
 
@@ -39,7 +38,7 @@ These package sets can be combined inside the Package Set Manager along with ind
     * Non resolvable conflicts
       * Two packages conflict with each other and are both selected results in an error
 
-## OPKG Version Numbering
+### OPKG Version Numbering
 
 The OPKG version numbers will be compared using the same scheme as the dpkg version comparison.  The parser and comparison tool is borrowed from dpkg and converted to perl with some modifications to make parsing the versions out of XML easier.  A full description of how the OPKGs should be numbered is shown in the [OPKG Versioning](OPKGVersioning) document.
 
@@ -52,7 +51,7 @@ This makes it easy to find the exact package set desired and matches well with t
 
 The name of your package set should be the same as the name of the file excluding the xml extension.
 
-## Library API
+### Library API
 
 The library is currently located at _lib/OSCAR/psm.pm_.
 

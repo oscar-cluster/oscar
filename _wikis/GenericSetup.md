@@ -8,9 +8,10 @@ category: wiki
 <!-- Name: GenericSetup -->
 <!-- Version: 1 -->
 <!-- Author: efocht -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure
 
-# generic-setup
-
+## generic-setup
+ 
 *generic-setup* is a script called during the installation phase which copies
 the OSCAR binary packages which correspond to a particular distribution into the OSCAR
 package repository.

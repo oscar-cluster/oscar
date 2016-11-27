@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 10 -->
 <!-- Author: dikim -->
 
-[DevelDocs] > [ODA](DevODA) > Maintenance
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > [ODA](DevODA)
 
 ## Maintenance of ODA
 More functionality needs to be added to `Database.pm`: the OSCAR[[BR]]

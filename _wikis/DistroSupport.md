@@ -8,8 +8,7 @@ category: wiki
 <!-- Name: DistroSupport -->
 <!-- Version: 55 -->
 <!-- Author: olahaye74 -->
-
-[Developer Documentation](DevelDocs) > Distribution Support
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR Distribution Support
 
 ## Distribution Support for OSCAR >= 6.x
 

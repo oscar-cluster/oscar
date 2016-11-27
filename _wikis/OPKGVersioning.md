@@ -8,10 +8,9 @@ category: wiki
 <!-- Name: OPKGVersioning -->
 <!-- Version: 9 -->
 <!-- Author: wesbland -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > [OSCAR Set Manager](OSM) > [Package Set Manager](PSM)
 
-[Development Documentation](DevelDocs) > [OSCAR Set Manager](OSM) > [Package Set Manager](SetManager) > OPKG Versioning
-
-# OPKG Versioning
+## OPKG Versioning
 
 The version of the OPKG has 4 parts based on a combination of the rpm and deb versioning scheme:
 

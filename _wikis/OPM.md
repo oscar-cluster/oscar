@@ -8,10 +8,9 @@ category: wiki
 <!-- Name: OPM -->
 <!-- Version: 11 -->
 <!-- Author: wesbland -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > OSCAR Packages
 
-[Development Documentation](DevelDocs) > OSCAR Package Manager
-
-# OSCAR Package Manager (OPM)
+## OSCAR Package Manager (OPM)
 
 The OSCAR Package Manger is a mechanism to install OSCAR packages in the new format (see [../browser/pkgsrc/opkgc/trunk/doc/opkg.5.html?format=raw opkg]).  It performs tasks based on a request system in the OSCAR database (ODA).  When OPM is started, it will walk through the database, looking at every package on every node, and see what needs to be done for that package.  The request field in the database will state what step of the install/uninstall process the package should be at and OPM will perform the steps necessary to get it to that stage.  See the Stages section for more details about each stage.  OPM will run on the headnode as well as all the compute nodes.  This will mean that once the cluster has been initially set up, the nodes will be responsible for maintaining themselves.
 
@@ -19,7 +18,7 @@ There are differences in the server and client versions of OPM.  The server will
 
 (See also: [OSCAR Package API](opkgAPI))
 
-## /etc/opm.conf
+### /etc/opm.conf
 
 OPM will have a file called `/etc/opm.conf` which will hold the type of the machine OPM is running on (server/client/image) and the name of the machine or image.  An example of the file would be:
 
@@ -35,7 +34,7 @@ or:
 
 This is important to know when running OPM because of the differences in what OPM does based on whether it is running on a server or client or image.  It also makes finding the hostname of the node/image much more reliable than trying to use the `hostname` command.
 
-## Rules
+### Rules
 
 This is what OPM does each time it runs:
 
@@ -49,7 +48,7 @@ This is what OPM does each time it runs:
 Some other tool is responsible for calling OPM.
 Some other tool is responsible for giving the work to OPM (possibly the same tool that calls it).
 
-## Stages
+### Stages
 
 This section describes what OPM will do at each stage.  If the package is currently at `setup_phase` and the database has a request for the `post-bpkg-install_phase`, OPM will perform everything in `pre-configure`, `post-configure`, and `post-bpkg-install` phases.  This is not true if the initial OSCAR installation has not progressed to the correct point.  The notes in the square brackets denote what stage the OSCAR install needs to be at for the OPM step to be run.
 

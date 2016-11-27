@@ -8,8 +8,9 @@ category: wiki
 <!-- Name: SvnTrac -->
 <!-- Version: 3 -->
 <!-- Author: dikim -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > SVN
 
-# Trac integration with SVN
+## Trac integration with SVN
 
 Trac is tightly integrated with Subversion and as such, provides some really nice functionalities, one of which is giving Trac specific commands via SVN log messages.
 

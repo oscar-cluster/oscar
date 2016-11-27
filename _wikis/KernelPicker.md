@@ -8,21 +8,22 @@ category: wiki
 <!-- Name: KernelPicker -->
 <!-- Version: 11 -->
 <!-- Author: bli -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure
 
-# Kernel Picker
+## Kernel Picker
 
 *KernelPicker* is responsible for installing and setting a kernel on the node
 images. 
 
 * *Note*: this page is an architecture draft of *KernelPicker*. It has not been yet implemented.
 
-## Functionnal outline
+### Functionnal outline
 
 === Current === 
 
 The current *KernelPicker* consists of one command which does all work at one time (see [attachment:kp_funct_old.svg]).
 
-### New
+#### New
 
 See [attachment:kp_funct.svg]
 
@@ -37,21 +38,21 @@ On the figure, a _boot config_ is an association between:
 
 4. a node set.
 
-## Relational outline
+### Relational outline
 
 See [attachment:oscar_oda.svg]
 
 New tables (needed for *KernelPicker*) are emphasized.
 
-## Components Architecture
+### Components Architecture
 
-### Current
+#### Current
 
 Current *KernelPicker* does not use any OSCAR component nor helper programs. All the work of selecting a kernel, listing the SystemImager images, copying the kernel to the image, etc., is done through basic shell commands, such as `ls`, `cp`, `mv`, etc.
 
 See [attachment:kp_archi_old.svg]
 
-### New
+#### New
 
 The new architecture follows the OCA rules, _i.e._:
 
@@ -67,7 +68,7 @@ The new architecture follows the OCA rules, _i.e._:
 
 See [attachment:kp_archi.svg]
 
-## Class Diagram
+### Class Diagram
 
 See [attachment:kp_obj.svg]
 

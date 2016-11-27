@@ -8,8 +8,9 @@ category: wiki
 <!-- Name: Building_OSCAR_Packages -->
 <!-- Version: 5 -->
 <!-- Author: valleegr -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > Build OSCAR Packages
 
-# How to generate the binary packages necessary for OSCAR
+## How to generate the binary packages necessary for OSCAR
 
 To generate all the binary package related to OSCAR, a tool has been developed to automate the process: _oscar-packager_. This tool also allows one to generate all the packages for almost any OSCAR-6.x release. Note that local repository are automatically created.
 
@@ -22,13 +23,13 @@ For more details about know how to use the tool, simple refer to the man page: *
 
 You will also need some pre-required packages.
 
-## Required packages for RPM based systems
+### Required packages for RPM based systems
 
 On RPM based systems, you will have to execute the following command as root to ensure that all packages needed by oscar-packager are installed:
 
 *yum install packman createrepo yume oscar-base*
 
-## Required packages for Debian based systems
+### Required packages for Debian based systems
 
 On Debian based systems, you will have to execute the following command as root to ensure that all packages needed by oscar-packager are installed:
 

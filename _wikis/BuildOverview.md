@@ -8,10 +8,12 @@ category: wiki
 <!-- Name: BuildOverview -->
 <!-- Version: 1 -->
 <!-- Author: efocht -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > Build System
 
-# Build System Overview
+## Build System Overview
 
 The OSCAR build system has to take care of only a few very simple tasks:
+
  * build the documentation (invoke pdflatex on a few files)
  * build the few perl-Qt applications inside the src subdirectory by invoking puic
  * build the distribution tarballs
@@ -22,11 +24,12 @@ and modification of the various Makefile.am files was useless work which had no 
 
 The new build system is around 20 times faster than the old one, it builds the distribution tarballs in less than one minute on reasonably fast machines, is simpler to maintain and easier to adapt than the old one. It
 is controlled by three components:
+
  * a central *Makefile* in the top directory
  * a set of Makefiles in the _src_ and _doc_ subdirectories which take care of building the documentation and the perl-Qt apps
  * *dist/newmake.sh*: a script which controlls the distro tarballs building.
 
-## Make Targets
+### Make Targets
 
 The central Makefile has following targets:
  make dist::

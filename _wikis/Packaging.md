@@ -8,8 +8,7 @@ category: wiki
 <!-- Name: Packaging -->
 <!-- Version: 4 -->
 <!-- Author: bli -->
-
-[[TOC]]
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > OSCAR Packages
 
 As a deployment tool, *OSCAR* heavily uses packaging systems. Currently, distributions supported by *OSCAR* are based on _RPM_ or _.deb_. Furthermore, software specifically packaged for *OSCAR* uses the _opkg_ packaging system.
 

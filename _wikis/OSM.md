@@ -8,14 +8,13 @@ category: wiki
 <!-- Name: OSM -->
 <!-- Version: 2 -->
 <!-- Author: wesbland -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure 
 
-[Development Documentation](DevelDocs) > OSCAR Set Manager
-
-# OSCAR Set Manager (OSM)
+## OSCAR Set Manager (OSM)
 
 The OSCAR Set Manager combines the functionality of the Package Set Manager (PSM) and the Machine Set Manager (MSM) into one tool that has the ability to describe a cluster installation at a very high level.  Using the OSCAR Set Manager, packages and package sets are placed onto machine sets by making a statement such as `Put package set mpi on machine set A`.  Then by combining many of these statements, a complex cluster installation can be completed relatively easity.
 
-## Library API
+### Library API
 
   * _add_set ($pkgset_filename, [$machineset])_: Adds a set of packages specified in the passed in filename to the machines in the specified set.  If there is no machine set specified, the packages will be added onto all machines.
 
@@ -23,11 +22,11 @@ The OSCAR Set Manager combines the functionality of the Package Set Manager (PSM
 
   * _result ()_: Returns the result of the additions in a single hash which can be passed into a tool to actually install the packages.
 
-## Extended Example
+### Extended Example
 
 This is an example of using the PSM, MSM, and OSM together to setup a complex OSCAR cluster with relatively little work.
 
-### Machine Set Definitions
+#### Machine Set Definitions
 
 First the machine sets need to be defined in an XML file.  For this example we will use 2 servers and 10 client nodes.  This is a simplified version of the definition.  For more details about the specific implementation of the machine sets XML file, see the [Machine Set Manager](MSM) wiki page.
 
@@ -79,11 +78,11 @@ First the machine sets need to be defined in an XML file.  For this example we w
       oscarnode8
       oscarnode10
 
-### OPKG Set Definitions
+#### OPKG Set Definitions
 
 Next the OPKG Sets need to be defined in an XML file.  For examples of this, see the trunk [source:trunk/src/OscarSets/pkgsetexample-fedora-6-i386.xml example] and the [Package Set Manager](SetManager) wiki page.
 
-### OSM Functions
+#### OSM Functions
 
 Finally, you use the OSCAR Set Manager to combine the other tools and create an installation.  Again, this is a simplified version.  See the API above for a more detailed description of how to use OSM.
 
@@ -110,7 +109,7 @@ It will also combine the sets into one larger set and resolve any conflicts at t
 
 The result of all of this will be a hash that is ready to be passed into the installation tool.
 
-### Resulting Hash
+#### Resulting Hash
 
 When the result function is called, it constructs a hash representation of each node.  The hash is constructed like this:
 

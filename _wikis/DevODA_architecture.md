@@ -8,8 +8,7 @@ category: wiki
 <!-- Name: DevODA_architecture -->
 <!-- Version: 17 -->
 <!-- Author: valleegr -->
-
-[DevelDocs] > [ODA](DevODA) > Architecture
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > [ODA](DevODA)
 
 !!! WARNING: THIS DOCUMENT DOES NOT REFLECT THE LATEST MODIFICATION OF THE DATABASE SCHEMA !!!
 

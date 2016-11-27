@@ -8,12 +8,13 @@ category: wiki
 <!-- Name: repoTesting -->
 <!-- Version: 25 -->
 <!-- Author: valleegr -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > Testing
 
-# Testing the OSCAR version available via our repositories
+## Testing the OSCAR version available via our repositories
 
-## Testing the latest release
+### Testing the latest release
 
-### On RPM Based Systems
+#### On RPM Based Systems
 
  1. As root, add the following file into your _/etc/yum.repos.d_ directory: 
   * On x86_64 systems: [attachment:CentOS-x86_64-OSCAR.repo]
@@ -26,7 +27,7 @@ category: wiki
  1. Execute as root *system-sanity* and make sure you address all the reported issues 
  1. Execute as root *oscar_wizard install*
 
-### On Debian Based Systems
+#### On Debian Based Systems
 
  1. As root, add the following line into your _/etc/apt/sources.list_: 
   * On x86_64 systems: *deb http://bison.csm.ornl.gov/repos/debian-4-x86_64/ etch /*
@@ -42,7 +43,7 @@ category: wiki
 
 == Testing the development version == 
 
-### On RPM Based Systems (CentOS-5.x, RHEL-5.x, openSuse 10.x, and SuSe Entreprise 10.x)
+#### On RPM Based Systems (CentOS-5.x, RHEL-5.x, openSuse 10.x, and SuSe Entreprise 10.x)
 
 Preliminary note for SuSe based systems: please execute *yast --install yum*
 
@@ -63,7 +64,7 @@ Preliminary note for SuSe based systems: please execute *yast --install yum*
  1. Execute as root *system-sanity* and make sure you address all the reported issues 
  1. Execute as root *oscar_wizard install*
 
-### On Debian Based Systems
+#### On Debian Based Systems
 
  1. As root, add the following line into your _/etc/apt/sources.list_: 
   * On Debian 4 x86_64 systems: *deb http://bison.csm.ornl.gov/repos/unstable/debian-4-x86_64/ etch /*

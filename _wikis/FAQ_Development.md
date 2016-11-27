@@ -9,11 +9,10 @@ category: wiki
 <!-- Version: 3 -->
 <!-- Author: valleegr -->
 
-[[TOC]]
 
-[Back to the FAQ main page](faq)
+[Documentations](Document) > [FAQ](faq)
 
-# FAQ for Developers
+## FAQ for Developers
 
 ### Are there any debug options for the OSCAR Wizard?
 

@@ -8,6 +8,7 @@ category: wiki
 <!-- Name: opkg_opkgc -->
 <!-- Version: 6 -->
 <!-- Author: bli -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > Ongoing Work
 
 ### OSCAR Package Compiler (OPKGC)
 
@@ -17,10 +18,12 @@ in order to ease their management and diffusion.
 The idea of an OSCAR Package (OPKG) compiler has been defined and presented by Erich Focht during the OSCAR meeting in January 2007.
 
 OPKGC is written in Python and use:
+
  * templating system Cheetah
  * ElementTree implementation for XML parsing and validation
 
 Main features are:
+
  * validate opkg
  * generates RPM or .deb meta-files
  * generates RPM or .deb packages from meta-files
@@ -33,11 +36,13 @@ Main features are:
  * contains a tool (opkg-convert) to migrate from old OSCAR package system to new description.
 
 Latest release can be found here:
+
  * http://oscar.gforge.inria.fr/downloads/
 
 ### OPKGC Documentation
 
 Full documentation is included with OPKGC distribution:
+
  * [../browser/pkgsrc/opkgc/trunk/doc/opkgc.1.html?format=raw opkgc] manpage
  * [../browser/pkgsrc/opkgc/trunk/doc/opkg.5.html?format=raw opkg] manpage: describe opkg format
  * full example of OSCAR package

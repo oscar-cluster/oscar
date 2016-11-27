@@ -8,8 +8,9 @@ category: wiki
 <!-- Name: DevOSdetect -->
 <!-- Version: 7 -->
 <!-- Author: valleegr -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > [OCA](DevOCA)
 
-# OS_Detect framework for detecting distributions
+## OS_Detect framework for detecting distributions
 
 The OCA::OS_Detect eases the detection of the architecture and distribution. The initial implementation and first instance of the OCA framework aimed only at the detection of distro and architecture of the master node. The scope was extended for heterogeneous setups by [EF](ErichFocht), who added several methods for querying various targets. OS_Detect is now able to detect the distribution and architecture:
  * on the local node
@@ -37,17 +38,17 @@ The result of the call is a hash reference $os containing all available informat
 
 ----
 
-## Linux Distributions Specific Variable
+### Linux Distributions Specific Variable
 
-### Debian specific variables
+#### Debian specific variables
 
 |*_variable*_|*_description*_|*_example*_|
-|`$id->{codename}`|distribution codename, this data is mandatory for the management of many Debian related services|etch|
-
+|`$i d->{codename}`|distribution codename, this data is mandatory for the management of many Debian related services|etch|
+ 
 ----
 
 
-### Other targets for distro detection
+#### Other targets for distro detection
 
 Detecting distro/arch in the chroot directory (image) $path:
 

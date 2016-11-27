@@ -9,7 +9,9 @@ category: wiki
 <!-- Version: 7 -->
 <!-- Author: valleegr -->
 
-# OSCAR Install Guide
+[Documentations](Document) > [User Documentations](Support)
+
+## OSCAR Install Guide
 
 1. [Introduction](InstallGuideIntroduction)
    1. [Overview](InstallGuideIntroduction#overview)

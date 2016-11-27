@@ -8,6 +8,7 @@ category: wiki
 <!-- Name: SVNinstructions -->
 <!-- Version: 1 -->
 <!-- Author: jparpail -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > SVN
 
 ## How to use OSCAR Subversion repository ?
 

@@ -9,9 +9,7 @@ category: wiki
 <!-- Version: 29 -->
 <!-- Author: olahaye74 -->
 
-[[TOC]]
-
-[back to Table of Contents](InstallGuideDoc)
+[Documentations](Document) > [User Documentations](Support) > [OSCAR Install Guide](InstallGuideDoc)
 
 ## Chapter 1: Introduction
 

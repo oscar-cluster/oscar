@@ -8,14 +8,13 @@ category: wiki
 <!-- Name: Selector -->
 <!-- Version: 7 -->
 <!-- Author: wesbland -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > [Command Line Interface](CLI)
 
-[Development Documentation](DevelDocs) > [Command Line Interface](CLI) > Selector
-
-# Selector
+## Selector
 
 This section will represent the current Step 1 in the GUI installer.
 
-## Interactive Version
+### Interactive Version
 
 The list of packages will be printed:[[br]]
 
@@ -43,6 +42,6 @@ To start the program in maintainance mode and maintain the current package state
 
 As the script runs, all user input is dumped to a file called selector.log.  This file can be used later to recreate the current install by using it as the input file for the non-interactive version.
 
-## Non-interactive Version
+### Non-interactive Version
 
 To enter the non-interactive version, at the command line, use the flag `--filename` or `-f` followed by the filename to be used.  This file will be read in just as input from the keyboard would.  All commands are the same as the interactive version and must be seperated by a newline.  A `quit` command is not necessary and will be automatically executed when the file is finished.

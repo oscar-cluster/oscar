@@ -8,8 +8,9 @@ category: wiki
 <!-- Name: DevOSsettings -->
 <!-- Version: 1 -->
 <!-- Author: prg3 -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > [OCA](DevOCA)
 
-# OS_Settings framework for normalizing os specific settings
+## OS_Settings framework for normalizing os specific settings
 
 The OCA::OS_Settings framework makes it easy and consistent to specify any OS/Distribution specific settings.  It uses configuration files to specify key/value pairs that can be extracted by using 
 the getitem("value") function.

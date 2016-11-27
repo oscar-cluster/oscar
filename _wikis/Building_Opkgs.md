@@ -8,6 +8,7 @@ category: wiki
 <!-- Name: Building_Opkgs -->
 <!-- Version: 10 -->
 <!-- Author: valleegr -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > Build OSCAR Packages
 
 ## Build OSCAR meta packages
 

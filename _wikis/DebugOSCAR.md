@@ -8,6 +8,7 @@ category: wiki
 <!-- Name: DebugOSCAR -->
 <!-- Version: 1 -->
 <!-- Author: bli -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > Preparations
 
 There are currently two environment variables that could be set prior to bringing up the OSCAR Wizard (i.e. initiating `install_cluster`):
 

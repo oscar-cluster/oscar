@@ -9,20 +9,20 @@ category: wiki
 <!-- Version: 3 -->
 <!-- Author: valleegr -->
 
-[Developer Documentation](DevelDocs) > Opkg
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > OSCAR Packages
 
-# How OPKGs are handled by OSCAR?
+## How OPKGs are handled by OSCAR?
 
-## Introduction
+### Introduction
 
 OSCAR users do not really have to care about how OSCAR internally deals with OSCAR packages but it is beneficial for developers to understand how OPKGs are handled by OSCAR. This document tries to give an high-level description and few pointers to clarify that.
 
-## OPKG Description
+### OPKG Description
 
 Each OPKG is described by an XML file, the _config.xml_ file. This file describes the structure of a given OSCAR package. The description of the _config.xml_ file is out-of-scope of this document; specific documentation is available for that.
 However, this file is used by OSCAR to populate the database, which is then used by other OSCAR components (i.e. every time we need to get information about a specific OPKG).
 
-## OPKG Handling
+### OPKG Handling
 
 Remember that all OPKG related data should be stored into the database. 
 
@@ -38,7 +38,7 @@ It also means that for a component like OPD, which allows one to add OPKGs from 
 
 A function is also available to delete an OPKG from the database (function _delete_package_ from _lib/OSCAR/Database.pm_).
 
-## OSCAR::Opkg
+### OSCAR::Opkg
 
 Currently there is only one function `opkg_print` which prepends `[package_name] ` to text which is printed by the function.  For instance:
 

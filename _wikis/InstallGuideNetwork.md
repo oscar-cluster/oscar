@@ -9,14 +9,12 @@ category: wiki
 <!-- Version: 2 -->
 <!-- Author: valleegr -->
 
-[[TOC]]
+[Documentations](Document) > [User Documentations](Support) > [OSCAR Install Guide](InstallGuideDoc)
 
-[back to Table of Content](InstallGuideDoc)
+## Chapter 4: Network Setup
 
-# Chapter 4: Network Setup
-
-## <a name='nic'></a>4.1 Configure the ethernet adapter for the cluster
-
+### <a name='nic'></a>4.1 Configure the ethernet adapter for the cluster
+ 
 Assuming you want your server to be connected to both a public network and the private cluster subnet, you will need to have two ethernet adapters installed in the server. This is the preferred OSCAR configuration because exposing your cluster may be a security risk and certain software used in OSCAR (such as DHCP) may conflict with your external network.
 
 Once both adapters have been physically installed in the server node, you need to configure them.2 Any network configurator is sufficient; popular applications include neat, netcfg, or a text editor.
@@ -59,6 +57,6 @@ Private adapter::
   Now reboot the server node to ensure that all the changes are propagated to the appropriate configuration files. To confirm that all ethernet adapters are in the "up" state, once the machine has rebooted, open another terminal window and enter the following command:
   ```
 # ifconfig -a
-  ```
+   ```
 
   You should see UP as the first word on the third line of output for each adapter. If not, there is a problem that you need to resolve before continuing. Typically, the problem is that the wrong module is specified for the given device. Try using the network configuration utility again to resolve the problem.

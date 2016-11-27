@@ -8,10 +8,11 @@ category: wiki
 <!-- Name: SystemSanity -->
 <!-- Version: 4 -->
 <!-- Author: bli -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure
 
-# System Sanity Check
+## System Sanity Check
 
-## Overview
+### Overview
 
 System Sanity Check aims at and only at checking the system before the OSCAR actual initialization and but sure that the current system is suitable for the use of OSCAR.
 Currently System Sanity checks if:
@@ -68,7 +69,7 @@ Possible return values are:
 
 For the development of any new modules, the code just has to be compliant with the previous example and put into the `$OSCAR_HOME/scripts/system-sanity.d` folder.
 
-## Sanity Check vs. Prereqs
+### Sanity Check vs. Prereqs
 
 EF said that it should be able to implement a system sanity mechanisms with the [prereqs](DevPrereqs) mechanism. Unfortunately when the System Sanity Check mechanism has been created at ORNL, the documentation on prereqs did not allow developers to be sure that prereqs meets the requirements and therefore whether or not it was possible to use it. And actually prereqs seems to be designed to perform actions (execute scripts, install/remove packages) and not to audit a system. For instance, it is not clear prereqs allows developers to develop easily new checking scripts returning FAILURE, SUCCESS or WARNING, guaranteeing that the mechanism will have the correct behavior (e.g. stop in case of failure).
 But if prereqs meet the requirements for the implementation of a system sanity check mechanism, the current mechanism will have to be ported to the prereqs mechanism.

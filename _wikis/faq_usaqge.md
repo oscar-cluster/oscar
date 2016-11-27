@@ -9,11 +9,9 @@ category: wiki
 <!-- Version: 2 -->
 <!-- Author: valleegr -->
 
-[[TOC]]
+[Documentations](Document) > [FAQ](faq)
 
-[Back to the FAQ Main Page](faq)
-
-# Usage
+## Usage
 
 ### How do I add another MPI implementation to my OSCAR cluster?
 

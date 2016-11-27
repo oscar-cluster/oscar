@@ -8,10 +8,11 @@ category: wiki
 <!-- Name: ConfigFile -->
 <!-- Version: 2 -->
 <!-- Author: valleegr -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure 
 
-# OSCAR Configuration Files
+## OSCAR Configuration Files
 
-## Overview
+### Overview
 
 OSCAR aims to be "installed" in two different ways: (i) directly on the system (not using OSCAR_HOME), and (ii) continuing to use a single directory to host the OSCAR code (OSCAR_HOME), which directory is identified with the OSCAR_HOME environment variable (usefull when checking SVN code out and testing).
 
@@ -22,6 +23,6 @@ http://svn.oscar.openclustergroup.org/trac/oscar/browser/trunk/share/etc/templat
 It is possible to automatically generate a configuration, based on this template, using the _oscar-config_ script: _oscar-config --generate-config-file_.
 For those how are still using OSCAR with the OSCAR_HOME environment variable, the configuration file will be created a way everything should transparently work. If you install OSCAR directly in the system, you may need to update the _/etc/oscar/oscar.conf_ file.
 
-## Installation
+### Installation
 
 To install the configuration files  from SVN sources directly into the system, simply execute the _make install_ command in the _$(OSCAR_HOME)/share_ directory.

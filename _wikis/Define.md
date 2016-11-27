@@ -8,16 +8,15 @@ category: wiki
 <!-- Name: Define -->
 <!-- Version: 2 -->
 <!-- Author: wesbland -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > [Command Line Interface](CLI)
 
-[Development Documentation](DevelDocs) > [Command Line Interface](CLI) > Define OSCAR Clients
-
-# Define OSCAR Clients
+## Define OSCAR Clients
 
 This step is required.
 
 This step will create the OSCAR clients based on the input provided from the user.
 
-## Interactive Version
+### Interactive Version
 
 The interactive version of this file will provide a menu which will look like this:
 
@@ -40,7 +39,7 @@ The values will be dynamically filled in based on the defaults for the OSCAR ins
 
 As the user inputs the selections, they will be dumped to a log file called define.log that can be later used as input for the non-interactive mode to recreate the current install.
 
-## Non-Interactive Version
+### Non-Interactive Version
 
 To access the non-interactive version, use the flag `--filename` or `-f` folowed by the filename to be used.  This file should simply have the input that would be typed in on the command line if the program were run in interactive mode.  Each selection number and piece of data should be seperated by a newline.  
 

@@ -8,10 +8,9 @@ category: wiki
 <!-- Name: InstallServer -->
 <!-- Version: 2 -->
 <!-- Author: wesbland -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > [Command Line Interface](CLI)
 
-[Development Documentation](DevelDocs) > [Command Line Interface](CLI) > Install Server RPMs
-
-# Install Server RPMs
+## Install Server RPMs
 
 This step is required.
 

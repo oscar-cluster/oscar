@@ -8,8 +8,9 @@ category: wiki
 <!-- Name: PackageInUn -->
 <!-- Version: 4 -->
 <!-- Author: naughtont -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > OSCAR Packages
 
-# PackageInUn
+## PackageInUn
 
 PackageInUn aims to provide an high-level interface for OSCAR package
 installation/uninstallation. The current design is based on current features

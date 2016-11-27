@@ -9,10 +9,11 @@ folder: wiki
 <!-- Name: InstallGuide/Appendices/NetworkBooting -->
 <!-- Version: 2 -->
 <!-- Author: olahaye74 -->
-[back to Table of Contents](../AppendicesDoc)
+[Documentations](../../Document) > [User Documentations](../../Support) > [OSCAR Install Guide](../../InstallGuideDoc) > [Appendices](../AppendicesDoc)
 
-# Appendix A: Network Booting Client Nodes
-
+ 
+## Appendix A: Network Booting Client Nodes
+ 
 There are two methods available for network booting your client nodes. The first is to use the Preboot eXecution Environment (PXE) network boot option in the client’s BIOS, if available. If the option is not available, you will need to create a network boot CD disk using the SystemImager boot package or use an Etherboot disk. Each method is described below.
 
  1. Network booting using PXE. To use this method, the BIOS and network adapter on each of the client nodes will need to support PXE version 2.0 or later. The PXE specification is available at [http://developer.intel.com/ial/wfm/tools/pxepdk20/]. Earlier versions may work, but experience has shown that versions earlier than 2.0 are unreliable. As BIOS designs vary, there is not a standard procedure for network booting client nodes using PXE. More often than not, the option is presented in one of two ways.

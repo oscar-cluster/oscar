@@ -9,9 +9,9 @@ category: wiki
 <!-- Version: 100 -->
 <!-- Author: valleegr -->
 
-[[TOC(CodingStyle, CodeFreeze, ReleaseProcess, SvnMerges, AutoInstallHead, IndianaServers, DebugOSCAR, DevODA, DevOCA, GenericSetup, DevPrereqs, SystemSanity, DevPackman, KernelPicker, SystemInstaller, Opkg, CLI, PackageMaintainers, Packaging, DistroSupport, BuildOverview, Distribution, depth=1)]]
+[Back the Documentations Main Page](Document)
 
-# Developer Documentation
+## Developer Documentation
 
 ### Table of Contents
 

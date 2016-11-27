@@ -9,9 +9,9 @@ category: wiki
 <!-- Version: 6 -->
 <!-- Author: valleegr -->
 
-[Developer Documentation](DevelDocs) > Code Freeze and Release
+[Documentations](Document) > [Developer Documentations](DevelDocs) > Release Management
 
-# Code Freeze for the Preparation of a New Release
+## Code Freeze for the Preparation of a New Release
 
 When code in the development trunk has enough new features for a new release, an appropriate branch will be created by the Release Manager and the branch will be in code freeze.  Trunk will still be open for check-ins however all developers are strongly encouraged to help in stabilizing the code in branch such that we can put out a release sooner.
 

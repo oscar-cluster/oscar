@@ -8,10 +8,11 @@ category: wiki
 <!-- Name: opkgAPI -->
 <!-- Version: 16 -->
 <!-- Author: valleegr -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > OSCAR Packages
 
-# opkg API
+## opkg API
 
-## Quick _opkg_ overview
+### Quick _opkg_ overview
 
 To describe a software with _opkg_, make a directory based on the package's name, e.g., `mypackage/`.
 In it, create the following files/dir:
@@ -22,7 +23,7 @@ In it, create the following files/dir:
  * (_Optional_) Creates documentation in `doc/` dir.
  * Run `opkgc --dist=<your dist>` in this directory.
 
-## config.xml
+### config.xml
 
 `config.xml` is the only required file for an OSCAR package. The [browser:pkgsrc/opkgc/trunk/doc/opkg.xsd config.xml schema] is used to check this file at compilation time.
 
@@ -55,7 +56,7 @@ In it, create the following files/dir:
    * _&lt;_
    * _&lt;=_
 
-## API scripts
+### API scripts
 
 OPKG API scripts are supposed to configure the binary packages gathered in one OPKG in such a way that after the cluster installation they are set up correctly and ready to use. They should make use of the configuration options built into OSCAR (the configurator panel) and set up a sane configuration for the cluster even if the configurator was not used by the administrator.
 
@@ -102,23 +103,23 @@ esac
 
  * Other scripts are executed by OSCAR system.
 
-### *-pre-install
+#### *-pre-install
 
 These scripts are executed by RPM or dpkg before the package installation.
 
-### *-post-install
+#### *-post-install
 
 These scripts are executed by RPM or dpkg after the package installation.
 
-### *-pre-uninstall
+#### *-pre-uninstall
 
 These scripts are executed by RPM or dpkg before removing the package.
 
-### *-post-uninstall
+#### *-post-uninstall
 
 These scripts are executed by RPM or dpkg after removing the package.
 
-### api-pre-configure
+#### api-pre-configure
 
 This script is run before launching the configurator interface. It is used to prepare data for the configurator.
 
@@ -126,7 +127,7 @@ This script is run before launching the configurator interface. It is used to pr
    * `OSCAR_PACKAGE_HOME`: script dirname
  * Place: `/var/lib/oscar/packages/<package>/api-pre-configure`
 
-### api-post-configure
+#### api-post-configure
 
 This script is run after configurator return. 
 
@@ -136,7 +137,7 @@ This script is run after configurator return.
    * `OSCAR_PACKAGE_HOME`: script dirname
  * Place: `/var/lib/oscar/packages/<package>/api-post-configure`
 
-### api-post-image
+#### api-post-image
 
 This script is run on master node once image creation is finished.
 
@@ -145,26 +146,26 @@ This script is run on master node once image creation is finished.
  * Args:
    1. `IMAGEDIR`: path to chroot'able image
 
-### api-post-clientdef
+#### api-post-clientdef
 
 This script is run when clients are associated to an image.
 
  * Env:
    * `OSCAR_HOME`: path to _OSCAR_ base dir
 
-### api-post-deploy
+#### api-post-deploy
 
 This script is run from the master node, once client nodes have been installed and restarted.
 
-## Other scripts
+### Other scripts
 
 All other files in `scripts/` dir are packaged in the _opkg-<name>_ package at: `/var/lib/oscar/packages/<name>`.
 
-## Documentation
+### Documentation
 
 The `doc/` dir contains documentation of the OSCAR package. It is installed with _opkg-<name>_ package at: `/usr/share/doc/opkg-<name>/`.
 
-## Testing
+### Testing
 
 The testing framework runs `test_user` and `test_root` for each package where they exists. These scripts must be executable, anyway the language.
  * `test_user` is run as user `oscartst`
@@ -172,13 +173,13 @@ The testing framework runs `test_user` and `test_root` for each package where th
 
 All files in the `testing/` dir are installed with _opkg-<name>_ package at: `/var/lib/oscar/testing/<name>`.
 
-## Example
+### Example
 
 A full example of `opkg` is provided with the opkg compiler. If you installed `opkgc`, it is located into `/usr/share/doc/opkgc/samples`.
 
 It is available online [browser:pkgsrc/opkgc/trunk/doc/samples here].
 
-## Complete documentation
+### Complete documentation
 
 Complete documentation of the `opkg` format is available as a man page (`man opkg`) if you installed `opkgc`.
 

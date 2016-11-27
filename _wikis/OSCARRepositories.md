@@ -8,10 +8,11 @@ category: wiki
 <!-- Name: OSCARRepositories -->
 <!-- Version: 9 -->
 <!-- Author: valleegr -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR Distribution Support
 
-# OSCAR Repositories Management
+## OSCAR Repositories Management
 
-## Introduction
+### Introduction
 
 Now that OSCAR packages are implemented via binary packages, the management of
 binary package repositories becomes critical. The usage of repositories
@@ -42,22 +43,22 @@ This document aims at clarifying the different possibilities for the creation of
 binary packages repositories, and also the selected solution. NOTE THAT THIS IS
 STILL ONGOING WORK, THE IMPLEMENTATION MAY STILL BE INCOMPLETE.
 
-## Definitions
+### Definitions
 
-### OSCAR
+#### OSCAR
 
 OSCAR is a set of tools aimed at deploying and configuring sets of machines. It
 is composed of proper tools (OSCAR core) depending on 3rd party softwares.
 OSCAR core plus software on which it depends compose the infrastructure of
 OSCAR (OSCAR base).
 
-### OSCAR packages (opkg)
+#### OSCAR packages (opkg)
 
 OSCAR infrastructure can deploy regular RPM/deb packages but some softwares
 need to use specific services provided by OSCAR infrastructure: they are Opkg OSCAR
 packages ([Opkg]).
 
-### OSCAR Version
+#### OSCAR Version
 
 Until here OSCAR is distributed as a whole set of software, mixing OSCAR base
 and opkg. An OSCAR version refer to this frozen state of software, each with
@@ -84,7 +85,7 @@ The goal is to minimize links between OSCAR related software, and, given that,
 minimize work to maintain OSCAR on a big set of distributions, as OSCAR project
 has done until here.
 
-## Standard Debian Based Repositories
+### Standard Debian Based Repositories
 
 The Debian world typically assumes a repository is for a given version of the
 Debian distribution (e.g., Debian 4.0, Ubuntu 7.10). Therefore, for OSCAR, it
@@ -105,12 +106,12 @@ All needed tools exist:
   * package upload queue managing
   * repository mirroring
 
-### Advantages
+#### Advantages
 
 Minimize the work to maintain the repositories (only one repository per Linux
 distribution.
 
-### Limitations
+#### Limitations
 
 By default, only the latest version of OSCAR is available by default for a
 given Linux distribution. If we decide to support multiple OSCAR release, the
@@ -123,7 +124,7 @@ developers have to pay attention to the update procedure associated to binary
 packages. For instance, if the database schema changes, developers have to
 provide a script that will updated automatically the database.
 
-## Standard RPM Based Repositories
+### Standard RPM Based Repositories
 
 Repositories for RPM are usually identified by a full "path". For instance,
 http://mirror.centos.org/centos/5.0/os/x86_64/ is a repository for CentOS5
@@ -138,25 +139,25 @@ Two options are therefore possible:
   * the OSCAR version appears in the path; in that case, OSCAR is more or less considered as a distribution,
   * the OSCAR does not appear in the path; OSCAR is not considered as a distribution. It implies a little bit more work from developers (more difficult to make the distinction between two OSCAR releases.
 
-### Advantages
+#### Advantages
 
 We can create a new repository for each OSCAR release, which simplifies the maintenance for a given OSCAR version.
 
 No real need for update management (since repositories are separated, we can assume users will reinstall their system if they want to update OSCAR).
 
-### Limitations
+#### Limitations
 
 Multiplication of repositories which implies an increase of the complexity for their management.
 
 Need to setup a repository for each new OSCAR release / Linux distribution / architecture.
 
-## Selected Solution
+### Selected Solution
 
-### Overview
+#### Overview
 
 After discussion between developers, it seems that the solution that implies less effort is the creation of a repository per distribution and architecture (similar to the current architecture of the local OSCAR repositories). Another benefit of this approach is to enable the usage of OSCAR tools such as Packman, RAPT, and YUME.
 
-### WebORM
+#### WebORM
 
 WebORM allows the creation and the management of OSCAR repositories via a simple web-based user interface.
 WebORM is available in '[pkgsrc/opkg/weborm](http://svn.oscar.openclustergroup.org/trac/oscar/browser/pkgsrc/opkg/weborm)'
@@ -164,14 +165,14 @@ WebORM is available in '[pkgsrc/opkg/weborm](http://svn.oscar.openclustergroup.o
 WebORM has been deployed at IU for experimentation (you need to have a OSCAR account):
 https://svn.oscar.openclustergroup.org/php/weborm/
 
-### TODO List (needs to be updated)
+#### TODO List (needs to be updated)
 
 In order to ease the management of OSCAR repositories, a set of tools are needed:
 
 * tools for users
   * repository mirroring.
 
-## Online OSCAR Repositories
+### Online OSCAR Repositories
 
 This is the list of currently available online OSCAR repositories:
     * http://bison.csm.ornl.gov/repos/ Note that this repository is hosted at Oak Ridge National Laboratory in order to finalize and test tools for the management of OSCAR repositories. The creation of new accounts is limited and the machine can be removed at any time without notification.

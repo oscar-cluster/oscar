@@ -8,12 +8,13 @@ category: wiki
 <!-- Name: PackagePath -->
 <!-- Version: 2 -->
 <!-- Author: efocht -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure
 
-# OSCAR::PackagePath
+## OSCAR::PackagePath
 
 This perl module contains functions and variables for managing package repository path related things.
 
-## SYNOPSIS
+### SYNOPSIS
 
     use OSCAR::PackagePath;
     
@@ -36,12 +37,12 @@ This perl module contains functions and variables for managing package repositor
     repos_del_urlfile($oscar_url_file, "http://blah/path");
     
 
-## Exported variables
+### Exported variables
 
  * *@PKG_SOURCE_LOCATIONS* : 
  * *$PGROUP_PATH* : 
 
-## Exported Function
+### Exported Function
 
  * *list_distro_pools* : build a hash containing all distros which are configured, i.e. all distros that have a .url file in /tftpboot/distro/. The hash primary key is the distro string. Subkeys are:
   * os: a reference to the distro's detected $os structure.

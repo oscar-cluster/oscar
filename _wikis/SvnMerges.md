@@ -3,21 +3,21 @@ layout: wiki
 title: SvnMerges
 meta: 
 permalink: "wiki/SvnMerges"
-category: wiki
+cat egory: wiki
 ---
 <!-- Name: SvnMerges -->
 <!-- Version: 3 -->
 <!-- Author: bli -->
 
-[Developer Documentation](DevelDocs) > SVN > Merges
+[Documentations](Document) > [Developer Documentations](DevelDocs) > SVN
 
-# SVN Merges
+## SVN Merges
 
 SVN merges is a good way to merge code changes between different directories within a repository and this is done routinely during/after branches are created. Please use merges instead of double checkins (to trunk and branch), this reduces the chance for additional errors and incoherencies.
 
 Jeff Squyres has written an excellent [email](http://www.mail-archive.com/oscar-devel@lists.sourceforge.net/msg04512.html) documenting how to do this within the OSCAR Project, it is definitely worth the read.
 
-## Assisted half-automatic merges
+### Assisted half-automatic merges
 
 Erich Focht has written a tool for merging changes between repositories one by one. The tool is available at [here](http://home.arcor.de/efocht/tools/svnmerge_1by1). Its advantage is that it merges a given range of svn checkins one by one, keeping the original checkin messages. This way the checkin logs (which usually contain a lot of information on why the change happened) are surviving even big merges of many revisions.
 

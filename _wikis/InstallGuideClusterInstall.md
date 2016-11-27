@@ -9,13 +9,11 @@ category: wiki
 <!-- Version: 22 -->
 <!-- Author: olahaye74 -->
 
-[[TOC]]
+[Documentations](Document) > [User Documentations](Support) > [OSCAR Install Guide](InstallGuideDoc)
 
-[back to Table of Contents](InstallGuideDoc)
+## Chapter 5: Detailed Cluster Installation Procedure
 
-# Chapter 5: Detailed Cluster Installation Procedure
-
-## <a name='wizard'></a>5.1 Launching the OSCAR Installer
+### <a name='wizard'></a>5.1 Launching the OSCAR Installer
 
 Change directory to the top-level OSCAR directory and start the OSCAR install wizard.  If you placed the source in the location suggested in the earlier example, the commands to start the installer would be:
 
@@ -63,12 +61,12 @@ In brief, the functions of the various buttons is as follows:
  * *Step 8: Test Cluster Setup* [optional]
    * OSCAR provides some tests for its packages and this step invokes all these testing harness to ensure that your cluster is setup properly and ready for production runs. 
 
-## <a name='downloadOpkg'></a>5.2 Manage OSCAR Repositories
+### <a name='downloadOpkg'></a>5.2 Manage OSCAR Repositories
 
 _Note:_ This step is disabled and it will be available in a future release.
 
 
-## <a name='selectOpkg'></a>5.3 Selecting Packages to Install
+### <a name='selectOpkg'></a>5.3 Selecting Packages to Install
 
 If you wish to change the list of packages that are installed, click on the ```<Select OSCAR Packages To Install>``` button. This step is optional – by default all packages directly included in OSCAR are selected and installed. However, if you downloaded any additional packages, e.g., via OPD/OPDer, they will not be selected for installation by default. Therefore you will need to click this button and select the appropriate OSCAR Packages to install on the cluster. When you click on the button, a window similar to the one shown in Figure 3 appears. Each of the packages that the OSCAR installer has found are listed in the main frame. Core packages must be installed and cannot be unselected. Included packages can be unselected if desired.
 
@@ -78,7 +76,7 @@ If you wish to change the list of packages that are installed, click on the ```<
 
 Note that this window only shows OSCAR packages -- it does not show individual RPMs. Once you have a selected a set of OSCAR packages to install, click on the <Exit> button to save your selections and return to the main OSCAR window. Note that closing the window yields the same result and there is no way of ‘defaulting’ to the original settings, so make sure your package list is complete before proceeding to the next step.
 
-## <a name='configOpkg'></a>5.4 Configuring OSCAR Packages
+### <a name='configOpkg'></a>5.4 Configuring OSCAR Packages
 
 _Note:_ This step is optional.
 
@@ -90,7 +88,7 @@ Some OSCAR packages allow themselves to be configured. Clicking on the<Configure
 
 This step is optional. If you do not click on the <Configure Selected OSCAR Packages> button, defaults for all packages will be used.
 
-### 5.4.1 Selecting a Default MPI Implementation
+#### 5.4.1 Selecting a Default MPI Implementation
 
 Although multiple MPI implementations can be installed, only one can be "active" for each user at a time. Specifically, each user’s path needs to be set to refer to a "default" MPI that will be used for all commands. The Environment Switcher package provides a convenient mechanism for switching between multiple MPI implementations. Section 6.13 contains more details about this package (page 40).
 
@@ -102,7 +100,7 @@ When you close the main Configuration window, the following benign warning may a
 
     Tag "mpi" does not seem to exist yet. Skipping.
 
-## <a name='serverPackages'></a>5.5 Install OSCAR Server Packages
+### <a name='serverPackages'></a>5.5 Install OSCAR Server Packages
 
 This is the first required step of the OSCAR installation.
 
@@ -110,7 +108,7 @@ Press the <Install OSCAR Server Packages> button. This will invoke the installat
 
 A popup will appear indicating the success or failure of this step. Click on the <Close> button to dismiss it.
 
-## <a name='buildImage'></a>5.6 Build OSCAR Client Image
+### <a name='buildImage'></a>5.6 Build OSCAR Client Image
 
 Before pressing the <Build OSCAR Client Image>, ensure that the following conditions on the server are true:
 
@@ -163,7 +161,7 @@ Build the Image::
       
 If the build fails, look through the console output for some indication as to what happened to cause the failure. Common causes include: prerequisite failure, ran out of disk space, and missing package files. Also see the Release Notes for this version of OSCAR in Chapter 3.
     
-## <a name='defineClients'></a>5.7 Define OSCAR Clients
+### <a name='defineClients'></a>5.7 Define OSCAR Clients
     
 Press the ```<Define OSCAR Clients>``` button. In the dialog box that is displayed, enter the appropriate information. Although the defaults will be sufficient for most cases, you will need to enter a value in the Number of Hosts field to specify how many clients you want to create.
     
@@ -192,7 +190,7 @@ Additionally, you can run this step multiple times to use more structured IP add
     
 After all clients have been created, you may press the <Close> button in the build clients dialogue and continue with the next step.
     
-## <a name='networking'></a>5.8 Setup Networking
+### <a name='networking'></a>5.8 Setup Networking
     
 The MAC address of a client is a twelve hex-digit hardware address embedded in the client’s ethernet adapter. For example, "00:0A:CC:01:02:03", as opposed to the familiar format of IP addresses. These MAC addresses uniquely identify client machines on a network before they are assigned IP addresses. DHCP uses the MAC address to assign IP addresses to the clients.
     
@@ -204,7 +202,7 @@ In order to collect the MAC addresses, press the <Setup Networking> button. The 
     
 To use this tool, you will need to know how to network boot your client nodes, or have a file that lists all the MACs from your cluster. For instructions on doing network booting, see Appendix A.
     
-### 5.8.1 Collect Client Node MAC Addresses
+#### 5.8.1 Collect Client Node MAC Addresses
     
 If you need to collect the MACs in your cluster, start the collection by pressing the <Collect MAC Address> button and then network boot the first client. As the clients boot up, their MAC addresses will show up in the left hand window. You have multiple options for assigning MACs to nodes. You can either:
     
@@ -220,7 +218,7 @@ Some notes that are relevant to collecting MAC addresses from the network:
     
 If you do not have <Dynamic DHCP update> selected, you need to click the <Configure DHCP Server> button to configure the DHCP server.
     
-### 5.8.2 Select Installation Mode
+#### 5.8.2 Select Installation Mode
     
 [http://www.systemimager.org SystemImager] is the tool that OSCAR uses for deploying images to cluster nodes.  It is part of a bigger suite of tools called the System Installation Suite (thus the package name in OSCAR is SIS).
     
@@ -230,7 +228,7 @@ By default, systemimager uses a program called rsync to push files to your clien
     
 In case you cannot get your nodes to image using one of these optional install modes and want to switch back to using rsync, simply go back to the <Setup Networking> menu, select <systemimager-rsync> from the pull down list, and click on <Enable Install Mode>.
     
-### 5.8.3 Setup Boot Environment
+#### 5.8.3 Setup Boot Environment
     
 This menu also allows you to choose your remote boot method.
     
@@ -239,7 +237,7 @@ You '''must''' do one of two things in order for your client nodes to be able to
    * The <Build Autoinstall CD> button will build an iso image for a bootable CD and gives a simple example for using the cdrecord utility to burn the CD. This option is useful for client nodes that do not support PXE booting. In a terminal, execute the command cdrecord -scanbus to list the drives cdrecord is aware of and their dev number. Use this trio of numbers in place of dev=1,0,0 when you execute the command cdrecord -v speed=2 dev=1,0,0 /tmp/oscar bootcd.iso.
    * The <Setup Network Boot> button will configure the server to answer PXE boot requests if your client hardware supports it. See Appendix A for more details.
     
-### 5.8.4 Use Your Own Kernel (UYOK)
+#### 5.8.4 Use Your Own Kernel (UYOK)
     
 SystemImager ships with its own kernel and ramdisk (initrd.img) used for starting up a minimal system for imaging your nodes.  Although the SystemImager developers try their best to keep this kernel up-to-date with new hardware modules support, this is not always possible.  Therefore, starting in version 3.6.x, a new functionality called UseYourOwnKernel (UYOK) was introduced.
     
@@ -247,7 +245,7 @@ Let's say that you have installed a Linux distribution that supports your hardwa
     
 If you had to install any custom kernel modules to get your hardware to work after installing the operating system, or if you have trouble getting your nodes to boot after trying the stock systemimager kernel, click "Enable UYOK" button in the "Setup Networking" step and then either select "Build AutoInstall CD..." or "Setup Network Boot".  Then SystemImager will configure itself to use the kernel running on the head node.
     
-#### Manual Setup for UYOK
+##### Manual Setup for UYOK
     
 If for some reason you wish to set up the UYOK functionality by hand, instead of using the wizard, please do the following.  This should not be neccesary if the hardware of your client nodes and head node are sufficiently similar.
     
@@ -266,13 +264,13 @@ The resulting kernel and ramdisk will be stored in `/etc/systemimager/boot`.  No
     ```
 Now SystemImager will use the UYOK boot package (which should recognize your hardware) to boot your nodes and successfully image them.
 
-## <a name='monitorDeployment'></a>5.9 Monitor Cluster Deployment
+### <a name='monitorDeployment'></a>5.9 Monitor Cluster Deployment
 
 _Note:_ This step is optional.
 
 During the client installation phase it is possible to click on the <Monitor Cluster Deployment> button to bring up the SystemImager monitor GUI. This window will display real-time status of nodes as they request images from the server machine and track their progress as they install.
 
-## <a name='clientInstall'></a>5.10 Client Installations
+### <a name='clientInstall'></a>5.10 Client Installations
 
 During this phase, you will boot your client nodes and they will automatically be installed and configured. For a detailed explanation of what happens during client installation, see Appendix B.
 
@@ -286,13 +284,13 @@ Once your client nodes complete installation, its next boot action will be autom
 
 This widget is available via the OSCAR Wizard in Manage mode, or via the command line as "netbootmgr".
 
-### 5.10.1 Network boot the client nodes
+#### 5.10.1 Network boot the client nodes
 
 See Appendix A for instructions on network booting clients.
 
 Network boot all of your clients. As each machine boots, it will automatically start downloading and installing the OSCAR image from the server node.
 
-### 5.10.2 Check completion status of nodes
+#### 5.10.2 Check completion status of nodes
 
 After several minutes, the clients should complete the installation. You can use the <Monitor Cluster Deployment> functionality to monitor the progress. Depending on the Post Installation Action you selected when building the image, the clients will either halt, reboot, or beep incessantly when the installation is completed.
 
@@ -300,13 +298,13 @@ If you chose "reboot" as the post-install action for your nodes, you will be not
 
 The time required for installation depends on the capabilities of your server, your clients, your network, and the number of simultaneous client installations. Generally, it should complete within several minutes.
 
-### 5.10.3 Reboot the client nodes
+#### 5.10.3 Reboot the client nodes
 
 After confirming that a client has completed its installation, you should reboot the node from its hard drive. If you chose to have your clients reboot after installation (the default), they will do this on their own. If the clients are not set to reboot, you must manually reboot them. The filesystems will have been unmounted so it is safe to simply reset or power cycle them.
 
 Note: If the network cards that come with your client nodes do not support PXE, or has etherboot generated ROMs, you may need to reset the boot order in the BIOS to boot from the local disk.
 
-## <a name='completeSetup'></a>5.11 Complete the Cluster Setup
+### <a name='completeSetup'></a>5.11 Complete the Cluster Setup
 
 Ensure that all client nodes have fully booted before proceeding with this step.
 
@@ -314,7 +312,7 @@ Press the <Complete Cluster Setup> button. This will run the final installation 
 
 A popup window will indicate the success or failure of this step. Press the <Close> button to dismiss it.
 
-## <a name='testSetup'></a>5.12 Test Cluster Setup
+### <a name='testSetup'></a>5.12 Test Cluster Setup
 
 A simplistic test suite is provided in OSCAR to ensure that the key cluster components (OpenSSH, TORQUE, MPI, PVM, etc.) are functioning properly.
 
@@ -328,7 +326,7 @@ A sample dialog is shown in Figure 8. If any of the test fail, then there may be
 
 If all the tests pass, then your OSCAR cluster is ready to use.  Congratulations!
 
-## <a name='startingOver'></a>5.13 Starting Over
+### <a name='startingOver'></a>5.13 Starting Over
 
 If you feel that you want to start the cluster installation process over from scratch in order to recover from irresolvable errors, you can do so with the start over capability via the *oscar-config* script (the _oscar-config --startover_' command).
 This command will not remove oscar-core packages. For that, you need to remove the oscar package (all deps will be removed as well).
@@ -349,11 +347,11 @@ Ensuring to have an untainted environment can be done in one of two ways:
 
 Note that the logout/login method is strongly encouraged, as it may be difficult to otherwise absolutely guarantee that a given shell/window has an untainted environment.
 
-## <a name='deletingClients'></a>5.14 Deleting Clients
+### <a name='deletingClients'></a>5.14 Deleting Clients
 
 If for some reason you need to delete a node from the cluster durring installation, perhaps due to mistakes while adding the client nodes or assigning a MAC address to the wrong node, you simply need to click on the "Delete OSCAR Clients" button on the OSCAR wizard main menu.  Then when the sub menu appears, select the problematic nodes from the list and click delete.  Multiple nodes can be deleted by selecting multiple names from the list.
 
-### Deleting node images
+#### Deleting node images
 
 It is also sometimes useful to be able to delete one or more of the node images which OSCAR uses to provision the client nodes or to change which image is sent to a node when it joins the cluster.
 
@@ -377,7 +375,7 @@ Note: If you want to use the _si_rmimage_ command, execute the following command
 
     # si_rmimage oscarimage -force
 
-## 5.14 Reimaging the Cluster
+### 5.14 Reimaging the Cluster
 
 Often in the process of setting up an OSCAR cluster for the first time, or on new hardware, it is neccesary to re-image the cluster.  Starting with OSCAR 5.x OSCAR uses the netboot manager to maintain a database of cluster states.  Initially all nodes are marked for "Installation" but after it has been imaged successfully the state is marked so that if it is network booted it will boot from the local hard drive.  This is a handy feature which allows system administrators to simply leave the cluster nodes set to network boot all the time, which saves a lot of time fiddling around with the BIOS.  However this means that if you network boot your cluster again and expect it to reimage itself as it had previously, you will be disappointed.
 

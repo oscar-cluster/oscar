@@ -9,18 +9,18 @@ category: wiki
 <!-- Version: 13 -->
 <!-- Author: valleegr -->
 
-[Developer Documentation](DevelDocs) > Autoinstalling the headnode
+[Documentations](Document) > [Developer Documentations](DevelDocs) > Preparations
 
-# !!!WARNING!!!
+## !!!WARNING!!!
 
 '''THIS PAGE IS NOT MAINTAINED ANYMORE, SOME LINKS ARE DEAD. WE ONLY KEEP THIS PAGE FOR HISTORICAL REASON.
 THIS PAGE IS DEPRECATED'''
 
-# Autoinstalling the headnode
+## Autoinstalling the headnode
 
 For development purposes, it is handy to be able to consistently rebuild your headnode for testing - some people like to take SystemImager images of the headnode, others like to use autoinstallation tools to re-install the headnode each time.  We list two common mechanisms for autoinstallation, kickstart for Red Hat/Fedora-based systems and AutoYaST for SUSE-based systems.
 
-## Using Kickstart
+### Using Kickstart
 
 If you are interested in using kickstart, then you can use this [attachment:ks.cfg] snippet as a base configuration for your kickstart script
 
@@ -37,7 +37,7 @@ It is also possible to send the kickstart progress to a VNC Listener, this link 
 
 http://fedora.redhat.com/docs/fedora-install-guide-en/fc5/sn-remoteaccess-installation.html#sn-remoteaccess-installation-vnclistener
 
-## Using AutoYaST
+### Using AutoYaST
 
 [AutoYaST ](http://www.suse.com/~ug/autoyast_doc/index.html) is developed specifically for SUSE Linux and is quite similar to Kickstart in the sense that it allows you to define a template to automatically install a node with SUSE Linux.  It is however more powerful (and complicated) and is not as fast as Kickstart.
 

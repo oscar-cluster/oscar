@@ -3,15 +3,14 @@ layout: wiki
 title: DevRMdetect
 meta: 
 permalink: "wiki/DevRMdetect"
-category: wiki
+c ategory: wiki
 ---
 <!-- Name: DevRMdetect -->
 <!-- Version: 5 -->
 <!-- Author: valleegr -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > [OCA](DevOCA)
 
-[Developer Documentation](DevelDocs) > RM_Detect
-
-# Resouce Manager Detection Framework (RM_Detect)
+## Resouce Manager Detection Framework (RM_Detect)
 
 The RM_Detect Framework's goal is to abstract out the detection and usage of resource managers in OSCAR clusters.  Previously, OSCAR was tied specifically to OpenPBS/TORQUE as its sole resource manager but with the introduction of OSCAR 5.0, Sun Grid Engine (SGE) support was added and thus the need to have a framework to support different resource managers becomes necessary.
 
@@ -43,8 +42,8 @@ The following is a code snippet from the SGE RM_Detect component:
  * `$jobscript` is the prefix of the rm-specific job script to be used to test parallel libraries.  By default, the system will search for a script called `rm_script.<pkg_name>` in the parallel library's package directory - this format is used if the script works for all known resource managers.  If it is not possible to write one script that works for all resource managers, then use the naming convention specified by the `$jobscript` variable.
  * `id->gui` is the name of the GUI for the specific resource manager - the idea is to plug this into the [OSCAR Wizard](OscarWizard) manage mode (not used currently)
 
-## How do we use the RM_Detect Framework?
-
+### How do we use the RM_Detect Framework?
+ 
 Currently it is not possible to use more than one resource manager at a time (which makes sense!). Therefore in order to know what is the current resource manager, you just need to use the following code:
 
 

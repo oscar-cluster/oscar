@@ -8,11 +8,11 @@ category: wiki
 <!-- Name: roadmap -->
 <!-- Version: 51 -->
 <!-- Author: valleegr -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > OSCAR Overview
 
+## Future & Ongoing Work
 
-# Future & Ongoing Work
-
-## OSCAR 6.0.6
+### OSCAR 6.0.6
 
   * Ticket #411
   * Ticket #417
@@ -24,19 +24,19 @@ category: wiki
   * Ticket #552
   * Ticket #573
 
-## Cluster partitioning
+### Cluster partitioning
 
 Currently OSCAR only support the Beowulf architecture, architecture that does not really fit with the architecture of modern clusters which are composed on file servers, compute nodes and different other service nodes. The goal of "partitioning effort" is to support such architectures, i.e., support node groups with different software configurations.
 
-## System-level virtualization support
+### System-level virtualization support
 
 System-level virtualization enables the creation of virtual machines on top of physical machines. This changes the way compute nodes are typically managed: a compute node is not anymore hardware with a single software configuration. Moreover, the usage of system-level virtualization requires the management of virtual machine but also of the "Host OS" which host virtual machine used for application execution.
 
 The official web page of the effort is there: http://www.csm.ornl.gov/srt/oscarv/
 
-# Historic
+## Historic
 
-## OSCAR 6.0.5
+### OSCAR 6.0.5
 
 *Current status: released on Jan-04, 2010*
 
@@ -64,7 +64,7 @@ The target for OSCAR 6.0.5 is to close the following tickets:
 As soon as those bugs will be fixed and when no critical bugs will be reported anymore, OSCAR-6.0.5 will be released.
 
 
-## OSCAR 6.0.4
+### OSCAR 6.0.4
 
 *Current status: released on Sept-25, 2009.*
 
@@ -82,7 +82,7 @@ For oscar-6.0.4, the following tickets have be closed:
   * Ticket #551
   * Ticket #553
 
-## OSCAR 6.0.3
+### OSCAR 6.0.3
 
 *Current status: released on May-27, 2009.*
 

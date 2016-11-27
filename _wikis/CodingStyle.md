@@ -9,13 +9,15 @@ category: wiki
 <!-- Version: 8 -->
 <!-- Author: valleegr -->
 
-# Coding Style (preliminary)
+[Documentations](Document) > [Developer Documentations](DevelDocs)
+
+## Coding Style (preliminary)
 
 The OSCAR infrastructure code is written almost entirely in Perl. It is spread over many files and modules and has been contributed by many developers with their own opinion on how nice Perl code should look like.
 
 In order to make the OSCAR infrastructure code easier to maintain the developers are urged to follow the coding style guidelines defined in this document. Developers are also encouraged to clean up old code and adapt it to the guidelines. 
 
-## Indentation
+### Indentation
 
 Use 4 characters deep indentations, i.e., 1st level is 4 characters indented, 2nd level is 8 characters, etc... This is the default indentation in emacs perl-mode. Don't use less indentation, it's too hard to read. If you use more (8 characters), we don't get reasonably complex code inside an 80 characters screen.
 
@@ -47,7 +49,7 @@ is much better than
 Get a decent editor and don't leave whitespace at the end of lines.
 
 
-## Placing braces
+### Placing braces
 
 (quoting from the kernel coding style document, again)
 
@@ -106,12 +108,12 @@ use strict;
     }
 ```
 
-## Naming, Variables and Subroutines
+### Naming, Variables and Subroutines
 
 Variable and function or subroutine naming is worth spending a few minutes. Give them meaningful names but don't try to describe useless things in names. Inside a loop you can well call a string "$line", there's probably no need to call it "$configurationLine". Also: inside a Perl module there's no need to give terribly long and fully explanatory names to subroutines which are not exported.
 
 Long names make it difficult to keep code short, thus to stay within the 80 characters. As opposed to Java, Perl names are traditionally lowercase, rather short and composed with "_". That means you should rather use "get_var()" instead of "getVariableFromDatabase()".
 
-## Code Replication
+### Code Replication
 
 Code replication is the worst maintenance nightmare. Never ever replicate code! If you think you can quickly hack a routine by copying another one and changing one line, forget it! Make a subroutine or a module and parametrize your need for change.

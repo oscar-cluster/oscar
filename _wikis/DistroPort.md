@@ -8,12 +8,13 @@ category: wiki
 <!-- Name: DistroPort -->
 <!-- Version: 13 -->
 <!-- Author: olahaye74 -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR Distribution Support
 
-# Port to a New Linux Distribution
+## Port to a New Linux Distribution
 
 *WARNING, this documentation will work only for OSCAR-6.x*
 
-## 1. 1st of All, you need to add support for this distro in OSCAR svn files
+### 1. 1st of All, you need to add support for this distro in OSCAR svn files
 
 - oscar/share/etc/supported_distros.txt
 - oscar/lib/OSCAR/OCA/OS_Detect/*
@@ -41,7 +42,7 @@ And optionally, if a new packaging system or/and a new package format is to be s
 - pkgsrc/oscar-packager/*
 - All pkgsrc that have a Makefile with a rule to build the package like make deb or make rpm.
 
-## 2. Then you need to bootstrap oscar-packager
+### 2. Then you need to bootstrap oscar-packager
 
 For this document, we will assume you want to port trunk. To port OSCAR to a new Linux distribution perform the following steps:
 

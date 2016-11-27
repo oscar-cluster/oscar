@@ -8,6 +8,9 @@ category: wiki
 <!-- Name: DevOPD2 -->
 <!-- Version: 12 -->
 <!-- Author: valleegr -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > OPD
+
+## OPD2 Architecture
 
 OPD (OSCAR Package Downloader) has been modified to support modifications 
 introduced by OPKGC. Since OSCAR packages are not shipped via binary packages,
@@ -52,14 +55,10 @@ Note that the new version of OPD can clearly populate the OSCAR database about
 available OSCAR packages. However, the OSCAR development team did not agree yet
 on this point and therefore the interface with ODA is not implemented.
 
-# Todo List
-
-  - clean up the code,
-
-  - improve code comments,
-
-  - use doxygen for the ORM code,
-
-  - change the name of perl scripts, OPD2 does not make much sense since we do not download packages any more, we only deal with repository.
-
-  - implement an interface with ODA?
+## Todo List
+ 
+ - clean up the code,
+ - improve code comments,
+ - use doxygen for the ORM code,
+ - change the name of perl scripts, OPD2 does not make much sense since we do not download packages any more, we only deal with repository.
+ - implement an interface with ODA?

@@ -8,15 +8,16 @@ category: wiki
 <!-- Name: OPKGSetTemp -->
 <!-- Version: 2 -->
 <!-- Author: naughtont -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > [OSCAR Set Manager](OSM) > [Package Set Manager](PSM)
 
-# Initial Implementation of Package Sets
+## Initial Implementation of Package Sets
 
 OSCAR provides a basic notion of _package sets_, however the capability has never been fully implemented.  This document presents the current status for an initial implementation of _package sets_, which will be enhanced/extended by the more complete implementation being pursued by Wesley Bland ([Package Set Manager](SetManager)).
 
 The current notion of a _Default Package Set_ has been implemented, which is used to exclude OPKGs on a given Linux distribution.
 
 
-## Package Set Architecture
+### Package Set Architecture
 
 All package sets are defined in _$(OSCAR_HOME)/share/package_sets/_. In that directory a file describes a given package set for a specific Linux distribution and hardware architecture. They are organized as follow: ''$(OSCAR_HOME)/share/package_sets/<package_set_name>/<distro_name>-<distro_version>-<arch>.xml
 
@@ -34,7 +35,7 @@ The schema of the XML file describing a package set is shown here:
         </packages>
     </package_set>
 
-## Default Package Set
+### Default Package Set
 
 OSCAR currently supports only one package set: the "Default" package set. This package set defines the set of OPKG(s) that are available, by default, in OSCAR for a specific Linux distribution.
 For instance, the default package set for Debian Etch x86_64 is (filename: [source:trunk/share/package_sets/Default/debian-4-x86_64.xml debian-4-x86_64.xml]) :

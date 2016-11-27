@@ -8,12 +8,9 @@ category: wiki
 <!-- Name: faq_install -->
 <!-- Version: 10 -->
 <!-- Author: olahaye74 -->
+[Documentations](Document) > [FAQ](faq)
 
-[[TOC]]
-
-[Back to the FAQ main page](faq)
-
-# FAQ Related to Cluster Installation
+## FAQ Related to Cluster Installation
 
 ### Compute nodes reboot after deployment and SELinux problems appear
 

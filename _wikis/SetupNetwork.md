@@ -8,16 +8,15 @@ category: wiki
 <!-- Name: SetupNetwork -->
 <!-- Version: 5 -->
 <!-- Author: wesbland -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > [Command Line Interface](CLI)
 
-[Development Documentation](DevelDocs) > [Command Line Interface](CLI) > Setup Network
-
-# Setup Networking
+## Setup Networking
 
 This step is required.
 
 This step will setup the networking between the OSCAR clients and the headnode.
 
-## Interactive Version
+### Interactive Version
 
 The interactive version will of this file will provide a menu which looks like this:
 
@@ -51,6 +50,6 @@ Setup Network Boot will prepare the headnode to network boot the clients.  This 
 
 More than other sections, the steps in this section need to be run in numerical order as the later steps depend on the earlier steps having been completed first.  
 
-## Non-Interactive Version
+### Non-Interactive Version
 
 This version is not yet completed, but will be similar to the other steps where a file will be read in and parsed by the script.

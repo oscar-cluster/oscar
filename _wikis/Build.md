@@ -8,16 +8,15 @@ category: wiki
 <!-- Name: Build -->
 <!-- Version: 7 -->
 <!-- Author: wesbland -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure > [Command Line Interface](CLI)
 
-[Development Documentation](DevelDocs) > [Command Line Interface](CLI) > Build Client Image
-
-# Build Client Image
+## Build Client Image
 
 This step is required.
 
 This step will build the Image for the OSCAR clients.
 
-## Interactive Version
+### Interactive Version
 
 The interactive version of this file will provide a menu after a short preparation section.  The menu will look like this:
 
@@ -39,7 +38,7 @@ The values will be dynamically filled in based on the defaults for the OSCAR ins
 
 Once the user picks Build Image, the image will be built.  As the user inputs the selections, they will be dumped to a log file called build.log that can be later used as input for the non-interactive mode to recreate the current install.
 
-## Non-Interactive Version
+### Non-Interactive Version
 
 To access the non-interactive version, use the flag `--filename` or `-f` followed by the filename to be used.  This file should simply have the input that would be typed in on the command line if the program were run in interactive mode.  Each selection number and piece of data should be seperated by a newline.  
 

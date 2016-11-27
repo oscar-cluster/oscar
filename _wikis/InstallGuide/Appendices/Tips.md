@@ -9,9 +9,9 @@ folder: wiki
 <!-- Name: InstallGuide/Appendices/Tips -->
 <!-- Version: 8 -->
 <!-- Author: olahaye74 -->
-[back to Table of Contents](../AppendicesDoc)
+[Documentations](../../Document) > [User Documentations](../../Support) > [OSCAR Install Guide](../../InstallGuideDoc) > [Appendices](../AppendicesDoc)
 
-# Appendix C: Tips and Troubleshooting
+## Appendix C: Tips and Troubleshooting
 
 This is a rough colection of tips and tricks for when things don't work quite the way we might expect them to.  If you carefully follow the documentation provided here, these suggestions should not be neccesary.  However, the suggestions here might be helpful if something does not work and you need a place to start.
 

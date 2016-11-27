@@ -9,9 +9,9 @@ folder: wiki
 <!-- Name: InstallGuide/Appendices/SISBoot -->
 <!-- Version: 1 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](../AppendicesDoc)
-
-# Appendix B: What Happens During Client Installation
+[Documentations](../../Document) > [User Documentations](../../Support) > [OSCAR Install Guide](../../InstallGuideDoc) > [Appendices](../AppendicesDoc)
+ 
+## Appendix B: What Happens During Client Installation
 
 Once the client is network booted, it either boots off the autoinstall CD that you created or uses PXE to network boot, and loads the install kernel. It then broadcasts a BOOTP/DHCP request to obtain the IP address associated with its MAC address. The DHCP server provides the IP information and the client looks for its auto-install script in `/var/lib/systemimager/scripts/`. The script is named <nodename>.sh and is a symbolic link to the script for the desired image. The auto-install script is the installation workhorse, and does the following:
  1. partitions the disk as specified in the image in <imagedir>/etc/systemimager/partitionschemes.

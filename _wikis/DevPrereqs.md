@@ -8,8 +8,9 @@ category: wiki
 <!-- Name: DevPrereqs -->
 <!-- Version: 1 -->
 <!-- Author: efocht -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR infrastructure
 
-# Prerequisites
+## Prerequisites
 
 Prerequisites are conditions that have to be fulfilled such that the OSCAR wizard can do its job. Typical prerequisites are:
  * certain packages must be deleted from the system (for example tftp-server)
@@ -23,7 +24,7 @@ Until (and including) OSCAR 4.2.1 the prerequisites handling was very static and
 
 Starting with OSCAR 5.0 the prerequisites were reorganized by [EF](ErichFocht) to comply with the [generic-setup](GenericSetup) format. Their handling was integrated into the program `$OSCAR_HOME/scripts/install_prereq`.
 
-## install_prereq
+### install_prereq
 
 The program `$OSCAR_HOME/scripts/install_prereq` handles several tasks:
  * it detects the master node's distribution by using OCA::OS_Detect
@@ -39,7 +40,7 @@ repositories.
 As [packman](DevPackman) cannot be available right from the start on every distribution (because the underlying smart package managers like [yum(e)](DevYume) are not necessarilly installed), `install_prereq` has a _--dumb_ installation mode, where only the basic package managers are used for installing packages. Prerequisites installed in dumb mode need to provide all dependencies in their configuration file. The dumb mode is only used for bootstrapping the smart installer, i.e. for getting packman installed.
 
 
-### Configuration file: prereq.cfg
+#### Configuration file: prereq.cfg
 
 *_prereq.cfg*_
 
@@ -84,7 +85,7 @@ Processing of the prereq.cfg file stops after the parsing of the first
 matching distro-block!
 
 
-### Usage
+#### Usage
 
 
     
