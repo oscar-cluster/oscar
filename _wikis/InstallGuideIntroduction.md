@@ -13,9 +13,9 @@ category: wiki
 
 [back to Table of Contents](InstallGuideDoc)
 
-# Chapter 1: Introduction
+## Chapter 1: Introduction
 
-## <a name='overview'></a>1.1 Overview 
+### <a name='overview'></a>1.1 Overview 
 
 OSCAR version 6.1 is a snapshot of the best known methods for building, programming,
 and using clusters. It consists of a fully integrated and easy to install software bundle designed
@@ -29,7 +29,7 @@ This document provides a step-by-step installation guide for system administrato
 Please be sure that you have the latest version of this document. The PDF version of this document which is included in the distribution is a snapshot of the OSCAR Trac wiki [http://svn.oscar.openclustergroup.org/trac/oscar/wiki] which may have been updated since this version was released.
 
 
-## <a name='terminology'></a>1.2 Terminology
+### <a name='terminology'></a>1.2 Terminology
 
 A common term used in this document is cluster, which refers to a group of individual computers bundled
 together using hardware and software in order to make them work as a single machine.
@@ -46,7 +46,7 @@ OSCAR packages fall into one of three categories:
  * Included packages are shipped in the official OSCAR distribution. These are usually authored and/or packaged by OSCAR developers, and have some degree of official testing before release.
  * Third party packages are not included in the official OSCAR distribution; they are _add-ons_ that can be unpacked in the OSCAR tree, and therefore installed using the OSCAR installation framework.
 
-## <a name='sis'></a>1.3: Overview of System Installation Suite (SIS)
+### <a name='sis'></a>1.3: Overview of System Installation Suite (SIS)
 
 The System Installation Suite (SIS) is a cluster installation tool developed by the collaboration of the IBM Linux Technology Center and the SystemImager team. SIS was chosen to be the installation mechanism for OSCAR for multiple reasons:
 
@@ -63,73 +63,35 @@ Each of these pieces of information will be discussed further as part of the det
 
 For additional information on the concepts in SIS and how to use it, you should refer to the SIS(1) man page. In addition, you can visit the SIS web site at [http://wiki.systemimager.org/] for recent updates.
 
-## <a name='supportedDistributions'></a>1.4 Supported Distributions
+### <a name='supportedDistributions'></a>1.4 Supported Distributions
 This version of OSCAR has been tested to work with a single Linux distribution. It is, however, known to have certain compatibility issues with some of the distributions. The suggested workarounds in such cases have been discussed in this document. Table 1 lists each distribution and version and
 specifies the level of support for each. In order to ensure a successful installation, most users should stick to a distribution that is listed as Fully supported.
 
+ **Table 1: OSCAR Supported Distributions**
 
-    #!html
-    <table border="1" cellpadding="10">
-     <caption>Table 1: OSCAR Supported Distributions</caption>
-     <tr>
-      <th>Distribution and Release</th>
-      <th>Architecture</th>
-      <th>Status</th>
-      <th>Known Issues</th>
-     </tr>
-     <tr>
-      <td>Red Hat Enterprise Linux 7 / CentOS 7</td><td>x86_64</td><td>WIP</td><td>No SystemImager package</td>
-     </tr>
-     <tr>
-      <td>Red Hat Enterprise Linux 6 / CentOS 6</td><td>x86_64</td><td>Fully supported</td><td>None</td>
-     </tr>
-     <tr>
-      <td>Red Hat Enterprise Linux 5 / CentOS 5</td><td>x86</td><td>Not supported</td><td>None</td>
-     </tr>
-     <tr>
-      <td>Red Hat Enterprise Linux 5 / CentOS 5</td><td>x86_64</td><td>Not supported</td><td>None</td>
-     </tr>
-     <tr>
-      <td>Fedora Core 20</td><td>x86_64</td><td>WIP</td><td>Not all OSCAR packages are supported, no SystemImager package</td>
-     </tr>
-     <tr>
-      <td>Fedora Core 19</td><td>x86_64</td><td>WIP</td><td>Not all OSCAR packages are supported, no SystemImager package</td>
-     </tr>
-     <tr>
-      <td>Fedora Core 18</td><td>x86_64</td><td>WIP</td><td>Not all OSCAR packages are supported, no SystemImager package</td>
-     </tr>
-     <tr>
-      <td>Fedora Core 17</td><td>x86_64</td><td>WIP</td><td>Not all OSCAR packages are supported</td>
-     </tr>
-     <tr>
-      <td>Debian 7</td><td>x86_64</td><td>Fully supported</td><td>Not all OSCAR packages are supported</td>
-     </tr>
-     <tr>
-      <td>Debian 6</td><td>x86_64</td><td>Fully supported</td><td>Not all OSCAR packages are supported</td>
-     </tr>
-     <tr>
-      <td>Debian 5</td><td>x86_64</td><td>Fully supported</td><td>Not all OSCAR packages are supported</td>
-     </tr>
-     <tr>
-      <td>Ubuntu 13.04 (LTS)</td><td>x86_64</td><td>Fully supported</td><td>Not all OSCAR packages are supported</td>
-     </tr>
-     <tr>
-      <td>Ubuntu 12.10</td><td>x86_64</td><td>Fully supported</td><td>Not all OSCAR packages are supported</td>
-     </tr>
-     <tr>
-      <td>Ubuntu 12.04 (LTS)</td><td>x86_64</td><td>Fully supported</td><td>Not all OSCAR packages are supported</td>
-     </tr>
-     <tr>
-      <td>Ubuntu 10.04 (LTS)</td><td>x86_64</td><td>Not supported</td><td>Not all OSCAR packages are supported</td>
-     </tr>
-    <table>
+  | Distribution and Release | Architecture | Status | Known Issues | 
+  | --- | --- | --- | --- | 
+  | Red Hat Enterprise Linux 7 / CentOS 7 | x86_64 | WIP | No SystemImager package | 
+  | Red Hat Enterprise Linux 6 / CentOS 6 | x86_64 | Fully supported | None | 
+  | Red Hat Enterprise Linux 5 / CentOS 5 | x86 | Not supported | None | 
+  | Red Hat Enterprise Linux 5 / CentOS 5 | x86_64 | Not supported | None | 
+  | Fedora Core 20 | x86_64 | WIP | Not all OSCAR packages are supported, no SystemImager package | 
+  | Fedora Core 19 | x86_64 | WIP | Not all OSCAR packages are supported, no SystemImager package | 
+  | Fedora Core 18 | x86_64 | WIP | Not all OSCAR packages are supported, no SystemImager package | 
+  | Fedora Core 17 | x86_64 | WIP | Not all OSCAR packages are supported | 
+  | Debian 7 | x86_64 | Fully supported | Not all OSCAR packages are supported | 
+  | Debian 6 | x86_64 | Fully supported | Not all OSCAR packages are supported | 
+  | Debian 5 | x86_64 | Fully supported | Not all OSCAR packages are supported | 
+  | Ubuntu 13.04 (LTS) | x86_64 | Fully supported | Not all OSCAR packages are supported | 
+  | Ubuntu 12.10 | x86_64 | Fully supported | Not all OSCAR packages are supported | 
+  | Ubuntu 12.04 (LTS) | x86_64 | Fully supported | Not all OSCAR packages are supported | 
+  | Ubuntu 10.04 (LTS) | x86_64 | Not supported | Not all OSCAR packages are supported | 
 
-[[BR]]
 
 Clones of supported distributions, especially open source rebuilds of Red Hat Enterprise Linux such as
 CentOS and Scientific Linux, should work but are not officially tested. See the release notes (Section 3) for your distribution for known issues.
 
-## <a name='systemRequirements'></a>1.5 Minimum System Requirements
+### <a name='systemRequirements'></a>1.5 Minimum System Requirements
 
 The following is a list of minimum system requirements for the OSCAR server node:
 
@@ -150,7 +112,7 @@ Monitors and keyboards are helpful, but are not required.
 
 Given the wide variety of software and hardware combinations possible in a compute clusters, it is impossible for us to keep an accurate list of hardware which OSCAR supports. If the hardware works on a stock install of the host operating system, there are fair odds that it will not cause any problems with OSCAR.
 
-## <a name='documentOrganization'></a>1.6 Document Organization
+### <a name='documentOrganization'></a>1.6 Document Organization
 
 Due to the complicated nature of putting together a high-performance cluster, it is strongly suggested that even experienced system administrators read this document through, without skipping any sections, and then use the detailed installation procedure to install your OSCAR cluster. Novice users will be comforted to know that anyone who has installed and used Linux can successfully navigate through the OSCAR cluster install.
 
