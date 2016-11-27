@@ -22,11 +22,11 @@ and using clusters. It consists of a fully integrated and easy to install softwa
 for high performance computing (HPC) cluster. Everything needed to install, build, maintain, and use a Linux cluster is included in the suite.
 
 OSCAR is the primary project of the Open Cluster Group. For more information on the group and its
-projects, visit its website [http://www.openclustergroup.org/].
+projects, visit its [website](http://www.openclustergroup.org/).
 
 This document provides a step-by-step installation guide for system administrators, as well as a detailed explanation of what is happening as installation progresses.
 
-Please be sure that you have the latest version of this document. The PDF version of this document which is included in the distribution is a snapshot of the OSCAR Trac wiki [http://svn.oscar.openclustergroup.org/trac/oscar/wiki] which may have been updated since this version was released.
+Please be sure that you have the latest version of this document. The PDF version of this document which is included in the distribution is a snapshot of the [OSCAR Trac wiki](http://svn.oscar.openclustergroup.org/trac/oscar/wiki) which may have been updated since this version was released.
 
 
 ### <a name='terminology'></a>1.2 Terminology
