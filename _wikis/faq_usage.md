@@ -1,11 +1,11 @@
 ---
 layout: wiki
-title: faq_usaqge
+title: faq_usage
 meta: 
-permalink: "wiki/faq_usaqge"
+permalink: "wiki/faq_usage"
 category: wiki
 ---
-<!-- Name: faq_usaqge -->
+<!-- Name: faq_usage -->
 <!-- Version: 2 -->
 <!-- Author: valleegr -->
 
