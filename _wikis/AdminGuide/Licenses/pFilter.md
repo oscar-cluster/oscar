@@ -9,9 +9,9 @@ folder: wiki
 <!-- Name: AdminGuide/Licenses/pFilter -->
 <!-- Version: 2 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](../LicensesDoc)
+[Documentations](../../Document) > [User Documentations](../../Support) > [Administration Guide](../../AdminGuideDoc) > [Licenses and Copyrights](../LicensesDoc)
 
-===== 5.6 pfilter License =====
+## 5.6 pfilter License
 
 The pfilter OSCAR package contains the following copyrights and licenses.
 

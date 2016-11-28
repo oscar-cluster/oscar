@@ -9,7 +9,7 @@ folder: wiki
 <!-- Name: AdminGuide/Licenses/MPICH -->
 <!-- Version: 1 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](../LicensesDoc)
+[Documentations](../../Document) > [User Documentations](../../Support) > [Administration Guide](../../AdminGuideDoc) > [Licenses and Copyrights](../LicensesDoc)
 
 ## 5.5 MPICH License
 

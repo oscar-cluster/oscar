@@ -8,8 +8,9 @@ category: wiki
 <!-- Name: TipWindowsAndLinux -->
 <!-- Version: 1 -->
 <!-- Author: jparpail -->
+[Documentations](Document) > [User Documentations](Support) 
 
-# How to install a cluster with windows and linux using OSCAR
+## How to install a cluster with windows and linux using OSCAR
 
 I'm doing my final project for my degree in computer science in Girona, Spain. To do the project I need a linux cluster to run parallel radiosity algorithms. 
 

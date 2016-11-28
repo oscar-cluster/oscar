@@ -8,7 +8,8 @@ category: wiki
 <!-- Name: quick_start_guide_for_rhel -->
 <!-- Version: 15 -->
 <!-- Author: olahaye74 -->
-
+[Documentations](Document) > [User Documentations](Support) 
+    
 ### OSCAR_unstable Quick Start Guide for CentOS/RHEL version 6.x and 7.x (quite similar for other distros)
 
 1. Install CentOS-6.x or CentOS-7.x base server (+ X11 if you are working localy)

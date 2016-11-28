@@ -9,7 +9,7 @@ folder: wiki
 <!-- Name: AdminGuide/Licenses/Maui -->
 <!-- Version: 1 -->
 <!-- Author: jparpail -->
-[back to Table of Contents](../LicensesDoc)
+[Documentations](../../Document) > [User Documentations](../../Support) > [Administration Guide](../../AdminGuideDoc) > [Licenses and Copyrights](../LicensesDoc)
 
 ## 5.4 Maui Scheduler
 
@@ -23,31 +23,23 @@ THE SOFTWARE IS PROVIDED AS IS AND SCIENCE & TECHNOLOGY CORPORATION @ UNM (STC) 
 
 By installing or using this software you are accepting a non-exclusive license to install, use, modify, and redistribute, and make modifications to the SOFTWARE ("LICENSE") pursuant to the following conditions:
 
-1. All copies of the SOFTWARE, whether or not for redistribution and whether or not in source code or in binary form must include a conspicuous and appropriate publication of the above copyright notice and disclaimer.
+ 1. All copies of the SOFTWARE, whether or not for redistribution and whether or not in source code or in binary form must include a conspicuous and appropriate publication of the above copyright notice and disclaimer.
+ 2. Redistribution of the SOFTWARE in any form whatsoever, including parts of the code that are incorporated into other software programs, must include a conspicuous and appropriate publication of the following acknowledgement:
+    "This product includes software developed for The University of New Mexico High Performance Computing Education and Research Center for use in the Maui Scheduler software. Maui Scheduler is a trademark of Science & Technology Corporation @ UNM"
 
-2. Redistribution of the SOFTWARE in any form whatsoever, including parts of the code that are incorporated into other software programs, must include a conspicuous and appropriate publication of the following acknowledgement:
+    Any such modification of the SOFTWARE must, when installed, display the above language, the copyright notice, and the warranty disclaimer.
 
-"This product includes software developed for The University of New Mexico High Performance Computing Education and Research Center for use in the Maui Scheduler software. Maui Scheduler is a trademark of Science & Technology Corporation @ UNM"
+ 3. A copy of any modifications to the SOFTWARE beyond those necessary for the SOFTWARE to function with licensee’s system must be forwarded as source code to the Maui High Performance Computing Center at webmaster@mhpcc.edu. The forwarded modifications are to be accompanied with a brief explanation of why the modification was made and resulting performance of the modifications. Failure to do so renders the license invalid, as well as any licenses you grant to third parties subsequent to the incorporation of the modifications into the SOFTWARE.
+ 4. Copyright owners of modifications to SOFTWARE hereby grant HPCERC a non-exclusive, royalty-free, world-wide, irrevocable right and license to install, use, distribute, sublicense, and prepare derivative works of said modifications.
+ 5. The name "Maui Scheduler" or its variants must not otherwise be used to endorse or to promote products derived from the SOFTWARE without prior written permission from STC.
+ 6. Products derived from or incorporating the SOFTWARE in whole or in part shall not contain as part of the product’s name any form of the terms "High Performance Computing Education and Research Center, "HPCERC", "Maui", "University of New Mexico", "UNM", "Maui High Performance Computing Center", or "MPHCC", unless prior written permission has been received from the University of New Mexico Patent Administration Office.
+ 7. All advertising materials for products that use or incorporate features of the SOFTWARE must display the following acknowledgement:
 
-Any such modification of the SOFTWARE must, when installed, display the above language, the copyright notice, and the warranty disclaimer.
+    "This product includes software developed for The University of New Mexico for use in the Maui Scheduler Software."
 
-3. A copy of any modifications to the SOFTWARE beyond those necessary for the SOFTWARE to function with licensee’s system must be forwarded as source code to the Maui High Performance Computing Center at webmaster@mhpcc.edu. The forwarded modifications are to be accompanied with a brief explanation of why the modification was made and resulting performance of the modifications. Failure to do so renders the license invalid, as well as any licenses you grant to third parties subsequent to the incorporation of the modifications into the SOFTWARE.
-
-4. Copyright owners of modifications to SOFTWARE hereby grant HPCERC a non-exclusive, royalty-free, world-wide, irrevocable right and license to install, use, distribute, sublicense, and prepare derivative works of said modifications.
-
-5. The name "Maui Scheduler" or its variants must not otherwise be used to endorse or to promote products derived from the SOFTWARE without prior written permission from STC.
-
-6. Products derived from or incorporating the SOFTWARE in whole or in part shall not contain as part of the product’s name any form of the terms "High Performance Computing Education and Research Center, "HPCERC", "Maui", "University of New Mexico", "UNM", "Maui High Performance Computing Center", or "MPHCC", unless prior written permission has been received from the University of New Mexico Patent Administration Office.
-
-7. All advertising materials for products that use or incorporate features of the SOFTWARE must display the following acknowledgement:
-
-"This product includes software developed for The University of New Mexico for use in the Maui Scheduler Software."
-
-8. It is not required that you accept this LICENSE; however, if you do not accept the terms of this LICENSE, you are prohibited by law from installing, using, modifying or distributing the SOFTWARE or any of its derivative works. Therefore, by installing, using, modifying or distributing the SOFTWARE (or any of its derivative works), you have agreed to this LICENSE and have accepted all its terms and conditions.
-
-9. Each time the SOFTWARE is redistributed (or any work based on the SOFTWARE), the recipient automatically receives this license from STC to copy, distribute or modify the SOFTWARE subject to these terms and conditions, and has the choice of accepting or declining the license. As the LICENSEE, you shall automatically provide the recipient with a copy of this license. Further restrictions are not to be imposed on recipients of the SOFTWAE by the LICENSEE beyond those expressly described herein. The LICENSEE is not responsible for enforcing compliance with this LICENSE by recipients.
-
-10. If any portion of this LICENSE is held invalid or unenforceable under any particular circumstance, the balance of the LICENSE will continue to apply.
+ 8. It is not required that you accept this LICENSE; however, if you do not accept the terms of this LICENSE, you are prohibited by law from installing, using, modifying or distributing the SOFTWARE or any of its derivative works. Therefore, by installing, using, modifying or distributing the SOFTWARE (or any of its derivative works), you have agreed to this LICENSE and have accepted all its terms and conditions.
+ 9. Each time the SOFTWARE is redistributed (or any work based on the SOFTWARE), the recipient automatically receives this license from STC to copy, distribute or modify the SOFTWARE subject to these terms and conditions, and has the choice of accepting or declining the license. As the LICENSEE, you shall automatically provide the recipient with a copy of this license. Further restrictions are not to be imposed on recipients of the SOFTWAE by the LICENSEE beyond those expressly described herein. The LICENSEE is not responsible for enforcing compliance with this LICENSE by recipients.
+ 10. If any portion of this LICENSE is held invalid or unenforceable under any particular circumstance, the balance of the LICENSE will continue to apply.
 
 And the Moab package contains the following:
 
@@ -61,56 +53,56 @@ THE SOFTWARE IS PROVIDED AS IS AND THE SUPERCLUSTER DEVELOPMENT GROUP (SDG) AND 
 
 By installing or using this software you are accepting a non-exclusive license to install, use, modify, and redistribute, and make modifications to the SOFTWARE ("LICENSE") pursuant to the following conditions:
 
-1. Copyright
+ 1. Copyright
 
-All copies of the SOFTWARE, in source code or in binary form, must include a conspicuous publication of the above copyright notice, this license, and the above disclaimer.
+    All copies of the SOFTWARE, in source code or in binary form, must include a conspicuous publication of the above copyright notice, this license, and the above disclaimer.
 
-2. Usage
+ 2. Usage
 
-Source and/or binary forms of SOFTWARE may be freely used by any organization pursuant to the conditions of this license.
+    Source and/or binary forms of SOFTWARE may be freely used by any organization pursuant to the conditions of this license.
 
-3. Distribution
+ 3. Distribution
 
-Academic and government agencies may redistribute SOFTWARE subject to the condition that the distribution contain conspicuous publication of the following acknowledgement in both packaging and execution software:
+    Academic and government agencies may redistribute SOFTWARE subject to the condition that the distribution contain conspicuous publication of the following acknowledgement in both packaging and execution software:
 
-"This product contains code developed by the Supercluster Development Group. Moab Scheduling System is a trademark of the Cluster Resources, Inc."
+    "This product contains code developed by the Supercluster Development Group. Moab Scheduling System is a trademark of the Cluster Resources, Inc."
 
-Commercial and other for profit organizations may not redistribute this code or derivations of this code in any form whatsoever, including parts of SOFTWARE incorporated into other software programs without express written permission from Cluster Resources, Inc.
+    Commercial and other for profit organizations may not redistribute this code or derivations of this code in any form whatsoever, including parts of SOFTWARE incorporated into other software programs without express written permission from Cluster Resources, Inc.
 
-4. Modifications
+ 4. Modifications
 
-SOFTWARE may be freely modified as necessary to meet the needs of the licensee’s system. Licensees which wish to distribute their modifications (including government and academic institutions, and those with a written license to redistribute) must first send a copy of the modifications along with descriptive text to the Supercluster Development Group at support@supercluster.org. Those without license to redistribute may send modifications to the Supercluster Development Group for evaluation and possible incorporation into SOFTWARE. Failure to send a copy of distributed modifications renders the license invalid, as well as any licenses granted to third parties subsequent to the incorporation of the modifications into SOFTWARE.
+    SOFTWARE may be freely modified as necessary to meet the needs of the licensee’s system. Licensees which wish to distribute their modifications (including government and academic institutions, and those with a written license to redistribute) must first send a copy of the modifications along with descriptive text to the Supercluster Development Group at support@supercluster.org. Those without license to redistribute may send modifications to the Supercluster Development Group for evaluation and possible incorporation into SOFTWARE. Failure to send a copy of distributed modifications renders the license invalid, as well as any licenses granted to third parties subsequent to the incorporation of the modifications into SOFTWARE.
 
-Upon receipt of modification notice, Supercluster Development Group, may, at their disgression, send the submittor a nice hat or a short note stating in effect, ’Thank you very much. We really appreciate you making these changes. We hope you have a nice day."
+    Upon receipt of modification notice, Supercluster Development Group, may, at their disgression, send the submittor a nice hat or a short note stating in effect, ’Thank you very much. We really appreciate you making these changes. We hope you have a nice day."
 
-Any such modification of the SOFTWARE must, when installed, display this license, the copyright notice, and the warranty disclaimer as described in paragraph 1.
+    Any such modification of the SOFTWARE must, when installed, display this license, the copyright notice, and the warranty disclaimer as described in paragraph 1.
 
-5. Use of Modifications
+ 5. Use of Modifications
 
-Copyright owners of modifications to SOFTWARE hereby grant SDG a non- exclusive, royalty-free, world-wide, irrevocable right and license to install, use, distribute, sublicense, and prepare derivative works of said modifications.
+    Copyright owners of modifications to SOFTWARE hereby grant SDG a non- exclusive, royalty-free, world-wide, irrevocable right and license to install, use, distribute, sublicense, and prepare derivative works of said modifications.
 
-6. Product Endorsement
+ 6. Product Endorsement
 
-The name "Moab Scheduling System" or its variants must not otherwise be used to endorse or to promote products derived from SOFTWARE without prior written permission from Cluster Resources, Inc.
+    The name "Moab Scheduling System" or its variants must not otherwise be used to endorse or to promote products derived from SOFTWARE without prior written permission from Cluster Resources, Inc.
 
-7. Use of Trademarks
+ 7. Use of Trademarks
 
-Products derived from or incorporating SOFTWARE in whole or in part shall not contain as part of the product’s name any form of the terms "Supercluster Development Group", "SDG", "Cluster Resources", "Moab", or "Moab Scheduling System" or "Moab Scheduler" unless prior written permission has been received from the Cluster Resources, Inc.
+    Products derived from or incorporating SOFTWARE in whole or in part shall not contain as part of the product’s name any form of the terms "Supercluster Development Group", "SDG", "Cluster Resources", "Moab", or "Moab Scheduling System" or "Moab Scheduler" unless prior written permission has been received from the Cluster Resources, Inc.
 
-8. Advertising
+ 8. Advertising
 
-All advertising materials for products that use or incorporate features of the SOFTWARE must display the following acknowledgement:
+    All advertising materials for products that use or incorporate features of the SOFTWARE must display the following acknowledgement:
 
-"This product includes software developed by The Supercluster Development Group for use in the Moab Scheduling System."
+    "This product includes software developed by The Supercluster Development Group for use in the Moab Scheduling System."
 
-9. License Acceptance
+ 9. License Acceptance
 
-It is not required that you accept this LICENSE; however, if you do not accept the terms of this LICENSE, you are prohibited by law from installing, using, modifying or distributing the SOFTWARE or any of its derivative works. Therefore, by installing, using, modifying or distributing the SOFTWARE (or any of its derivative works), you have agreed to this LICENSE and have accepted all its terms and conditions.
+    It is not required that you accept this LICENSE; however, if you do not accept the terms of this LICENSE, you are prohibited by law from installing, using, modifying or distributing the SOFTWARE or any of its derivative works. Therefore, by installing, using, modifying or distributing the SOFTWARE (or any of its derivative works), you have agreed to this LICENSE and have accepted all its terms and conditions.
 
 10. Perpetuation of License
 
-Each time the SOFTWARE is redistributed (or any work based on the SOFTWARE), the recipient automatically receives this license from Cluster Resources, Inc. to copy, distribute or modify the SOFTWARE subject to these terms and conditions, and has the choice of accepting or declining the license. As the LICENSEE, you shall automatically provide the recipient with a copy of this license. Further restrictions are not to be imposed on recipients of the SOFTWAE by the LICENSEE beyond those expressly described herein. The LICENSEE is not responsible for enforcing compliance with this LICENSE by recipients.
+    Each time the SOFTWARE is redistributed (or any work based on the SOFTWARE), the recipient automatically receives this license from Cluster Resources, Inc. to copy, distribute or modify the SOFTWARE subject to these terms and conditions, and has the choice of accepting or declining the license. As the LICENSEE, you shall automatically provide the recipient with a copy of this license. Further restrictions are not to be imposed on recipients of the SOFTWAE by the LICENSEE beyond those expressly described herein. The LICENSEE is not responsible for enforcing compliance with this LICENSE by recipients.
 
 11. License Enforcement
 
-If any portion of this LICENSE is held invalid or unenforceable under any particular circumstance, the balance of the LICENSE will continue to apply.
+    If any portion of this LICENSE is held invalid or unenforceable under any particular circumstance, the balance of the LICENSE will continue to apply.

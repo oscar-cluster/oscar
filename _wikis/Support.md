@@ -34,9 +34,9 @@ category: wiki
 
 If you are having problems with OSCAR, chances are someone else have encountered the same problem too - this FAQ is a great source of information for commonly encountered issues.
 
- * [Development](faq#Development)
- * [Installation](faq#Installation)
- * [Usage](faq#Usage)
+ * [Development](faq_development)
+ * [Installation](faq_install)
+ * [Usage](faq_usage)
 
 ## Mail Archives
  * [Devel](http://www.mail-archive.com/oscar-devel@lists.sourceforge.net) (To subscribe  [oscar-devel@](http://lists.sourceforge.net/mailman/listinfo/oscar-devel))

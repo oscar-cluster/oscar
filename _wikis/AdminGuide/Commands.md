@@ -9,14 +9,11 @@ folder: wiki
 <!-- Name: AdminGuide/Commands -->
 <!-- Version: 4 -->
 <!-- Author: valleegr -->
+[Documentations](../Document) > [User Documentations](../Support) > [Administration Guide](../AdminGuideDoc)
 
-[[TOC]]
+## Chapter 3: OSCAR Management Commands
 
-[back to Table of Contents](../AdminGuideDoc)
-
-# Chapter 3: OSCAR Management Commands
-
-## 3.1 Overview
+### 3.1 Overview
 
 This section covers OSCAR management using a command line, where functionality does not exist within the GUI.
 Most of the commands are either mksi* or si_* (i.e., SIS commands).
@@ -26,7 +23,7 @@ Topics covered include:
 
 Note that since most of the commands are SIS commands. It means that these commands do not update the OSCAR database (ODA) and therefore may result in a de-synchronization of the SIS database, the actual file system and the OSCAR database.
 
-## 3.2 Deleting node images
+### 3.2 Deleting node images
 
 It is sometimes useful to be able to delete one or more of the node images which OSCAR uses to provision the client nodes or to change which image is sent to a node when it joins the cluster.
 
@@ -50,7 +47,7 @@ _si_rmimage_ is a command from SystemImager, the system OSCAR uses to deploy ima
 
     # si_rmimage oscarimage -force
 
-## 3.3 Managing Distribution Repositories
+### 3.3 Managing Distribution Repositories
 
 Distribution repositories contain the packages needed for
  * building client node images
@@ -61,11 +58,11 @@ First of all, it is still possible to apply updates using the standard package m
 Mostly client OSCAR nodes are not set up for connectivity to the internet, therefore they need to be updated a different way. The OSCAR way is to update the distribution repository and update the client nodes and images from it. This gives the cluster administrator the full control over which packages are updated, when and why, and avoids situations like a cluster being automatically updated over night with some untested package that breaks the installation. With a well maintained distribution repository updating the master node, the client nodes or the images is very easy: use the _yume_ command.
 We do not currently provide any tool to ease the update of the distribution repository, system administrators have to perform this task manually.
 
-## 3.4 Examples
+### 3.4 Examples
 
 The following paragraphs give examples of system administration on a RPM based system.
 
-### Example: Updating the master node
+#### Example: Updating the master node
  
     yume update
      ```
@@ -117,7 +114,7 @@ Download packages from an on-line repository to the local repository LOCAL_PATH 
 
 The _--rmdup_ option leads to the removal of old versions of packages, keeping only the latest version. If the --url option is not specified, i.e. no downloads are required, the --rmdup option removes the duplicate packages (older versions) in the repository specified by --repo. If the --check option is specified, the packages which would be removed are listed.
 
-### Example: Repository update
+#### Example: Repository update
 
 Check packages which would be downloaded from a FC4 updates mirror site::
  ```

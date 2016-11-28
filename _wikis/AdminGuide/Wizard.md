@@ -9,15 +9,14 @@ folder: wiki
 <!-- Name: AdminGuide/Wizard -->
 <!-- Version: 6 -->
 <!-- Author: valleegr -->
-[[TOC]]
+[Documentations](../Document) > [User Documentations](../Support) > [Administration Guide](../AdminGuideDoc)
 
-[back to Table of Contents](../AdminGuideDoc)
-
-# Chapter 2: OSCAR Management Wizard
+## Chapter 2: OSCAR Management Wizard
 
 ## 2.1 Overview
 
 The OSCAR Management Wizard GUI has the following functionality to allow manipulation of an existing OSCAR cluster:
+
  * Build a different OSCAR Client image
  * Add new nodes to the cluster
  * Delete nodes from the cluster
@@ -29,7 +28,7 @@ All of the above menu items are optional, and can be executed in any order. Howe
 
 If you wish to wipe out the cluster and start over, see the [Starting Over](InstallGuideClusterInstall#StartingOver) section of the [Install Guide](InstallGuide).
 
-## 2.2 Launching the OSCAR Wizard
+### 2.2 Launching the OSCAR Wizard
 
 Once the OSCAR cluster is deployed, start the OSCAR wizard:
 

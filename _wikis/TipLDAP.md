@@ -8,8 +8,9 @@ category: wiki
 <!-- Name: TipLDAP -->
 <!-- Version: 2 -->
 <!-- Author: jparpail -->
+[Documentations](Document) > [User Documentations](Support) 
 
-# Using LDAP authentication and LDAP based autofs with OSCAR
+## Using LDAP authentication and LDAP based autofs with OSCAR
 
 This document assumes you know how to set up individual computers to use your existing LDAP system.  It also assumes that you are using LDAP to mount your cluster `/home` directories via autofs, because I do.
 
@@ -80,6 +81,6 @@ This was developed and tested on OSCAR 5.0 on a 30 node cluster of Dell PE1950's
  * make sure ldap and autofs home directories are working on nodes
  * go back to wizard and run "Complete Cluster Setup" and "Test Cluster Setup" and  all tests ought to pass.
 
-## Existing User Config
+### Existing User Config
 
  * The first time on the cluster LDAP users must run "switcher mpi = lam-7.1.2" or some other valid mpi package, otherwise they don't have mpi path stuff.  Probably can fix this by using /etc/skel from the cluster, but I am not sure.

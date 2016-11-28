@@ -8,7 +8,9 @@ category: wiki
 <!-- Name: TipOFED -->
 <!-- Version: 1 -->
 <!-- Author: mledward -->
+[Documentations](Document) > [User Documentations](Support) 
 
+## Openfabrics (Infiniband) Setup
 These are some notes on seting up the OpenFabrics 1.2.5 infiniband driver/utility/mpi package set from source on an OSCAR 5.0 cluster.  I successfully installed OFED on RHEL 4, but your milage may vary.
 
   * Install OSCAR 5.0 up through step 3 "Install Server Packages" as described in the installation guide ([http://svn.oscar.openclustergroup.org/trac/oscar/wiki/InstallGuideClusterInstall])
@@ -17,16 +19,14 @@ These are some notes on seting up the OpenFabrics 1.2.5 infiniband driver/utilit
 
   * Make a new rpm list in /opt/oscar/oscarsamples/your.rpmlist (copy the one for the distro you are using)and add these rpms to the end of the list (in addition to the LDAP ones if you want to use those)
 
-
-
-    #added for OFED
-    tcl-devel
-    kernel-devel
-    kernel-smp-devel
-    rpm-build
-    sysfsutils
-    sysfsutils-devel
-    pciutils-devel
+        #added for OFED
+        tcl-devel
+        kernel-devel
+        kernel-smp-devel
+        rpm-build
+        sysfsutils
+        sysfsutils-devel
+        pciutils-devel
 
   * Reopen the OSCAR wizard and make a new image called myimage-OFED-source using /opt/oscar/oscarsamples/your.rpmlist and /opt/oscar/oscarsamples/scsi.disk 
   * Copy the OFED source to the image directory (cp OFED-1.2.5.tgz /var/lib/systemimager/images/myimage-OFED-source/tmp)
@@ -41,10 +41,8 @@ These are some notes on seting up the OpenFabrics 1.2.5 infiniband driver/utilit
   * reimage 
   * Test
 
- 
-
-       * cexec "ibv_devinfo | grep ACTIVE"
-              o state: PORT_ACTIVE (4)
+           * cexec "ibv_devinfo | grep ACTIVE"
+                  o state: PORT_ACTIVE (4)
   * Repeat source installation on head node if desired 
 
   * SGE queue problem with open mpi and infiniband (RHEL4): http://gridengine.sunsource.net/servlets/ReadMsg?list=users&msgNo=17060

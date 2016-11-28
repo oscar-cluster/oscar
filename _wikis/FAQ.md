@@ -17,5 +17,5 @@ If you are having problems with OSCAR, chances are someone else have encountered
 
  * [FAQ for Developers](faq_development)
  * [FAQ related to Cluster Installation](faq_install)
- * [FAQ related to Cluster Usage](faq_usaqge)
+ * [FAQ related to Cluster Usage](faq_usage)
 

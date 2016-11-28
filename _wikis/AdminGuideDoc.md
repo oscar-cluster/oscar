@@ -8,9 +8,10 @@ category: wiki
 <!-- Name: AdminGuide -->
 <!-- Version: 3 -->
 <!-- Author: jparpail -->
-
-# Administration Guide
-
+[Documentations](Document) > [User Documentations](Support)
+ 
+## Administration Guide
+ 
 1. [Introduction](AdminGuide/Introduction)
    1. [Overview](AdminGuide/Introduction#Overview)
 1. [Wizard Management](AdminGuide/Wizard)

@@ -8,18 +8,15 @@ category: wiki
 <!-- Name: AdminGuide/Packages -->
 <!-- Version: 15 -->
 <!-- Author: dikim -->
+[Documentations](../Document) > [User Documentations](../Support) > [Administration Guide](../AdminGuideDoc)
 
-[[TOC]]
+## 4 Package Notes
 
-[back to Table of Contents](../AdminGuideDoc)
-
-# 4 Package Notes
-
-== 4.1 Torque Resource Manager == #Torque
+### 4.1 Torque Resource Manager
 
 License: OpenPBS (Portable Batch System) v2.3 Software License
 
-### 4.1.1 Overview
+#### 4.1.1 Overview
 
 The Torque resource manager consists of three major components:
 
@@ -34,7 +31,7 @@ Torque also has a first-in-first-out scheduler which it can use, but by default 
 
 From the point of view of the user, most interaction takes place with the Torque resource manager, as that is the entry point for job script submission.  
 
-### 4.1.2 Commands
+#### 4.1.2 Commands
 
 All Torque commands can be found under `/opt/pbs/bin` on the OSCAR head node, but are included in the path in a standard OSCAR installation. There are man pages available for these commands, but here are the most popular with some basic options:
 
@@ -45,7 +42,7 @@ All Torque commands can be found under `/opt/pbs/bin` on the OSCAR head node, bu
  * `pbsdsh`: distributed process launcher
  * `xpbs`: X-windows Torque client.   Simplifies both user and administrative tasks.
 
-### 4.1.3 Submitting a Job
+#### 4.1.3 Submitting a Job
 
 The qsub command is not necessarily intuitive. Here are some handy tips to know:
 
@@ -87,7 +84,7 @@ Notes about the above examples:
  * "workq" is a default queue name that is used in OSCAR clusters.
  * 1:00:00 is in HH:MM:SS format (although leading zeros are optional).
 
-### 4.1.4 Torque LAM/MPI Sample Script
+#### 4.1.4 Torque LAM/MPI Sample Script
 
 
     #!/bin/sh
@@ -116,7 +113,7 @@ Notes about the above examples:
 
 This script uses LAM-MPI to execute the program `/home/oscartest/lamtest/eqn10p.x` on the nodes provided by Torque.   After running lamboot on the nodes provided, the script moves to the target directory and runs eqn10p.x using mpirun with 16 processes.  Then the script cleans up after itself by running lamhalt.  The 16 processes are started regardless of how many nodes Torque assigns.
 
-### 4.1.5 Sample Script for MPICH
+#### 4.1.5 Sample Script for MPICH
 
 
     #!/bin/sh
@@ -142,40 +139,44 @@ This script uses LAM-MPI to execute the program `/home/oscartest/lamtest/eqn10p.
   
 This script uses MPICH to execute the program `/home/oscartest/mpich/ring` on the nodes provided by Torque.   The script moves to the target directory and runs the program ring using mpirun with 16 processes using the file $PBS_NODEFILE as the machinefile as the node list.  Initialization and clean-up steps are not necessary when using MPICH.  As with LAM the 16 processes are started regardless of how many nodes Torque assigns.
 
-### 4.1.6 Environment Variables
+#### 4.1.6 Environment Variables
 
 There are a number of predefined environment variables which the Torque resource manager makes available to scripts run through it.  These can be useful for debugging Torque setup files as well as data organization.
 
 The following environment variables relate to the submission machine: 
+
 | *Option* | *Description* |
+| --- | --- |
 | PBS_O_HOST	| The host machine on which the qsub command was run. |
 | PBS_O_LOGNAME	| The login name on the machine on which the qsub was run. |
 | PBS_O_HOME	| The home directory from which the qsub was run. |
 | PBS_O_WORKDIR	| The working directory from which the qsub was run. |
 
 The following variables relate to the environment where the job is executing: 
+
 | *Option* | *Description* |
+| --- | --- |
 | PBS_ENVIRONMENT	| This is set to PBS_BATCH for batch jobs and to PBS_INTERACTIVE for interactive jobs. |
 | PBS_O_QUEUE	| The original queue to which the job was submitted. |
 | PBS_JOBID	| The identifier that PBS assigns to the job. |
 | PBS_JOBNAME	| The name of the job. |
 | PBS_NODEFILE	| The file containing the list of nodes assigned to a parallel job. |
 
-### 4.1.7 Additional Resources
+#### 4.1.7 Additional Resources
 
-More information about using and configuring Torque is available on the Cluster Resources website at [http://www.clusterresources.comdoku.php?id=torque:torque_wiki]
+More information about using and configuring Torque is available on the [Cluster Resources website](http://www.clusterresources.comdoku.php?id=torque:torque_wiki)
 
-== 4.2 MAUI Scheduler == #Maui
+### 4.2 MAUI Scheduler 
 
 Official website: http://www.clusterresources.com/pages/products/maui-cluster-scheduler.php
 
-License: [MAUI License](Maui_license)
+License: [MAUI License](Licenses/Maui)
 
-### 4.2.1 Overview
+#### 4.2.1 Overview
 
 The Maui scheduler takes care of scheduling jobs on the cluster based on a series of sophisticated algorithms which take into account current system resources, cluster usage rates, past user activity, and many other factors.  These algorithms are very flexible and are configurable by the cluster administrator.  
 
-### 4.2.2 Maui Commands
+#### 4.2.2 Maui Commands
 
 There are several commands available to the Maui Scheduler which can aid in the debugging of problems with Torque or Maui configurations.  These commands are located in `/opt/maui/bin` and generally need to be run with root permissions.  Refer to maui documentation for further detail about these commands.
 
@@ -183,11 +184,11 @@ There are several commands available to the Maui Scheduler which can aid in the 
  * checkjob: displays less verbose information about particular jobs
  * showstats: shows usage stats for scheduled jobs
 
-### 4.2.3 Additional Resources
+#### 4.2.3 Additional Resources
 
 Additional documentation and resources for Maui are available on the project's website: [http://www.clusterresources.com/pages/resources/documentation.php]
 
-== 4.3 C3 == #C3
+### 4.3 C3
 
 Official website: http://www.csm.ornl.gov/torc/c3/
 
@@ -198,11 +199,12 @@ License:
  that both the copyright notice and this permission notice appear in
  supporting documentation.
 
-### 4.3.1 Overview
+#### 4.3.1 Overview
 
 The Cluster Command Control (C3) tools are a suite of cluster tools developed at Oak Ridge National Laboratory that are useful for both administration and application support. The suite includes tools for cluster-wide command execution, file distribution and gathering, process termination, remote shutdown and restart, and system image updates.
 
 A short description of each tool follows:
+
  * cexec: general utility that enables the execution of any standard command on all cluster nodes
  * cget: retrieves files or directories from all cluster nodes
  * ckill: terminates a user specified process on all cluster nodes
@@ -216,7 +218,7 @@ A short description of each tool follows:
 
 The default method of execution for the tools is to run the command on all cluster nodes concurrently. However, a serial version of cexec is also provided that may be useful for deterministic execution and debugging. Invoke the serial version of cexec by typing cexecs instead of cexec. For more information on how to use each tool, see the man page for the specific tool.
 
-### 4.3.2 File Format
+#### 4.3.2 File Format
 
 Specific instances of C3 commands identify their compute nodes with the help of _cluster configuration files_: files that name a set of accessible clusters and describe the set of machines in each accessible cluster. _/etc/c3.conf_, the default cluster configuration file, should consist of a list of _cluster descriptor blocks_: syntactic objects that name and describe a single cluster that is accessible to that system’s users. The following is an example of a default configuration file that contains exactly one cluster descriptor block: a block that describes a cluster of 64 nodes:
 
@@ -243,7 +245,7 @@ One other thing to note is the use of a place holder node. When specifying range
 
 For a more detailed example, see the *c3.conf* man page.
 
-### 4.3.3 Specifying Ranges
+#### 4.3.3 Specifying Ranges
 
 Ranges can be specified in two ways, one as a range, and the other as a single node. Ranges are specified by the following format: _m-n_, where _m_ is a positive integer (including zero) and _n_ is a number larger than _m_. Single positions are just the position number. If discontinuous ranges are needed, each range must be separated by a ",". The range "0-5, 9, 11" would execute on positions 0, 1, 2, 3, 4, 5, 9, and 11 (nodes marked as _offline_ will not participate in execution).
 
@@ -251,7 +253,7 @@ There are two tools used to help manage keeping track of which nodes are at whic
 
 *NOTE:* ranges begin at zero!
 
-### 4.3.4 Machine Definitions
+#### 4.3.4 Machine Definitions
 
 Machine definitions are what C3 uses to specify clusters and ranges on the command line. There are four cases a machine definition can take. First is that one is not specified at all. C3 will execute on all the nodes on the _default cluster_ in this case (the _default cluster_ is the first cluster in the configuration file). An example would be as follows:
 
@@ -275,13 +277,13 @@ This would execute ls on nodes 2, 3, 4, and 10 on cluster cartman. These four me
 
 is a valid command. it would execute ls on nodes 0, 1, 2, 3, and 4 of the default cluster, all of  _stan_ and nodes 1, 2, 3, 4, and 5 of _kyle_ (the _stan_ and _kyle_ cluster configuration blocks are not shown here). In this way one could easily do things such as add a user to several clusters or read _/var/log/messages_ for an event across many clusters. See the _c3-range_ man page for more detail.
 
-### 4.3.5 Other Considerations
+#### 4.3.5 Other Considerations
 
 In most cases, C3 has tried to mimic the standard Linux command it is based on. This is to make using the cluster as transparent as possible. One of the large differences is such as using the interactive options. Because one would not want to be asked yes or no multiple times for each node, C3 will only ask _once_ if the interactive option is specified. This is very important to remember if running commands such as "_crm --all -R /tmp/foo_" (recursively delete _/tmp/foo_ on every node in every cluster you have access too).
 
 Multiple cluster uses do not necessarily need to be restricted by listing specific nodes; nodes can also be grouped based on role, essentially forming a meta-cluster. For example, if one wishes to separate out PBS server nodes for specific tasks, it is possible to create a cluster called _pbs-servers_ and only execute a given command on that cluster. It is also useful to separate nodes out based on things such as hardware (e.g., fast-ether/gig-ether), software (e.g., some nodes may have a specific compiler), or role (e.g., _pbs-servers_).
 
-== 4.4 LAM == #LAM
+### 4.4 LAM
 
 Official website: http://www.lam-mpi.org/
 
@@ -293,14 +295,14 @@ License:
  modification, are permitted provided that the following conditions are
  met:
 
- 1) All redistributions of source code must retain the above
+ 1. All redistributions of source code must retain the above
     copyright notice, the list of authors in the original source code,
     this list of conditions and the disclaimer listed in this license; 
- 2) All redistributions in binary form must reproduce the above
+ 2. All redistributions in binary form must reproduce the above
     copyright notice, this list of conditions and the disclaimer listed
     in this license in the documentation and/or other materials
     provided with the distribution; 
- 3) Any documentation included with all redistributions must include
+ 3. Any documentation included with all redistributions must include
     the following acknowledgement:
 
     "This product includes software developed at the Ohio
@@ -314,49 +316,49 @@ License:
     St., Indianapolis, Indiana 46202, phone 317-274-5905, fax
     317-274-5902."
 
- Alternatively, this acknowledgement may appear in the software itself,
- and wherever such third-party acknowledgments normally appear.
+     Alternatively, this acknowledgement may appear in the software itself,
+     and wherever such third-party acknowledgments normally appear.
 
- 4) The name "LAM" or "LAM/MPI" shall not be used to endorse or promote
+ 4. The name "LAM" or "LAM/MPI" shall not be used to endorse or promote
     products derived from this software without prior written
     permission from Indiana University.  For written permission, please
     contact Indiana University Advanced Research & Technology
     Institute.  
- 5) Products derived from this software may not be called "LAM" or
+ 5. Products derived from this software may not be called "LAM" or
     "LAM/MPI", nor may "LAM" or "LAM/MPI" appear in their name, without
     prior written permission of Indiana University Advanced Research &
     Technology Institute.  
 
- Indiana University provides no reassurances that the source code
- provided does not infringe the patent or any other intellectual
- property rights of any other entity.  Indiana University disclaims any
- liability to any recipient for claims brought by any other entity
- based on infringement of intellectual property rights or otherwise. 
+     Indiana University provides no reassurances that the source code
+     provided does not infringe the patent or any other intellectual
+     property rights of any other entity.  Indiana University disclaims any
+     liability to any recipient for claims brought by any other entity
+     based on infringement of intellectual property rights or otherwise. 
 
- LICENSEE UNDERSTANDS THAT SOFTWARE IS PROVIDED "AS IS" FOR WHICH NO
- WARRANTIES AS TO CAPABILITIES OR ACCURACY ARE MADE. INDIANA UNIVERSITY
- GIVES NO WARRANTIES AND MAKES NO REPRESENTATION THAT SOFTWARE IS FREE
- OF INFRINGEMENT OF THIRD PARTY PATENT, COPYRIGHT, OR OTHER PROPRIETARY
- RIGHTS.  INDIANA UNIVERSITY MAKES NO WARRANTIES THAT SOFTWARE IS FREE
- FROM "BUGS", "VIRUSES", "TROJAN HORSES", "TRAP DOORS", "WORMS", OR
- OTHER HARMFUL CODE.  LICENSEE ASSUMES THE ENTIRE RISK AS TO THE
- PERFORMANCE OF SOFTWARE AND/OR ASSOCIATED MATERIALS, AND TO THE
- PERFORMANCE AND VALIDITY OF INFORMATION GENERATED USING SOFTWARE. 
+     LICENSEE UNDERSTANDS THAT SOFTWARE IS PROVIDED "AS IS" FOR WHICH NO
+     WARRANTIES AS TO CAPABILITIES OR ACCURACY ARE MADE. INDIANA UNIVERSITY
+     GIVES NO WARRANTIES AND MAKES NO REPRESENTATION THAT SOFTWARE IS FREE
+     OF INFRINGEMENT OF THIRD PARTY PATENT, COPYRIGHT, OR OTHER PROPRIETARY
+     RIGHTS.  INDIANA UNIVERSITY MAKES NO WARRANTIES THAT SOFTWARE IS FREE
+     FROM "BUGS", "VIRUSES", "TROJAN HORSES", "TRAP DOORS", "WORMS", OR
+     OTHER HARMFUL CODE.  LICENSEE ASSUMES THE ENTIRE RISK AS TO THE
+     PERFORMANCE OF SOFTWARE AND/OR ASSOCIATED MATERIALS, AND TO THE
+     PERFORMANCE AND VALIDITY OF INFORMATION GENERATED USING SOFTWARE. 
 
- Indiana University has the exclusive rights to license this product
- under this license.
+     Indiana University has the exclusive rights to license this product
+     under this license.
 
-### 4.4.1 Overview
+#### 4.4.1 Overview
 
 LAM (Local Area Multicomputer) is an MPI programming environment and development system for heterogeneous computers on a network. With LAM/MPI, a dedicated cluster or an existing network computing infrastructure can act as a single parallel computer. LAM/MPI is considered to be "cluster friendly," in that it offers daemon-based process startup/control as well as fast client-to-client message passing protocols. LAM/MPI can use TCP/IP and/or shared memory for message passing.
 
 LAM features a full implementation of MPI-1, and much of MPI-2. Compliant applications are source code portable between LAM/MPI and any other implementation of MPI. In addition to providing a high-quality implementation of the MPI standard, LAM/MPI offers extensive monitoring capabilities to support debugging. Monitoring happens on two levels. First, LAM/MPI has the hooks to allow a snapshot of process and message status to be taken at any time during an application run. This snapshot includes all aspects of synchronization plus datatype maps/signatures, communicator group membership, and message contents (see the XMPI application on the main LAM web site). On the second level, the MPI library is instrumented to produce a cummulative record of communication, which can be visualized either at runtime or post-mortem.
 
-### 4.4.2 Notes about OSCAR's LAM/MPI Setup
+#### 4.4.2 Notes about OSCAR's LAM/MPI Setup
 
 The OSCAR environment is able to have multiple MPI implementations installed simultaneously – see Section 2.8 (page 13) for a description of the switcher program. LAM/MPI is configured on OSCAR to use the Secure Shell (ssh) to initially start processes on remote nodes. Normally, using ssh requires each user to set up cryptographic keys before being able to execute commands on remote nodes with no password. The OSCAR setup process has already taken care of this step for you. Hence, the LAM command lamboot should work with no additional setup from the user. 
 
-### 4.4.3 Setting up switcher to use LAM/MPI
+#### 4.4.3 Setting up switcher to use LAM/MPI
 
 In order to use LAM/MPI successfully, you must first ensure that switcher is set to use LAM/MPI. First, execute the following command:
 
@@ -372,98 +374,97 @@ This shows all the MPI implementations that are available. Choose one that conta
 
 This will set all _future_ shells to use LAM/MPI. In order to guarantee that all of your login environments contain the proper setup to use LAM/MPI, it is probably safest to logout and log back in again. Doing so will guarantee that all of your interactive shells will have the LAM commands and man pages will be found (i.e., your _$PATH_ and _$MANPATH_ environment variables set properly for LAM/MPI). Hence, you will be able to execute commands such as "_mpirun_" and "_man lamboot_" without any additional setup.
 
-### 4.4.4 General Usage
+#### 4.4.4 General Usage
 
 The general scheme of using LAM/MPI is as follows:
 
  * Use the _lamboot_ command to start up the LAM run-time environment (RTE) across a specified set of nodes. The _lamboot_ command takes a single argument: the filename of a hostfile containing a list of nodes to run on. For example:
  
     $ lamboot my_hostfile
-     ```
-    
-     * Repeat the following steps as many times as necessary:
-       * Use the MPI "wrapper" compilers (''mpicc'' for C programs, ''mpiCC'' for C++ programs, and ''mpif77'' for fortran programs) to compile your application. These wrapper compilers add in all the necessary compiler flags and then invoke the underlying "real" compiler. For example:
-       ```
-    mpicc myprogram.c -o myprogram
-       ```
-    
-       * Use the ''mpirun'' command to launch your parallel application in the LAM RTE. For example:
-       ```
-    $ mpirun C myprogram
-       ```
-    
-         The mpirun command has many options and arguments – see the man page and/or "mpirun -h" for more information.
-    
-       * If your parallel program fails ungracefully, use the lamclean command to "clean" the LAM RTE and guarantee to remove all instances of the running program.
-    
-       * Use the ''lamhalt'' command to shut down the LAM RTE. The ''lamhalt'' command takes no arguments.
-    
+ * Repeat the following steps as many times as necessary:
+   * Use the MPI "wrapper" compilers (''mpicc'' for C programs, ''mpiCC'' for C++ programs, and ''mpif77'' for fortran programs) to compile your application. These wrapper compilers add in all the necessary compiler flags and then invoke the underlying "real" compiler. For example:
+   ```
+mpicc myprogram.c -o myprogram
+   ```
+
+   * Use the ''mpirun'' command to launch your parallel application in the LAM RTE. For example:
+   ```
+$ mpirun C myprogram
+   ```
+
+     The mpirun command has many options and arguments – see the man page and/or "mpirun -h" for more information.
+
+   * If your parallel program fails ungracefully, use the lamclean command to "clean" the LAM RTE and guarantee to remove all instances of the running program.
+
+   * Use the ''lamhalt'' command to shut down the LAM RTE. The ''lamhalt'' command takes no arguments.
+
     Note that the wrapper compilers are all set to use the corresponding GNU compilers (''gcc'', ''g++'', and ''gf77'', respectively). Attempting to use other compilers may run into difficulties because their linking styles may be different than what the LAM libraries expect (particularly for C++ and Fortran compilers).
     
-    === 4.4.5 Other Resources ===
+#### 4.4.5 Other Resources
     
-    The LAM/MPI web site ([http://www.lam-mpi.org/]) contains much, much more information about LAM/MPI, including:
-     * A large Frequently Asked Questions (FAQ) list
-     * Usage tutorials and examples
-     * Access to the LAM user’s mailing list, including subscription instructions and web archives of the list
+The [LAM/MPI web site](http://www.lam-mpi.org/) contains much, much more information about LAM/MPI, including:
+
+ * A large Frequently Asked Questions (FAQ) list
+ * Usage tutorials and examples
+ * Access to the LAM user’s mailing list, including subscription instructions and web archives of the list
     
     Make today a LAM/MPI day!
     
-    == 4.5 MPICH ==
+### 4.5 MPICH
     
-    === 4.5.1 Overview ===
+#### 4.5.1 Overview
     
-    Official Website: http://www-unix.mcs.anl.gov/mpi/mpich1/
+Official Website: http://www-unix.mcs.anl.gov/mpi/mpich1/
     
-    MPICH is another MPI implementation which is installed by OSCAR.  It is lighter weight than LAM/MPI and other implementations because it does not require any daemon processes to run on the compute nodes.  This has historically made it a popular choice with people doing benchmarking and production runs of well known codes.  It works in a very similar fashion to LAM/MPI but using mpirun requires an explicit list of nodes to be suplied at runtime, either from the command line or from a default file.
+MPICH is another MPI implementation which is installed by OSCAR.  It is lighter weight than LAM/MPI and other implementations because it does not require any daemon processes to run on the compute nodes.  This has historically made it a popular choice with people doing benchmarking and production runs of well known codes.  It works in a very similar fashion to LAM/MPI but using mpirun requires an explicit list of nodes to be suplied at runtime, either from the command line or from a default file.
     
-    MPICH example scripts sutable for a standard OSCAR install are included in the [#Torque Torque] scripting section.
+MPICH example scripts sutable for a standard OSCAR install are included in the [#Torque Torque] scripting section.
     
-    == 4.6 OpenMPI ==
+### 4.6 OpenMPI
     
-    Official website: http://www.open-mpi.org/
+Official website: http://www.open-mpi.org/
+
+License: BSD
     
-    License: BSD
+### 4.7 The OSCAR Password Installer and User Management (OPIUM)
     
-    == 4.7 The OSCAR Password Installer and User Management (OPIUM) == #OPIUM
+Official website: N/A.
+
+License: GPL v.2
     
-    Official website: N/A.
+#### 4.7.1 Overview
     
-    License: GPL v.2
+The OPIUM package includes facilities which synchronize the cluster’s accounts and configures ssh for users. The user account synchronization may only be run by root, and is automatically triggered at regular intervals. OPIUM configures ssh such that every user can traverse the cluster securely without entering a password, once logged on to the head node. This is done using ssh user keys, in the .ssh folder in your home directory. It is not recommended that you make changes here unless you know what you are doing. If you change your password, make sure to change it on the OSCAR head node, because changes propagate to the cluster nodes from there.
     
-    === 4.7.1 Overview ===
+### 4.8 Packet Filtering with pfilter
     
-    The OPIUM package includes facilities which synchronize the cluster’s accounts and configures ssh for users. The user account synchronization may only be run by root, and is automatically triggered at regular intervals. OPIUM configures ssh such that every user can traverse the cluster securely without entering a password, once logged on to the head node. This is done using ssh user keys, in the .ssh folder in your home directory. It is not recommended that you make changes here unless you know what you are doing. If you change your password, make sure to change it on the OSCAR head node, because changes propagate to the cluster nodes from there.
+Official webiste: N/A.
+
+License: GPL v.2
     
-    == 4.8 Packet Filtering with pfilter == #pFilter
+#### 4.8.1 Overview
     
-    Official webiste: N/A.
+When the pfilter packet filtering system is turned on, the default OSCAR settings allow any network communication between the machines in the cluster, and allow ssh and http access to the cluster main machine from the outside.
     
-    License: GPL v.2
+Communication between cluster machines and the outside network are limited to outgoing connections only. Incoming network connections to cluster machines are blocked. To allow outside network connections to ports on the cluster machines, special rules will have to be added to the pfilter configuration. See your cluster administrator for help on this.
     
-    === 4.8.1 Overview ===
+### 4.9 PVM
     
-    When the pfilter packet filtering system is turned on, the default OSCAR settings allow any network communication between the machines in the cluster, and allow ssh and http access to the cluster main machine from the outside.
+Official website: http://www.csm.ornl.gov/pvm/
+
+License: Freely distributable.
     
-    Communication between cluster machines and the outside network are limited to outgoing connections only. Incoming network connections to cluster machines are blocked. To allow outside network connections to ports on the cluster machines, special rules will have to be added to the pfilter configuration. See your cluster administrator for help on this.
+#### 4.9.1 Overview
     
-    == 4.9 PVM ==
+PVM (Parallel Virtual Machine) is a software package that permits a heterogeneous collection of Unix and/or Windows computers hooked together by a network to be used as a single large parallel computer. Thus large computational problems can be solved more cost effectively by using the aggregate power and memory of many computers. The software is very portable. The source, which is available free thru netlib, has been compiled on everything from laptops to CRAYs.
     
-    Official website: http://www.csm.ornl.gov/pvm/
+PVM enables users to exploit their existing computer hardware to solve much larger problems at minimal additional cost. Hundreds of sites around the world are using PVM to solve important scientific, industrial, and medical problems in addition to PVM’s use as an educational tool to teach parallel programming. With tens of thousands of users, PVM has become the de facto standard for distributed computing world-wide.
     
-    License: Freely distributable.
+#### 4.9.2 Using PVM
     
-    === 4.9.1 Overview ===
+The default OSCAR installation tests PVM via a Torque/PBS job (see also: Section 2.9 on page 18). However, some users may choose to use PVM outside of this context so a few words on usage may be helpful (the examples in this section assume a shared filesystem, as is used with OSCAR.)  The default location for user executables is $HOME/pvm3/bin/$PVM ARCH. On an IA-32 Linux machine, this is typically of the form: `/home/sgrundy/pvm3/bin/LINUX` (replace "LINUX" with "LINUX64" on IA-64). This is where binaries should be placed so that PVM can locate them when attempting to spawn tasks. This is detailed in the pvm intro(1PVM) manual page when discussing the environment variables PVM PATH and PVM WD.
     
-    PVM (Parallel Virtual Machine) is a software package that permits a heterogeneous collection of Unix and/or Windows computers hooked together by a network to be used as a single large parallel computer. Thus large computational problems can be solved more cost effectively by using the aggregate power and memory of many computers. The software is very portable. The source, which is available free thru netlib, has been compiled on everything from laptops to CRAYs.
-    
-    PVM enables users to exploit their existing computer hardware to solve much larger problems at minimal additional cost. Hundreds of sites around the world are using PVM to solve important scientific, industrial, and medical problems in addition to PVM’s use as an educational tool to teach parallel programming. With tens of thousands of users, PVM has become the de facto standard for distributed computing world-wide.
-    
-    === 4.9.2 Using PVM ===
-    
-    The default OSCAR installation tests PVM via a Torque/PBS job (see also: Section 2.9 on page 18). However, some users may choose to use PVM outside of this context so a few words on usage may be helpful (the examples in this section assume a shared filesystem, as is used with OSCAR.)  The default location for user executables is $HOME/pvm3/bin/$PVM ARCH. On an IA-32 Linux machine, this is typically of the form: `/home/sgrundy/pvm3/bin/LINUX` (replace "LINUX" with "LINUX64" on IA-64). This is where binaries should be placed so that PVM can locate them when attempting to spawn tasks. This is detailed in the pvm intro(1PVM) manual page when discussing the environment variables PVM PATH and PVM WD.
-    
-    The "hello world" example shipped with PVM demonstrates how one can compile and run a simple application outside of Torque/PBS. The following screen log highlights this for a standard user sgrundy (Solomon Grundy).
+The "hello world" example shipped with PVM demonstrates how one can compile and run a simple application outside of Torque/PBS. The following screen log highlights this for a standard user sgrundy (Solomon Grundy).
     ```
     # Crate default directory for PVM binaries (one time operation)
     sgrundy: $ mkdir -p $HOME/pvm3/bin/$PVM_ARCH
@@ -519,7 +520,8 @@ The example below uses the same "hello world" program that was previously compil
     oscarnode1
 
 The options used here are:
- * * – any node can connect
+
+ * \* – any node can connect
  * ep – execution path, here set to local directory
  * wd – working directory, here set to local directory
  * _nodes_ – a list of nodes, one per line
@@ -543,16 +545,17 @@ Now, we can startup pvm using this _myhostfile_ and run the _hello_ application 
     Terminated
     sgrundy: $
 
-### 4.9.3 Resources
+#### 4.9.3 Resources
 
 The OSCAR installation of PVM makes use of the env-switcher package (also see Section 2.8, page 13). This is where the system-wide $PVM_ROOT, $PVM_ARCH and $PVM_RSH environment variable defaults are set. Traditionally, this material was included in each user’s ".dot" files to ensure availability with noninteractive shells (e.g. rsh/ssh). Through the env-ewitcher package, a user can avoid any ".dot" file adjustments by using the hostfile directive or default paths for binaries as outlined in the Usage Section 2.6.1.
 
 For additional information see also:
+
  * PVM web site: `http://www.csm.ornl.gov/pvm/`
  * Manual Pages: _pvm(1)_, _pvm intro(1)_, _pvmd3(1)_
  * Release docs: `$PVM_ROOT/doc/*`
 
-== 4.10 System Installation Suite (SIS) == #SIS
+### 4.10 System Installation Suite (SIS)
 
 Official websites
   SystemImager: http://wiki.systemimager.org/index.php/Main_Page
@@ -561,27 +564,27 @@ Official websites
 
 License: GPLv2 or later.
 
-### 4.10.1 An overview of SIS
+#### 4.10.1 An overview of SIS
 
 The System Installation Suite, or SIS, is a tool for installing Linux systems over a network. It is used in OSCAR to install the client nodes. SIS also provides the database from which OSCAR obtains its cluster configuration information. The main concept to understand about SIS is that it is an image based install tool. An image is basically a copy of all the files that get installed on a client. This image is stored on the server and can be accessed for customizations or updates. You can even chroot into the image and perform builds.
 
 Once this image is built, clients are defined and associated with the image. When one of these clients boots using a SIS auto-install environment, either on floppy, CD, or through a network boot, the corresponding image is pulled over the network using rsync. Once the image is installed, it is customized with the hardware and networking information for that specific client and it is then rebooted. When booting the client will come up off the local disk and be ready to join the OSCAR cluster.
 
-### 4.10.2 Building an Image
+#### 4.10.2 Building an Image
 
 Normally, an OSCAR image is built using the <Build OSCAR Client Image> button on the OSCAR wizard. This button brings up a panel that is actually directly from the SIS GUI tksis. Once the information is filled in, the SIS command mksiimage is invoked to actually build the image.
 
 In addition to building an image, you can use tksis or mksiimage to delete images as well. Images can take a fair amount of disk space, so if you end up with images that you aren’t using, you can delete them to recover some space.
 
-### 4.10.3 Managing SIS Images
+#### 4.10.3 Managing SIS Images
 
 Much like the OSCAR image creation, the <Define OSCAR Clients> button actually invokes a tksis panel. There are a couple of SIS commands that are used to manage the client definitions. mksirange is used to define a group of clients. More importantly, mksimachine can be used to update client definitions. If, for example, you needed to change the MAC address after replacing one of your clients, you could use mksimachine.
 
-### 4.10.4 Maintaining Client Software
+#### 4.10.4 Maintaining Client Software
 
 There are many different ways to maintain the software installed on the client nodes. Since SIS is image based, it allows you to also use an image based maintenance scheme. Basically, you apply updates and patches to your images and then resync the clients to their respective images. Since rsync is used, only the actual data that has changed will be sent over the network to the client. The SIS command updateclient can be run on any client to initiate this update.
 
-### 4.10.5 Additional Information
+#### 4.10.5 Additional Information
 
 To obtain more detailed information about SIS, please refer to the many man pages that are shipped with SIS. Some of the more popular pages are:
 
@@ -595,13 +598,13 @@ To obtain more detailed information about SIS, please refer to the many man page
 
 You can also access the mailing lists and other docs through the sisuite home page, [http://sisuite.org/].
 
-== 4.11 Switcher Environment Manager == #Switcher
+### 4.11 Switcher Environment Manager
 
 Official website: N/A.
 
 License: Freely distributable.
 
-### 4.11.1 Overview
+#### 4.11.1 Overview
 
 Experience has shown that requiring untrained users to manually edit their "dot" files (e.g., `$HOME/.bashrc,$HOME/.login`, `$HOME/.logout`, etc.) can result in damaged user environments. Side effects of damaged user environments include:
 
@@ -622,7 +625,7 @@ Note, however, that switcher does not change the environment of the shell from w
 
 The OSCAR switcher package contains two sub-packages: modules and _env-switcher_. The modules package can be used by itself (usually for advanced users). The _env-switcher_ package provides a persistent modules-based environment.
 
-### 4.11.2 The modules package
+#### 4.11.2 The modules package
 
 The modules package (see `http://modules.sourceforge.net/`) provides an elegant solution for individual packages to install (and uninstall) themselves from the current environment. Each OSCAR package can provide a modulefile that will set (or unset) relevant environment variables, create (or destroy) shell aliases, etc.
 
@@ -632,7 +635,7 @@ An OSCAR-ized modules RPM is installed during the OSCAR installation process. In
 
 Most users will not use any modules commands directly - they will only use the _env-switcher_ package. However, the modules package can be used directly by advanced users (and scripts).
 
-### 4.11.3 The env-switcher package
+#### 4.11.3 The env-switcher package
 
 The _env-switcher_ package provides a persistent modules-based environment. That is, _env-switcher_ ensures to load a consistent set of modules for each shell invocation (including corner cases such as non-interactive remote shells via rsh/ssh). _env-switcher_ is what allows users to manipulate their environment by using a simple command line interface - not by editing "dot" files.
 
@@ -668,11 +671,11 @@ The most common _env-switcher_ commands that users will invoke are:
  * `switcher <tag> --rm-attr <attr> [--system]`
    Remove the attribute <attr> from a given tag. If the --system parameter is used, the change will affect the system level defaults; otherwise, the user’s personal user-level defaults are used. Section 2.8.3 shows an example scenario using the switcher command detailing how to change which MPI implementation is used, both at the system-level and user-level. See the man page for switcher(1) and the output of switcher --help for more details on the switcher command.
 
-### 4.11.4 Choosing a Default MPI
+#### 4.11.4 Choosing a Default MPI
 
 OSCAR has a generalized mechanism to both set a system-level default MPI implementation, and also to allow users to override the system-level default with their own choice of MPI implementation. This allows multiple MPI implementations to be installed on an OSCAR cluster (e.g., LAM/MPI and MPICH), yet still provide unambiguous MPI implementation selection for each user such that "mpicc foo.c -o foo" will give deterministic results.
 
-### 4.11.5 Setting a system-level default
+#### 4.11.5 Setting a system-level default
 
 The system-level default MPI implementation can be set in two different (yet equivalent) ways:
  1. During the OSCAR installation, the GUI will prompt asking which MPI should be the system-level default. This will set the default for all users on the system who do not provide their own individual MPI settings.
@@ -713,7 +716,7 @@ If you wish to have your current shell reflect the status of your switcher setti
 
 Note that this is only necessary if you want to change your current environment. All new shells (including scripts) will automatically get the new switcher settings.
 
-### 4.11.6 Setting a User Default
+#### 4.11.6 Setting a User Default
 
 Setting a user-level default is essentially the same as setting the system-level default, except without the --system argument. This will set the user-level default instead of the system-level default:
 
@@ -733,7 +736,7 @@ Removing a user default (and therefore reverting to the system-level default) is
     system:default=lam-6.5.6
     system:exists=true
 
-### 4.11.7 Use switcher with care!
+#### 4.11.7 Use switcher with care!
 
 switcher immediately affects the environment of all future shell invocations (including the environment of scripts). To get a full list of options available, read the switcher(1) man page, and/or run switcher --help.
 
