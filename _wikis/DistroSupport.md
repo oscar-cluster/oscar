@@ -21,6 +21,7 @@ category: wiki
 | CentOS / RHEL 7       | ok |
 | CentOS / RHEL 6       | ok |
 | Debian 6 / 7 (Ubuntu 12.04 / 12.10)  | ok |
+| Ubuntu 14.04  | ok |
 
 
 Please refer to the documentation associated to each release to get the updated list of supported Linux distributions.
