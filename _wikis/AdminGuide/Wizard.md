@@ -13,7 +13,7 @@ folder: wiki
 
 ## Chapter 2: OSCAR Management Wizard
 
-## 2.1 Overview
+### 2.1 Overview
 
 The OSCAR Management Wizard GUI has the following functionality to allow manipulation of an existing OSCAR cluster:
 
@@ -28,7 +28,7 @@ All of the above menu items are optional, and can be executed in any order. Howe
 
 If you wish to wipe out the cluster and start over, see the [Starting Over](InstallGuideClusterInstall#StartingOver) section of the [Install Guide](InstallGuide).
 
-### 2.2 Launching the OSCAR Wizard
+#### 2.2 Launching the OSCAR Wizard
 
 Once the OSCAR cluster is deployed, start the OSCAR wizard:
 
@@ -42,7 +42,7 @@ the <Help> button displays a message box describing the purpose of the step.
 
 *Figure 1: OSCAR Wizard.*
 
-[[Image(figure1_oscar_manage.png)]]
+![OSCAR Wizard](../../images/wiki/AdminGuide/Wizard/figure1_oscar_manage.png)
 
 
 In brief, the functions of the various buttons is as follows:

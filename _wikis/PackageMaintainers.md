@@ -8,14 +8,14 @@ category: wiki
 <!-- Name: PackageMaintainers -->
 <!-- Version: 8 -->
 <!-- Author: dikim -->
+[Contact](Contact) 
 
-[Developer Documentation](DevelDocs) > OSCAR Package Maintainers
-
-# OSCAR Package Maintainers
+## OSCAR Package Maintainers
 
 The following is a list of OSCAR packages and their respective maintainers.  The maintainer's responsibility is to update the software on a regular basis and resolve any known building/operating issues on the various architecture platforms that OSCAR supports (namely x86, x86_64 and ia64):
 
 | *OSCAR Package* | *Maintainer* |
+| --- | --- |
 | APITest             | Thomas Naughton, Olivier Lahaye  |
 | C3                  | Thomas Naughton, Olivier Lahaye  |
 | Env-switcher        | DongInn Kim     |

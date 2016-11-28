@@ -8,8 +8,9 @@ category: wiki
 <!-- Name: Team -->
 <!-- Version: 8 -->
 <!-- Author: dikim -->
+[Contact](Contact)
 
-## The OSCAR Team
+### The OSCAR Team
 
 The team is composed of developers, a release manager and a chair. The release manager and chair are nominated and elected each year during the OSCAR Annual Core Meeting in January.
 
