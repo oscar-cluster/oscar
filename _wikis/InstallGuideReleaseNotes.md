@@ -24,7 +24,7 @@ The major new features for OSACR 6.x are:
  * Better error handling.
  * Source code reorganization, based on OPKGs classification.
 
-For more details, please refer to the ChangeLog http://svn.oscar.openclustergroup.org/trac/oscar/browser/trunk/ChangeLog
+For more details, please refer to the [ChangeLog](https://github.com/oscar-cluster/oscar/blob/master/ChangeLog).
 
 ### <a name='generalNotes'></a>2.2 General Installation Notes
 
