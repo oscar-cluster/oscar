@@ -105,13 +105,14 @@ This can be solved by installing the libaio-devel RPM on the headnode which shou
 ### How do i add a user to the cluster?
 
 All the following commands should be executed with root privileges.
-  * Make sure both the OPIUM and the sync_files OSCAR packages are installed.
-  * Add the user on the headnode executing _adduser_.
-  * Make sure the sync_files configuration files enables the synchronization of the following files:
 
-    syncfile /etc/passwd
-    syncfile /etc/group
-    syncfile /etc/shadow
-    syncfile /etc/gshadow
-  * Synchronize the compute nodes with sync_file: _/opt/syn_files/bin/sync_files_.
-  * For access to the compute nodes without password, the new user should synchronize his ssh_keys executing _ssh-oscar_.
+ * Make sure both the OPIUM and the sync_files OSCAR packages are installed.
+ * Add the user on the headnode executing _adduser_.
+ * Make sure the sync_files configuration files enables the synchronization of the following files:
+
+       syncfile /etc/passwd
+       syncfile /etc/group
+       syncfile /etc/shadow
+       syncfile /etc/gshadow
+ * Synchronize the compute nodes with sync_file: _/opt/syn_files/bin/sync_files_.
+ * For access to the compute nodes without password, the new user should synchronize his ssh_keys executing _ssh-oscar_.
