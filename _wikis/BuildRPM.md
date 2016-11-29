@@ -8,6 +8,7 @@ category: wiki
 <!-- Name: BuildRPM -->
 <!-- Version: 13 -->
 <!-- Author: valleegr -->
+[Documentations](Document) > [Developer Documentations](DevelDocs) > OSCAR Distribution Support > [Distro Support](DistroSupport)
 
 ### General RPM building nodes
 
@@ -37,7 +38,9 @@ This option may be added into future official releases of LAM/MPI for OSCAR, in 
 We currently build the RPM with the following options:
 
 
-    rpmbuild -ba --define "oscar 1" --define "_packager YOUR_NAME <YOUR_EMAIL>" --define "_vendor OSCAR" \
+    rpmbuild -ba --define "oscar 1" \
+      --define "_packager YOUR_NAME <YOUR_EMAIL>" \ 
+      --define "_vendor OSCAR" \
       --define "configure_options --with-tm=/opt/pbs" openmpi-1.0.2.spec
 
 with the TORQUE RPMs installed on the build system.
