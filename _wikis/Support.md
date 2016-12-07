@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 13 -->
 <!-- Author: olahaye74 -->
 
-[Back the Documentations Main Page](Document)
+[Back to the Documentations Main Page](Document)
 
 ## User Documentations
 

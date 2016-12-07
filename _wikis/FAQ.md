@@ -9,7 +9,7 @@ category: wiki
 <!-- Version: 8 -->
 <!-- Author: valleegr -->
 
-[Back the Documentations Main Page](Document)
+[Back to the Documentations Main Page](Document)
 
 ## Frequently Asked Questions
 
