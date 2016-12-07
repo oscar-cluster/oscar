@@ -3,19 +3,23 @@ $COPYRIGHT$
 This is the general README file for OSCAR vOSCARVERSION.  See our
 wonderful web site:
 
-	http://oscar.openclustergroup.org/
+    https://oscar-cluster.github.io/oscar/
 
 The most up to date information on installing and using OSCAR is available
-on our wiki
+on the following:
 
-http://svn.oscar.openclustergroup.org/wiki/
+    https://oscar-cluster.github.io/oscar/wiki/Document
 
 Instructions for installing this release can be found in doc/install.pdf 
 and user instructions for utilizing the software installed on OSCAR
 clusters can be found in doc/user.pdf.
 
-The OSCAR distibution comes in two OSCAR tarballs and a set of repository
-tarballs:
+Current OSCAR distributions are obtained through our github repository or take a snapshot of the current repo via the following links.
+    https://github.com/oscar-cluster/oscar/tarball/master
+    https://github.com/oscar-cluster/oscar/zipball/master
+
+The OSCAR distibution used to come in two OSCAR tarballs and a set of repository
+tarballs were like these:
   oscar-base-OSCARVERSION.tar.gz  : the base OSCAR tarball stripped of
 				    almost every binary packages (rpms)
   oscar-srpms-OSCARVERSION.tar.gz : the SRPMS, you only need this if you
@@ -27,7 +31,13 @@ tarballs:
 				    repository of distro and architecture
 				    specific rpms.
 
-For an OSCAR installation:
+For an OSCAR installation, please refer to the complete OSCAR installation guide:
+    https://oscar-cluster.github.io/oscar/wiki/InstallGuideDoc
+
+For those who need a quick installation
+    https://oscar-cluster.github.io/oscar/wiki/quick_start_guide_for_rhel
+
+For those who need to maintain or re-install the old versions of OSCAR:
  - Download the oscar-repo-common-rpms and the oscar-repo-DISTRO-VER-ARCH
  tarballls suitable for the distribution(s). Unpack them in /tftpboot/oscar.
  - Download the oscar-base tarball. Unpack it in an appropriate directory.
