@@ -14,21 +14,21 @@ category: wiki
 
 1. Install CentOS-6.x or CentOS-7.x base server (+ X11 if you are working localy)
 2. Setup hostname, and network.
-3. make sure that your mta (mail transfert agent) is postfix if you want mtaconfig to  be of any use.[[BR]]
-   if postfix is not you default mta, then do a:
+3. make sure that your mta (mail transfert agent) is postfix if you want mtaconfig to  be of any use.
+   if postfix is not your default mta, then do a:
 
-    yum -y install postfix; yum remove sendmail exim
+    `yum -y install postfix; yum remove sendmail exim`
 4. Install the required repositories:
     * CentOS-6:
-       - yum -y install http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-       - yum -y install http://svn.oscar.openclustergroup.org/repos/unstable/rhel-6-x86_64/oscar-release-6.1.2r11033-1.el6.noarch.rpm
+       - `yum -y install http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm`
+       - `yum -y install http://svn.oscar.openclustergroup.org/repos/unstable/rhel-6-x86_64/oscar-release-6.1.2r11033-1.el6.noarch.rpm`
     * CentOS-7:
-       - yum -y install http://fr2.rpmfind.net/linux/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
-       - yum -y install http://svn.oscar.openclustergroup.org/repos/unstable/rhel-7-x86_64/oscar-release-6.1.2r11033-1.el7.noarch.rpm
+       - `yum -y install http://fr2.rpmfind.net/linux/epel/7/x86_64/e/epel-release-7-5.noarch.rpm`
+       - `yum -y install http://svn.oscar.openclustergroup.org/repos/unstable/rhel-7-x86_64/oscar-release-6.1.2r11033-1.el7.noarch.rpm`
 5. Update SELinux config (/etc/selinux/config)
 
     SELINUX=disabled
-6. disable ipv6 in /etc/sysctl.conf (and reboot)[[BR]]
+6. disable ipv6 in /etc/sysctl.conf (and reboot)
 
     net.ipv6.conf.all.disable_ipv6 = 1
     net.ipv6.conf.default.disable_ipv6 = 1
@@ -95,10 +95,10 @@ category: wiki
       _option domain-name-servers #.#.#.#, #.#.#.#;_
 20. Add postinstall scripts to configure bootloader and network (feature broken in system-configurator).
 
-    _cd /var/lib/systemimager/scripts/post-install/
-    sudo wget http://svn.oscar.openclustergroup.org/pkgs/downloads/sis_postinstall/13all.keyboard_fr    # (Optional: will set node console keyboard to fr_FR)
-    sudo wget http://svn.oscar.openclustergroup.org/pkgs/downloads/sis_postinstall/15all.grub_install   # For grub based distros (centos-6, ...)
-    sudo wget http://svn.oscar.openclustergroup.org/pkgs/downloads/sis_postinstall/14all.grub2_install  # For grub-2 based distros (centos-7, ...)
+    _cd /var/lib/systemimager/scripts/post-install/   
+    sudo wget http://svn.oscar.openclustergroup.org/pkgs/downloads/sis_postinstall/13all.keyboard_fr    # (Optional: will set node console keyboard to fr_FR)  
+    sudo wget http://svn.oscar.openclustergroup.org/pkgs/downloads/sis_postinstall/15all.grub_install   # For grub based distros (centos-6, ...)  
+    sudo wget http://svn.oscar.openclustergroup.org/pkgs/downloads/sis_postinstall/14all.grub2_install  # For grub-2 based distros (centos-7, ...)  
     sudo wget http://svn.oscar.openclustergroup.org/pkgs/downloads/sis_postinstall/16all.network_config # Edit this to update DNS config_
 21. Monitor cluster deployment
 22. PXE boot all nodes

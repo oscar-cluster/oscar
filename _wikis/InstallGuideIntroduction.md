@@ -198,7 +198,7 @@ OSCAR installation.
 
 If you have a question that cannot be answered by this document (including
 answers to common installation problems), be sure to visit the [OSCAR web
-site](http://oscar.sourceforge.net) or the [mailing list
+site](..) or the [mailing list
 archives](http://sourceforge.net/mail/?group_id=9368).  The OSCAR mailing lists
 only accept posts from members of the lists so please join the list before
 posting a message.  This helps to keep our lists spam free.
