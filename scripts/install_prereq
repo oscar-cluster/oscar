@@ -29,18 +29,18 @@ use Data::Dumper;
 use Carp;
 
 use vars qw($pm $ohome $dumb $smart @prereqs $separator $oscar_pkg_pool 
-            $distro_pkg_pool);
+$distro_pkg_pool);
 
 my ($debug, $verbose, $quiet, $path, $status, $remove);
 GetOptions(
-           "dumb"      => \$dumb,
-           "smart"     => \$smart,
-           "remove"    => \$remove,
-           "status"    => \$status,
-           "verbose"   => \$verbose,
-           "debug"     => \$debug,
-           "quiet"     => \$quiet,
-           ) || &usage(1);
+    "dumb"      => \$dumb,
+    "smart"     => \$smart,
+    "remove"    => \$remove,
+    "status"    => \$status,
+    "verbose"   => \$verbose,
+    "debug"     => \$debug,
+    "quiet"     => \$quiet,
+) || &usage(1);
 
 #
 # Own distro detection
@@ -54,7 +54,7 @@ my $distrover = $os->{distro_version};
 my $arch      = $os->{arch};
 my $suffix    = $os->{pkg};
 my $dstring   = $os->{compat_distro}.$os->{compat_distrover}.
-    "-".$os->{arch};
+"-".$os->{arch};
 my $cstring   = "common-".$suffix."s";
 
 my $march = $arch;
@@ -77,14 +77,14 @@ sub handle_smart_pkgs ($@) {
         ($err, @out) = $pm->smart_remove(@pkgs);
     } else {
         oscar_log(4, INFO, "Smartly installing: ".join(",",@pkgs));
-    my $pm_status = $pm->status();
-    oscar_log(5, INFO, "Packman status: $pm_status");
+        my $pm_status = $pm->status();
+        oscar_log(5, INFO, "Packman status: $pm_status");
         ($err, @out) = $pm->smart_install(@pkgs);
     }
     require OSCAR::PackManDefs;
     if ($err == OSCAR::PackManDefs::ERROR()) {
         oscar_log(1, ERROR, "$err error(s) occured for prereq ".join(", ", @pkgs)."("
-             .join("\n",@out).")");
+            .join("\n",@out).")");
         return -1;
     }
     return 0;
@@ -224,44 +224,44 @@ sub best_version ($@) {
     }
 
     for my $p (@candidates) {
-    my ($name, $ver, $parch);
-    if ($suffix eq "rpm") {
-        my $cmd = "rpm -q --qf \"%{NAME} %{VERSION}-%{RELEASE} %{ARCH}\" -p $p";
-        oscar_log(7, ACTION, "About to run: $cmd");
-        my $info = `$cmd`;
-        my $err = $?;
-        if (!$err) {
-            ($name,$ver,$parch) = split(" ",$info);
-        } else {
-            oscar_log(5, ERROR, " ? rpm query returned $err");
-        }
-    } elsif ($suffix eq "deb") {
-        local *IN;
-        my $cmd = "dpkg --info $p";
-        oscar_log(7, ACTION, "About to run: $cmd");
-        open IN, "$cmd |" or (oscar_log(1, ERROR, "Failed to open $p"), exit 1);
-        while (<IN>) {
-            chomp;
-            if (/^ Package: (.*)$/) {
-                $name = $1;
-            } elsif (/^ Version: (.*)$/) {
-                $ver = $1;
-            } elsif (/^ Architecture: (.*)$/) {
-                $parch = $1;
+        my ($name, $ver, $parch);
+        if ($suffix eq "rpm") {
+            my $cmd = "rpm -q --qf \"%{NAME} %{VERSION}-%{RELEASE} %{ARCH}\" -p $p";
+            oscar_log(7, ACTION, "About to run: $cmd");
+            my $info = `$cmd`;
+            my $err = $?;
+            if (!$err) {
+                ($name,$ver,$parch) = split(" ",$info);
+            } else {
+                oscar_log(5, ERROR, " ? rpm query returned $err");
             }
+        } elsif ($suffix eq "deb") {
+            local *IN;
+            my $cmd = "dpkg --info $p";
+            oscar_log(7, ACTION, "About to run: $cmd");
+            open IN, "$cmd |" or (oscar_log(1, ERROR, "Failed to open $p"), exit 1);
+            while (<IN>) {
+                chomp;
+                if (/^ Package: (.*)$/) {
+                    $name = $1;
+                } elsif (/^ Version: (.*)$/) {
+                    $ver = $1;
+                } elsif (/^ Architecture: (.*)$/) {
+                    $parch = $1;
+                }
+            }
+            close IN;
         }
-        close IN;
-    }
-    oscar_log(5, INFO, ":: $p :: $name $ver $parch<");
-    next if (!$name || !$ver);
-    next if ($pkg !~ /^$name/);
-    #$rarch = "ppc64|pcc" if $rarch eq "ppc64"; # DIKIM added it for YDL
-    next if ($parch !~ /^($rarch|noarch|all)$/);
-    if (!$best || (cmp_version_strings($ver, $bestversion) == 1)) {
-        oscar_log(5, INFO, "   - $p selected");
-        $best = $p;
-        $bestversion = $ver;
-    }
+        oscar_log(5, INFO, ":: $p :: $name $ver $parch<");
+        next if (!$name || !$ver);
+        next if ($pkg !~ /^$name/);
+        #$rarch = "ppc64|pcc" if $rarch eq "ppc64"; # DIKIM added it for YDL
+        next if ($parch !~ /^($rarch|noarch|all)$/);
+        if (!$best || (cmp_version_strings($ver, $bestversion) == 1)) {
+            oscar_log(5, INFO, "   - $p selected");
+            $best = $p;
+            $bestversion = $ver;
+        }
     }
     return $best;
 }
@@ -287,7 +287,7 @@ should be used for bootstrapping a smart package manager
 --smart installs prereqs with the help of a smart package manager
 like yum(e).
 USAGE
-    exit $ret if ($ret);
+exit $ret if ($ret);
 }
 
 
@@ -305,7 +305,7 @@ sub remove_prereq ($$$$$) {
 
     my $distro_id = "$distro-$distrover-$arch";
     my ($installs, $removes, $shellcmds) = 
-        OSCAR::Prereqs::get_rawlist_prereqs($distro, $distrover, $arch, @$prereqs);
+    OSCAR::Prereqs::get_rawlist_prereqs($distro, $distrover, $arch, @$prereqs);
 
     require OSCAR::PackMan;
     if ($suffix eq "rpm") {
@@ -327,7 +327,7 @@ sub install_prereq($$$$$) {
     my ($distro, $distrover, $arch, $prereqs, $suffix) = @_;
 
     my ($installs, $removes, $shellcmds) = 
-        OSCAR::Prereqs::get_prereqs($distro, $distrover, $arch, @$prereqs);
+    OSCAR::Prereqs::get_prereqs($distro, $distrover, $arch, @$prereqs);
 
     # try to detect smart installer, fall-back to dumb installer if not found
     if (!$dumb) {
@@ -369,7 +369,7 @@ sub install_prereq($$$$$) {
         require OSCAR::PackageSmart;
 
         OSCAR::Logger::oscar_log_subsection "Adding repos $oscar_pkg_pool, ".
-            "$distro_pkg_pool";
+        "$distro_pkg_pool";
         my $local_repos = "$oscar_pkg_pool";
         $local_repos .= ", $distro_pkg_pool" if $distro_pkg_pool ne "";
         my @repos = split (",", $local_repos);
@@ -421,7 +421,7 @@ sub install_prereq($$$$$) {
         my @missing_pkgs = OSCAR::Prereqs::check_installed(@$installs);
         if (scalar (@missing_pkgs) > 0) {
             oscar_log(5, ERROR, "The following packages were NOT installed:\n".
-                 join (", ", @missing_pkgs));
+                join (", ", @missing_pkgs));
             return -1;
         }
     }
@@ -473,9 +473,9 @@ if ($status) {
     oscar_log(1, INFO, "Prereq status for $distro, ".
         "$distrover, $arch");
     my $ret = OSCAR::Prereqs::get_prereqs_status ($distro,
-                                                  $distrover,
-                                                  $arch,
-                                                  @prereqs);
+        $distrover,
+        $arch,
+        @prereqs);
 
     exit ($ret);
 }
@@ -527,7 +527,7 @@ configuration file prereq.cfg. This file is required because prereqs are
 installed before config.xml files can be parsed.
 For more information about this configuration file and prereqs functionnalities,
 please refer to the OSCAR documentation. For more information about OSCAR, 
-please visit http://oscar.openclustergroup.org/.
+please visit https://oscar-cluster.github.io/oscar/.
 
 =head2 Syntax
 
