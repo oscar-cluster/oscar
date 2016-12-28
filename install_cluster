@@ -6,21 +6,21 @@
 #                     All rights reserved.
 # Copyright 2002 International Business Machines
 #                Sean Dague <japh@us.ibm.com>
-# Copyright (c) 2002-2007 The Trustees of Indiana University.  
+# Copyright (c) 2002-2007 The Trustees of Indiana University.
 #                         All rights reserved.
 #
 # $Id$
-# 
+#
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation; either version 2 of the License, or
 #   (at your option) any later version.
- 
+
 #   This program is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
- 
+
 #   You should have received a copy of the GNU General Public License
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -44,24 +44,24 @@ use OSCAR::Env qw (
                     oscar_home_env
                   );
 
-my $cli = '';
-my $selector = '';
-my $build = '';
-my $define = '';
-my $network = '';
-my $db = '';
-my $adapter;
-my $help = '';
+my $cli        = '';
+my $selector   = '';
+my $build      = '';
+my $define     = '';
+my $network    = '';
+my $db         = '';
+my $help       = '';
 my $bootscript = '';
+my $adapter;
 
-GetOptions ('help' => \$help,
-            'cli' => \$cli, 
-            'opkgselector=s' => \$selector,
-            'buildimage=s' => \$build, 
-            'defineclients=s' => \$define, 
-            'networkclients=s' => \$network, 
-            'database|d=s' => \$db,
-            'bootscript=s' => \$bootscript);
+GetOptions ('help'             => \$help,
+            'cli'              => \$cli,
+            'opkgselector=s'   => \$selector,
+            'buildimage=s'     => \$build,
+            'defineclients=s'  => \$define,
+            'networkclients=s' => \$network,
+            'database|d=s'     => \$db,
+            'bootscript=s'     => \$bootscript);
 
 #If we get a --help flag
 if($help) {
@@ -70,7 +70,7 @@ Starts the OSCAR install process.
 By default, install_cluster uses the Graphical mode.
 
     --cli                   Runs the program in command line mode.
-    --opkgselector file     Passes the file into the selector stage of the 
+    --opkgselector file     Passes the file into the selector stage of the
                             install.  That stage will not ask for
                             user input.
     --buildimage file       Passes the file into the build stage of the install.
@@ -125,11 +125,11 @@ print "System checked\n";
 # so, if we're in it.
 
 if (! -d $ENV{OSCAR_HOME}) {
-    die("ERROR: The environment variable \$OSCAR_HOME was set, but the directory 
+    die("ERROR: The environment variable \$OSCAR_HOME was set, but the directory
 that it points to ($ENV{OSCAR_HOME}) does not exist!");
 }
 if (!chdir($ENV{OSCAR_HOME})) {
-    die("ERROR: The environment variable \$OSCAR_HOME was set, but could not 
+    die("ERROR: The environment variable \$OSCAR_HOME was set, but could not
 change into the directory that it points to ($ENV{OSCAR_HOME})!");
 }
 
@@ -152,7 +152,7 @@ if( $ENV{OSCAR_DB} eq "pg" ||
     $ENV{OSCAR_DB} eq "pgsql" ||
     $ENV{OSCAR_DB} eq "postgresql" ){
     $ENV{OSCAR_DB} = "pgsql:";
-    system("ln -s $lib_dir/ODA/pgsql.pm $lib_dir/oda.pm");    
+    system("ln -s $lib_dir/ODA/pgsql.pm $lib_dir/oda.pm");
     system("ln -s $oda_dir/prereqs/pgsql.cfg $oda_dir/prereq.cfg");
     # If postmaster is not running and pgsql rpm is not installed,
     # we assume that pgsql is not installed yet.
@@ -160,8 +160,8 @@ if( $ENV{OSCAR_DB} eq "pg" ||
         if !system("ps -ef | grep postmaster > /dev/null 2>&1")
             && !system("rpm -qa | grep postgresql > /dev/null 2>&1");
 }else{
-    system("ln -s $lib_dir/ODA/mysql.pm $lib_dir/oda.pm");    
-    system("ln -s $oda_dir/prereqs/mysql.cfg $oda_dir/prereq.cfg");    
+    system("ln -s $lib_dir/ODA/mysql.pm $lib_dir/oda.pm");
+    system("ln -s $oda_dir/prereqs/mysql.cfg $oda_dir/prereq.cfg");
 }
 
 # Get OSCAR's version
@@ -212,6 +212,14 @@ if (-e $oscar_logfile) {
     my @ologs = glob("$oscar_logfile"."_*");
     @ologs = map { if (/_(\d+)$/) { $1 } } @ologs;
     @ologs = sort { $a <=> $b; } @ologs;
+GetOptions ('help'             => \$help,
+            'cli'              => \$cli,
+            'opkgselector=s'   => \$selector,
+            'buildimage=s'     => \$build,
+            'defineclients=s'  => \$define,
+            'networkclients=s' => \$network,
+            'database|d=s'     => \$db,
+            'bootscript=s'     => \$bootscript);
     if (@ologs) {
 	$indx = $ologs[$#ologs] + 1;
     }
@@ -232,15 +240,15 @@ oscar_log_section("Running OSCAR install_cluster script    $date");
 
 # Fix to make multi lingualness work
 
-$ENV{LANG} = "C";
-$ENV{LC_ALL} = "C";
-$ENV{LANGUAGE} = "C";
-$ENV{LC_COLLATE} = "C";
-$ENV{LC_CTYPE} = "C";
+$ENV{LANG}        = "C";
+$ENV{LC_ALL}      = "C";
+$ENV{LANGUAGE}    = "C";
+$ENV{LC_COLLATE}  = "C";
+$ENV{LC_CTYPE}    = "C";
 $ENV{LC_MESSAGES} = "C";
 $ENV{LC_MONETARY} = "C";
-$ENV{LC_NUMERIC} = "C";
-$ENV{LC_TIME} = "C";
+$ENV{LC_NUMERIC}  = "C";
+$ENV{LC_TIME}     = "C";
 
 # Check to see if this is a supported platform
 
@@ -262,12 +270,12 @@ $ENV{PATH} = $ENV{PATH} .
 
 system("chmod 755 packages/*/scripts/*");
 
-# TJN (10/4/2005): Note, a fairly evil, totally non-obvious issue 
+# TJN (10/4/2005): Note, a fairly evil, totally non-obvious issue
 #    occurs if you have /tftpboot setup as a symlink,
-#    e.g., /tftpboot -> /var/tftpboot/,  and remove 'tftp-server'. 
-#    What happens is the '/tftpboot' dir (symlink) gets removed!  
-#    This is b/c '/tftpboot' is part of the RPM file manifest for 
-#    tftp-server (at least as of v0.33-3 it does). 
+#    e.g., /tftpboot -> /var/tftpboot/,  and remove 'tftp-server'.
+#    What happens is the '/tftpboot' dir (symlink) gets removed!
+#    This is b/c '/tftpboot' is part of the RPM file manifest for
+#    tftp-server (at least as of v0.33-3 it does).
 #
 #    Adding a sanity check after the RPM removes to check for this case!
 
@@ -302,7 +310,7 @@ my ($shorthostname) = split(/\./,$hostname,2);
 my $dnsdomainname = `dnsdomainname`;
 chomp($dnsdomainname);
 
-oscar_log_subsection("Command line invocation: $0 $adapter " . 
+oscar_log_subsection("Command line invocation: $0 $adapter " .
 		     join(" ", @ARGV));
 oscar_log_subsection("Hostname: $shorthostname");
 oscar_log_subsection("DNS domain name: $dnsdomainname");
@@ -337,11 +345,10 @@ else
 }
 
 oscar_log_subsection("Running: \"$cmd\"");
-!system("$cmd 2>&1") 
+!system("$cmd 2>&1")
     or die("Oscar Wizard failed to run successfully");
 oscar_log_subsection("Successfully ran oscar_wizard");
 
 oscar_log_subsection("Successfully ran OSCAR install_cluster script");
 
 # All done.
-

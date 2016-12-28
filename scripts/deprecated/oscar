@@ -1,4 +1,4 @@
-#!/usr/bin/env perl 
+#!/usr/bin/env perl
 #
 # Copyright (c) 2007-2008 Oak Ridge National Laboratory
 #                         Geoffroy Vallee <valleegr@ornl.gov>
@@ -32,7 +32,7 @@ use warnings "all";
 use Data::Dumper;
 
 # Few needed variables to deal with the different options of the script.
-my ($new_partition, @clients, $list_partitions, $list_partition_nodes, 
+my ($new_partition, @clients, $list_partitions, $list_partition_nodes,
     $distro, $list_partition_distro, $cluster_name, $queried_node_name,
     $partition_name, $node_to_update, $node_hostname, $node_ip, $node_type,
     $node_mac, $partition_to_deploy, $queried_partition, $delete_node,
@@ -72,12 +72,12 @@ sub get_pkgs_from_package_file ($) {
         return undef;
     }
 
-    open (DAT, $file) or (carp "ERROR: Impossible to open $file", 
+    open (DAT, $file) or (carp "ERROR: Impossible to open $file",
                           return undef);
     require OSCAR::Utils;
     my ($line, @pkgs);
     while ($line = <DAT>) {
-        if (OSCAR::Utils::is_a_valid_string ($line) 
+        if (OSCAR::Utils::is_a_valid_string ($line)
             && !OSCAR::Utils::is_a_comment ($line)) {
             chomp ($line);
             push (@pkgs, $line);
@@ -106,7 +106,7 @@ if ($check_config) {
             "(\"--cluster oscar\" for instance";
     }
     # First we get the associated image.
-#     OSCAR::Database::simple_oda_query ("SELECT 
+#     OSCAR::Database::simple_oda_query ("SELECT
     exit 0;
 }
 
@@ -157,7 +157,7 @@ if ($check_binarylist) {
 my $config = $oscar_configurator->get_config();
 print "WARNING! ODA is based on a real database and currently this script does ".
       "not fully support this mode"
-      if ($config->{oda_type} ne "file"); 
+      if ($config->{oda_type} ne "file");
 
 if ($delete_node) {
     require OSCAR::NodeMgt;
@@ -187,8 +187,8 @@ if ($new_partition) {
     }
     print "New partition: name=$new_partition, ".
           "distro=$distro, clients=@clients\n" if $verbose;
-    OSCAR::msm::add_partition ($cluster_name, 
-                               $new_partition, 
+    OSCAR::msm::add_partition ($cluster_name,
+                               $new_partition,
                                $distro,
                                \@clients);
     exit 0;
@@ -306,7 +306,7 @@ if ($queried_partition) {
     if ($queried_partition eq "") {
         die "ERROR: Invalid partition name\n";
     }
-    if (OSCAR::PartitionMgt::display_partition_info("oscar", 
+    if (OSCAR::PartitionMgt::display_partition_info("oscar",
         $queried_partition)) {
         die "ERROR: Impossible to display partition info ($queried_partition)";
     }
@@ -394,7 +394,7 @@ Help information.
 
 =head1 Examples
 
-To add a partition "partition1" to the cluster "oscar with two nodes, "node1" 
+To add a partition "partition1" to the cluster "oscar with two nodes, "node1"
 and "node2", based on debian 4 x86_64:
     oscar --add-partition partition1 --cluster oscar --client node1 --client \
     node2 --distro debian-4-x86_64

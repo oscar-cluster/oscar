@@ -51,8 +51,11 @@ sub oscar_home_env {
         oscar_log(1, ERROR, "You MUST execute the program from within the OSCAR top level directory!");
     }
 
-    # Two situations now: we are using an RPM based distro therefore we need to update /etc/profile.d/, or we are using a Debian-like distro and therefore, we do not have a /etc/profile.d/ folder (see Debian policies for more information), and we update /root/.bashrc
-    # First case: Debian-like distro
+    # Two situations now: we are using an RPM based distro therefore
+    # we need to update /etc/profile.d/, or we are using a Debian-like
+    # distro and therefore, we do not have a /etc/profile.d/ folder
+    # (see Debian policies for more information), and we update
+    # /root/.bashrc First case: Debian-like distro
     my $dir = "/etc/profile.d/";
     if (!-d $dir) {
         my $ret = `grep OSCAR /root/.bashrc`;
