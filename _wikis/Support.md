@@ -94,4 +94,4 @@ List of OSCAR related tutorials:
 
 ### Publications
 
-Coming soon.
+All the OSCAR papers/presentations are available at the [OSCAR Symposia web site](http://www.csm.ornl.gov/oscar/oscar-symposia/).
