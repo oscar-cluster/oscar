@@ -26,7 +26,7 @@ package OSCAR::Distro;
 #                    Neil Gorsuch <ngorsuch@ncsa.uiuc.edu>
 # Copyright 2002 International Business Machines
 #                  Sean Dague <japh@us.ibm.com>
-# Copyright � 2003, The Board of Trustees of the University of Illinois. 
+# Copyright 2003, The Board of Trustees of the University of Illinois. 
 #                   All rights reserved.
 # Copyright (c) 2005, Revolution Linux
 # Copyright (c) 2007 The Trustees of Indiana University.  
@@ -36,16 +36,17 @@ package OSCAR::Distro;
 #                     All rights reserved.
 
 use strict;
-use vars qw($VERSION @EXPORT);
 use Carp;
+use vars qw($VERSION @EXPORT);
+use base qw(Exporter);
 use OSCAR::Logger;
+use OSCAR::Env;
 use OSCAR::LoggerDefs;
 use OSCAR::ConfigFile;
 use OSCAR::Utils;
 use OSCAR::PackagePath;
 use OSCAR::OCA::OS_Detect;
 use warnings "all";
-use base qw(Exporter);
 @EXPORT = qw(
             find_distro
             get_list_of_supported_distros
