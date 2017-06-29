@@ -141,6 +141,9 @@ sub repos_list_urlfile ($) {
             }
             close IN;
         }
+    } else {
+        # URL file for distro repos doesn't exists. OSCAR Not configured.
+	oscar_log(5, WARN "$path doesn't exists. Forgot to initialize OSCAR?");
     }
     return @repos;
 }
