@@ -208,7 +208,7 @@ sub get_oscar_version {
     	OSCAR::Logger::oscar_log(1, ERROR, "File $path does not exist");
 	return undef;
     }
-    my $cmd = "less $path | grep want_svn=0";
+    my $cmd = "less $path | grep want_build_r=0";
     my $result = `$cmd`;
 
     if ($result eq "") {

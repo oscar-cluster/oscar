@@ -10,7 +10,7 @@
 # %define oscar_release_ver    @OSCAR_RELEASE_VERSION@
 # %define oscar_alpha_ver      @OSCAR_ALPHA_VERSION@
 # %define oscar_beta_ver       @OSCAR_BETA_VERSION@
-# %define oscar_svn_ver        @OSCAR_SVN_VERSION@
+# %define oscar_build_ver      @OSCAR_BUILD_VERSION@
 
 
 Summary: The OSCAR release file.

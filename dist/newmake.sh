@@ -116,11 +116,11 @@ umask 022
 cd $srcdir
 OSCAR_VERSION=`scripts/get-oscar-version.sh VERSION`
 OSCAR_GREEK_VERSION=`scripts/get-oscar-version.sh VERSION --greek`
-OSCAR_SVN_VERSION=`scripts/get-oscar-version.sh VERSION --svn`
+OSCAR_BUILD_VERSION=`scripts/get-oscar-version.sh VERSION --build-r`
 
 nightly_date=`date '+%Y%m%d'`
 if [ -n "$NIGHTLY" ]; then
-    sed -e s/^svn_r=.*/svn_r="$OSCAR_SVN_VERSION"nightly-"$nightly_date"/g VERSION > VERSION.new
+    sed -e s/^build_r=.*/build_r="$OSCAR_BUILD_VERSION"nightly-"$nightly_date"/g VERSION > VERSION.new
 	mv VERSION.new VERSION
     exit 0
 fi
@@ -162,6 +162,7 @@ cp -rl $srcdir $distdir
 #
 ( cd $distdir; find . -name .svn -type d | xargs rm -rf;
     find . -name '*~' | xargs rm -f;
+    rm -rf .git
     [ -d tmp ] && rm -rf tmp )
 
 #
@@ -298,11 +299,11 @@ if [ -n "$BUILD_BASE" ]; then
     fi
 
     #
-    # Fill in SVN revision in VERSION file
+    # Fill in BUILD revision in VERSION file
     #
 
-    if test "$OSCAR_SVN_VERSION" != ""; then
-        sed -e s/^svn_r=.*/svn_r=$OSCAR_SVN_VERSION/g VERSION > VERSION.new
+    if test "$OSCAR_BUILD_VERSION" != ""; then
+        sed -e s/^build_r=.*/build_r=$OSCAR_BUILD_VERSION/g VERSION > VERSION.new
 	    mv VERSION.new VERSION
     fi
 

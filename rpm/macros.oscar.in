@@ -10,7 +10,7 @@
 #%oscar_version_release  VERSION_RELEASE
 %oscar_version_release  %(%{_bindir}/get-oscar-version.sh %{_oscar_configdir}/VERSION --release)
 #%oscar_version_svn      VERSION_SVN
-%oscar_version_svn      %(%{_bindir}/get-oscar-version.sh %{_oscar_configdir}/VERSION --svn)
+%oscar_version_build      %(%{_bindir}/get-oscar-version.sh %{_oscar_configdir}/VERSION --build-r)
 
 # Macro distro checks.
 %is_fc   %(test -e /etc/fedora-release && echo 1 || echo 0)

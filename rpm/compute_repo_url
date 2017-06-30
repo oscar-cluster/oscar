@@ -38,7 +38,7 @@ fi
 source ${OSCAR_HOME}/VERSION
 
 OSCAR_VERSION=""
-if test "$want_svn" -eq 1
+if test "$want_build_r" -eq 1
 	then
 		OSCAR_VERSION="unstable"
 	else

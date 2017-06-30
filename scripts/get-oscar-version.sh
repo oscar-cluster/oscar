@@ -40,8 +40,8 @@ else
         OSCAR_MINOR_VERSION="`cat $srcfile | egrep '^minor=' | cut -d= -f2`"
         OSCAR_RELEASE_VERSION="`cat $srcfile | egrep '^release=' | cut -d= -f2`"
         OSCAR_GREEK_VERSION="`cat $srcfile | egrep '^greek=' | cut -d= -f2`"
-        OSCAR_WANT_SVN="`cat $srcfile | egrep '^want_svn=' | cut -d= -f2`"
-        OSCAR_SVN_R="`cat $srcfile | egrep '^svn_r=' | cut -d= -f2`"
+        OSCAR_WANT_BUILD_R="`cat $srcfile | egrep '^want_build_r=' | cut -d= -f2`"
+        OSCAR_BUILD_R="`cat $srcfile | egrep '^build_r=' | cut -d= -f2`"
         if test "$OSCAR_RELEASE_VERSION" != "0" -a "$OSCAR_RELEASE_VERSION" != ""; then
 	        OSCAR_VERSION="$OSCAR_MAJOR_VERSION.$OSCAR_MINOR_VERSION.$OSCAR_RELEASE_VERSION"
         else
@@ -54,16 +54,16 @@ else
 
         OSCAR_DATE=`date '+%Y%m%d'`
 
-        if test "$OSCAR_WANT_SVN" = "1" -a "$OSCAR_NEED_SVN" = "1" ; then
-            if test "$OSCAR_SVN_R" = "-1"; then
-                if test -d .svn; then
-                    ver="r`svnversion .`"
+        if test "$OSCAR_WANT_BUILD_R" = "1" -a "$OSCAR_NEED_SVN" = "1" ; then
+            if test "$OSCAR_BUILD_R" = "-1"; then
+                if test -d .git; then
+                    ver="r`git rev-list --count HEAD`"
                 else
-                    ver="svn`date '+%m%d%Y'`"
+                    ver="svn`date '+%Y%d%m'`"
                 fi
-                OSCAR_SVN_R="$ver"
+                OSCAR_BUILD_R="$ver"
             fi
-	        OSCAR_VERSION="${OSCAR_VERSION}$OSCAR_SVN_R"
+	        OSCAR_VERSION="${OSCAR_VERSION}$OSCAR_BUILD_R"
         fi
 
         if test "$option" = ""; then
@@ -72,7 +72,7 @@ else
     fi
 fi
 
-OSCAR_SVN_R=`echo $OSCAR_SVN_R | sed -e 's/nightly//g' | cut -d- -f1`
+OSCAR_BUILD_R=`echo $OSCAR_BUILD_R | sed -e 's/nightly//g' | cut -d- -f1`
 case "$option" in
     --full|-v|--version)
 	echo $OSCAR_VERSION
@@ -89,14 +89,14 @@ case "$option" in
     --greek)
 	echo $OSCAR_GREEK_VERSION
 	;;
-    --svn)
-	echo $OSCAR_SVN_R
+    --build-r)
+	echo $OSCAR_BUILD_R
 	;;
     --base)
         echo $OSCAR_BASE_VERSION
         ;;
     --all)
-        echo ${OSCAR_VERSION} ${OSCAR_MAJOR_VERSION} ${OSCAR_MINOR_VERSION} ${OSCAR_RELEASE_VERSION} ${OSCAR_GREEK_VERSION} ${OSCAR_SVN_R}
+        echo ${OSCAR_VERSION} ${OSCAR_MAJOR_VERSION} ${OSCAR_MINOR_VERSION} ${OSCAR_RELEASE_VERSION} ${OSCAR_GREEK_VERSION} ${OSCAR_BUILD_R}
         ;;
     --nightly)
 	echo ${OSCAR_VERSION}nightly-${OSCAR_DATE}
@@ -112,9 +112,9 @@ $0 <srcfile> [<option>]
     --minor   - Minor version number
     --release - Release version number
     --greek   - Greek (alpha, beta, etc) version number
-    --svn     - Subversion repository number
+    --build-r - git HEAD commit count
     --all     - Show all version numbers, separated by :
-    --base    - Show base version number (no svn number)
+    --base    - Show base version number (no git number)
     --nightly - Return the version number for nightly tarballs
     --help    - This message
 EOF

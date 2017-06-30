@@ -19,20 +19,21 @@ release=2
 
 greek=
 
-# If want_svn=1, then the SVN r number will be included in the overall
+# If want_build_r=1, then the BUILD number will be included in the overall
 # OSCAR version number in some form. Otherwise, put 0. Never leave
 # undefined.
 
-want_svn=1
+want_build_r=1
 
-# If svn_r=-1, then the SVN r number will be obtained dynamically at
-# run time, either 1) via the "svnversion" command (if this is a
-# Subversion checkout) in the form "r<svn_r>", or b) with the date (if
-# this is not a Subversion checkout, and the svnversion command cannot
-# be used) in the form of "svn<date>".  Alternatively, if svn_r is not
-# -1, the value of svn_r will be directly appended to the version
+# If build_r=-1, then the BUILD number will be obtained dynamically at
+# run time, either 1) via the "git rev-list --count HEAD" command (if this
+# is a git checkout) in the form "r<build_r>", or b) with the date (if
+# this is not a Subversion checkout, and the git command cannot
+# be used) in the form of "git<date>".  Alternatively, if build_r is not
+# -1, the value of build_r will be directly appended to the version
 # string.  This happens during "make dist", for example: if the
-# distribution tarball is being made from an SVN checkout, the value
-# of svn_r in this file is replaced with the output of "svnversion".
+# distribution tarball is being made from an GIT checkout, the value
+# of build_r in this file is replaced with the output of
+# "git rev-list --count HEAD".
 
-svn_r=-1
+build_r=-1
