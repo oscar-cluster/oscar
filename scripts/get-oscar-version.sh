@@ -57,7 +57,7 @@ else
         if test "$OSCAR_WANT_BUILD_R" = "1" -a "$OSCAR_NEED_SVN" = "1" ; then
             if test "$OSCAR_BUILD_R" = "-1"; then
                 if test -d .git; then
-                    ver="r`git rev-list --count HEAD`"
+                    ver="r`git rev-list --all HEAD|wc -l`" # --count not available in git 1.7.1
                 else
                     ver="svn`date '+%Y%d%m'`"
                 fi
