@@ -87,7 +87,7 @@ our $destroyed = 0;
 
 #REMOVE MAC_WINDOW FROM EXPORT WHEN NO LONGER NEEDED
 
-$VERSION = sprintf("r%d", q$Revision: 5621 $ =~ /(\d+)/);
+$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
 
 sub mac_window {
     $destroyed = 1;

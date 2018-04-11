@@ -299,6 +299,14 @@ if [ -n "$BUILD_BASE" ]; then
     fi
 
     #
+    # Replace old svn $Revision$ and old cvs $Id$ tag with current build revision
+    #
+    message "*** Updating \$Id\$ and \$Revision\$ in source tree... ***"
+    for file in `grep -Erl '\$Revision\$|\$Id\$' .|grep -v ./dist/newmake.sh`; do
+	    sed -i -e "s/\$Revision\$/${OSCAR_BUILD_VERSION}/g" $file
+    done
+
+    #
     # Fill in BUILD revision in VERSION file
     #
 

@@ -3,7 +3,7 @@
 # This script looks to ensure that every binary rpm provided by OSCAR
 # has its originating .src.rpm
 #
-$VERSION = "1.0";
+#$VERSION = "1.0";
 #	David N. Lombard
 #	Initial, nearly perfect version.
 $VERSION = "1.1";
