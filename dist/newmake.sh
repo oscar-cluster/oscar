@@ -178,7 +178,6 @@ rm -rf .git
 #
 message '### Updating $Id$ and $Revision$ in source tree... ###'
 for file in $(grep -Erl '\$Revision\$|\$Id\$' .|grep -v ./dist/newmake.sh); do
-	echo "Fixing: $file"
     sed -i -e "s/\\\$Revision\\\$/${OSCAR_VERSION}/g" -e "s/\\\$Id\\\$/${OSCAR_VERSION}/g" $file
 done
 

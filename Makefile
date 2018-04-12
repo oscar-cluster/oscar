@@ -27,6 +27,7 @@
 
 PKGDEST=.
 DESTDIR=
+TOPDIR  := $(CURDIR)
 SUBDIRS := bin lib oscarsamples scripts utils share testing rpm
 
 include ./Config.mk
@@ -39,6 +40,9 @@ all:
 # Since rpmbuild can not handle the character '-' in Version, remove the
 # date(e.g.,'-20071225') part
 OSCAR_VERSION ?= $(shell scripts/get-oscar-version.sh VERSION --full | cut -d- -f1)
+OSCAR_BASE_VERSION ?= $(shell scripts/get-oscar-version.sh VERSION --base)
+OSCAR_BUILD ?= $(shell scripts/get-oscar-version.sh VERSION --build-r | sed -e 's/[^0-9]//g')
+
 PKG        = $(shell env OSCAR_HOME=`pwd` scripts/distro-query | \
 	       awk '/packaging method/{print $$NF}')
 ARCH       = $(shell scripts/get_arch)
@@ -172,6 +176,31 @@ opt-uninstall: clean
 	@echo "Deleting directory $(DESTDIR)/tftpboot/oscar"
 	rm -rf $(DESTDIR)/tftpboot/oscar
 	rm -rf ~/tmp
+
+source_tarball:
+	@echo "Creating OSCAR source tarball: $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION).tar.gz"
+	@rm -fr $(TOPDIR)/tmp
+	@if [ -d $(TOPDIR)/.git ]; then \
+		mkdir -p $(TOPDIR)/tmp/; \
+		git archive --prefix=oscar-$(OSCAR_BASE_VERSION)/ $(GIT_BRANCH) | (cd $(TOPDIR)/tmp && tar xf -); \
+	else \
+		mkdir -p $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION); \
+		(cd $(TOPDIR) && tar --exclude=tmp --exclude=.git -cvf - .) | (cd $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION) && tar -xvf -); \
+	fi
+	@sed -e "s/OSCARVERSION/$(OSCAR_BASE_VERSION)/" \
+	     -e "s/OSCARRELEASE/0.$(OSCAR_BUILD)/" \
+	     < $(TOPDIR)/oscar-base.spec.in \
+	     > $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/oscar-base.spec
+	@sed -e "s/^build_r=-1/build_r=r$(OSCAR_BUILD)/" \
+	    < $(TOPDIR)/VERSION \
+	    > $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/VERSION
+	@for file in $$(grep -Erl '\$$Revision\$$|\$$Id\$$' $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/|grep -v /dist/newmake.sh); do \
+	    sed -i -e "s/\\\$$Revision\\\$$/$(OSCAR_VERSION)/g" -e "s/\\\$$Id\\\$$/$(OSCAR_VERSION)/g" $$file; \
+	done
+	@cd $(TOPDIR)/tmp && tar -ch oscar-$(OSCAR_BASE_VERSION) | gzip -9 > oscar-$(OSCAR_BASE_VERSION).tar.gz
+	@echo
+	@echo "source tarball has been created in $(TOPDIR)/tmp"
+	@echo
 
 baserpms:
 	@echo "Building OSCAR base rpms"
