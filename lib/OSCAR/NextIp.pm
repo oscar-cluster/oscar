@@ -29,7 +29,7 @@ use constant { E_MISSING_OCTET    => -1,
                E_MISC             => -4,
              };
 
-our $VERSION    = (q$Revision$ =~/\d+/g);
+our $VERSION = "$Revision$";
 our $DEBUG      = FALSE;         # control debug printing (off by default)
 
 # Sub-rtn specific dbg prints (may not exist)

@@ -60,7 +60,7 @@ my $DEFAULT = "Default";
              run_pkg_script_chroot
              run_pkg_apitest_test
              );
-$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
+our $VERSION = "$Revision$";
 
 =encoding utf8
 

@@ -53,7 +53,7 @@ use OSCAR::Utils;
 
 @EXPORT = qw(delnode_window);
 
-$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
+our $VERSION = "$Revision$";
 
 sub delnode_window {
     my ($parent, $vars) = @_;

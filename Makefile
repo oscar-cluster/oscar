@@ -38,7 +38,7 @@ all:
 # DIKIM
 # Since rpmbuild can not handle the character '-' in Version, remove the
 # date(e.g.,'-20071225') part
-OSCAR_VERSION ?= $(shell scripts/get-oscar-version.sh VERSION | cut -d- -f1)
+OSCAR_VERSION ?= $(shell scripts/get-oscar-version.sh VERSION --full | cut -d- -f1)
 PKG        = $(shell env OSCAR_HOME=`pwd` scripts/distro-query | \
 	       awk '/packaging method/{print $$NF}')
 ARCH       = $(shell scripts/get_arch)

@@ -32,7 +32,7 @@ use OSCAR::Tk;
 
 @EXPORT = qw(open_help);
 
-$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
+our $VERSION = "$Revision$";
 
 # Help messages for the OSCAR GUI.
 

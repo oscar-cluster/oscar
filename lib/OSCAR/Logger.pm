@@ -46,7 +46,7 @@ our @EXPORT = qw(
              update_log_file
             );
 
-$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
+our $VERSION = "$Revision$";
 
 
 ################################################################################

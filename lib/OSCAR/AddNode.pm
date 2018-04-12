@@ -36,7 +36,7 @@ use base qw(Exporter);
 use SIS::Image;
 @EXPORT = qw(addnode_window);
 
-$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
+our $VERSION = "$Revision$";
 
 our $pid;
 

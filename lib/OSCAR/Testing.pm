@@ -54,7 +54,7 @@ use File::Path qw(remove_tree);
             );
 
 
-$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
+our $VERSION = "$Revision$";
 
 =encoding utf8
 

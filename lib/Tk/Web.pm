@@ -29,7 +29,7 @@ use LWP();
 
 
 use vars qw($VERSION);
-$VERSION = '$Id$';
+our $VERSION = "$Revision$";
 
 @ISA = qw(LWP::UserAgent);
 use strict;
@@ -80,7 +80,7 @@ sub get_basic_credentials
 package Tk::Web;
 
 use vars qw($VERSION);
-$VERSION = '$Id$';
+our $VERSION = "$Revision$";
 
 require Tk::HTML;
 

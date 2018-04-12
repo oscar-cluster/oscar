@@ -26,7 +26,7 @@ require Tk::HTML::Handler;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '$Id$';
+our $VERSION = "$Revision$";
 
 @ISA = qw(Tk::Derived Tk::ROText);
 use strict;

@@ -59,7 +59,7 @@ use base qw(Exporter);
 
 use Data::Dumper;
 
-$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
+our $VERSION = "$Revision$";
 
 # %MAC = (
 #                   'macaddr' => {client => 'clientname', order => 'order collected'}

@@ -54,7 +54,7 @@ use base qw(Exporter);
             update_head_nic
             );
 
-$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
+our $VERSION = "$Revision$";
 
 # package scoped regex for an ip address.  If we ever need to support
 # ipv6, we just need to change it here

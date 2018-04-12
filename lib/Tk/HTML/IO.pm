@@ -36,7 +36,7 @@ LWP::TkIO - Tk I/O routines for the LWP library
 
 
 use vars qw($VERSION);
-$VERSION = '$Id$';
+our $VERSION = "$Revision$";
 
  use Tk;
  require LWP::TkIO;

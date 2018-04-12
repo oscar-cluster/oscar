@@ -57,7 +57,7 @@ use warnings "all";
             which_mysql_name
             );
 
-$VERSION = sprintf("r%d", q$Revision$ =~ /(\d+)/);
+our $VERSION = "$Revision$";
 my $tftpdir = "/tftpboot/";
 my $supported_distro_file;
 if (defined ($ENV{OSCAR_HOME})) {

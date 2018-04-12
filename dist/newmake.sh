@@ -35,16 +35,16 @@ usage () {
 }
 
 get_tfile () {
-    local name=`mktemp`
+	local name=$(mktemp)
     TFILES="$TFILES $name"
     echo $name
 }
 
 message () {
     local string="$*"
-    echo "====================================================="
+    echo "=============================================================================="
     echo $string
-    echo "====================================================="
+    echo "=============================================================================="
 }
 
 trap bail_out INT HUP QUIT
@@ -103,22 +103,22 @@ while [ -n "$1" ]; do
 done
 
 
-RUNDIR=`pwd`
-if [ `basename $RUNDIR` != "dist" ]; then
-    echo "***  You should be running this program from within the dist directory! ***"
+RUNDIR=$(pwd)
+if [ "$(basename $RUNDIR)" != "dist" ]; then
+    echo '===  You should be running this program from within the dist directory! ==='
     bail_out 1
 fi
 
 # set srcdir to parent directory
-srcdir=`dirname $RUNDIR`
+srcdir=$(dirname $RUNDIR)
 
 umask 022
 cd $srcdir
-OSCAR_VERSION=`scripts/get-oscar-version.sh VERSION`
-OSCAR_GREEK_VERSION=`scripts/get-oscar-version.sh VERSION --greek`
-OSCAR_BUILD_VERSION=`scripts/get-oscar-version.sh VERSION --build-r`
+OSCAR_VERSION=$(scripts/get-oscar-version.sh VERSION --full)
+OSCAR_GREEK_VERSION=$(scripts/get-oscar-version.sh VERSION --greek)
+OSCAR_BUILD_VERSION=$(scripts/get-oscar-version.sh VERSION --build-r)
 
-nightly_date=`date '+%Y%m%d'`
+nightly_date=$(date '+%Y%m%d')
 if [ -n "$NIGHTLY" ]; then
     sed -e s/^build_r=.*/build_r="$OSCAR_BUILD_VERSION"nightly-"$nightly_date"/g VERSION > VERSION.new
 	mv VERSION.new VERSION
@@ -127,13 +127,13 @@ fi
 
 ############################################################################
 
-start=`date`
+start=$(date)
 cat <<EOF
 
 ============================================================================== 
 Creating OSCAR distribution version $OSCAR_VERSION
 
-In directory: `pwd`
+In directory: $(pwd)
 Started: $start
 ============================================================================== 
  
@@ -144,7 +144,7 @@ EOF
 #
 cd ..
 distbase=oscar-$OSCAR_VERSION
-distdir=`pwd`"/$distbase"
+distdir="$(pwd)/$distbase"
 
 
 #
@@ -156,21 +156,31 @@ if [ -d "$distdir" ]; then
     bail_out 1
 fi
 cp -rl $srcdir $distdir
-#
-# Remove unwanted files
-# Don't remove Makefiles, yet, as we still need them.
-#
-( cd $distdir; find . -name .svn -type d | xargs rm -rf;
-    find . -name '*~' | xargs rm -f;
-    rm -rf .git
-    [ -d tmp ] && rm -rf tmp )
 
 #
 # Switch into the distribution directory in order to protect the source
 #
 cd $distdir
-export OSCAR_HOME=`pwd`
+export OSCAR_HOME=$(pwd)
 
+#
+# Remove unwanted files
+# Don't remove Makefiles, yet, as we still need them.
+#
+message '### Removing unwanted files (.svn, .git, *~, tmp, ...) ###'
+find . -name .svn -type d | xargs rm -rf;
+find . -name '*~' | xargs rm -f;
+rm -rf .git
+[ -d tmp ] && rm -rf tmp
+
+#
+# Replace old svn $Revision$ and old cvs $Id$ tag with current build revision
+#
+message '### Updating $Id$ and $Revision$ in source tree... ###'
+for file in $(grep -Erl '\$Revision\$|\$Id\$' .|grep -v ./dist/newmake.sh); do
+	echo "Fixing: $file"
+    sed -i -e "s/\\\$Revision\\\$/${OSCAR_VERSION}/g" -e "s/\\\$Id\\\$/${OSCAR_VERSION}/g" $file
+done
 
 # Detect this host's packaging mechanism
 distro_pkg () {
@@ -258,9 +268,9 @@ if [ -n "$BUILD_BASE" ]; then
     #
     # Put in those headers.
     #
-    message "*** Inserting license headers... ***"
+    message '### Inserting license headers... ###'
 
-    filelist=`get_tfile`
+    filelist=$(get_tfile)
     echo README > $filelist
 
     find dist -type f -print >> $filelist
@@ -272,14 +282,14 @@ if [ -n "$BUILD_BASE" ]; then
     find scripts -type f -print >> $filelist
     find testing -type f -print >> $filelist
 
-    newlist=`get_tfile`
-    grep -l '\$COPYRIGHT\$' `cat $filelist` > $newlist
+    newlist=$(get_tfile)
+    grep -l '\$COPYRIGHT\$' $(cat $filelist)"" > $newlist
 
-    message "Replacing COPYRIGHT in files:"`cat $newlist`
+    message "Replacing COPYRIGHT in files: $(cat $newlist)"
 
     # the insert license routine is not smart enough with hardlinks
     # so re-create these files with new inodes
-    for f in `cat $newlist`; do
+    for f in $(cat $newlist); do
 	cp $f ${f}_new
 	rm -f $f
 	mv ${f}_new $f
@@ -297,14 +307,6 @@ if [ -n "$BUILD_BASE" ]; then
 	mv -f $file dist/copyright-notice.txt
 	echo " - Ammended license notice ready"
     fi
-
-    #
-    # Replace old svn $Revision$ and old cvs $Id$ tag with current build revision
-    #
-    message "*** Updating \$Id\$ and \$Revision\$ in source tree... ***"
-    for file in `grep -Erl '\$Revision\$|\$Id\$' .|grep -v ./dist/newmake.sh`; do
-	    sed -i -e "s/\$Revision\$/${OSCAR_BUILD_VERSION}/g" $file
-    done
 
     #
     # Fill in BUILD revision in VERSION file
@@ -340,7 +342,7 @@ if [ -n "$DISTROS" -o -n "$ALL_REPOS" ]; then
 
     message "Installing yume, will need it for repository preparation"
 
-    PKGMGR=`distro_pkg`
+    PKGMGR=$(distro_pkg)
     if [ "$PKGMGR" = "rpm" ]; then
 	scripts/install_prereq --verbose --dumb \
 	    share/prereqs/packman packages/yume
@@ -404,15 +406,15 @@ cd $distdir/..
 
 if [ -n "$BUILD_BASE" ]; then
     if [ -z "$INSTALL_TARGET" ]; then
-	message ">> Building OSCAR base tarball in "`pwd`
+	    message ">> Building OSCAR base tarball in $(pwd)"
     else
 	message ">> Installing OSCAR base into $INSTALL_TARGET"
     fi
 
-    afiles=`get_tfile`
+    afiles=$(get_tfile)
     find $distbase \( -type f -o -type l \) > $afiles
 
-    bfiles=`get_tfile`
+    bfiles=$(get_tfile)
     # filter out all distro directories except for yume, rapt, packman
     egrep -v  "(share/prereqs|packages)/.*/(distro|SRPMS)/" <$afiles >$bfiles
     egrep "/(yume|rapt|packman)/distro/" <$afiles >>$bfiles
@@ -435,13 +437,13 @@ fi
 
 if [ -n "$BUILD_SRPMS" ]; then
     if [ -z "$INSTALL_TARGET" ]; then
-	message ">> Building OSCAR SRPMS tarball in "`pwd`
+	message ">> Building OSCAR SRPMS tarball in $(pwd)"
     else
 	message ">> Installing OSCAR SRPMS into $INSTALL_TARGET"
     fi
 
     # build filelist for srpms
-    srpms=`get_tfile`
+    srpms=$(get_tfile)
     find $distbase -type d -a -name SRPMS > $srpms
     if [ -n "$INSTALL_TARGET" ]; then
 	if [ ! -d "$INSTALL_TARGET" ]; then
@@ -473,7 +475,7 @@ Distros      : $DISTROS
 Repo tgt     : $REPO_TARGET
  
 Started: $start
-Ended:   `date`
+Ended:   $(date)
 ============================================================================== 
  
 EOF

@@ -32,7 +32,7 @@ delete $HTML::Element::OVERLOAD{'""'};
 
 # use vars qw($VERSION $AUTOLOAD);
 use vars qw($VERSION);
-$VERSION = '$Id$';
+our $VERSION = "$Revision$";
 
 sub HTML::Element::enclosing
 {
