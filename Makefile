@@ -214,7 +214,7 @@ baserpms: source_tarball
 		exit 1; \
 	fi
 	@rpmbuild -tb $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION).tar.gz && \
-	@rm -rf $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION) $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION).tar.gz
+	rm -rf $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION) $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION).tar.gz
 
 moverpms: rpm
 	@mv `rpm --eval '%{_topdir}'`/RPMS/noarch/oscar*$(OSCAR_BASE_VERSION)-*.noarch.rpm $(PKGDEST)
@@ -235,7 +235,7 @@ basedebs: source_tarball
 		cd $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION) && \
 		dpkg-buildpackage -rfakeroot; \
 	fi
-	@rm -rf $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION) $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION).tar.gz
+	@test $? -eq 0 && rm -rf $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION) $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION).tar.gz
 
 movedebs: deb
 	@mv /$(TOPDIR)tmp/*oscar*.deb $(PKGDEST);
