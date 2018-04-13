@@ -185,7 +185,11 @@ source_tarball:
 		git archive --prefix=oscar-$(OSCAR_BASE_VERSION)/ $(GIT_BRANCH) | (cd $(TOPDIR)/tmp && tar xf -); \
 	else \
 		mkdir -p $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION); \
-		(cd $(TOPDIR) && tar --exclude=tmp --exclude=.git -cvf - .) | (cd $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION) && tar -xvf -); \
+		(cd $(TOPDIR) && tar -cvf - \
+		--exclude=tmp --exclude=.git --exclude=src --exclude=\*~ \
+		--exclude=share/prereqs/\*/distro --exclude=share/prereqs/\*/SRPMS \
+		--exclude=dist --exclude=\*.spec.in \
+		.) | (cd $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION) && tar -xvf -); \
 	fi
 	@sed -e "s/OSCARVERSION/$(OSCAR_BASE_VERSION)/" \
 	     -e "s/OSCARRELEASE/0.$(OSCAR_BUILD)/" \
@@ -194,7 +198,7 @@ source_tarball:
 	@sed -e "s/^build_r=-1/build_r=r$(OSCAR_BUILD)/" \
 	    < $(TOPDIR)/VERSION \
 	    > $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/VERSION
-	@for file in $$(grep -Erl '\$$Revision\$$|\$$Id\$$' $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/|grep -v /dist/newmake.sh); do \
+	@for file in $$(grep -Erl '\$$Revision\$$|\$$Id\$$' $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/); do \
 	    sed -i -e "s/\\\$$Revision\\\$$/$(OSCAR_VERSION)/g" -e "s/\\\$$Id\\\$$/$(OSCAR_VERSION)/g" $$file; \
 	done
 	@cd $(TOPDIR)/tmp && tar -ch oscar-$(OSCAR_BASE_VERSION) | gzip -9 > oscar-$(OSCAR_BASE_VERSION).tar.gz
@@ -202,55 +206,39 @@ source_tarball:
 	@echo "source tarball has been created in $(TOPDIR)/tmp"
 	@echo
 
-baserpms:
+baserpms: source_tarball
 	@echo "Building OSCAR base rpms"
 	@if [ `echo $(OSCAR_VERSION) | grep -c ':'` -gt 0 ]; then \
 		echo "OSCAR_VERSION is $(OSCAR_VERSION) and contains a ':'"; \
 		echo "Please clean up (svn update) your svn tree and try again!"; \
 		exit 1; \
 	fi
-	@sed -e "s/OSCARVERSION/$(OSCAR_VERSION)/" < oscar-base.spec.in \
-		> oscar-base.spec
-	@mkdir oscar-$(OSCAR_VERSION)
-	@cp -rl `ls -1 | grep -v oscar-$(OSCAR_VERSION)` oscar-$(OSCAR_VERSION)
-	@rm -f oscar-$(OSCAR_VERSION)/oscar.spec
-	@tar czvf oscar-$(OSCAR_VERSION).tar.gz \
-		--exclude dist --exclude .svn --exclude \*.tar.gz \
-		--exclude \*.spec.in --exclude src --exclude \*~ \
-		--exclude share/prereqs/\*/distro \
-		--exclude share/prereqs/\*/SRPMS oscar-$(OSCAR_VERSION)
-	@rm -rf oscar-$(OSCAR_VERSION)
-	rpmbuild -tb oscar-$(OSCAR_VERSION).tar.gz && \
-	rm -f oscar-$(OSCAR_VERSION).tar.gz oscar-base.spec # && \
+	@rpmbuild -tb $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION).tar.gz && \
+	@rm -rf $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION) $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION).tar.gz
 
 moverpms: rpm
-	@mv `rpm --eval '%{_topdir}'`/RPMS/noarch/oscar*$(OSCAR_VERSION)-*.noarch.rpm $(PKGDEST)
+	@mv `rpm --eval '%{_topdir}'`/RPMS/noarch/oscar*$(OSCAR_BASE_VERSION)-*.noarch.rpm $(PKGDEST)
 	@echo "Binary packages are available in $(PKGDEST)"
 
 
-basedebs:
+basedebs: source_tarball
 	@echo "Building OSCAR base Debian packages"
 	@if [ `echo $(OSCAR_VERSION) | grep -c ':'` -gt 0 ]; then \
 		echo "OSCAR_VERSION is $(OSCAR_VERSION) and contains a ':'"; \
 		echo "Please clean up (svn update) your svn tree and try again!"; \
 		exit 1; \
 	fi
-	@rm -rf /tmp/oscar-debian; mkdir -p /tmp/oscar-debian
-	@tar czvf /tmp/oscar-debian/oscar-base-$(OSCAR_VERSION).tar.gz \
-		--exclude dist --exclude .svn --exclude \*.tar.gz \
-		--exclude \*.spec.in --exclude src --exclude \*~ \
-		--exclude share/prereqs/\*/distro \
-		--exclude share/prereqs/\*/SRPMS .
-	if [ -n "$$UNSIGNED_OSCAR_PKG" ]; then \
-		cd /tmp/oscar-debian && tar xzf oscar-base-$(OSCAR_VERSION).tar.gz && \
+	@if [ -n "$$UNSIGNED_OSCAR_PKG" ]; then \
+		cd $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION) && \
 		dpkg-buildpackage -rfakeroot -us -uc; \
 	else \
-		cd /tmp/oscar-debian && tar xzf oscar-base-$(OSCAR_VERSION).tar.gz && \
+		cd $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION) && \
 		dpkg-buildpackage -rfakeroot; \
 	fi
+	@rm -rf $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION) $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION).tar.gz
 
 movedebs: deb
-	@mv /tmp/*oscar*.deb $(PKGDEST);
+	@mv /$(TOPDIR)tmp/*oscar*.deb $(PKGDEST);
 	@echo "Binary packages are available in $(PKGDEST)"
 
 
