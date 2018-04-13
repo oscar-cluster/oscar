@@ -58,6 +58,7 @@ else
             if test "$OSCAR_BUILD_R" = "-1"; then
                 if test -d .git; then
                     ver="r`git rev-list --all HEAD|wc -l`" # --count not available in git 1.7.1
+		    test $ver -le 2018 && ver="git`date '+%Y%d%m'`" # partial clone (--depth=1)
                 else
                     ver="svn`date '+%Y%d%m'`"
                 fi
