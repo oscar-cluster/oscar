@@ -57,7 +57,6 @@ bootstrap using RPMs.
 %package -n oscar-base
 Group: Applications/System
 Summary: Base OSCAR package
-#Requires: oscar-base-scripts == %{version}-%{release}
 Requires(post): %{name}-base-scripts == %{version}-%{release}
 # Requiring oscar virtual package let uninstal the whole oscar by removing oscar package.
 # all other oscar-base-* packages depends on oscar-base.
