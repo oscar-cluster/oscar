@@ -59,7 +59,7 @@ else
                 if test -d .git; then
                     ver="r`git rev-list --all HEAD|wc -l`" # --count not available in git 1.7.1
 		    # If partial clone (--depth=1), then we use date of latest commit as build release.
-		    test ${ver/r/} -le 2018 && ver="git`git log -1 --format=%cd --date=iso8601|sed -e 's/\s.*//g;s/-//g'`"
+		    test ${ver/r/} -le 2018 && ver="`git log -1 --format=%cd --date=iso8601|sed -e 's/\s.*//g;s/-//g'`git"
                 else
                     ver="svn`date '+%Y%d%m'`"
                 fi

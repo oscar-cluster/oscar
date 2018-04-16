@@ -983,6 +983,7 @@ sub create_image ($%) {
 # Input: full path of the SystemConfigurator config file to analyze.           #
 # Return: 0 if success, -1 else.                                               #
 ################################################################################
+# OL: OBSOLETE
 sub update_systemconfigurator_configfile ($) {
     my $file = shift;
     use constant MAX_LABEL_LENGTH  =>  12;
