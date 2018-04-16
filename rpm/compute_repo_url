@@ -52,7 +52,7 @@ then
 fi
 
 DISTRO_QUERY=""
-for P in /usr/bin ${OSCAR_HOME}/utils
+for P in ${OSCAR_HOME}/utils /usr/bin
 do
 	if test -x ${P}/distro-query
 	then
@@ -63,7 +63,8 @@ done
 
 if test -n "${DISTRO_QUERY}"
 then
-	DISTRO="$($DISTRO_QUERY |awk '/compat / { printf("%s-",$3) }')${ARCH}"
+	#DISTRO="$($DISTRO_QUERY |awk '/compat / { printf("%s-",$3) }')${ARCH}"
+	DISTRO="$($DISTRO_QUERY --compat_distro_id)"
 	echo "${URL_BASE}/${OSCAR_VERSION}/${DISTRO}"
 	exit 0
 else

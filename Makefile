@@ -43,11 +43,11 @@ OSCAR_VERSION ?= $(shell scripts/get-oscar-version.sh VERSION --full | cut -d- -
 OSCAR_BASE_VERSION ?= $(shell scripts/get-oscar-version.sh VERSION --base)
 OSCAR_BUILD ?= $(shell scripts/get-oscar-version.sh VERSION --build-r | sed -e 's/[^0-9]//g')
 
-PKG        = $(shell env OSCAR_HOME=`pwd` scripts/distro-query | \
+PKG        = $(shell env OSCAR_HOME=`pwd` utils/distro-query | \
 	       awk '/packaging method/{print $$NF}')
 ARCH       = $(shell scripts/get_arch)
 
-DIST_VER   = $(shell env OSCAR_HOME=`pwd` scripts/distro-query | \
+DIST_VER   = $(shell env OSCAR_HOME=`pwd` utils/distro-query | \
 	       awk '/compat distribution/{DIST=$$NF} \
 	            /compat distrover/{VER=$$NF} \
 		    END{print DIST"-"VER}')

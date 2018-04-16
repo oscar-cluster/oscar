@@ -40,6 +40,8 @@ GetOptions( \%options,
 	    'image|i=s',
 	    'node|n=s',
 	    'pool|p=s',
+	    'distro_id|d',
+	    'compat_distro_id|c',
 	    'help|h',
 	    'verbose|v',
             ) || usage();
@@ -97,6 +99,20 @@ if ($options{pool}) {
 
     &print_image_detect($imagepath);
 
+} elsif ($options{distro_id}) {
+    my $os = OSCAR::OCA::OS_Detect::open ("/");
+    if (!defined $os) {
+        die "ERROR: Impossible to detect the local distro.\n".
+            "Is your system supported by OSCAR?\n";
+    }
+    print "$os->{distro}-$os->{distro_version}-$os->{arch}";
+} elsif ($options{compat_distro_id}) {
+    my $os = OSCAR::OCA::OS_Detect::open ("/");
+    if (!defined $os) {
+        die "ERROR: Impossible to detect the local distro.\n".
+            "Is your system supported by OSCAR?\n";
+    }
+    print "$os->{compat_distro}-$os->{distro_version}-$os->{arch}";
 } else {
     # we want to know the distro ID of the local system
     my $os = OSCAR::OCA::OS_Detect::open ("/");
@@ -104,8 +120,8 @@ if ($options{pool}) {
         die "ERROR: Impossible to detect the local distro.\n".
             "Is your system supported by OSCAR?\n";
     }
-    my $distro_id = 
-        "$os->{distro}-$os->{distro_version}.$os->{distro_update}-$os->{arch}";
+    #my $distro_id = 
+    #    "$os->{distro}-$os->{distro_version}"."$os->{distro_update}-$os->{arch}";
     print_image_detect("/");
 }
 exit 0;
@@ -167,6 +183,8 @@ Usage: distro-query [options]
    --image|-i IMAGE_PATH : detect distro and architecture of an image directory
    --pool|-p path        : detect distro and architecture of a package pool
    --node|-n node_name   : detect distro and architecture of a node
+   --distro_id|d         : display distro id
+   --compat_distro_id    : display compat distro id
    --help|-h             : display this help text
 END_USAGE
    exit(1);
@@ -201,6 +219,14 @@ Detect distro and architecture of a package pool.
 =item --node|-n <NODE_NAME>
 
 Detect distro and architecture of a node.
+
+=item --distro_id|d
+
+Display the distro id.
+
+=item --compat_distro_id
+
+Display the compat distro id.
 
 =item --help|-h
 
