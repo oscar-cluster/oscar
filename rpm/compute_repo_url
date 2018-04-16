@@ -27,12 +27,7 @@ fi
 
 if [ -z "$OSCAR_HOME" ]
 then
-    if [ -d "/etc/oscar" ]
-    then
-	    OSCAR_HOME=/etc/oscar
-    else
-        OSCAR_HOME=`pwd`/..
-    fi
+    OSCAR_HOME=`pwd`/..
 fi
 
 source ${OSCAR_HOME}/VERSION
