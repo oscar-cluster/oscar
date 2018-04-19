@@ -1,0 +1,5 @@
+Files that are usefull for developpers can be found in this directory.
+See file headers for usage instructions.
+- Dockerfile_OSCAR.centos6	A docker file to build oscar core for centos-6
+- Dockerfile_OSCAR.centos7	A docker file to build oscar core for centos-7
+- Dockerfile_OSCAR.fc27		A docker file to build oscar core for Fedorea-27
