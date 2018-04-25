@@ -24,7 +24,6 @@
         <dist>suse</dist>
       </filters>  
       <pkg>slurm</pkg>
-      <pkg>slurm-munge</pkg>
       <pkg>slurm-pam_slurm</pkg>
     </requires>
     <requires>
@@ -32,7 +31,6 @@
         <dist>debian</dist>
       </filters>
       <pkg>slurm</pkg>
-      <pkg>slurm-munge</pkg>
       <pkg>slurm-pam_slurm</pkg>
     </requires>
   </serverDeps>
@@ -46,7 +44,6 @@
         <dist>suse</dist>
       </filters>  
       <pkg>slurm</pkg>
-      <pkg>slurm-munge</pkg>
       <pkg>slurm-pam_slurm</pkg>
     </requires>
      <requires>
@@ -54,12 +51,16 @@
         <dist>debian</dist>
       </filters>
       <pkg>slurm</pkg>
-      <pkg>slurm-munge</pkg>
       <pkg>slurm-pam_slurm</pkg>
     </requires>
   </clientDeps>
   <apiDeps/>
   <changelog>
+    <versionEntry version="2.8.1-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2018-04-25T16:29:17+02:00">
+        <item>slurm-munge obsolete (included in main package). Removed requirement</item>
+      </changelogEntry>
+    </versionEntry>
     <versionEntry version="2.8.0-1">
       <changelogEntry authorName="Olivier Lahaye" date="2015-08-19T18:06:46+02:00">
         <item>Add apitests.</item>
