@@ -6,12 +6,12 @@
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
 
     <!--
-    <link rel="stylesheet" type="text/css" href="{{site.baseurl}}/css/main.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="{{site.baseurl}}/stylesheets/github-dark.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="{{site.baseurl}}/stylesheets/print.css" media="print">
+    <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/css/main.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/stylesheets/github-dark.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/stylesheets/print.css" media="print">
     -->
-    <link rel="shortcut icon" type="image/x-icon" href="{{site.baseurl}}/favicon.ico?" />
-    <link rel="stylesheet" type="text/css" href="{{site.baseurl}}/stylesheets/stylesheet.css" media="screen" />
+    <link rel="shortcut icon" type="image/x-icon" href="{{ site.baseurl }}/favicon.ico?" />
+    <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/stylesheets/stylesheet.css" media="screen" />
 
     <title>OSCAR: {{ page.title }}</title>
   </head>
@@ -20,16 +20,16 @@
 
     <div id="header_wrap" class="outer">
         <header class="inner">
-          <a id="forkme_banner" href="https://github.com/oscar-cluster/oscar">View on GitHub</a>
+		<a id="forkme_banner" href="https://github.com/oscar-cluster{{ site.baseurl }}">View on GitHub</a>
 
         <div id="project_tagline">
-          <img src="{{site.baseurl}}/images/oscar-logo.jpg" width="130" />
+          <img src="{{ site.baseurl }}/images/oscar-logo.jpg" width="130" />
         </div>
           <h2 id="project_tagline1">Open Source Cluster Application Resources</h2>
 
             <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/oscar-cluster/oscar/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/oscar-cluster/oscar/tarball/master">Download this project as a tar.gz file</a>
+		    <a class="zip_download_link" href="https://github.com/oscar-cluster/{{ site.baseurl }}/zipball/master">Download this project as a .zip file</a>
+		    <a class="tar_download_link" href="https://github.com/oscar-cluster{{ site.baseurl }}/tarball/master">Download this project as a tar.gz file</a>
             </section>
         </header>
     </div>
@@ -41,7 +41,7 @@
         <div class="middle">
         {% include nav.html %}
       <section id="main_content" class="inner">
-{{content}}
+{{ content }}
       </section>
         </div>
     </div>
