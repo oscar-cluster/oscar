@@ -31,7 +31,7 @@ markdown: kramdown
 #      extensions: ["tables", "fenced_code_blocks"]
 
 #theme: sinatra
-theme: jekyll-theme-slate
+theme: jekyll-theme-time-machine
 
 # Wikis
 include: ['_wikis']
