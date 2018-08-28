@@ -12,6 +12,12 @@ category: wiki
 ## Current Status
 
 ### Latest Release
+ * None (yet)
+
+### Testing Release
+ * [OSCAR 6.5 beta](quick_start_guide_for_rhel)
+
+### Obsolete Releases
 
  * On May 27, 2009: [OSCAR 6.0.3](repoTesting)
  * On April 08, 2009: [OSCAR 6.0.2](repoTesting)
@@ -20,7 +26,7 @@ category: wiki
  * On June 23, 2008: [OSCAR 5.1 beta](oscar51)
  * On November 12, 2006: [OSCAR 5.0](oscar50)
 
-### Supported Distributions
+### Very Obsolete Distributions
 
  * See [this page](DistroSupport) for OSCAR 5.1 beta
  * See [this page](SupportedDistros) for OSCAR 5.0

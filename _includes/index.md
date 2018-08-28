@@ -17,7 +17,7 @@ Anyone is welcome to [contribute](wiki/DevelDocs) to OSCAR core development, or 
 # How can I contribute?
 Email sysadmin@ crest . iu . edu or post a message to oscar-devel@lists.sourceforge.net to get the access to the oscar-cluster github project. We will send an invitation mail to establish your access.
 
-# Latest release
+# Latest releases
 
  * On May 31, 2011: [OSCAR 6.1.1](/wiki/repoTesting/)
  * On February 8, 2011: [OSCAR 6.1.0](/wiki/repoTesting/)
@@ -28,6 +28,9 @@ Email sysadmin@ crest . iu . edu or post a message to oscar-devel@lists.sourcefo
  * On February 06, 2009: [OSCAR 6.0.1](/wiki/repoTesting/)
  * On January 05, 2009: [OSCAR 6.0](/wiki/repoTesting/)
  * On November 12, 2006: [OSCAR 5.0](/wiki:oscar50/)
+
+# Older releases
+ * Available [here](https://sourceforge.net/projects/oscar/files/oscar/)
 
 OSCAR on!
 
