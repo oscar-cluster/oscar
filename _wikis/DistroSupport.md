@@ -15,6 +15,7 @@ category: wiki
 |Distribution\Arch       |x86_64 |
 |---|---|
 | Fedora 27       | ok |
+| Fedora 28       | ok |
 | CentOS / RHEL 7       | ok |
 | CentOS / RHEL 6       | ok |
 | Debian 6 / 7 (Ubuntu 12.04 / 12.10)  | ok |
@@ -36,14 +37,13 @@ The following matrix lists people who intend to test on a particular distro/arch
 
 |Distribution\Arch    | x86     | x86_64 | ppc64 |
 |---|---|---|---|
-| Fedora Core 27       | N/A  | Olivier (ok), DongInn | N/A      |
-| Fedora Core 28       | N/A | Olivier (ok), DongInn | N/A      |
 | RHEL 6              | N/A | Olivier (ok), DongInn | N/A      |
-| RHEL 7              | N/A | Olivier (ok), DongInn | N/A      |
-| YellowDogLinux5.0   | N/A        | N/A      |      |
-| openSUSE 42.3       | N/A | Olivier | N/A |
+| RHEL 7              | N/A | Olivier (failed), DongInn | N/A      |
+| YellowDogLinux5.0   | N/A        | N/A      | DongInn     |
 
-For those of you who want to test oscar 6.5 beta, the cwpackages for oscar 6.5 beta are available [here](http://svn.oscar.openclustergroup.org/repos/unstable/).[[BR]]
+## Distribution Support for OSCAR development releases
+
+For those of you who want to test oscar 6.5 beta, the packages for oscar 6.5 beta are available [here](http://svn.oscar.openclustergroup.org/repos/unstable/).[[BR]]
 We usually support the most recently released distributions plus one version back.  But if there are developers/users who have the cycles to support other versions, then why not ;-)
 
 If the linux distro remote repository is accessible, we can use it without copying all the rpms of the Linux installation CD/DVD to /tftpboot/distro/<distro_name>.
