@@ -32,7 +32,7 @@ My $OSCAR_WORKING_COPY is where I checked out the package git repository.
 
         for repo in $(curl -s "https://api.github.com/users/oscar-cluster/repos?per_page=1000" | grep -w clone_url | grep -o '[^"]\+://.\+.git'|grep -Ev 'pkgsrc|tags')
         do
-          git clone $repo work
+          git clone --depth=1 $repo work
           cd work
           opkgc --dist=rhel --input=./opkg --output=/path/to/local/distro/packages/
           cd ..
