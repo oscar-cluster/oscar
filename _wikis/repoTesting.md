@@ -22,7 +22,7 @@ category: wiki
  1. Make sure that your system is up-to-date, executing as root *yum update* or *dnf update* or *zypper update*
  1. install the oscar-release package for your distro from http://svn.oscar.openclustergroup.org/repos/\<oscar-version\>/
  1. Check the content of the _/etc/oscar/oscar.conf_ file; make sure it matches your configuration (for instance check the OSCAR interface, i.e., the network interface used to manage your cluster, is correctly set).
- 1. Execute as root *oscar-config --setup-distro \<distro\>-\<version\>-\<arch\>* (for instance *oscar-config --setup-distro centos-5-x86_64*). To get the list of Linux distributions officially supported by a given release of OSCAR, or get the exact syntax of the identifier you must use, you can execute the *oscar-config --supported-distros* command.
+ 1. Execute as root *oscar-config --setup-distro \<distro\>-\<version\>-\<arch\>* (for instance *oscar-config --setup-distro centos-7-x86_64*). To get the list of Linux distributions officially supported by a given release of OSCAR, or get the exact syntax of the identifier you must use, you can execute the *oscar-config --supported-distros* command.
  1. Execute as root *oscar-config --bootstrap*
  1. Execute as root *system-sanity* and make sure you address all the reported issues 
  1. Execute as root *oscar_wizard install*
@@ -57,7 +57,7 @@ category: wiki
  1. Make sure that your system is up-to-date 
  1. Execute as root *apt-get install oscar* 
  1. Check the content of the _/etc/oscar/oscar.conf_ file; make sure it matches your configuration (for instance check the OSCAR interface, i.e., the network interface used to manage your cluster, is correctly set).
- 1. Execute as root *oscar-config --setup-distro \<distro\>-\<version\>-\<arch\>* (for instance *oscar-config --setup-distro debian-4-x86_64*)
+ 1. Execute as root *oscar-config --setup-distro \<distro\>-\<version\>-\<arch\>* (for instance *oscar-config --setup-distro debian-6-x86_64*)
  1. Execute as root *oscar-config --bootstrap*
  1. Execute as root *system-sanity* and make sure you address all the reported issues 
  1. Execute as root *oscar_wizard install*
