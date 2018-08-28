@@ -19,11 +19,11 @@ The following is a list of OSCAR packages and their respective maintainers.  The
 | APITest             | Thomas Naughton, Olivier Lahaye  | Cluster installation test engine
 | BLCR                | (obsolete)                       | Berkley Checkpoint Restart.
 | C3                  | Thomas Naughton, Olivier Lahaye  | Tool to run a command across compute nodes
-| Configurator        | Olivier Lahaye                   | ?
+| Configurator        | Olivier Lahaye                   |
 | Env-switcher        | DongInn Kim                      | module to switch across different MPI stacks
 | Ganglia             | Erich Focht, Olivier Lahaye      | Cluster web medtrics (load, jobs, ...)
 | Jobmonarch          | Olivier Lahaye                   | Cluster web job history listing (ganglia module)
-| Kernel-picker       | Olivier Lahaye                   | ?
+| Kernel-picker       | Olivier Lahaye                   |
 | LAM/MPI             | Not supported anymore            | Old MPI stack
 | Loghost             | Olivier Lahaye                   | Configure head as syslog host (accept nodes logs)
 | MPICH               | Erich Focht                      | an MPI stack
@@ -44,7 +44,6 @@ The following is a list of OSCAR packages and their respective maintainers.  The
 | Packman             | Olivier Lahaye                   | Package manager (abstraction layer over rpm/deb)
 | Pfilter             | broken?                          | iptable configuration
 | Rapt                | Olivier Lahaye                   | enhanced apt to deal with local oscar repositories (similar to yume for rpms)
-| SC3                 | Erich Focht, Olivier Lahaye      |
 | SC3                 | Erich Focht, Olivier Lahaye      | enhanced C3 that can deal with subclusters.
 | SGE                 |                                  | Sun Grid Engine. currently broken.
 | SIS : systemiconfigurator | Olivier Lahaye, Erich Focht| Used to configure kernel+bootloader+network on imaged nodes. Now obsolete and only kept for perle API dependancies.
