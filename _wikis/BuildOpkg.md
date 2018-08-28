@@ -15,9 +15,10 @@ The goals of the OSCAR package system is to describe software:
  * in a distribution-indepedant way,
  * with cluster-wide actions.
 
-An _opkg_ description is made of a _config.xml_ file plus some others files (pre|post)-install scripts. Have a look at [opkgAPI] to get a full description of _opkg_ packaging.
+An _opkg_ description is made of a _config.xml_ file plus some others files (pre|post)-install scripts. Have a look at [opkgAPI](opkgAPI) to get a full description of _opkg_ packaging.
 
-_opkg_ description is compiled with [opkg_opkgc] to produce native packages (means _RPM_ or _.deb_).
+_opkg_ description is compiled with [opkgc](opkg_opkgc) to produce native packages (means _RPM_ or _.deb_).
+In practice, opkg distro packages are built from [oscar-packager](Building_OSCAR_Packages)
 
 # How to build an OSCAR Package (old way)
 
