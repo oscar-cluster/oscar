@@ -12,47 +12,32 @@ category: wiki
 
 ## Build OSCAR meta packages
 
-*WARNING, this will work ONLY on RPM based systems and for OSCAR 5.x and previous version. It will not work for OSCAR-6.x and later version. To package OSCAR-6.x, please use oscar-packager*
+*WARNING, this is only for developping a new opkg. To package OSCAR already existing opkgs, please use oscar-packager*
 
 ### Reqirements
-  * python 2.4 or newer version
-  * python-cheetah
-  * python-lxml
-  * opkgc trunk
-
-### How to get a working opkgc
-  * Check out trunk of the opkgc repository
-
-        svn co https://svn.oscar.openclustergroup.org/svn/oscar/pkgsrc/opkgc/trunk opkgc
-  * Make opkgc
-
-        cd opkgc
-        ./autogen.sh
-        ./configure && make
-        sudo make install
-  * Add Opkgc to your PYTHONPATH
-    * setup the following PYTHONPATH to your shell rc file for a permanent configuration
-
-        export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.4/site-packages 
-    * Or make a symlink to the standard python lib
-
-        ln -s /usr/local/lib/python2.4/site-packages/Opkgc /usr/lib/python2.4/site-packages/Opkgc
-
+  * installed version of opkgc (either on a running OSCAR system or in a docker container
+     (see [Distro Support](DistroSupport) on how to bootstrap a oscar development container)
 
 ### How to build Opkg meta rpms via opkgc
-This example is tested on RHEL5 X86.[[BR]]
-My $OSCAR_WORKING_COPY is where I checked out the OSCAR subversion repository.
+This example is tested on RHEL7.[[BR]]
+My $OSCAR_WORKING_COPY is where I checked out the package git repository.
   * Build opkgs of OSCAR packages one by one 
 
-        cd $OSCAR_WORKING_COPY/packages
-        sudo opkgc --dist=rhel --input=./openmpi
-    where --dist=rhel does not have the distro version number(e.g., 5).
-    The built opkg rpms are created on /usr/src/redhat/RPMS/noarch.
+        cd $OSCAR_WORKING_COPY
+        sudo opkgc --dist=rhel --input=./opkg --output=/path/to/local/distro/packages/
+    where --dist=rhel does not have the distro version number(e.g., 7).
+    The built opkg rpms are created in output destination (localdir if not specified).
+    
   * Build opkgs of all the OSCAR packages at once
 
-        cd $OSCAR_WORKING_COPY
-        cd packages; env OSCAR_HOME=`pwd`/.. ../scripts/build_opkg_rpms `ls -1F | grep '/$'`
-    All the built opkg rpms are saved to the distro directory of the corresponding packages. (e.g., opkg rpms for openmpi on RHEL5-X86 are saved at $OSCAR_WORKING_COPY/packages/openmpi/distro/rhel5-i386)
+        for repo in $(curl -s "https://api.github.com/users/oscar-cluster/repos?per_page=1000" | grep -w clone_url | grep -o '[^"]\+://.\+.git'|grep -Ev 'pkgsrc|tags')
+        do
+          git clone $repo work
+          cd work
+          opkgc --dist=rhel --input=./opkg --output=/path/to/local/distro/packages/
+          cd ..
+          /bin/rm -rf work
+        done
 
 ### How to update the change logs in config.xml
 The config.xml file of each OSCAR package is the most important factor to build the opkg meta rpms via opkgc. Here is how we want to add the new change logs to the existing config.xml file.
