@@ -106,7 +106,7 @@ RUN /bin/rm -rf /root/rpmbuild/*/*
 # this should not be required
 RUN rpm -q oscar-release > /dev/null || yume -y install /tftpboot/oscar/*/oscar-release*rpm
 RUN yume clean all
-RUN touch /tftpboot/oscar/*/.olddata &&/bin/rm -rf /tftpboot/oscar/*/.olddata && yume --prepare
+RUN /bin/rm -rf /tftpboot/oscar/rhel-6-x86_64/repodata /tftpboot/oscar/rhel-6-x86_64/repocache && yume --prepare
 RUN yume -y reinstall oscar-release
 
 # Now install as rpm what has been installed by hand before as bootstrap.
