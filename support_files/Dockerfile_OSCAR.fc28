@@ -1,9 +1,9 @@
-# Experimental Dockerfile to build OSCAR from scratch on Fedora-27
+# Experimental Dockerfile to build OSCAR from scratch on Fedora-28
 # Build using the following command:
-#       sudo docker build -t oscar/unstable:1.0 -f Dockerfile_OSCAR.fc27 .
+#       sudo docker build -t oscar/unstable:1.0 -f Dockerfile_OSCAR.fc28 .
 
 
-FROM fedora:27
+FROM fedora:28
 
 LABEL maintainer="Olivier LAHAYE <olivier.lahaye@cea.fr>"
 LABEL version="6.5"
@@ -18,7 +18,7 @@ RUN dnf -y install git-core
 RUN dnf -y update
 
 # Prepare rpm build environment
-RUN dnf -y install rpm-build wget make subversion createrepo which
+RUN dnf -y install rpm-build wget make subversion createrepo which file
 RUN mkdir -p /root/rpmbuild/{SOURCES,SRPMS,RPMS,SPECS}
 
 # Fix unset machine-id
@@ -29,7 +29,6 @@ RUN dnf -y install kernel kernel-core
 RUN rpm -q kernel-core --queryformat '%{version}-%{release}.%{arch}' > /root/kver.txt
 RUN test -f /lib/modules/$(cat /root/kver.txt)/vmlinuz && file /lib/modules/$(cat /root/kver.txt)/vmlinuz|grep kernel > /root/vmlinuz_filetype.txt
 RUN test -n /root/vmlinuz_filetype.txt && cp /lib/modules/$(cat /root/kver.txt)/vmlinuz /boot/vmlinuz-$(cat /root/kver.txt) && cp /lib/modules/$(cat /root/kver.txt)/config /boot/config-$(cat /root/kver.txt)
-
 
 # Fix needed for yume
 #RUN mkdir /var/run/lock
@@ -77,7 +76,7 @@ RUN cp /root/oscar/share/etc/templates/oscar.conf /etc/oscar/oscar.conf
 
 # Install oscar-config requirements.
 # Configure OSCAR (Creates /tftpboot/distro/<distro>.url and /tftpboot/oscar/<distro>.url)
-RUN oscar-config --setup-distro fedora-27-x86_64
+RUN oscar-config --setup-distro fedora-28-x86_64
 
 # Install packman
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-packman.git
