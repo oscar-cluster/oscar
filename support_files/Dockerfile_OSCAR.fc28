@@ -113,9 +113,9 @@ RUN /bin/rm -rf /root/rpmbuild/*/*
 
 # Now we add the repo so failed build are available anyway. In a normal situation,
 # this should not be required
-RUN yume -y install /tftpboot/oscar/*/oscar-release*rpm
+RUN rpm -q oscar-release > /dev/null || yume -y install /tftpboot/oscar/*/oscar-release*rpm
 RUN yume clean all
-RUN yume makecache
+RUN /bin/rm -rf /tftpboot/oscar/fc-28-x86_64/repodata /tftpboot/oscar/fc-28-x86_64/repocache && yume --prepare
 RUN yume -y reinstall oscar-release
 
 # Now install as rpm what has been installed by hand before as bootstrap.
