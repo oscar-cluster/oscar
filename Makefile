@@ -29,6 +29,7 @@ PKGDEST=.
 DESTDIR=
 TOPDIR  := $(CURDIR)
 SUBDIRS := bin lib oscarsamples scripts utils share testing rpm
+SHELL := /bin/bash
 
 include ./Config.mk
 
@@ -234,8 +235,8 @@ basedebs: source_tarball
 	else \
 		cd $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION) && \
 		dpkg-buildpackage -rfakeroot; \
-	fi
-	@test $? -eq 0 && rm -rf $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION) $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION).tar.gz
+	fi ;\
+	test $$? -eq 0 && rm -rf $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION) $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION).tar.gz
 
 movedebs: deb
 	@mv /$(TOPDIR)tmp/*oscar*.deb $(PKGDEST);
