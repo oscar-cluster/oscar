@@ -44,9 +44,11 @@ my $distro_flavor;
 
 # The different Debian codenames, useful to set the distro_flavor variable
 my %codenames = (
+		'12.0'  => "bookworm",
+		'11.0'  => "bullseye",
                 '10.0'  => "buster",
                 '9.0'   => "stretch",
-                '8.0'   => "jessy",
+                '8.0'   => "jessie",
                 '7.0'   => "wheezy",
                 '6.0'   => "squeeze",
                 '5.0'   => "lenny",
