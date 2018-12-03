@@ -20,6 +20,9 @@ Requires: 	yum, createrepo, yume
 Vendor: 	OSCAR
 Distribution: 	OSCAR
 Packager: 	Geoffroy Vallee
+BuildRequires:	make
+BuildRequires:	perl-interpreter
+BuildRequires:	perl-generators
 BuildRequires:  perl(Pod::Man)
 
 Buildroot: 	%{_tmppath}/%{name}-%{version}-root
