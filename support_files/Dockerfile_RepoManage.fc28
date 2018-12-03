@@ -12,7 +12,8 @@ LABEL license="GPLv2"
 
 # Install repository creation and management utilities.
 RUN dnf -y install http://svn.oscar.openclustergroup.org/repos/unstable/fc-28-x86_64/oscar-release-6.1.3-0.20180907.fc28.noarch.rpm
-RUN dnf -y install dnf-utils createrepo packman vim openssh-clients 'perl(File::Copy::Recursive)'
+RUN dnf clean all && dnf makecache
+RUN dnf -y install dnf-utils createrepo packman vim openssh-clients 'perl(File::Copy::Recursive)' rapt
 
 # Update distro
 RUN dnf -y update

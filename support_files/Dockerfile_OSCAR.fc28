@@ -18,7 +18,7 @@ RUN dnf -y install git-core
 RUN dnf -y update
 
 # Prepare rpm build environment
-RUN dnf -y install rpm-build wget make subversion createrepo which file
+RUN dnf -y install rpm-build wget make subversion createrepo which file perl-generators perl-interpreter
 RUN mkdir -p /root/rpmbuild/{SOURCES,SRPMS,RPMS,SPECS}
 
 # Fix unset machine-id
