@@ -18,7 +18,7 @@ RUN yum -y install git-core
 RUN yum -y update
 
 # Prepare rpm build environment
-RUN yum -y install rpm-build wget make subversion createrepo which
+RUN yum -y install rpm-build wget make subversion createrepo which file perl-generators perl-interpreter
 RUN mkdir -p /root/rpmbuild/{SOURCES,SRPMS,RPMS,SPECS}
 
 # Fix needed for yume
