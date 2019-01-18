@@ -66,6 +66,8 @@ gpm
 grep
 groff
 grub2
+grub2-efi-x64
+grub2-efi-x64-modules
 gtk2
 gzip
 hdparm
@@ -169,6 +171,7 @@ setserial
 setup
 setuptool
 shadow-utils
+shim-x64
 slang
 strace
 tar
