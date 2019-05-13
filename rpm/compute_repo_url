@@ -8,13 +8,14 @@
 # This script compute the end of the oscar repository URL taking into account
 # The distro, the distro version, the oscar version.
 # Syntax: $0 <URL base>
-# example: compute_repo_url http://svn.oscar.openclustergroup.org/repos
+# example: compute_repo_url http://www.usablesecurity.net/OSCAR/repos
+#          compute_repo_url http://svn.oscar.openclustergroup.org/repos
 
 if test -n "$1"
 then
     URL_BASE="$1"
 else
-    URL_BASE="http://svn.oscar.openclustergroup.org/repos"
+    URL_BASE="http://www.usablesecurity.net/OSCAR/repos"
 fi
 
 #if test -z $(echo $URL_BASE |grep -E '(ht|f)tp://[a-zA-Z0-9\-\./]+$')

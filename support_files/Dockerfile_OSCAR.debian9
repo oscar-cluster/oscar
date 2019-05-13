@@ -43,7 +43,7 @@ RUN apt-get -y install tcsh # oscar depnds on it?
 
 # Build and install Tk-TextANSIColor
 RUN apt-get -y install wget
-RUN cd /root && wget http://svn.oscar.openclustergroup.org/pkgs/downloads/Tk-TextANSIColor-0.16.tar.gz
+RUN cd /root && wget http://www.usablesecurity.net/OSCAR/pkgs/downloads/Tk-TextANSIColor-0.16.tar.gz
 RUN cd /root && tar xvfz Tk-TextANSIColor-0.16.tar.gz
 RUN cd /root/Tk-TextANSIColor-0.16 && perl Build.PL --installdirs vendor && perl Build && perl Build install --installdirs vendor
 

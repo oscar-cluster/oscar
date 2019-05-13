@@ -49,7 +49,7 @@ RUN dnf -y install gcc syslinux
 RUN dnf -y install vim openssh-clients
 
 # Build and install Tk-TextANSIColor
-RUN cd /tmp && wget http://svn.oscar.openclustergroup.org/pkgs/downloads/Tk-TextANSIColor-0.16.tar.gz
+RUN cd /tmp && wget http://www.usablesecurity.net/OSCAR/pkgs/downloads/Tk-TextANSIColor-0.16.tar.gz
 RUN cd /tmp && tar xvfz Tk-TextANSIColor-0.16.tar.gz
 RUN cd /tmp/Tk-TextANSIColor-0.16 && perl Build.PL --installdirs vendor && perl Build && perl Build install --installdirs vendor
 

@@ -12,18 +12,18 @@
 #          a repo for the distro.
 
 [unstable]
-ubuntu-1604-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+xenial+main+universe+multiverse oscar:http://svn.oscar.openclustergroup.org/repos/unstable/debian-8-x86_64/+wheezy+/ distro:http://us.archive.ubuntu.com/ubuntu/+xenial-updates+main+universe+multiverse
-ubuntu-1404-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+trusty+main+universe+multiverse oscar:http://svn.oscar.openclustergroup.org/repos/unstable/debian-8-x86_64/+wheezy+/ distro:http://us.archive.ubuntu.com/ubuntu/+trusty-updates+main+universe+multiverse
-redhat-el-7-x86_64 = distro:file:/tftpboot/distro/redhat-el-7-x86_64 oscar:http://svn.oscar.openclustergroup.org/repos/unstable/rhel-7-x86_64 distro:http://dl.fedoraproject.org/pub/epel/7/x86_64
-redhat-el-6-x86_64 = distro:file:/tftpboot/distro/redhat-el-6-x86_64 oscar:http://svn.oscar.openclustergroup.org/repos/unstable/rhel-6-x86_64 distro:http://dl.fedoraproject.org/pub/epel/6/x86_64
-centos-7-x86_64 = distro:http://mirror.centos.org/centos/7/os/x86_64/ oscar:http://svn.oscar.openclustergroup.org/repos/unstable/rhel-7-x86_64 distro:http://mirror.centos.org/centos/7/extras/x86_64/ distro:http://mirror.centos.org/centos/7/updates/x86_64/ distro:http://dl.fedoraproject.org/pub/epel/7/x86_64
-centos-6-x86_64 = distro:http://mirror.centos.org/centos/6/os/x86_64/ oscar:http://svn.oscar.openclustergroup.org/repos/unstable/rhel-6-x86_64 distro:http://mirror.centos.org/centos/6/extras/x86_64/ distro:http://mirror.centos.org/centos/6/updates/x86_64/ distro:http://dl.fedoraproject.org/pub/epel/6/x86_64
-scientific_linux-6-x86_64 = distro:http://ftp.scientificlinux.org/linux/scientific/6/x86_64/os/ oscar:http://svn.oscar.openclustergroup.org/repos/unstable/rhel-6-x86_64 distro:http://ftp.scientificlinux.org/linux/scientific/6/x86_64/updates/security/ distro:http://dl.fedoraproject.org/pub/epel/6/x86_64
-fedora-27-x86_64 = distro:http://dl.fedoraproject.org/pub/fedora/linux/releases/27/Everything/x86_64/os/ distro:http://dl.fedoraproject.org/pub/fedora/linux/updates/27/x86_64/ oscar:http://svn.oscar.openclustergroup.org/repos/unstable/fc-27-x86_64
-fedora-28-x86_64 = distro:http://dl.fedoraproject.org/pub/fedora/linux/releases/28/Everything/x86_64/os/ distro:http://dl.fedoraproject.org/pub/fedora/linux/updates/28/Everything/x86_64/ oscar:http://svn.oscar.openclustergroup.org/repos/unstable/fc-28-x86_64
-debian-8-x86_64 = distro:http://ftp.us.debian.org/debian/+jessie+main oscar:http://svn.oscar.openclustergroup.org/repos/unstable/debian-8-x86_64/+jessie+/
-debian-9-x86_64 = distro:http://ftp.us.debian.org/debian/+stretch+main oscar:http://svn.oscar.openclustergroup.org/repos/unstable/debian-9-x86_64/+stretch+/
-suse-42-x86_64 = distro:http://download.opensuse.org/distribution/leap/42.3/repo/oss/suse/ distro:http://download.opensuse.org/distribution/leap/42.3/repo/non-oss/ oscar:http://svn.oscar.openclustergroup.org/repos/unstable/suse-42-x86_64/
+ubuntu-1604-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+xenial+main+universe+multiverse oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/debian-8-x86_64/+wheezy+/ distro:http://us.archive.ubuntu.com/ubuntu/+xenial-updates+main+universe+multiverse
+ubuntu-1404-x86_64 = distro:http://us.archive.ubuntu.com/ubuntu/+trusty+main+universe+multiverse oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/debian-8-x86_64/+wheezy+/ distro:http://us.archive.ubuntu.com/ubuntu/+trusty-updates+main+universe+multiverse
+redhat-el-7-x86_64 = distro:file:/tftpboot/distro/redhat-el-7-x86_64 oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/rhel-7-x86_64 distro:http://dl.fedoraproject.org/pub/epel/7/x86_64
+redhat-el-6-x86_64 = distro:file:/tftpboot/distro/redhat-el-6-x86_64 oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/rhel-6-x86_64 distro:http://dl.fedoraproject.org/pub/epel/6/x86_64
+centos-7-x86_64 = distro:http://mirror.centos.org/centos/7/os/x86_64/ oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/rhel-7-x86_64 distro:http://mirror.centos.org/centos/7/extras/x86_64/ distro:http://mirror.centos.org/centos/7/updates/x86_64/ distro:http://dl.fedoraproject.org/pub/epel/7/x86_64
+centos-6-x86_64 = distro:http://mirror.centos.org/centos/6/os/x86_64/ oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/rhel-6-x86_64 distro:http://mirror.centos.org/centos/6/extras/x86_64/ distro:http://mirror.centos.org/centos/6/updates/x86_64/ distro:http://dl.fedoraproject.org/pub/epel/6/x86_64
+scientific_linux-6-x86_64 = distro:http://ftp.scientificlinux.org/linux/scientific/6/x86_64/os/ oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/rhel-6-x86_64 distro:http://ftp.scientificlinux.org/linux/scientific/6/x86_64/updates/security/ distro:http://dl.fedoraproject.org/pub/epel/6/x86_64
+fedora-27-x86_64 = distro:http://dl.fedoraproject.org/pub/fedora/linux/releases/27/Everything/x86_64/os/ distro:http://dl.fedoraproject.org/pub/fedora/linux/updates/27/x86_64/ oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/fc-27-x86_64
+fedora-28-x86_64 = distro:http://dl.fedoraproject.org/pub/fedora/linux/releases/28/Everything/x86_64/os/ distro:http://dl.fedoraproject.org/pub/fedora/linux/updates/28/Everything/x86_64/ oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/fc-28-x86_64
+debian-8-x86_64 = distro:http://ftp.us.debian.org/debian/+jessie+main oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/debian-8-x86_64/+jessie+/
+debian-9-x86_64 = distro:http://ftp.us.debian.org/debian/+stretch+main oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/debian-9-x86_64/+stretch+/
+suse-42-x86_64 = distro:http://download.opensuse.org/distribution/leap/42.3/repo/oss/suse/ distro:http://download.opensuse.org/distribution/leap/42.3/repo/non-oss/ oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/suse-42-x86_64/
 
 
 [6.1.1]
