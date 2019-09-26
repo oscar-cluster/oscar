@@ -44,8 +44,11 @@ RUN yum -y install --skip-broken vim openssh-clients
 # Build perl-Tk (missing in RHEL/CentOS-8)
 RUN yum -y install --skip-broken perl-CPAN perl-open libX11-devel libpng-devel tk-devel kernel-devel kernel-headers
 RUN yum -y reinstall --skip-broken kernel-headers
-RUN perl -MCPAN -e'notest install Tk'
-RUN perl -MCPAN -e'notest install AppConfig'
+#RUN perl -MCPAN -e'notest install Tk'
+RUN perl -MCPAN -e "CPAN::Shell->notest('install', 'Tk')"
+#RUN perl -MCPAN -e'notest install AppConfig'
+RUN perl -MCPAN -e "CPAN::Shell->notest('install', 'AppConfig')"
+RUN perl -MCPAN -e "CPAN::Shell->notest('install', 'File::Copy::Recursive')"
 
 
 # Build and install Tk-TextANSIColor
