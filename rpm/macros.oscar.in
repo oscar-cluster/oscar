@@ -24,8 +24,3 @@
 # Define system macro dir.
 %_sys_macros_dir    %{_sysconfdir}/rpm/macros.d
 
-# Macros for python if not defined
-%__python   /usr/bin/python
-%python_sitearch    %(%{__python} -c "from distutils.sysconfig import get_python_lib; import sys; sys.stdout.write(get_python_lib(1))")
-%python_sitelib     %(%{__python} -c "from distutils.sysconfig import get_python_lib; import sys; sys.stdout.write(get_python_lib())")
-%python_version     %(%{__python} -c "import sys; sys.stdout.write(sys.version[:3])")
