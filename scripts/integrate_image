@@ -25,7 +25,7 @@ use SIS::Image;
 use SIS::Client;
 use SystemImager::Server;
 use SystemImager::Common;
-use SystemImager::Config;
+use SystemImager::JConfig;
 use SystemImager::Options;
 use SystemInstaller::Log qw(start_verbose verbose logger_file); 
 use vars qw($config $VERSION);
@@ -35,10 +35,10 @@ use Getopt::Long;
 use Carp;
 use strict;
 
-my $autoinstall_script_dir = $config->autoinstall_script_dir();
-my $rsync_stub_dir = $config->rsync_stub_dir();
-my $rsyncd_conf = $config->rsyncd_conf();
-my $default_image_dir = $config->default_image_dir();
+my $autoinstall_script_dir = $config->get('imager','scripts_dir');
+my $rsync_stub_dir = $config->get('xmit_rsync','stubs_dir');
+my $rsyncd_conf = $config->get('xmit_rsync','config_file');
+my $default_image_dir = $config->get('imager','images_dir');
 my $config_dir = "/etc/systemimager";
 my $post_install;
 
