@@ -11,7 +11,7 @@ LABEL vendor="OSCAR Cluster"
 LABEL license="GPLv2"
 
 # Install basic build requirements
-RUN yum -y install http://fr2.rpmfind.net/linux/epel/7/x86_64/Packages/e/epel-release-7-11.noarch.rpm
+RUN yum -y install http://fr2.rpmfind.net/linux/epel/7/x86_64/Packages/e/epel-release-7-12.noarch.rpm
 RUN yum -y install git-core
 
 # Update distro
@@ -50,14 +50,14 @@ RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar.git
 RUN cd /root/oscar && make source_tarball && rpmbuild -tb /root/oscar/tmp/oscar-6.1.3.tar.gz
 
 # Install opkgc build requirements and build it
-RUN yum -y install python-devel python-cheetah python-lxml xmlto autoconf automake rsync
+RUN yum -y install python3-devel python3-cheetah python3-lxml xmlto autoconf automake rsync
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-opkgc.git
 RUN cd /root/oscar-opkgc && ./autogen.sh && ./configure --prefix=/usr && make install
 
 # Install oda and configure it to use mysql (needed by oscar-config)
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-oda.git
 RUN cd /root/oscar-oda && make install DESTDIR=/
-RUN cd /usr/share/perl5/vendor_perl/OSCAR && ln -s ODA/mysql.pm oda.pm
+RUN cd /usr/share/perl5/vendor_perl/OSCAR && ln -sf ODA/mysql.pm oda.pm
 
 # Reinstall oscar rpm packages.
 RUN rpm -Uvh --nodeps /root/rpmbuild/RPMS/noarch/oscar-*rpm
