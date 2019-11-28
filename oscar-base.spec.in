@@ -94,7 +94,7 @@ those packages from an online package repository, either on or off site.
 %package -n oscar-base-client
 Group: Applications/System
 Summary: Libraries for OSCAR clustering package.
-Requires: %{name}-base == %{version}-%{release}
+#Requires: %{name}-base == %{version}-%{release}
 
 %description -n oscar-base-client
 Requires: %{name}-base-scripts == %{version}-%{release}
