@@ -1,6 +1,6 @@
 package OSCAR::Network;
 
-#   $Id$
+#   6.1.320191128git
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ BEGIN {
 }
 
 use strict;
-use vars qw($VERSION @EXPORT);
+use vars qw(@EXPORT);
 use File::Copy;
 # use Net::IPv4Addr;
 use OSCAR::Env;
@@ -53,8 +53,6 @@ use base qw(Exporter);
             update_hosts
             update_head_nic
             );
-
-our $VERSION = "$Revision$";
 
 # package scoped regex for an ip address.  If we ever need to support
 # ipv6, we just need to change it here
@@ -154,7 +152,7 @@ sub interface2ip ($) {
 
 # Returns: array of hashes with the following fields or undef if error
 #               client, devname, ip, netmask, mac
-sub get_network_adapter ($) {
+sub get_network_adapter {
     my $optref = shift;
     my @res;
     my @t;
