@@ -1,10 +1,10 @@
-# Experimental Dockerfile to build OSCAR from scratch on CentOS-8
+# Experimental Dockerfile to build OSCAR from scratch on CentOS-1
 # Build using the following command:
 #       sudo docker build -t oscar/packager_rl8:1.2 -f Dockerfile_OSCAR.centos8 .
 
 
-#FROM centos:8
-FROM roboxes/centos8
+FROM centos:8
+#FROM roboxes/centos8
 
 LABEL maintainer="Olivier LAHAYE <olivier.lahaye@cea.fr>"
 LABEL version="6.5"
@@ -12,22 +12,25 @@ LABEL vendor="OSCAR Cluster"
 LABEL license="GPLv2"
 
 # Install basic build requirements
-RUN yum -y install http://fr2.rpmfind.net/linux/epel/8/Everything/x86_64/Packages/e/epel-release-8-5.el8.noarch.rpm
-RUN yum list all
-RUN yum -y install git-core
+RUN dnf -y install dnf-plugins-core
+RUN dnf config-manager --set-enabled PowerTools
+
+#RUN dnf -y install http://fr2.rpmfind.net/linux/epel/8/Everything/x86_64/Packages/e/epel-release-8-8.el8.noarch.rpm
+RUN dnf -y install epel-release
+RUN dnf -y install git-core
 
 # Update distro
-RUN yum -y update
+RUN dnf -y update
 
 # Prepare rpm build environment
-RUN yum -y install rpm-build wget make subversion createrepo which file perl-generators perl-interpreter
+RUN dnf -y install rpm-build wget make subversion createrepo which file perl-generators perl-interpreter
 RUN mkdir -p /root/rpmbuild/{SOURCES,SRPMS,RPMS,SPECS}
 
 # Fix needed for yume
 #RUN mkdir /var/run/lock
 
 # Install OSCAR Perl requirements
-RUN yum -y install --skip-broken \
+RUN dnf -y install --skip-broken \
                         'perl(AppConfig)' 'perl(Carp)' 'perl(Cwd)' 'perl(Data::Dumper)' 'perl(English)' \
                         'perl(Exporter)' \
                         'perl(File::Copy::Recursive)' 'perl(File::Copy)' 'perl(File::Basename)' 'perl(File::Path)' \
@@ -36,14 +39,14 @@ RUN yum -y install --skip-broken \
                         perl-Module-Build perl-devel 'perl(Tk)' 'perl(Test::More)'
 
 # Install requirements and build it
-RUN yum -y install --skip-broken gcc syslinux
+RUN dnf -y install --skip-broken gcc syslinux
 
 # Install comfort tools
-RUN yum -y install --skip-broken vim openssh-clients
+RUN dnf -y install --skip-broken vim openssh-clients
 
 # Build perl-Tk (missing in RHEL/CentOS-8)
-RUN yum -y install --skip-broken perl-CPAN perl-open libX11-devel libpng-devel tk-devel kernel-devel kernel-headers
-RUN yum -y reinstall --skip-broken kernel-headers
+RUN dnf -y install --skip-broken perl-CPAN perl-open libX11-devel libpng-devel tk-devel kernel-devel kernel-headers
+RUN dnf -y reinstall --skip-broken kernel-headers
 #RUN perl -MCPAN -e'notest install Tk'
 RUN perl -MCPAN -e "CPAN::Shell->notest('install', 'Tk')"
 #RUN perl -MCPAN -e'notest install AppConfig'
@@ -63,7 +66,8 @@ RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar.git
 RUN cd /root/oscar && make source_tarball && rpmbuild -tb /root/oscar/tmp/oscar-6.1.3.tar.gz
 
 # Install opkgc build requirements and build it
-RUN yum -y install --skip-broken python2-devel python2-cheetah python2-lxml xmlto autoconf automake rsync
+RUN dnf -y install --skip-broken python2-devel python2-cheetah python2-lxml
+RUN dnf -y install --skip-broken python3-devel python3-cheetah python3-lxml xmlto autoconf automake rsync
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-opkgc.git
 RUN ln -s /bin/python2 /bin/python
 RUN cd /root/oscar-opkgc && ./autogen.sh && ./configure --prefix=/usr && make install
@@ -99,8 +103,15 @@ RUN rpm -Uvh --nodeps /root/rpmbuild/RPMS/noarch/oscar-packager*.rpm
 # Install OSCAR repo
 #RUN yum -y --skip-broken install /root/rpmbuild/RPMS/noarch/oscar-release*rpm
 
+# Install some deps for systemimager BUG (need to update build.cfg)
+RUN dnf -y install perl
+RUN dnf -y install docbook-utils-pdf docbook-utils bc bind-utils cryptsetup dejavu-serif-fonts dosfstools e2fsprogs gdisk hwdata jq kernel lshw lsscsi lvm2 mdadm net-tools nmap-ncat openssh-server parted pciutils perl-JSON plymouth-plugin-label plymouth-plugin-script psmisc rtorrent socat usbutils xfsprogs xmlstarlet dos2unix
+
+# Install some deps for apitest
+RUN dnf -y install python3-twisted
+
 # REBUILD oscar essential rpms.
-RUN oscar-packager --all Tk-TextANSIColor
+RUN oscar-packager --debug --all Tk-TextANSIColor
 RUN oscar-packager --all oscar
 RUN oscar-packager --all packman
 RUN oscar-packager --all yume
@@ -120,7 +131,8 @@ RUN /bin/rm -rf /root/rpmbuild/*/*
 # this should not be required
 RUN rpm -q oscar-release > /dev/null || yume -y install /tftpboot/oscar/*/oscar-release*rpm
 RUN yume clean all
-RUN /bin/rm -rf /tftpboot/oscar/rhel-7-x86_64/repodata /tftpboot/oscar/rhel-7-x86_64/repocache && yume --prepare
+RUN rm -rf /tftpboot/oscar/rhel-8-x86_64/.repodata
+RUN /bin/rm -rf /tftpboot/oscar/rhel-8-x86_64/repodata /tftpboot/oscar/rhel-8-x86_64/repocache && yume --prepare
 RUN yume -y reinstall oscar-release
 
 # Now install as rpm what has been installed by hand before as bootstrap.
