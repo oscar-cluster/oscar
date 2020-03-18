@@ -31,6 +31,8 @@ then
     OSCAR_HOME=`pwd`/..
 fi
 
+export OSCAR_HOME # distro-query need it.
+
 source ${OSCAR_HOME}/VERSION
 
 OSCAR_VERSION=""
@@ -60,7 +62,7 @@ done
 if test -n "${DISTRO_QUERY}"
 then
 	#DISTRO="$($DISTRO_QUERY |awk '/compat / { printf("%s-",$3) }')${ARCH}"
-	DISTRO="$($DISTRO_QUERY --compat_distro_id)"
+	DISTRO="$(perl -I${OSCAR_HOME}/lib $DISTRO_QUERY --compat_distro_id)"
 	echo "${URL_BASE}/${OSCAR_VERSION}/${DISTRO}"
 	exit 0
 else
