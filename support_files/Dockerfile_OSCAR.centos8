@@ -58,6 +58,7 @@ RUN perl -MCPAN -e "CPAN::Shell->notest('install', 'File::Copy::Recursive')"
 RUN cd /tmp && wget http://www.usablesecurity.net/OSCAR/pkgs/downloads/Tk-TextANSIColor-0.16.tar.gz
 RUN cd /tmp && tar xvfz Tk-TextANSIColor-0.16.tar.gz
 RUN cd /tmp/Tk-TextANSIColor-0.16 && perl Build.PL --installdirs vendor && perl Build && perl Build install --installdirs vendor
+RUN cd /tmp && rm -rf Tk-TextANSIColor*
 
 # Step 16/47: Get OSCAR source tree
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar.git
@@ -125,7 +126,7 @@ RUN oscar-packager --all apitest
 RUN oscar-packager --all systeminstaller-oscar
 
 # Cleanup build stuffs to make room in the image
-RUN /bin/rm -rf /root/rpmbuild/*/*
+RUN /bin/rm -rf /root/oscar* /root/.cpan /root/rpmbuild/*/* /var/lib/oscar-packager/downloads/*
 
 # Now we add the repo so failed build are available anyway. In a normal situation,
 # this should not be required
@@ -143,14 +144,14 @@ RUN yume -y install yume packman opkgc
 RUN yume -y reinstall oscar oscar-base oscar-base-client oscar-base-lib oscar-base-scripts oscar-base-server oscar-devel oscar-utils oscar-packager
 
 # Renstall systemimager server parts that have already been installed from oscar deps.
-RUN yume -y reinstall systemimager-x86_64initrd_template systemimager-x86_64boot-standard systemimager-server systemimager-common
+RUN yume -y reinstall systemimager-x86_64initrd_template systemimager-x86_64boot-standard systemimager-server systemimager-common systemimager-webgui
 
 # Install bittorrent that is needed for systemimager-bittorrent
 #RUN yume -y install bittorrent bittorrent-gui
 # Install systemimager missing bits.
 RUN yume -y install systemimager-bittorrent systemimager-client systemimager-flamethrower
 
-# Cleanup image
-# RUN /bin/rm -rf /root/rpmbuild/*/*
+# Cleanup tftp tree so we can mount host space later.
+RUN /bin/rm -rf /tftpboot/oscar/rhel-8-x86_64/*
 
 CMD [ "bash" ]
