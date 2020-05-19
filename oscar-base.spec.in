@@ -201,6 +201,8 @@ GPG keys used to sign them.
 #{_sysconfdir}/pki/rpm-gpg/*
 
 %changelog
+* Tue May 19 2020 Olivier Lahaye <olivier.lahaye@cea.fr>
+- Add support for specific docdir. (openSuSE/leap packaging)
 * Fri Dec 06 2013 Olivier Lahaye <olivier.lahaye@cea.fr>
 - Added missing deps on iproute, oscarbase for scripts and so on.
 * Tue Dec 03 2013 Olivier Lahaye <olivier.lahaye@cea.fr>
