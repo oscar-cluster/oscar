@@ -100,8 +100,8 @@ opt-install: localbase localrepos
 # Install the documentation
 #
 doc-install:
-	install -d -m 0755 $(DESTDIR)/usr/share/doc/oscar
-	install    -m 0755 doc/*.pdf $(DESTDIR)/usr/share/doc/oscar
+	install -d -m 0755 $(DESTDIR)$(DOCDIR)/oscar
+	install    -m 0755 doc/*.pdf $(DESTDIR)$(DOCDIR)/oscar
 
 #
 # Install OSCAR (scripts, libs and so on) directly in the system.

@@ -41,7 +41,7 @@ bootstrap using RPMs.
 
 %install
 %__rm -rf %{buildroot}
-%__make install DESTDIR=%{buildroot}
+%__make install DESTDIR=%{buildroot} DOCDIR=%{_defaultdocdir}
 %__mkdir_p %{buildroot}%{_sysconfdir}/oscar
 %__mkdir_p %{buildroot}%{_datadir}/oscar/images
 %__mkdir_p %{buildroot}%{_datadir}/doc/oscar
