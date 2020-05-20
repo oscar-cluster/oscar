@@ -25,7 +25,7 @@ fedora-28-x86_64 = distro:http://dl.fedoraproject.org/pub/fedora/linux/releases/
 debian-8-x86_64 = distro:http://ftp.us.debian.org/debian/+jessie+main oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/debian-8-x86_64/+jessie+/
 debian-9-x86_64 = distro:http://ftp.us.debian.org/debian/+stretch+main oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/debian-9-x86_64/+stretch+/
 opensuse-42-x86_64 = distro:http://download.opensuse.org/distribution/leap/42.3/repo/oss/suse/ distro:http://download.opensuse.org/distribution/leap/42.3/repo/non-oss/ oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/suse-42-x86_64/
-opensuse-15-x86_64 = distro:http://download.opensuse.org/distribution/leap/15.1/repo/oss/ distro:http://download.opensuse.org/distribution/leap/15.1/repo/non-oss/ oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/opensuse-15-x86_64/
+opensuse-15-x86_64 = distro:http://download.opensuse.org/distribution/leap/15.1/repo/oss/ distro:http://download.opensuse.org/distribution/leap/15.1/repo/non-oss/ oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/suse-15-x86_64/
 
 
 [6.1.1]
