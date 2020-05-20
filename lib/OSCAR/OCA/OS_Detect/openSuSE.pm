@@ -18,14 +18,14 @@
 # $Id$
 #
 
-package OSCAR::OCA::OS_Detect::SuSE;
+package OSCAR::OCA::OS_Detect::openSuSE;
 
 use strict;
 
-my $distro = "suse";
+my $distro = "opensuse";
 my $compat_distro = "suse";
 my $pkg = "rpm";
-my $detect_package = "suse-release";
+my $detect_package = "suse-release"; # rpm package name containing /etc/os-release
 my $detect_file = "/bin/bash";
 
 sub detect_dir {
@@ -33,7 +33,9 @@ sub detect_dir {
     my $release_string;
 
     # If /etc/SuSE-release exists, continue, otherwise, quit.
-    if (-f "$root/etc/SuSE-release") {
+    if (-f "$root/etc/os-release") {
+        $release_string = `cat $root/etc/os-release|grep PRETTY_NAME`;
+    } elsif (-f "$root/etc/SuSE-release") {
         $release_string = `cat $root/etc/SuSE-release`;
     } else {
         return undef;
@@ -44,7 +46,8 @@ sub detect_dir {
         chroot => $root,
     };
 
-    if ($release_string =~ /SUSE LINUX (\d+)\.(\d+)/) {
+    if (($release_string =~ /openSUSE Leap (\d+)\.(\d+)/) ||
+        ($release_string =~ /openSUSE (\d+)\.(\d+) /)) {
         my $os_version = $1;
         my $os_update = $2;
         $id->{distro} = $distro;
