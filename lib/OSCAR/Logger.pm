@@ -23,7 +23,7 @@ package OSCAR::Logger;
 
 use strict;
 use Carp;
-use vars qw($VERSION @EXPORT);
+use vars qw(@EXPORT);
 use base qw(Exporter);
 use File::Basename;
 use OSCAR::Env;
@@ -45,9 +45,6 @@ our @EXPORT = qw(
              init_log_file
              update_log_file
             );
-
-our $VERSION = "$Revision$";
-
 
 ################################################################################
 # Simple routine to output a "section" title to stdout.                        #
