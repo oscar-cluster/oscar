@@ -38,7 +38,7 @@ BuildRequires:	perl-generators
 BuildRequires:	perl-interpreter
 BuildRequires:	perl-generators
 %endif
-%if %is_suse
+%if 0%{?is_suse}%{?is_opensuse}
 BuildRequires:  perl
 BuildRequires:  rpm
 %endif
