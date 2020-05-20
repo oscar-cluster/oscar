@@ -100,7 +100,7 @@ RUN rpm -Uvh --nodeps `rpm --eval '%{_rpmdir}'`/noarch/oscar-packager*.rpm
 # Install some deps for systemimager BUG (need to update build.cfg)
 RUN zypper --non-interactive install perl
 RUN zypper --non-interactive install wicked wicked-service iproute2
-RUN zypper --non-interactive install docbook-utils bc bind-utils cryptsetup dejavu-fonts dosfstools e2fsprogs hwdata jq kernel-default lshw lsscsi lvm2 mdadm net-tools ncat openssh parted pciutils perl-JSON plymouth-plugin-label plymouth-plugin-script psmisc rtorrent socat usbutils xfsprogs xmlstarlet dos2unix
+RUN zypper --non-interactive install docbook-utils bc bind-utils cryptsetup dejavu-fonts dosfstools e2fsprogs hwdata jq kernel-default lshw lsscsi lvm2 mdadm net-tools ncat openssh parted pciutils perl-JSON plymouth plymouth-dracut plymouth-plugin-label plymouth-plugin-script psmisc rtorrent socat usbutils xfsprogs xmlstarlet dos2unix cdrtools
 
 # Install some deps for apitest
 RUN zypper --non-interactive install python3-Twisted
@@ -117,6 +117,8 @@ RUN oscar-packager --all packman
 RUN oscar-packager --all yume
 RUN oscar-packager --all opkgc
 RUN oscar-packager --all oscar-packager
+RUN zypper --non-interactive install /tftpboot/oscar/suse-15-x86_64/systemconfigurator*rpm
+RUN zypper --non-interactive install btrfsprogs dracut ethtool ipcalc kexec-tools ntfsprogs
 RUN oscar-packager --all systemconfigurator
 RUN oscar-packager --all systemimager
 RUN oscar-packager --all oda
