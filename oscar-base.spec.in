@@ -22,25 +22,11 @@ Vendor: 	OSCAR
 Distribution: 	OSCAR
 Packager: 	Geoffroy Vallee
 BuildRequires:	make
-%if 0%{?rhel} == 6
-BuildRequires:	perl-interpreter
-BuildRequires:	perl-generators
-%endif
-%if 0%{?rhel} == 7
-BuildRequires:	perl-interpreter
-BuildRequires:	perl-generators
-%endif
-%if 0%{?rhel} == 8
-BuildRequires:	perl-interpreter
-BuildRequires:	perl-generators
-%endif
-%if 0%{?fedora} > 26
-BuildRequires:	perl-interpreter
-BuildRequires:	perl-generators
+%if 0%{?fedora} >= 16 || 0%{?rhel} >= 6
+BuildRequires:  perl-generators, perl-interpreter
 %endif
 %if 0%{?is_suse}%{?is_opensuse}
-BuildRequires:  perl
-BuildRequires:  rpm
+BuildRequires:  rpm, perl
 %endif
 BuildRequires:  perl(Pod::Man)
 
