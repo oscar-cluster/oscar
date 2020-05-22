@@ -46,6 +46,8 @@ RUN perl -MCPAN -e "CPAN::Shell->notest('install', 'Tk')"
 RUN perl -MCPAN -e "CPAN::Shell->notest('install', 'AppConfig')"
 RUN perl -MCPAN -e "CPAN::Shell->notest('install', 'File::Copy::Recursive')"
 
+# Install oscar-config requirements.
+RUN zypper --non-interactive install yum-utils yum
 
 # Build and install Tk-TextANSIColor
 RUN cd /tmp && wget http://www.usablesecurity.net/OSCAR/pkgs/downloads/Tk-TextANSIColor-0.16.tar.gz
@@ -77,7 +79,6 @@ RUN rpm -Uvh --nodeps `rpm --eval '%{_rpmdir}'`/noarch/oscar-*rpm
 # Install default config file for OSCAR so oscar-packager will be happy..
 RUN cp /root/oscar/share/etc/templates/oscar.conf /etc/oscar/oscar.conf
 
-# Install oscar-config requirements.
 # Configure OSCAR (Creates /tftpboot/distro/<distro>.url and /tftpboot/oscar/<distro>.url)
 RUN oscar-config --setup-distro opensuse-15-x86_64
 
@@ -136,7 +137,7 @@ RUN oscar-packager --all c3
 RUN /bin/rm -rf /root/oscar* /root/.cpan `rpm --eval '%{_topdir}'`/*/* /var/lib/oscar-packager/downloads/* /usr/src/packages/*/*
 
 # Now we add the repo so failed build are available anyway. In a normal situation,
-RUN zypper ar -G -n "OSCAR Cluster repository" http://www.usablesecurity.net/OSCAR/repos/unstable/suse-15-x86_64/ repo-oscar
+#RUN zypper ar -G -n "OSCAR Cluster repository" http://www.usablesecurity.net/OSCAR/repos/unstable/suse-13-x86_64/ repo-oscar
 RUN zypper ref repo-oscar-local
 # this should not be required
 RUN rpm -q oscar-release > /dev/null || zypper --non-interactive install oscar-release
