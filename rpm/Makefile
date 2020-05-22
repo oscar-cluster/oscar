@@ -17,7 +17,7 @@ install: all
 	then \
 		install -d -m 0755 $(DESTDIR)/etc/yum.repos.d; \
 		install    -m 0755 oscar.repo $(DESTDIR)/etc/yum.repos.d; \
-	elif test -d /etc/yum/repos.d; \
+	elif test -d /etc/yum/repos.d -o -d /etc/zypp/repos.d; \
 	then \
 		install -d -m 0755 $(DESTDIR)/etc/yum/repos.d; \
 		install    -m 0755 oscar.repo $(DESTDIR)/etc/yum/repos.d/repo-oscar.repo; \
