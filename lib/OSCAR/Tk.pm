@@ -22,13 +22,11 @@ package OSCAR::Tk;
 #                       Sean Dague <japh@us.ibm.com>
 
 use strict;
-use vars qw($VERSION @EXPORT);
+use vars qw(@EXPORT);
 use Tk;
 require Tk::Dialog;
 use base qw(Exporter);
 @EXPORT = qw(yesno_window);
-
-our $VERSION = "$Revision$";
 
 sub yesno_window {
     my $w = shift;

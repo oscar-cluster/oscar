@@ -37,7 +37,7 @@ package OSCAR::Distro;
 
 use strict;
 use Carp;
-use vars qw($VERSION @EXPORT);
+use vars qw(@EXPORT);
 use base qw(Exporter);
 use OSCAR::Logger;
 use OSCAR::Env;
@@ -57,7 +57,6 @@ use warnings "all";
             which_mysql_name
             );
 
-our $VERSION = "$Revision$";
 my $tftpdir = "/tftpboot/";
 my $supported_distro_file;
 if (defined ($ENV{OSCAR_HOME})) {
