@@ -17,12 +17,12 @@ install: all
 	then \
 		install -d -m 0755 $(DESTDIR)/etc/yum.repos.d; \
 		install    -m 0755 oscar.repo $(DESTDIR)/etc/yum.repos.d; \
-	elsif test -d /etc/yum/repos.d; \
+	elif test -d /etc/yum/repos.d; \
 	then \
 		install -d -m 0755 $(DESTDIR)/etc/yum/repos.d; \
 		install    -m 0755 oscar.repo $(DESTDIR)/etc/yum/repos.d/repo-oscar.repo; \
 	fi
-	if test -f /etc/zypp/repos.d; \
+	if test -d /etc/zypp/repos.d; \
 	then \
 		install -d -m 0755 $(DESTDIR)/etc/zypp/repos.d; \
 		install    -m 0755 oscar.repo $(DESTDIR)/etc/zypp/repos.d/repo-oscar.repo; \
