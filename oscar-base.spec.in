@@ -212,7 +212,7 @@ GPG keys used to sign them.
 #{_sysconfdir}/pki/rpm-gpg/*
 
 %changelog
-* Fri May 12 2020 Olivier Lahaye <olivier.lahaye@cea.fr>
+* Fri May 22 2020 Olivier Lahaye <olivier.lahaye@cea.fr>
 - Add support for zypper and openSuSE yum. (openSuSE/leap packaging)
 * Tue May 19 2020 Olivier Lahaye <olivier.lahaye@cea.fr>
 - Add support for specific docdir. (openSuSE/leap packaging)
