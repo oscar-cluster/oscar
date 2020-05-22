@@ -111,48 +111,57 @@ RUN zypper --gpg-auto-import-keys refresh packman
 RUN zypper --non-interactive install gptfdisk
 
 # REBUILD oscar essential rpms.
-RUN oscar-packager --debug --all Tk-TextANSIColor
+RUN oscar-packager --all Tk-TextANSIColor
 RUN oscar-packager --all oscar
 RUN oscar-packager --all packman
 RUN oscar-packager --all yume
+RUN oscar-packager --all rapt
 RUN oscar-packager --all opkgc
 RUN oscar-packager --all oscar-packager
-RUN zypper --non-interactive install /tftpboot/oscar/suse-15-x86_64/systemconfigurator*rpm
-RUN zypper --non-interactive install btrfsprogs dracut ethtool ipcalc kexec-tools ntfsprogs
 RUN oscar-packager --all systemconfigurator
+RUN zypper ar -G -n "OSCAR Cluster local repository" file:/tftpboot/oscar/suse-15-x86_64/ repo-oscar-local
+RUN /usr/bin/rm -rf /tftpboot/oscar/suse-15-x86_64/repo* /tmp/pool*
+RUN /usr/bin/packman --prepare-repo /tftpboot/oscar/suse-15-x86_64 --verbose
+RUN zypper --non-interactive install systemconfigurator*
+RUN zypper --non-interactive install btrfsprogs dracut ethtool ipcalc kexec-tools ntfsprogs strace iputils lsof sysvinit-tools
 RUN oscar-packager --all systemimager
 RUN oscar-packager --all oda
 RUN oscar-packager --all orm
 RUN oscar-packager --all apitest
+RUN zypper --non-interactive install 'perl(MLDBM)'
 RUN oscar-packager --all systeminstaller-oscar
+RUN oscar-packager --all c3
 
 # Cleanup build stuffs to make room in the image
-RUN /bin/rm -rf /root/oscar* /root/.cpan `rpm --eval '%{_topdir}'`/*/* /var/lib/oscar-packager/downloads/*
+RUN /bin/rm -rf /root/oscar* /root/.cpan `rpm --eval '%{_topdir}'`/*/* /var/lib/oscar-packager/downloads/* /usr/src/packages/*/*
 
 # Now we add the repo so failed build are available anyway. In a normal situation,
+RUN zypper ar -G -n "OSCAR Cluster repository" http://www.usablesecurity.net/OSCAR/repos/unstable/suse-15-x86_64/ repo-oscar
+RUN zypper ref repo-oscar-local
 # this should not be required
-RUN rpm -q oscar-release > /dev/null || yume -y install /tftpboot/oscar/*/oscar-release*rpm
-RUN yume clean all
-RUN rm -rf /tftpboot/oscar/rhel-8-x86_64/.repodata
-RUN /bin/rm -rf /tftpboot/oscar/rhel-8-x86_64/repodata /tftpboot/oscar/rhel-8-x86_64/repocache && yume --prepare
-RUN yume -y reinstall oscar-release
+RUN rpm -q oscar-release > /dev/null || zypper --non-interactive install oscar-release
+RUN zypper clean -a
+#RUN zypper --non-interactive install yum
+#RUN rm -rf /tftpboot/oscar/suse-15-x86_64/.repodata
+RUN /bin/rm -rf /tftpboot/oscar/suse-15-x86_64/repodata /tftpboot/oscar/suse-15-x86_64/repocache && yume --prepare
+RUN zypper ref repo-oscar-local
+RUN zypper --non-interactive in --no-recommends --download-in-advance -f oscar-release
 
 # Now install as rpm what has been installed by hand before as bootstrap.
-RUN yume -y install yume packman opkgc
-
+RUN zypper --non-interactive in --no-recommends --download-in-advance -f yume rapt packman opkgc
 
 # now we reinstall core packages and oscar-packager (already installed from build dep requirements. Make sure we use latest version)
-RUN yume -y reinstall oscar oscar-base oscar-base-client oscar-base-lib oscar-base-scripts oscar-base-server oscar-devel oscar-utils oscar-packager
+RUN zypper --non-interactive in --no-recommends --download-in-advance -f oscar oscar-base oscar-base-client oscar-base-lib oscar-base-scripts oscar-base-server oscar-devel oscar-utils oscar-packager
 
 # Renstall systemimager server parts that have already been installed from oscar deps.
-RUN yume -y reinstall systemimager-x86_64initrd_template systemimager-x86_64boot-standard systemimager-server systemimager-common systemimager-webgui
+RUN zypper --non-interactive in --no-recommends --download-in-advance -f systemimager-initrd_template systemimager-x86_64boot-standard systemimager-server systemimager-common systemimager-webgui
 
 # Install bittorrent that is needed for systemimager-bittorrent
-#RUN yume -y install bittorrent bittorrent-gui
+#RUN zypper --non-interactive in --no-recommends --download-in-advance -f bittorrent bittorrent-gui
 # Install systemimager missing bits.
-RUN yume -y install systemimager-bittorrent systemimager-client systemimager-flamethrower
+RUN zypper --non-interactive in --no-recommends --download-in-advance -f systemimager-bittorrent systemimager-client systemimager-flamethrower
 
 # Cleanup tftp tree so we can mount host space later.
-RUN /bin/rm -rf /tftpboot/oscar/rhel-8-x86_64/*
+RUN /bin/rm -rf /tftpboot/oscar/suse-15-x86_64/*
 
 CMD [ "bash" ]
