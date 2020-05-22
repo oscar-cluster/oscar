@@ -25,7 +25,7 @@ BuildRequires:	make
 %if 0%{?fedora} >= 16 || 0%{?rhel} >= 6
 BuildRequires:  perl-generators, perl-interpreter
 %endif
-%if 0%{?is_suse}%{?is_opensuse}
+%if %{?is_suse}%{?is_opensuse}
 BuildRequires:  rpm, perl
 %endif
 BuildRequires:  perl(Pod::Man)
@@ -199,13 +199,21 @@ configuration for the OSCAR RPM Repository, as well as the public
 GPG keys used to sign them.
 
 %files -n oscar-release
+%if 0%{?fedora} >= 16 || 0%{?rhel} >= 6
 %{_sysconfdir}/yum.repos.d/oscar.repo
+%endif
+%if %{?is_suse}%{?is_opensuse}
+%{_sysconfdir}/yum/repos.d/repo-oscar.repo
+%{_sysconfdir}/zypp/repos.d/repo-oscar.repo
+%endif
 %{_sysconfdir}/apt/sources.list.d/oscar.list
 %{_sysconfdir}/smart/channels/oscar.channel
 %{_sysconfdir}/sysconfig/rhn/sources.oscar.txt
 #{_sysconfdir}/pki/rpm-gpg/*
 
 %changelog
+* Fri May 12 2020 Olivier Lahaye <olivier.lahaye@cea.fr>
+- Add support for zypper and openSuSE yum. (openSuSE/leap packaging)
 * Tue May 19 2020 Olivier Lahaye <olivier.lahaye@cea.fr>
 - Add support for specific docdir. (openSuSE/leap packaging)
 * Fri Dec 06 2013 Olivier Lahaye <olivier.lahaye@cea.fr>

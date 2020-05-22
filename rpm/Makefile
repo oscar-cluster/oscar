@@ -12,9 +12,21 @@ install: all
 	@echo Creating $(DESTDIR)/etc/rpm
 	install -d -m 0755 $(DESTDIR)/etc/rpm
 	install    -m 0755 macros.oscar $(DESTDIR)/etc/rpm
-	@echo Creating $(DESTDIR)/etc/yum.repos.d
-	install -d -m 0755 $(DESTDIR)/etc/yum.repos.d
-	install    -m 0755 oscar.repo $(DESTDIR)/etc/yum.repos.d
+	@echo Creating yum repo dir in$(DESTDIR)
+	if test -d /etc/yum.repos.d; \
+	then \
+		install -d -m 0755 $(DESTDIR)/etc/yum.repos.d; \
+		install    -m 0755 oscar.repo $(DESTDIR)/etc/yum.repos.d; \
+	elsif test -d /etc/yum/repos.d; \
+	then \
+		install -d -m 0755 $(DESTDIR)/etc/yum/repos.d; \
+		install    -m 0755 oscar.repo $(DESTDIR)/etc/yum/repos.d/repo-oscar.repo; \
+	fi
+	if test -f /etc/zypp/repos.d; \
+	then \
+		install -d -m 0755 $(DESTDIR)/etc/zypp/repos.d; \
+		install    -m 0755 oscar.repo $(DESTDIR)/etc/zypp/repos.d/repo-oscar.repo; \
+	fi
 	@echo Creating $(DESTDIR)/etc/apt/sources.list.d
 	install -d -m 0755 $(DESTDIR)/etc/apt/sources.list.d
 	install    -m 0755 oscar.list $(DESTDIR)/etc/apt/sources.list.d
@@ -43,7 +55,7 @@ oscar.list:
 
 oscar.repo:
 	cat oscar.repo.in | sed -e "s|##URL##|$$(./compute_repo_url http://www.usablesecurity.net/OSCAR/repos)|g" \
-				-e "s|##OSCAR_VERSION|$$(../scripts/get-oscar-version.sh ../VERSION --full)|g"  > oscar.repo
+				-e "s|##OSCAR_VERSION##|$$(../scripts/get-oscar-version.sh ../VERSION --full)|g"  > oscar.repo
 
 oscar.channel:
 	cat oscar.channel.in | sed -e "s|##URL##|$$(./compute_repo_url http://www.usablesecurity.net/OSCAR/repos)|g" > oscar.channel

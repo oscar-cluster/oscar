@@ -1,14 +1,16 @@
-# oscar.repo
+# repo-oscar.repo
 #
 # If the mirrorlist= does not work for you, as a fall back you can try the 
 # remarked out baseurl= line instead.
 #
 #
 
-[oscar]
-name=OSCAR - ##OSCAR_VERSION##
-#mirrorlist= http://svn.oscar.openclustergroup.org/oscar/trunk/rpm/oscar.mirrors.txt
+[repo-oscar]
+name=OSCAR Cluster - ##OSCAR_VERSION##
+enabled=1
+autorefresh=0
 baseurl=##URL##
+type=rpm-md
 gpgcheck=0
-enable=1
-#gpgkey=http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-5
+#mirrorlist= http://svn.oscar.openclustergroup.org/oscar/trunk/rpm/oscar.mirrors.txt
+#gpgkey=http://mirror.centos.org/centos/RPM-GPG-KEY-DistroName-DistroMajor
