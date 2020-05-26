@@ -7,11 +7,14 @@ FILES :=                                 debian-8-x86_64.pkglist \
                                          fedora-27-x86_64.pkglist \
          redhat-el-6-i386.pkglist        redhat-el-6-x86_64.pkglist \
                                          redhat-el-7-x86_64.pkglist \
+                                         redhat-el-8-x86_64.pkglist \
          centos-6-i386.pkglist           centos-6-x86_64.pkglist \
                                          centos-7-x86_64.pkglist \
+                                         centos-8-x86_64.pkglist \
          scientific_linux-6-i386.pkglist scientific_linux-6-x86_64.pkglist \
                                          scientific_linux-7-x86_64.pkglist \
                                          suse-42.3-x86_64.pkglist \
+                                         opensuse-15.2-x86_64.pkglist \
          mdv-2006-i386.pkglist \
                                          ydl-5-ppc64.pkglist
 
