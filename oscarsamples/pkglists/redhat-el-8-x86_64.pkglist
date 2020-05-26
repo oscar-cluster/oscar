@@ -12,8 +12,8 @@ bind-utils
 binutils
 bzip2
 bzip2-libs
-centos-logos
-centos-release
+redhat-logos
+redhat-release
 chkconfig
 chrony
 coreutils-single
