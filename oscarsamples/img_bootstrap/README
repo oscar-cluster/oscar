@@ -15,6 +15,9 @@ The file format is the same for both .bootstrap or .cleanup
              mountpoint in the image if needed.
              Example: "bind /dev" will mount /dev in the image
 
+        - copy <absolute source path of a file or directory>
+          => Will copy that file (recreating path in image dir).
+
         - del <space separated file list with wildcards>
           => remove recursively the files or directories.
 
@@ -49,6 +52,7 @@ The file format is the same for both .bootstrap or .cleanup
 
 - Processing order:
     - bind
+    - copy
     - pre
     - mkpath
     - del
