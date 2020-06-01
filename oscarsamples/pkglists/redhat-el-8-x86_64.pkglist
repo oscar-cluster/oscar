@@ -1,7 +1,8 @@
 arpwatch
 at
 atk
-authconfig
+authselect
+authselect-compat
 autofs
 basesystem
 bash

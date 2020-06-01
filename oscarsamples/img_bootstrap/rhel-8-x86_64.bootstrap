@@ -1,4 +1,4 @@
-# File centos-7-x86_64.bootstrap
+# File centos-8-x86_64.bootstrap
 
 # The following files need to be copied from head before installing anything.
 copy /etc/passwd
@@ -22,6 +22,6 @@ path /var/lib/dnf
 
 # Core OS packages
 pkgs system-release setup filesystem
-pkgs ldconfig yum passwd vim-minimal dhclient authconfig
+pkgs ldconfig yum passwd vim-minimal dhclient authselect
 
 # End
