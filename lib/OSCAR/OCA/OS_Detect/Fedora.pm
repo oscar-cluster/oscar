@@ -57,6 +57,7 @@ sub detect_dir {
 
     $id->{distro} = $distro;
     $id->{distro_version} = $fc_release;
+    $id->{platform_id} = "platform:f$os_release";
     $id->{compat_distro} = $compat_distro;
     $id->{compat_distrover} = $fc_release;
     $id->{pkg} = $pkg;

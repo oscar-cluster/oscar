@@ -72,6 +72,7 @@ sub detect_dir {
         $id->{distro} = $distro; #."-".lc($flavor);
         $id->{distro_version} = $os_release;
         $id->{distro_update} = $os_update;
+        $id->{platform_id} = "platform:el$os_release";
         $id->{compat_distro} = $compat_distro;
         $id->{compat_distrover} = $os_release;
         $id->{pkg} = $pkg;

@@ -50,6 +50,7 @@ sub detect_dir {
         $id->{distro} = $distro;
         $id->{distro_version} = $os_version;
         $id->{distro_release} = $os_release;
+        $id->{platform_id} = "platform:mdv$os_release";
         $id->{compat_distro} = $compat_distro;
         $id->{compat_distrover} = $os_version;
         $id->{pkg} = $pkg;
