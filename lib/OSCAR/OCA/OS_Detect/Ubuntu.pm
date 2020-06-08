@@ -3,6 +3,10 @@
 # Copyright (c) 2008 Oak Ridge National Laboratory.
 #                    All rights reserved.
 #
+# Copyright (c) 2020 Olivier Lahaye <olivier.lahaye@cea.fr>
+#      - Add support for /etc/os-release
+#      - Add support for platform_id, pkg_mgr, service_mgt, pretty_name
+#
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
@@ -118,39 +122,50 @@ my %compat_version_mapping = (
 # called.
 sub detect_dir {
     my ($root) = @_;
-    my $release_string;
-    my ($d, $v, $a);
-
-    # There is a trick with Ubuntu systems: they have a non-valid 
-    # /etc/debian_version and the ubuntu release data is actually in
-    # /etc/lsb-release. So if we get data from this file and if it specifies
-    # the system is an Ubuntu system we quit.
-    my $distro_id = OSCAR::LSBreleaseParser::parse_lsbrelease("/");
-    if (defined ($distro_id) && $distro_id ne "") {
-        require OSCAR::PackagePath;
-        ($d, $v, $a) = OSCAR::PackagePath::decompose_distro_id ($distro_id);
-        if ($d ne "ubuntu") {
-            return undef;
-        }
-    } else {
-        return undef;
-    }
-
-    my $distro_version = undef;
-    my $distro_update = undef;
-    if ($v =~ /(\d+)\.(\d+)/) {
-        $distro_version = "$1$2";
-        $distro_update = undef;
-    }
-    if (!defined $distro_version) { # || !defined $distro_update) {
-        return undef;
-    }
 
     # this hash contains all info necessary for identifying the OS
     my $id = {
         os => "linux",
         chroot => $root,
     };
+
+    my %os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
+
+    if (%os_release) {
+        $id->{distro_version} = $os_release{VERSION_ID};
+        $id->{platform_id} = $os_release{PLATFORM_ID};
+        $id->{pretty_name} = $os_release{PRETTY_NAME};
+        $id->{distro_update} = 0; # unknown in fact. TODO: is it usefull?
+        return undef if($os_release{ID} ne 'ubuntu'); # Quit if not an ubuntu
+    } elsif( -f "$root/etc/lsb-release") {
+        # There is a trick with Ubuntu systems: they have a non-valid 
+        # /etc/debian_version and the ubuntu release data is actually in
+        # /etc/lsb-release. So if we get data from this file and if it specifies
+        # the system is an Ubuntu system we quit.
+        my $distro_id = OSCAR::LSBreleaseParser::parse_lsbrelease($root);
+        if (defined ($distro_id) && $distro_id ne "") {
+            require OSCAR::PackagePath;
+            my ($d, $v, $a) = OSCAR::PackagePath::decompose_distro_id ($distro_id);
+            if ($d ne "ubuntu") {
+                return undef; # Quit if not an ubuntu
+            }
+            if ($v =~ /(\d+)\.(\d+)/) {
+                $id->{distro_version} = "$1$2"; # Ubuntu 12.04 version is 1204 used to match above tables
+                $id->{distro_update} = 0;
+            } else {
+		return undef; # Can't parse version => Unsupported or not an ubuntu
+	    }
+        } else {
+            return undef; # Not an ubuntu
+        }
+    } else {
+	return undef; # No /etc/os-release, no /etc/lsb-release => Not an ubuntu
+    }
+
+    $id->{distro} = $distro;
+    $id->{compat_distro} = $compat_distro;
+    $id->{compat_distrover} = $compat_version_mapping{$distro_version};
+    $id->{pkg} = $pkg;   
 
     # determine architecture
     my $arch = main::OSCAR::OCA::OS_Detect::detect_arch_file($root, $detect_file);
@@ -163,21 +178,34 @@ sub detect_dir {
         return undef;
     }
 
-    $id->{distro} = $d;
-    $id->{distro_version} = $distro_version;
-    $id->{distro_update} = $distro_update;
-    $id->{compat_distro} = $compat_distro;
-    $id->{compat_distrover} = $compat_version_mapping{$distro_version};
-    $id->{pkg} = $pkg;   
-    $id->{codename} = $codenames{$distro_version};
+    return $id;
+}
 
-    # determine services management subsystem (systemd, initscripts, manual)
-    $id->{service_mgt} = "manual";
+sub add_missing_fields {
+    my ($id) = @_;
+
+    # Set distro code_name
+    $id->{codename} = $codenames{$id->{distro_version}};
+
+    # Set pretty name
+    $id->{pretty_name} = "Ubuntu $id->{distro_version}" if (! defined($id->{pretty_name}));
+
+    # Set platform id.
+    $id->{platform_id} = "platform:ubt$id->{distro_version}" if (! defined($id->{platform_id}));
+
+    # Determine which package manager is in use.
+    $id->{pkg_mgr} = "apt";
+
+    # Determine services management subsystem (systemd, initscripts, manual)
+    if ($id->{distro_version} < 1604) { # systemd is in ubuntu since 16.04
+       $id->{service_mgt} = "upstart"; # was initscripts
+    } else {
+       $id->{service_mgt} = "systemd"; # Became default boot manager in Jessie
+    }
 
     # Make final string
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}";
-    $id->{ident} .= $id->{distro_update} if defined $id->{distro_update};
-    return $id;
+    #$id->{ident} .= $id->{distro_update} if defined $id->{distro_update};
 }
 
 
@@ -190,6 +218,10 @@ sub detect_pool {
                               $detect_package,
                               $distro,
                               $compat_distro);
+
+
+    # Add missing fields
+    add_missing_fields($id);
 
     return $id;
 }
@@ -210,6 +242,10 @@ sub detect_fake {
                                  $compat_distro,
                                  $compat_version_mapping{$l_version},
                                  $pkg);
+
+    # Add missing fields
+    add_missing_fields($id);
+
     return $id;
 }
 
@@ -225,6 +261,10 @@ sub detect_oscar_pool ($) {
         };
         $id->{distro} = $distro;
         $id->{pkg} = $pkg;
+
+        # Add missing fields
+        add_missing_fields($id);
+
         return $id;
     } else {
         return undef;

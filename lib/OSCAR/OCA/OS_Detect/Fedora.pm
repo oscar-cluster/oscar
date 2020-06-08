@@ -7,6 +7,10 @@
 # Copyright (c) Erich Focht <efocht@hpce.nec.com>
 #      - complete rewrite to enable use on top of images
 #      - enabled use on top of package pools
+#
+# Copyright (c) 2020 Olivier Lahaye <olivier.lahaye@cea.fr>
+#      - Add support for /etc/os-release
+#      - Add support for platform_id, pkg_mgr, service_mgt, pretty_name
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -30,15 +34,7 @@ my $detect_file = "/bin/bash";
 # called.
 sub detect_dir {
     my ($root) = @_;
-    my ($release_string, $fc_release);
-    my $dfile = "/etc/fedora-release";
-
-    # If /etc/fedora-release exists, continue, otherwise, quit.
-    if (-f "$root$dfile") {
-        $release_string = `cat $root$dfile`;
-    } else {
-        return undef;
-    }
+    my $release_string;
 
     # this hash contains all info necessary for identifying the OS
     my $id = {
@@ -46,37 +42,62 @@ sub detect_dir {
         chroot => $root,
     };
 
-    if ($release_string =~ /Fedora release (\d+)\.9\d \(Rawhide\)/) { 
-        # Fedora Core test releases 
-        $fc_release = $1+1;
-    } elsif ($release_string =~ /Fedora (?:Core )?release (\d+)/) {
-        $fc_release = $1;
+    my %os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
+
+    if (%os_release) {
+        $id->{distro_version} = $os_release{VERSION_ID};
+        $id->{platform_id} = $os_release{PLATFORM_ID};
+        $id->{pretty_name} = $os_release{PRETTY_NAME};
+    } elsif (-f "$root/etc/fedora-release") { # If /etc/fedora-release exists, continue, otherwise, quit.
+        $release_string = `cat $root/etc/fedora-release`;
+        if ($release_string =~ /Fedora release (\d+)\.9\d \(Rawhide\)/) { 
+            # Fedora Core test releases 
+            $id->{distro_version} = $1+1;
+        } elsif ($release_string =~ /Fedora (?:Core )?release (\d+)/) {
+            $id->{distro_version} = $1;
+        } else {
+            return undef; # Can't parse /etc/fedora-release
+        }
     } else {
         return undef;
     }
+    $id->{distro_update} = 0; # irrelevant in Fedora. TODO: is it usefull?
+
 
     $id->{distro} = $distro;
-    $id->{distro_version} = $fc_release;
-    $id->{platform_id} = "platform:f$os_release";
     $id->{compat_distro} = $compat_distro;
-    $id->{compat_distrover} = $fc_release;
+    $id->{compat_distrover} = $id->{distro_version};
     $id->{pkg} = $pkg;
 
     # determine architecture
     my $arch = main::OSCAR::OCA::OS_Detect::detect_arch_file($root,$detect_file);
     $id->{arch} = $arch;
 
-    # determine services management subsystem (systemd, initscripts, manual)
-    if ($id->{distro_version} <= 14) {
-        $id->{service_mgt} = "initscripts";
-    } else {
-        $id->{service_mgt} = "systemd"; # Used since version 15.
-    }
+    add_missing_fields($id);
+
+    return $id;
+}
+
+sub add_missing_fields {
+    my ($id) = @_;
+
+    # Set distro code_name
+    $id->{codename} = "";
+
+    # Set pretty name
+    $id->{pretty_name} = "Fedora $id->{distro_version}" if (! defined($id->{pretty_name}));
+
+    # Set platform id.
+    $id->{platform_id} = "platform:f$id->{distro_version}" if (! defined($id->{platform_id}));
+
+    # Determine which package manager is in use.
+    $id->{pkg_mgr} = "dnf";
+
+    # Determine services management subsystem (systemd, initscripts, manual)
+    $id->{service_mgt} = "systemd";
 
     # Make final string
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}";
-
-    return $id;
 }
 
 sub detect_pool {
@@ -86,6 +107,9 @@ sub detect_pool {
                                                           $detect_package,
                                                           $distro,
                                                           $compat_distro);
+
+    # Add missing fields
+    add_missing_fields($id);
 
     return $id;
 }
@@ -97,6 +121,10 @@ sub detect_fake {
                                                              $compat_distro,
                                                              undef,
                                                              $pkg);
+
+    # Add missing fields
+    add_missing_fields($id);
+
     return $id;
 }
 
@@ -112,6 +140,10 @@ sub detect_oscar_pool ($) {
         };
         $id->{distro} = $distro;
         $id->{pkg} = $pkg;
+
+        # Add missing fields
+        add_missing_fields($id);
+
         return $id;
     } else {
         return undef;

@@ -6,6 +6,10 @@
 # Copyright (c) Erich Focht <efocht@hpce.nec.com>
 #                    All rights reserved.
 # 
+# Copyright (c) 2020 Olivier Lahaye <olivier.lahaye@cea.fr>
+#      - Add support for /etc/os-release
+#      - Add support for platform_id, pkg_mgr, service_mgt, pretty_name
+#
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
 # OSCAR source distribution.
@@ -26,7 +30,6 @@ use OSCAR::LSBreleaseParser;
 use OSCAR::Utils;
 
 my $DEBUG = 1 if( $ENV{DEBUG_OCA_OS_DETECT} );
-my ($deb_ver, $deb_update);
 
 my $detect_pkg  = "base-files"; # Deb pkg containing '/etc/debian_version'
                                 # therefore should always be available
@@ -72,10 +75,22 @@ my %codenames = (
 # called.
 sub detect_dir {
     my ($root) = @_;
-    my $release_string;
 
-    # If /etc/debian_version exists, continue, otherwise, quit.
-    if (-f "$root/etc/debian_version") {
+    # this hash contains all info necessary for identifying the OS
+    my $id = {
+        os => "linux",
+        chroot => $root,
+    };
+
+    my %os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
+
+    if (%os_release) {
+        $id->{distro_version} = $os_release{VERSION_ID};
+        $id->{platform_id} = $os_release{PLATFORM_ID};
+        $id->{pretty_name} = $os_release{PRETTY_NAME};
+        $id->{distro_update} = 0; # unknown in fact. TODO: is it usefull?
+	return undef if($os_release{ID} ne 'debian'); # Quit if not a debian
+    } elsif (-f "$root/etc/debian_version") {    # If /etc/debian_version exists, continue, otherwise, quit.
         # There is a trick with Ubuntu systems: they have a non-valid 
         # /etc/debian_version and the ubuntu release data is actually in
         # /etc/lsb-release. So if we get data from this file and if it specifies
@@ -85,7 +100,7 @@ sub detect_dir {
             require OSCAR::PackagePath;
             my ($d, $v, $a) = 
                 OSCAR::PackagePath::decompose_distro_id ($distro_id);
-            return undef if ($d eq "ubuntu");
+            return undef if ($d eq "ubuntu"); # Quit if not a debian
         }
 
 
@@ -102,34 +117,26 @@ sub detect_dir {
         chomp($rslt);
         close(CMD);
 
-        $deb_ver = (split(/[\s\+]+/, $rslt))[1];  # [0]=name,  [1]=version, [2]=optional update release
+        $id->{distro_version} = (split(/[\s\+]+/, $rslt))[1];  # [0]=name,  [1]=version, [2]=optional update release
+
     } else {
         return undef;
     }
 
-    # this hash contains all info necessary for identifying the OS
-    my $id = {
-        os => "linux",
-        chroot => $root,
-    };
-
-    #
-    # Now do some checks to make sure we're supported
-    #
-
-    # Limit support to only Debian v4 (etch)
-    my $deb_update;
-    # three (freaking) cases: the version number is "x" or "x.<something>" 
+    # two cases: the version number is "x" or "x.<something>" 
     # or "xcodenamey"
-    if ($deb_ver =~ /^(\d+)\.(\d+)/) {
-        $deb_ver = $1;
-        $deb_update = $2;
-    } elsif ($deb_ver =~ /^(\d+)([A-z]+)(\d+)$/) {
-        $deb_ver = $1;
-        $deb_update = 0;
-    } else {
-            $deb_update = 0;
+    if ($id->{distro_version} =~ /^(\d+)\.(\d+)/) {
+        $id->{distro_version} = $1;
+        $id->{distro_update} = $2;
+    } elsif ($id->{distro_version} =~ /^(\d+)([A-z]+)(\d+)$/) {
+        $id->{distro_version} = $1;
+        $id->{distro_update} = 0;
     }
+
+    $id->{distro} = $distro;
+    $id->{compat_distro} = $compat_distro;
+    $id->{compat_distrover} = $id->{distro_version};
+    $id->{pkg} = $pkg;
 
     # determine architecture
     my $arch = main::OSCAR::OCA::OS_Detect::detect_arch_file($root, $detect_file);
@@ -142,21 +149,36 @@ sub detect_dir {
         return 0;
     }
 
-    $id->{distro} = $distro;
-    $id->{distro_version} = $deb_ver;
-    $id->{distro_update} = $deb_update;
-    $id->{compat_distro} = $compat_distro;
-    $id->{compat_distrover} = $deb_ver;
-    $id->{pkg} = $pkg;
-    my $full_distro_ver = "$deb_ver.$deb_update";
+    add_missing_fields($id);
+
+    return $id;
+}
+
+sub add_missing_fields {
+    my ($id) = @_;
+
+    # Set distro code_name
+    my $full_distro_ver = "$id->{distro_version}.$id->{distro_update}";
     $id->{codename} = $codenames{$full_distro_ver};
 
-    # determine services management subsystem (systemd, initscripts, manual)
-    $id->{service_mgt} = "manual";
+    # Set pretty name
+    $id->{pretty_name} = "Debian GNU/Linux $id->{distro_version} ($id->{codename})" if (! defined($id->{pretty_name}));
+
+    # Set platform id.
+    $id->{platform_id} = "platform:deb$id->{distro_version}" if (! defined($id->{platform_id}));
+
+    # Determine which package manager is in use.
+    $id->{pkg_mgr} = "apt";
+
+    # Determine services management subsystem (systemd, initscripts, manual)
+    if ($id->{distro_version} <= 7) {
+       $id->{service_mgt} = "initscripts";
+    } else {
+       $id->{service_mgt} = "systemd"; # Became default boot manager in Jessie
+    }
 
     # Make final string
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}-$id->{distro_update}";
-    return $id;
 }
 
 
@@ -169,6 +191,9 @@ sub detect_pool {
                                                           $detect_package,
                                                           $distro,
                                                           $compat_distro);
+
+    # Add missing fields
+    add_missing_fields($id);
 
     return $id;
 }
@@ -191,6 +216,10 @@ sub detect_fake ($) {
                                                              $compat_distro,
                                                              undef,
                                                              $pkg);
+
+    # Add missing fields
+    add_missing_fields($id);
+
     return $id;
 }
 
@@ -206,6 +235,10 @@ sub detect_oscar_pool ($) {
         };
         $id->{distro} = $distro;
         $id->{pkg} = $pkg;
+
+        # Add missing fields
+        add_missing_fields($id);
+
         return $id;
     } else {
         return undef;

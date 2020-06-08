@@ -7,6 +7,9 @@
 # Copyright (c) Erich Focht <efocht@hpce.nec.com>
 #      - complete rewrite to enable use on top of images
 #      - enabled use on top of package pools
+# Copyright (c) 2020 Olivier Lahaye <olivier.lahaye@cea.fr>
+#      - Add support for /etc/os-release
+#      - Add support for platform_id, pkg_mgr, service_mgt, pretty_name
 # 
 # This file is part of the OSCAR software package.  For license
 # information, see the COPYING file in the top level directory of the
@@ -25,6 +28,9 @@ my $pkg = "rpm";
 my $detect_package = "redhat-release";
 my $detect_file = "/bin/bash";
 
+# List supported OS fammily. To drop support for a familly: replace familly name with undef.
+my @os_families = ( undef, undef, undef, undef, undef, undef, 'Santiago', 'Maipo', 'Ootpa' );
+
 # This is the logic that determines whether this component can be
 # loaded or not -- i.e., whether we're on a RHEL machine or not.
 # This routine is cheap and called very rarely, so don't care for
@@ -34,71 +40,90 @@ sub detect_dir {
     my ($root) = @_;
     my $release_string;
 
-    # If /etc/redhat-release exists, continue, otherwise, quit.
-    if (-f "$root/etc/redhat-release") {
-        $release_string = `cat $root/etc/redhat-release`;
-    } else {
-        return undef;
-    }
-
     # this hash contains all info necessary for identifying the OS
     my $id = {
         os => "linux",
         chroot => $root,
     };
 
-    # complex match strings
-    if ($release_string =~
-        /Red Hat Enterprise Linux (\S+) release (\d+) \((\S+) Update (\d+)\)/ 
-            or $release_string =~
-        /Red Hat Enterprise Linux (\S+) release (\d+|\d+\.\d+) \((\S+)\)/) {
-        my $flavor = $1; # AS, WS, ES? This information is irrelevant for OSCAR
-        my $os_release = $2;
-        my $os_family = $3; # Nahant, blah...
-        my $os_update = $4;
+    my %os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
 
-        # In case the version number and the update number are all together, we
-        # explicitely make the distinction
-        if ($os_release =~ /(\d+).(\d+)/) {
-            $os_release = $1;
-            $os_update = $2;
+    if (%os_release) {
+        $id->{distro_version} = $os_release{VERSION_ID};
+        $id->{platform_id} = $os_release{PLATFORM_ID};
+        $id->{pretty_name} = $os_release{PRETTY_NAME};
+        $id->{distro_update} = 0; # unknown in fact. TODO: is it usefull?
+    } elsif (-f "$root/etc/redhat-release") { # If /etc/redhat-release exists, continue, otherwise, quit.
+        $release_string = `cat $root/etc/redhat-release`;
+        if ($release_string =~ /Red Hat Enterprise Linux (\S+) release (\d+) \((\S+) Update (\d+)\)/ ||
+            $release_string =~ /Red Hat Enterprise Linux (\S+) release (\d+|\d+\.\d+) \((\S+)\)/) {
+            my $flavor = $1; # AS, WS, ES? This information is irrelevant for OSCAR
+            $id->{distro_version} = $2;
+            $id->{os_family} = $3; # Nahant, blah...
+            $id->{distro_update} = $4;
+
+            # In case the version number and the update number are all together, we
+            # explicitely make the distinction
+            if ($id->{distro_version} =~ /(\d+).(\d+)/) {
+                $id->{distro_version} = $1;
+                $id->{distro_update} = $2;
+            }
+
+            # only support these three for now
+	    #if ($id->{os_family} !~ /^(Santiago|Maipo|Ootpa)$/) { # RHEL-6, RHEL-7, RHEL-8
+	    #    return undef; # Unsupported OS family
+	    #}
+	    my @matches = grep { /$id->{os_family}/ } @os_families; # Look for family in supported families
+	    return undef if (! @matches);
+        } else {
+            return undef; # Can't parse /etc/redhat-release New format?
         }
-
-        # only support these two for now
-        if ($os_family !~ /^(Taroon|Nahant|Tikanga|Santiago)$/) {
-            return undef;
-        }
-
-        $id->{distro} = $distro; #."-".lc($flavor);
-        $id->{distro_version} = $os_release;
-        $id->{distro_update} = $os_update;
-        $id->{platform_id} = "platform:el$os_release";
-        $id->{compat_distro} = $compat_distro;
-        $id->{compat_distrover} = $os_release;
-        $id->{pkg} = $pkg;
-
     } else {
-        return undef;
+        return undef; # no /etc/os-release and no /etc/redhat-release
     }
+
+    $id->{distro} = $distro; #."-".lc($flavor);
+    $id->{compat_distro} = $compat_distro;
+    $id->{compat_distrover} = $id->{distro_version};
+    $id->{pkg} = $pkg;
 
     # determine architecture
     my $arch = main::OSCAR::OCA::OS_Detect::detect_arch_file($root,$detect_file);
     $id->{arch} = $arch;
 
-    # determine services management subsystem (systemd, initscripts, manual)
-    if ($id->{distro_version} <= 6) {
-        $id->{service_mgt} = "initscripts";
+    add_missing_fields($id);
+
+    return $id;
+}
+
+sub add_missing_fields {
+    my ($id) = @_;
+
+    # Set the distro code_name
+    $id->{codename} = $os_families[$id->{distro_version}];
+
+    # Set pretty name
+    $id->{pretty_name} = "Red Hat Enterprise Linux Server $id->{distro_version} ($id->{distro_code_name})" if (! defined($id->{pretty_name}));
+
+    # Set platform id.
+    $id->{platform_id} = "platform:el$id->{distro_version}" if (! defined($id->{platform_id}));
+
+    # Determine which package manager is in use.
+    if ($id->{distro_version} <= 7) {
+        $id->{pkg_mgr} = "yum";
     } else {
-        $id->{service_mgt} = "systemd";
+        $id->{pkg_mgr} = "dnf";
+    }
+
+    # Determine services management subsystem (systemd, initscripts, manual)
+    if ($id->{distro_version} <= 6) {
+       $id->{service_mgt} = "initscripts";
+    } else {
+       $id->{service_mgt} = "systemd";
     }
 
     # Make final string
-    # [EF: does anybody care about this ugly string at all? The information
-    #      is redundant and can be construted anytime.]
-    $id->{distro_update} = ""  if !$id->{distro_update};
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}-$id->{distro_update}";
-
-    return $id;
 }
 
 sub detect_pool {
@@ -108,6 +133,9 @@ sub detect_pool {
                                                           $detect_package,
                                                           $distro,
                                                           $compat_distro);
+
+    # Add missing fields
+    add_missing_fields($id);
 
     return $id;
 }
@@ -119,6 +147,10 @@ sub detect_fake {
                                                              $compat_distro,
                                                              undef,
                                                              $pkg);
+
+    # Add missing fields
+    add_missing_fields($id);
+						 
     return $id;
 }
 
@@ -134,7 +166,11 @@ sub detect_oscar_pool ($) {
         };
         $id->{distro} = $distro;
         $id->{pkg} = $pkg;
-        return $id;
+
+        # Add missing fields
+        add_missing_fields($id);
+
+	return $id;
     } else {
         return undef;
     }
