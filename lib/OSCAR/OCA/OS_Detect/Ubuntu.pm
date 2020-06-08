@@ -38,10 +38,15 @@ my $detect_package = "base-files";
 my $detect_file = "/bin/bash";
 
 my %codenames = (
-		'1804'  => "Bionic",
-		'1710'  => "Artful",
-		'1704'  => "Zesty",
-		'1610'  => "Yakkety",
+		'2010'  => "groovy",
+		'2004'  => "focal",
+		'1910'  => "eoan",
+		'1904'  => "disco",
+		'1810'  => "cosmic",
+		'1804'  => "bionic",
+		'1710'  => "artful",
+		'1704'  => "zesty",
+		'1610'  => "yakkety",
                 '1604'  => "xenial",
                 '1510'  => "wily",
                 '1504'  => "vivid",
@@ -67,6 +72,12 @@ my %codenames = (
                 );
 
 my %compat_version_mapping = (
+                '2010'  => "11",
+                '2004'  => "11",
+                '1910'  => "10",
+                '1904'  => "10",
+                '1810'  => "10",
+                '1804'  => "10",
                 '1804'  => "10",
                 '1710'  => "9",
                 '1704'  => "9",
