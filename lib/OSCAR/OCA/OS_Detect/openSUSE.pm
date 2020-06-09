@@ -52,10 +52,11 @@ sub detect_dir {
         if ($id->{distro_version} =~ /(\d+).(\d+)/) {
             $id->{distro_version} = $1;
             $id->{distro_update} = $2;
+        } else {
+            $id->{distro_update} = 0;
         }
         $id->{platform_id} = $os_release{PLATFORM_ID};
         $id->{pretty_name} = $os_release{PRETTY_NAME};
-        $id->{distro_update} = 0; # unknown in fact. TODO: is it usefull?
     } else { # /etc/suse-release is deprecated since 42.3
         return undef;
     }

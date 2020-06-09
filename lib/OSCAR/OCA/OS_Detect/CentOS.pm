@@ -55,7 +55,7 @@ sub detect_dir {
 
             # CentOS's major number release does not have a minor number (eg. 5 vs 5.0), set $os_update to 0 by default
             my $upd = $2;
-            if ( $upd =~ /^[0-9]$/ ) {
+            if ( $upd =~ /^[0-9]+$/ ) {
                 $id->{distro_update} = $upd;
             } else {
                 $id->{distro_update} = 0;

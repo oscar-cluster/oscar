@@ -64,8 +64,6 @@ sub detect_dir {
     } else {
         return undef;
     }
-    $id->{distro_update} = 0; # irrelevant in Fedora. TODO: is it usefull?
-
 
     $id->{distro} = $distro;
     $id->{compat_distro} = $compat_distro;
@@ -83,6 +81,8 @@ sub detect_dir {
 
 sub add_missing_fields {
     my ($id) = @_;
+
+    $id->{distro_update} = 0; # irrelevant in Fedora. TODO: is it usefull?
 
     # Set os type (for now, it's always linux. no bsd yet)
     $id->{os} = "linux";

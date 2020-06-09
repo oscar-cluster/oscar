@@ -83,6 +83,8 @@ sub detect_dir {
     if ($id->{distro_version} =~ /(\d+).(\d+)/) {
         $id->{distro_version} = $1;
         $id->{distro_update} = $2;
+    } else {
+	$id->{distro_update} = 0;
     }
 
     $id->{distro} = $distro; #."-".lc($flavor);

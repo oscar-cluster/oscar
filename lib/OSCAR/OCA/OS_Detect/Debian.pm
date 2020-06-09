@@ -91,7 +91,6 @@ sub detect_dir {
         $id->{distro_version} = $os_release{VERSION_ID};
         $id->{platform_id} = $os_release{PLATFORM_ID};
         $id->{pretty_name} = $os_release{PRETTY_NAME};
-        $id->{distro_update} = 0; # unknown in fact. TODO: is it usefull?
 	return undef if($os_release{ID} ne 'debian'); # Quit if not a debian
     } elsif (-f "$root/etc/debian_version") {    # If /etc/debian_version exists, continue, otherwise, quit.
         # There is a trick with Ubuntu systems: they have a non-valid 
@@ -134,6 +133,8 @@ sub detect_dir {
     } elsif ($id->{distro_version} =~ /^(\d+)([A-z]+)(\d+)$/) {
         $id->{distro_version} = $1;
         $id->{distro_update} = 0;
+    } else {
+	$id->{distro_update} = 0;
     }
 
     $id->{distro} = $distro;
