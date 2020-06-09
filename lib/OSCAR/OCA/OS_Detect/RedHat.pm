@@ -49,10 +49,11 @@ sub detect_dir {
     my %os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
 
     if (%os_release) {
+	return undef if (! $os_release{NAME} =~ /^Red Hat Enterprise Linux/); # Not RHEL: quit now
         $id->{distro_version} = $os_release{VERSION_ID};
         $id->{platform_id} = $os_release{PLATFORM_ID};
         $id->{pretty_name} = $os_release{PRETTY_NAME};
-        $id->{distro_update} = 0; # unknown in fact. TODO: is it usefull?
+        $id->{distro_update} = 0; # Fixed later if needed.
     } elsif (-f "$root/etc/redhat-release") { # If /etc/redhat-release exists, continue, otherwise, quit.
         $release_string = `cat $root/etc/redhat-release`;
         if ($release_string =~ /Red Hat Enterprise Linux (\S+) release (\d+) \((\S+) Update (\d+)\)/ ||
@@ -62,13 +63,6 @@ sub detect_dir {
             $id->{os_family} = $3; # Nahant, blah...
             $id->{distro_update} = $4;
 
-            # In case the version number and the update number are all together, we
-            # explicitely make the distinction
-            if ($id->{distro_version} =~ /(\d+).(\d+)/) {
-                $id->{distro_version} = $1;
-                $id->{distro_update} = $2;
-            }
-
             # only support these three for now
 	    #if ($id->{os_family} !~ /^(Santiago|Maipo|Ootpa)$/) { # RHEL-6, RHEL-7, RHEL-8
 	    #    return undef; # Unsupported OS family
@@ -76,10 +70,17 @@ sub detect_dir {
 	    my @matches = grep { /$id->{os_family}/ } @os_families; # Look for family in supported families
 	    return undef if (! @matches);
         } else {
-            return undef; # Can't parse /etc/redhat-release New format?
+            return undef; # Red Hat Enterprise Linux not in /etc/redhat-release: not a RHEL: quit (maybe a fedora?)
         }
     } else {
         return undef; # no /etc/os-release and no /etc/redhat-release
+    }
+
+    # In case the version number and the update number are all together, we
+    # explicitely make the distinction
+    if ($id->{distro_version} =~ /(\d+).(\d+)/) {
+        $id->{distro_version} = $1;
+        $id->{distro_update} = $2;
     }
 
     $id->{distro} = $distro; #."-".lc($flavor);
