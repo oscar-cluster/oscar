@@ -187,6 +187,9 @@ sub add_missing_fields {
        $id->{service_mgt} = "systemd"; # Became default boot manager in Jessie
     }
 
+    # Set dummy distro_update if missing so ident is correct.
+    $id->{distro_update} = 0 if (! defined($id->{distro_update}));
+
     # Make final string
     $id->{ident} = "$id->{os}-$id->{arch}-$id->{distro}-$id->{distro_version}-$id->{distro_update}";
 }
