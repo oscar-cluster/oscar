@@ -37,6 +37,7 @@ sub detect_dir {
     my %os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
 
     if (%os_release) {
+        return undef if ($os_release{NAME} !~ /^CentOS Linux/); # Not CentOS: quit now
         $id->{distro_version} = $os_release{VERSION_ID};
 	$id->{platform_id} = $os_release{PLATFORM_ID};
 	$id->{pretty_name} = $os_release{PRETTY_NAME};

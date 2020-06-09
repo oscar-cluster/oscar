@@ -21,7 +21,7 @@
 # $Id$
 #
 
-package OSCAR::OCA::OS_Detect::SLED;
+package OSCAR::OCA::OS_Detect::SLES;
 
 use strict;
 
@@ -44,7 +44,7 @@ sub detect_dir {
     my %os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
 
     if (%os_release) {
-        return undef if ( $os_release{NAME} ne "SLES"); # Refuse to match "SLED" or "openSUSE Leap"
+        return undef if ($os_release{NAME} !~ /^SLES/); # Not SLES quit now
         $id->{distro_version} = $os_release{VERSION_ID};
         # In case the version number and the update number are all together, we
         # explicitely make the distinction
