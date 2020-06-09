@@ -22,10 +22,11 @@ centos-6-x86_64 = distro:http://mirror.centos.org/centos/6/os/x86_64/ oscar:http
 scientific_linux-6-x86_64 = distro:http://ftp.scientificlinux.org/linux/scientific/6/x86_64/os/ oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/rhel-6-x86_64 distro:http://ftp.scientificlinux.org/linux/scientific/6/x86_64/updates/security/ distro:http://dl.fedoraproject.org/pub/epel/6/x86_64
 fedora-27-x86_64 = distro:http://dl.fedoraproject.org/pub/fedora/linux/releases/27/Everything/x86_64/os/ distro:http://dl.fedoraproject.org/pub/fedora/linux/updates/27/x86_64/ oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/fc-27-x86_64
 fedora-28-x86_64 = distro:http://dl.fedoraproject.org/pub/fedora/linux/releases/28/Everything/x86_64/os/ distro:http://dl.fedoraproject.org/pub/fedora/linux/updates/28/Everything/x86_64/ oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/fc-28-x86_64
-debian-8-x86_64 = distro:http://ftp.us.debian.org/debian/+jessie+main oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/debian-8-x86_64/+jessie+/
-debian-9-x86_64 = distro:http://ftp.us.debian.org/debian/+stretch+main oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/debian-9-x86_64/+stretch+/
+debian-8-x86_64 = distro:http://ftp.debian.org/debian/+jessie+main oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/debian-8-x86_64/+jessie+/
+debian-9-x86_64 = distro:http://ftp.debian.org/debian/+stretch+main oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/debian-9-x86_64/+stretch+/
+debian-10-x86_64 = distro:http://ftp.debian.org/debian/+buster+main oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/debian-10-x86_64/+buster+/
 opensuse-42-x86_64 = distro:http://download.opensuse.org/distribution/leap/42.3/repo/oss/suse/ distro:http://download.opensuse.org/distribution/leap/42.3/repo/non-oss/ oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/suse-42-x86_64/
-opensuse-15-x86_64 = distro:http://download.opensuse.org/distribution/leap/15.1/repo/oss/ distro:http://download.opensuse.org/distribution/leap/15.1/repo/non-oss/ oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/suse-15-x86_64/
+opensuse-15-x86_64 = distro:http://download.opensuse.org/distribution/leap/15.2/repo/oss/ distro:http://download.opensuse.org/distribution/leap/15.2/repo/non-oss/ oscar:http://www.usablesecurity.net/OSCAR/repos/unstable/suse-15-x86_64/
 
 
 [6.1.1]
