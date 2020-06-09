@@ -42,9 +42,9 @@ sub detect_dir {
     };
 
     my %os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
-    return undef if ( ! $os_release{NAME} =~ /^openSUSE/); # Refuse to match "SLES" or "SLED"
 
     if (%os_release) {
+        return undef if ( ! $os_release{NAME} =~ /^openSUSE/); # Refuse to match "SLES" or "SLED"
         $id->{distro_version} = $os_release{VERSION_ID};
         # In case the version number and the update number are all together, we
         # explicitely make the distinction
