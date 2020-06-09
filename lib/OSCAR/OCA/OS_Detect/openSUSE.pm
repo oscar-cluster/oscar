@@ -32,12 +32,13 @@ my $detect_package = "openSUSE-release"; # rpm package name containing /etc/os-r
 my $detect_file = "/bin/bash";
 
 sub detect_dir {
-    my ($root) = @_;
-    my $release_string;
+    my $root = "/";
+    if (@_) {
+        $root = shift;
+    }
 
     # this hash contains all info necessary for identifying the OS
     my $id = {
-        os => "linux",
         chroot => $root,
     };
 
@@ -76,6 +77,12 @@ sub detect_dir {
 sub add_missing_fields {
     my ($id) = @_;
 
+    # Set os type (for now, it's always linux. no bsd yet)
+    $id->{os} = "linux";
+
+    # Make sure chroot is set
+    $id->{chroot} = "/" if(!defined($id->{chroot}));
+
     # Set the distro code_name
     $id->{codename} = "";
 
@@ -99,7 +106,6 @@ sub detect_pool {
                                                           $detect_package,
                                                           $distro,
                                                           $compat_distro);
-
 
     # Add missing fields
     add_missing_fields($id);

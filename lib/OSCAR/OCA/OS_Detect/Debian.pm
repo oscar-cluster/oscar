@@ -74,11 +74,13 @@ my %codenames = (
 # unnecessary buffering. Simply recalculate $id each time this is
 # called.
 sub detect_dir {
-    my ($root) = @_;
+    my $root = "/";
+    if (@_) {
+        $root = shift;
+    }
 
     # this hash contains all info necessary for identifying the OS
     my $id = {
-        os => "linux",
         chroot => $root,
     };
 
@@ -157,6 +159,12 @@ sub detect_dir {
 
 sub add_missing_fields {
     my ($id) = @_;
+
+    # Set os type (for now, it's always linux. no bsd yet)
+    $id->{os} = "linux";
+
+    # Make sure chroot is set
+    $id->{chroot} = "/" if(!defined($id->{chroot}));
 
     # Set distro code_name
     my $full_distro_ver = "$id->{distro_version}.$id->{distro_update}";
