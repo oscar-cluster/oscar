@@ -21,7 +21,7 @@
 # $Id$
 #
 
-package OSCAR::OCA::OS_Detect::openSuSE;
+package OSCAR::OCA::OS_Detect::openSUSE;
 
 use strict;
 
