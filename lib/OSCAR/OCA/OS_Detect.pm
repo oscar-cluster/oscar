@@ -77,9 +77,9 @@ sub open {
     } else {
 #        print STDERR "ERROR: Unknown detection target in OS_Detect: ".
 #            join(",",keys(%arg))."\n";
-        oscar_log(5, ERROR, "Unknown detection target in OS_Detect: ".
+        OSCAR::Logger::oscar_log(5, ERROR, "Unknown detection target in OS_Detect: ".
              join(",",keys(%arg)));
-        oscar_log(1, ERROR, "Failed to detect OS");
+        OSCAR::Logger::oscar_log(1, ERROR, "Failed to detect OS");
         return undef;
     }
 
@@ -87,8 +87,8 @@ sub open {
     # return immediately if path doesn't exist
     if (! -d $path) {
 #        print STDERR "ERROR: Path $path does not exist!\n";
-        oscar_log(5, ERROR, "Path $path does not exist!");
-        oscar_log(1, ERROR, "Failed to detect OS");
+        OSCAR::Logger::oscar_log(5, ERROR, "Path $path does not exist!");
+        OSCAR::Logger::oscar_log(1, ERROR, "Failed to detect OS");
         return undef;
     }
     # return cached value if detecting local OS
@@ -105,13 +105,13 @@ sub open {
         # If we get undef, then find_components() already printed an
         # error, and we decide that we want to die
 #        print STDERR "Cannot continue, find_components returned undef";
-        oscar_log(5, ERROR, "Cannot continue, find_components returned undef");
-        oscar_log(1, ERROR, "Failed to detect OS");
+        OSCAR::Logger::oscar_log(5, ERROR, "Cannot continue, find_components returned undef");
+        OSCAR::Logger::oscar_log(1, ERROR, "Failed to detect OS");
         return undef;
     } elsif (scalar(@$comps) == 0) {
 #        print STDERR "Could not find an OS_Detect component for this system!\n";
-        oscar_log(5, ERROR, "Could not find an OS_Detect component for this system!");
-        oscar_log(1, ERROR, "Failed to detect OS");
+        OSCAR::Logger::oscar_log(5, ERROR, "Could not find an OS_Detect component for this system!");
+        OSCAR::Logger::oscar_log(1, ERROR, "Failed to detect OS");
         return undef;
     }
 
@@ -192,7 +192,7 @@ sub detect_arch_pool {
                     $arch = $a;
                 } elsif ($a ne $arch) {
 #                    print STDERR "Multiple architectures detected in $pool.\n";
-                    oscar_log(5, ERROR, "Multiple architectures detected in $pool.");
+                    OSCAR::Logger::oscar_log(5, ERROR, "Multiple architectures detected in $pool.");
                     return "unknown";
                 }
             }
@@ -210,7 +210,7 @@ sub detect_arch_pool {
                     $arch = $a;
                 } elsif ($a ne $arch) {
 #                    print STDERR "Multiple architectures detected in $pool.\n";
-                    oscar_log(5, ERROR, "Multiple architectures detected in $pool.");
+                    OSCAR::Logger::oscar_log(5, ERROR, "Multiple architectures detected in $pool.");
                     return "unknown";
                 }
             }
@@ -221,7 +221,7 @@ sub detect_arch_pool {
         $arch = "i386" if ($arch =~ /i.86/);
         return $arch;
     } else {
-        oscar_log(5, ERROR, "Don't know how to detect package pool architecture for $pkg.");
+        OSCAR::Logger::oscar_log(5, ERROR, "Don't know how to detect package pool architecture for $pkg.");
         return "unknown";
     }
 }
@@ -366,17 +366,15 @@ sub detect_oscar_pool_common ($$) {
 }
 
 sub parse_os_release {
-    my $root = "/";
-    if (@_) {
-	$root = shift;
-    }
+    my $root='/';
+    $root = shift if (@_); # If root specified as argument, use that instead of default '/'
     if (! -d "$root") {
-        oscar_log(5, ERROR, "Invalid root path: $root");
+        OSCAR::Logger::oscar_log(5, ERROR, "Invalid root path: $root");
         return undef;
     }
     $root =~ s|/+$||; # Cleanup trailing slash(es).
     if (! -f "$root/etc/os-release") {
-        oscar_log(5, INFO, "$root/etc/os-release doesn't exists.");
+        OSCAR::Logger::oscar_log(5, INFO, "$root/etc/os-release doesn't exists.");
         return undef;
     }
 
