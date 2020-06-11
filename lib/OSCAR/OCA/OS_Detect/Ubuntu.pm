@@ -167,7 +167,7 @@ sub detect_dir {
 
     $id->{distro} = $distro;
     $id->{compat_distro} = $compat_distro;
-    $id->{compat_distrover} = $compat_version_mapping{$distro_version};
+    $id->{compat_distrover} = $compat_version_mapping{$id->{distro_version}};
     $id->{pkg} = $pkg;   
 
     # determine architecture

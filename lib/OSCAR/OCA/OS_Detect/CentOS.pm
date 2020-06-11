@@ -85,7 +85,7 @@ sub add_missing_fields {
     my ($id) = @_;
 
     # Don't try to add fields on undefined hash.
-    return if ( ! defined($id) );
+    return if(!defined($id));
 
     # Set os type (for now, it's always linux. no bsd yet)
     $id->{os} = "linux";

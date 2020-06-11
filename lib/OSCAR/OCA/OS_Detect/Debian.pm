@@ -261,7 +261,5 @@ sub detect_oscar_pool ($) {
     }
 }
 
-detect_dir ("/");
-
 # If we got here, we're happy
 1;
