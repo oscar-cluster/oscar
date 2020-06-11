@@ -131,15 +131,15 @@ sub detect_dir {
         chroot => $root,
     };
 
-    my %os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
+    my $os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
 
-    if (%os_release) {
-        return undef if ($os_release{NAME} !~ /^Ubuntu/); # Not Ubuntu: quit now
-        $id->{distro_version} = $os_release{VERSION_ID};
-        $id->{platform_id} = $os_release{PLATFORM_ID};
-        $id->{pretty_name} = $os_release{PRETTY_NAME};
+    if (defined($os_release)) {
+        return undef if ($os_release->{NAME} !~ /^Ubuntu/); # Not Ubuntu: quit now
+        $id->{distro_version} = $os_release->{VERSION_ID};
+        $id->{platform_id} = $os_release->{PLATFORM_ID};
+        $id->{pretty_name} = $os_release->{PRETTY_NAME};
         $id->{distro_update} = 0; # unknown in fact. TODO: is it usefull?
-        return undef if($os_release{ID} ne 'ubuntu'); # Quit if not an ubuntu
+        return undef if($os_release->{ID} ne 'ubuntu'); # Quit if not an ubuntu
     } elsif( -f "$root/etc/lsb-release") {
         # There is a trick with Ubuntu systems: they have a non-valid 
         # /etc/debian_version and the ubuntu release data is actually in
@@ -186,6 +186,9 @@ sub detect_dir {
 
 sub add_missing_fields {
     my ($id) = @_;
+
+    # Don't try to add fields to an undefined hash.
+    return if(! defined($id));
 
     # Set os type (for now, it's always linux. no bsd yet)
     $id->{os} = "linux";

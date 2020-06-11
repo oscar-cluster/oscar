@@ -48,13 +48,13 @@ sub detect_dir {
         chroot => $root,
     };
 
-    my %os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
+    my $os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
 
-    if (%os_release) {
-	return undef if ($os_release{NAME} !~ /^Red Hat Enterprise Linux/); # Not RHEL: quit now
-        $id->{distro_version} = $os_release{VERSION_ID};
-        $id->{platform_id} = $os_release{PLATFORM_ID};
-        $id->{pretty_name} = $os_release{PRETTY_NAME};
+    if (defined ($os_release)) {
+	return undef if ($os_release->{NAME} !~ /^Red Hat Enterprise Linux/); # Not RHEL: quit now
+        $id->{distro_version} = $os_release->{VERSION_ID};
+        $id->{platform_id} = $os_release->{PLATFORM_ID};
+        $id->{pretty_name} = $os_release->{PRETTY_NAME};
         $id->{distro_update} = 0; # Fixed later if needed.
     } elsif (-f "$root/etc/redhat-release") { # If /etc/redhat-release exists, continue, otherwise, quit.
         $release_string = `cat $root/etc/redhat-release`;
@@ -103,6 +103,9 @@ sub detect_dir {
 
 sub add_missing_fields {
     my ($id) = @_;
+
+    # Don't try to add fields to an undefined hash.
+    return if(! defined($id));
 
     # Set os type (for now, it's always linux. no bsd yet)
     $id->{os} = "linux";

@@ -42,11 +42,11 @@ sub detect_dir {
         chroot => $root,
     };
 
-    my %os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
+    my $os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
 
-    if (%os_release) {
-        return undef if ($os_release{NAME} !~ /^SLED/); # Not SLED quit now
-        $id->{distro_version} = $os_release{VERSION_ID};
+    if (defined ($os_release)) {
+        return undef if ($os_release->{NAME} !~ /^SLED/); # Not SLED quit now
+        $id->{distro_version} = $os_release->{VERSION_ID};
         # In case the version number and the update number are all together, we
         # explicitely make the distinction
         if ($id->{distro_version} =~ /(\d+).(\d+)/) {
@@ -55,8 +55,8 @@ sub detect_dir {
         } else {
 	    $id->{distro_update} = 0;
         }
-        $id->{platform_id} = $os_release{PLATFORM_ID};
-        $id->{pretty_name} = $os_release{PRETTY_NAME};
+        $id->{platform_id} = $os_release->{PLATFORM_ID};
+        $id->{pretty_name} = $os_release->{PRETTY_NAME};
     } else { # /etc/suse-release is deprecated since 42.3
         return undef;
     }
@@ -77,6 +77,9 @@ sub detect_dir {
 
 sub add_missing_fields {
     my ($id) = @_;
+
+    # Don't try to add fields to an undefined hash.
+    return if(! defined($id));
 
     # Set os type (for now, it's always linux. no bsd yet)
     $id->{os} = "linux";

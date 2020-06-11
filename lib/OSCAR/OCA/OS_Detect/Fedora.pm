@@ -44,13 +44,13 @@ sub detect_dir {
         chroot => $root,
     };
 
-    my %os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
+    my $os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
 
-    if (%os_release) {
-        return undef if ($os_release{NAME} !~ /^Fedora/); # Not Fedora: quit now
-        $id->{distro_version} = $os_release{VERSION_ID};
-        $id->{platform_id} = $os_release{PLATFORM_ID};
-        $id->{pretty_name} = $os_release{PRETTY_NAME};
+    if (defined($os_release)) {
+        return undef if ($os_release->{NAME} !~ /^Fedora/); # Not Fedora: quit now
+        $id->{distro_version} = $os_release->{VERSION_ID};
+        $id->{platform_id} = $os_release->{PLATFORM_ID};
+        $id->{pretty_name} = $os_release->{PRETTY_NAME};
     } elsif (-f "$root/etc/fedora-release") { # If /etc/fedora-release exists, continue, otherwise, quit.
         $release_string = `cat $root/etc/fedora-release`;
         if ($release_string =~ /Fedora release (\d+)\.9\d \(Rawhide\)/) { 
@@ -81,6 +81,9 @@ sub detect_dir {
 
 sub add_missing_fields {
     my ($id) = @_;
+
+    # Don't try to add fields to an undefined hash.
+    return if(! defined($id));
 
     $id->{distro_update} = 0; # irrelevant in Fedora. TODO: is it usefull?
 

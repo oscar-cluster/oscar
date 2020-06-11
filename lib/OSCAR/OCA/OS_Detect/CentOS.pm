@@ -36,13 +36,13 @@ sub detect_dir {
         chroot => $root,
     };
 
-    my %os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
+    my $os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
 
-    if (%os_release) {
-        return undef if ($os_release{NAME} !~ /^CentOS Linux/); # Not CentOS: quit now
-        $id->{distro_version} = $os_release{VERSION_ID};
-	$id->{platform_id} = $os_release{PLATFORM_ID};
-	$id->{pretty_name} = $os_release{PRETTY_NAME};
+    if (defined($os_release)) {
+        return undef if ($os_release->{NAME} !~ /^CentOS Linux/); # Not CentOS: quit now
+        $id->{distro_version} = $os_release->{VERSION_ID};
+	$id->{platform_id} = $os_release->{PLATFORM_ID};
+	$id->{pretty_name} = $os_release->{PRETTY_NAME};
 	$id->{distro_update} = 0; # unknown in fact. TODO: is it usefull?
     } elsif (-f "$root/etc/redhat-release") {
         $release_string = `cat $root/etc/redhat-release`;
@@ -83,6 +83,9 @@ sub detect_dir {
 
 sub add_missing_fields {
     my ($id) = @_;
+
+    # Don't try to add fields on undefined hash.
+    return if ( ! defined($id) );
 
     # Set os type (for now, it's always linux. no bsd yet)
     $id->{os} = "linux";
@@ -155,9 +158,7 @@ sub detect_oscar_pool ($) {
 
     if ($ret) {
         # The component can use the OSCAR pool
-        my $id = {
-            os => "linux",
-        };
+        my $id = { };
         $id->{distro} = $distro;
         $id->{pkg} = $pkg;
 

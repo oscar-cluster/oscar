@@ -380,7 +380,7 @@ sub parse_os_release {
         return undef;
     }
 
-    my %os_release=();
+    my $os_release={};
 
     if( open(OS,"cat $root/etc/os-release|") ) {
         while (<OS>){
@@ -388,12 +388,12 @@ sub parse_os_release {
 	    $os_param[1] =~ s/^"(.*)"$/$1/; # Remove surrounding strings
 	    chomp($os_param[1]);
 	    $os_param[1] = int($os_param[1]) if ($os_param[1] =~ /^[1-9][0-9]*$/);
-            $os_release{$os_param[0]}=$os_param[1];
+            $os_release->{$os_param[0]}=$os_param[1];
         }
         close(OS);
     }
 
-    return %os_release;
+    return $os_release;
 }
 
 1;
