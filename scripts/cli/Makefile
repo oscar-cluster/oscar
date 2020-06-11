@@ -1,6 +1,6 @@
 DESTDIR=
-TOP_DIR = ../..
-include $(TOP_DIR)/Config.mk
+TOPDIR = ../..
+include $(TOPDIR)/Config.mk
 
 
 SCRIPTS := build_oscar_image_cli define_oscar_clients_cli \

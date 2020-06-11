@@ -1,6 +1,6 @@
 DESTDIR=
-TOP_DIR = ..
-include $(TOP_DIR)/Config.mk
+TOPDIR = ..
+include $(TOPDIR)/Config.mk
 
 SCRIPTS := oscar-config oscar_image_cleanup oscar_wizard repo-update setup_pxe c3config
 

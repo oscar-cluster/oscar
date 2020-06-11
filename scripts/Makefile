@@ -1,6 +1,6 @@
 DESTDIR=
-TOP_DIR = ..
-include $(TOP_DIR)/Config.mk
+TOPDIR = ..
+include $(TOPDIR)/Config.mk
 
 SCRIPTS := create_and_populate_basic_node_info \
 		get-oscar-version.sh install_prereq install_server \
