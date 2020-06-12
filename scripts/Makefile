@@ -2,19 +2,23 @@ DESTDIR=
 TOPDIR = ..
 include $(TOPDIR)/Config.mk
 
-SCRIPTS := create_and_populate_basic_node_info \
-		get-oscar-version.sh install_prereq install_server \
+SCRIPTS_WITH_DOC := install_prereq install_server oscar-updater \
+	oscar_sanity_check post_install ssh_install
+
+SCRIPTS_WITHOUT_DOC := create_and_populate_basic_node_info \
+		get-oscar-version.sh \
 		integrate_image opd \
-		oscar_sanity_check \
-		ping_clients post_clients post_install post_rpm_install \
+		ping_clients post_clients post_rpm_install \
 		prep_oscar_repos set_node_nics \
-		ssh_install update_live_macs \
-		oscar-updater
+		update_live_macs
+
+SCRIPTS := $(SCRIPTS_WITH_DOC) $(SCRIPTS_WITHOUT_DOC)
+
 SUBDIRS := cli oscar-updater.d
 
 doc:
 	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1/
-	for bin in ${SCRIPTS} ; do ( pod2man --section=1 $$bin $(DESTDIR)$(MANDIR)/man1/$$bin.1 ) ; done
+	for bin in ${SCRIPTS_WITH_DOC} ; do ( pod2man --section=1 $$bin $(DESTDIR)$(MANDIR)/man1/$$bin.1 ) ; done
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; $(MAKE) all ) ; done
