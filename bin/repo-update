@@ -219,14 +219,25 @@ if ($rmdup) {
 
 exit 0;
 
+=head1 NAME
+
+repo-update - Download packages from an online repository to the local repository
+
+=head1 SYNOPSIS
+
+repo-update [--url URL_TO_PACKAGES] [--repo LOCAL_PATH] [--prim PRIMARY.XML] [--check] [--rmdup] [--verbose|-v]
+
+=cut
 
 #########################################################
 
 sub help {
-    print <<EOI;
+    print <<POD;
 Usage:
     $0 [--url URL_TO_PACKAGES] [--repo LOCAL_PATH] [--prim PRIMARY.XML] \
        [--check] [--rmdup] [--verbose|-v]
+
+=head1 DESCRIPTION
 
  Download packages from an online repository to the local repository
  LOCAL_PATH or the current directory. If the repodata/primary.xml file
@@ -244,22 +255,23 @@ Usage:
  Examples:
    Check packages which would be downloaded from a FC4 updates mirror site:
 
-   $0 --url http://mirrors.dotsrc.org/fedora/updates/4/i386/ --check \
+   repo-update --url http://mirrors.dotsrc.org/fedora/updates/4/i386/ --check \
           --repo /tftpboot/distro/fedora-4-i386
 
 
    Download updates to current directory (which could be the repository) and remove
    older packages:
 
-   $0 --url http://mirrors.dotsrc.org/fedora/updates/4/i386/ --rmdup
+   repo-update --url http://mirrors.dotsrc.org/fedora/updates/4/i386/ --rmdup
 
    Remove duplicate rpms (old package versions) from the repository (usefull when
    one has copied the packages over from /var/cache/yum/*/packages/):
 
-   $0 --rmdup --repo /tftpboot/distro/fedora-4-i386
+   repo-update --rmdup --repo /tftpboot/distro/fedora-4-i386
 
+=cut
 
-EOI
+POD
     exit 1;
 }
 
