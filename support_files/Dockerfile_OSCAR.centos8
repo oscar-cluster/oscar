@@ -152,6 +152,6 @@ RUN yume -y reinstall systemimager-x86_64initrd_template systemimager-x86_64boot
 RUN yume -y install systemimager-bittorrent systemimager-client systemimager-flamethrower
 
 # Cleanup tftp tree so we can mount host space later.
-RUN /bin/rm -rf /tftpboot/oscar/rhel-8-x86_64/*
+RUN /bin/rm -rf /root/rpmbuild/*/* /tftpboot/oscar/rhel-8-x86_64/*
 
 CMD [ "bash" ]
