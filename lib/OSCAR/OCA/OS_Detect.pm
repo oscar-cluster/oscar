@@ -380,7 +380,7 @@ sub parse_os_release {
 
     my $os_release={};
 
-    if( open(OS,"cat $root/etc/os-release|") ) {
+    if( CORE::open(OS,"cat $root/etc/os-release|") ) {
         while (<OS>){
             my @os_param = split /=/, $_;
 	    $os_param[1] =~ s/^"(.*)"$/$1/; # Remove surrounding strings
