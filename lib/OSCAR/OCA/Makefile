@@ -2,7 +2,7 @@ DESTDIR=
 TOP_LIB_DIR = ../..
 include $(TOP_LIB_DIR)/Config.mk
 
-SUBDIRS := OS_Detect OS_Settings RM_Detect Sanity_Check
+SUBDIRS := OS_Detect OS_Settings RM_Detect PM_Abstract Sanity_Check
 
 all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done

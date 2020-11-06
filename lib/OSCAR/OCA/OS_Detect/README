@@ -1,0 +1,42 @@
+Each module will return %id as follow:
+Unknown fields will be undef.
+
+my $id = {
+	os => "linux",
+	chroot => $root,
+	distro => "xxxxx", # xxxxx =(centos, rhel, fedora, mandriva, suse, opensuse, debian, ubuntu, ...)
+	compat_distro => "yyyyy" # yyyyy= (rhel, debian, suse, ...)
+	distro_version => # Major distro version
+	compat_distrover => # Major version of compatible distro
+	platform_id => # The platform id (example: "platform:el8")
+	pretty_name => # The full distro name example: CentOS Linux 8 (Core)
+	distro_update => # Minor distro version.
+	pkg => # Package type (rpm, deb, ...)
+	pkg_mgr => # PAckage manager (yum, dnf, zypper, urpmi, apt, ...)
+	arch => # Hardware arch (x86_64, ia64, i386, arm64, ppc, ...)
+	service_mgt => (initscripts, systemd, ...)
+	ident => $os-$arch-$distro-$distro_version-$distro_update,
+}
+	
+my $id = {
+	os => "linux",
+	chroot => $root,
+	distro => "centos",
+	compat_distro => "rhel",
+	distro_version => $os_release->{VERSION_ID},
+	compat_distrover => $os_release->{VERSION_ID},
+	platform_id => $os_release->{PLATFORM_ID};, # platform:el8
+	pretty_name => $os_release->{PRETTY_NAME}; # CentOS Linux 8 (Core)
+	distro_update => 1 # 8.1 (0 if unknown or initial release)
+	pkg => "rpm",
+	pkg_mgr => "dnf",
+	arch => "x86_64",
+	service_mgt => "dnf",
+	ident => "linux-x86_64-centos-8-0"
+};
+
+NOTE:
+- Mandriva.pm # obsolete
+- ScientificLinux.pm # obsolete
+- YDL.pm # obsolete
+
