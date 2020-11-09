@@ -14,6 +14,7 @@ use strict;
 # check for:
 # - /usr/bin/apt-get			=> package management
 # - /usr/bin/apt-cache
+# - /usr/bin/apt-setup # from base-config package)
 # - ...
 # - /usr/bin/???			=> repo management
 # - /usr/bin/???			=> repo creation
@@ -41,18 +42,22 @@ sub pm_command {
 	if ($command eq "install") {
 		return -1 if ( scalar @args == 0); # no pkg names provided: error
 		$pkgs = join (' ', @args); # packages (or repo names)
-		return system("yum $options install $pkgs");
+		return system("apt-get $options install $pkgs");
 	} elsif ($command eq "update") {
 		$pkgs = join (' ', @args) if ( scalar @args == 0);
-		return system("yum $options update $pkgs");
+		return system("apt-get $options update $pkgs");
 	} elsif ($command eq "reinstall") {
 		return -1 if ( scalar @args == 0); # no pkg names provided: error
 		$pkgs = join (' ', @args);
-		return system("yum $options reinstall $pkgs");
+		return system("apt-get install --reinstall $options $pkgs");
 	} elsif ($command eq "remove") {
 		return -1 if ( scalar @args == 0); # no pkg names provided: error
 		$pkgs = join (' ', @args);
-		return system("yum $options remove $pkgs");
+		return system("apt-get $options remove $pkgs");
+	} elsif ($command eq "info") {
+		return -1 if ( scalar @args == 0); # no pkg names provided: error
+		$pkgs = join (' ', @args);
+		return system("apt-cache $options show $pkgs");
 	} elsif ($command eq "what_provides") {
 		return -1 if ( scalar @args != 1); # args: pkg name, path or feature.
 		$pkgs = join (' ', @args);
@@ -61,11 +66,11 @@ sub pm_command {
 		# Need a list of bootstrap packages
 		# Need to use the platform-id on some distros (dnf)
 	} elsif ($command eq "list_available") {
-		return system("yum $options list all");
+		return system("apt-cache search $options .");
 	} elsif ($command eq "list_installed") {
-		return system("rpm -qa");
+		return system("dpkg -l");
 	} elsif ($command eq "list_repos") {
-		return system("yum $options repolist");
+		return system("grep -h ^deb /etc/apt/sources.list /etc/apt/sources.list.d/*");
 	} elsif ($command eq "repo_create") {
 		# $args[0]: repo absolute path.
 		return system("createrepo --update -s sha '$args[0]'");

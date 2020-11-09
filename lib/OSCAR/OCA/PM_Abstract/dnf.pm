@@ -48,6 +48,10 @@ sub pm_command {
 		return -1 if ( scalar @args == 0); # no pkg names provided: error
 		$pkgs = join (' ', @args);
 		return system("dnf $options remove $pkgs");
+	} elsif ($command eq "info") {
+		return -1 if ( scalar @args == 0); # no pkg names provided: error
+		$pkgs = join (' ', @args);
+		return system("dnf $options info $pkgs");
 	} elsif ($command eq "what_provides") {
 		return -1 if ( scalar @args != 1); # args: pkg name, path or feature.
 		$pkgs = join (' ', @args);
