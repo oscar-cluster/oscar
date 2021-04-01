@@ -160,6 +160,8 @@ sub detect_arch_file {
             $arch = "i386";
         } elsif ($arch =~ m/x86-64/) {
             $arch = "x86_64";
+        } elsif ($arch =~ m/arm/) {
+            $arch = "arm";
         } elsif ($arch =~ m/IA-64/) {
             $arch = "ia64";
         } elsif ($arch =~ m/PowerPC/) { # OL: May need tunning. (iSeries)
@@ -182,7 +184,7 @@ sub detect_arch_pool {
     my ($pool,$pkg) = @_;
 
     if ($pkg eq "rpm") {
-        my $known = "i?86,x86_64,ia64,ppc,ppc64";
+        my $known = "i?86,x86_64,arm,ia64,ppc,ppc64";
         my @files = glob("$pool/bash-*{$known}.rpm");
         my $arch;
         for my $f (@files) {

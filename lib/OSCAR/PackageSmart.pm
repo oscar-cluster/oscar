@@ -102,7 +102,7 @@ sub detect_distro_pool_format ($) {
     # TODO: we should have a unique function that allows us to validate
     # a distro ID.
     my ($distro, $arch, $version);
-    my $arches = "i386|x86_64|ia64|ppc64";
+    my $arches = "i386|x86_64|ia64|ppc64|arm";
     if ( ($pool_id =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) ||
         ($pool_id =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
         $distro = $1;
