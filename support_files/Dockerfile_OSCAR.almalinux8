@@ -31,6 +31,7 @@ RUN mkdir -p /root/rpmbuild/{SOURCES,SRPMS,RPMS,SPECS}
 #RUN mkdir /var/run/lock
 
 # Install OSCAR Perl requirements
+RUN dnf -y install perl
 RUN dnf -y install --skip-broken \
                         'perl(AppConfig)' 'perl(Carp)' 'perl(Cwd)' 'perl(Data::Dumper)' 'perl(English)' \
                         'perl(Exporter)' \
@@ -106,11 +107,10 @@ RUN rpm -Uvh --nodeps /root/rpmbuild/RPMS/noarch/oscar-packager*.rpm
 #RUN yum -y --skip-broken install /root/rpmbuild/RPMS/noarch/oscar-release*rpm
 
 # Install some deps for systemimager BUG (need to update build.cfg)
-RUN dnf -y install perl
-RUN dnf -y install docbook-utils-pdf docbook-utils bc bind-utils cryptsetup dejavu-serif-fonts dosfstools e2fsprogs gdisk hwdata jq kernel lshw lsscsi lvm2 mdadm net-tools nmap-ncat openssh-server parted pciutils perl-JSON plymouth-plugin-label plymouth-plugin-script psmisc rtorrent socat usbutils xfsprogs xmlstarlet dos2unix
+RUN dnf -y --disablerepo="repo-oscar" install docbook-utils-pdf docbook-utils bc bind-utils cryptsetup dejavu-serif-fonts dosfstools e2fsprogs gdisk hwdata jq kernel lshw lsscsi lvm2 mdadm net-tools nmap-ncat openssh-server parted pciutils perl-JSON plymouth-plugin-label plymouth-plugin-script psmisc rtorrent socat usbutils xfsprogs xmlstarlet dos2unix
 
 # Install some deps for apitest
-RUN dnf -y install python3-twisted
+RUN dnf -y --disablerepo="repo-oscar" install python3-twisted
 
 # REBUILD oscar essential rpms.
 RUN oscar-packager --debug --all Tk-TextANSIColor
