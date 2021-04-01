@@ -1,9 +1,9 @@
-# Experimental Dockerfile to build OSCAR from scratch on CentOS-1
+# Experimental Dockerfile to build OSCAR from scratch on AlmaLinux-8
 # Build using the following command:
-#       sudo docker build -t oscar/packager_rl8:1.2 -f Dockerfile_OSCAR.centos8 .
+#       sudo docker build -t oscar/packager_rl8:1.2 -f Dockerfile_OSCAR.almalinux8 .
 
 
-FROM almalinux:8
+FROM almalinux/almalinux:8
 #FROM roboxes/centos8
 
 LABEL maintainer="Olivier LAHAYE <olivier.lahaye@cea.fr>"
@@ -13,7 +13,8 @@ LABEL license="GPLv2"
 
 # Install basic build requirements
 RUN dnf -y install dnf-plugins-core
-RUN dnf config-manager --set-enabled PowerTools
+RUN dnf install 'dnf-command(config-manager)'
+RUN dnf config-manager --set-enabled powertools
 
 #RUN dnf -y install http://fr2.rpmfind.net/linux/epel/8/Everything/x86_64/Packages/e/epel-release-8-8.el8.noarch.rpm
 RUN dnf -y install epel-release

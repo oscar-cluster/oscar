@@ -47,10 +47,7 @@ sub detect_dir {
     } elsif (-f "$root/etc/redhat-release") {
         $release_string = `cat $root/etc/redhat-release`;
         if ($release_string =~ /AlmaLinux release (\d+)\.(\d+) \((\S+)\)/ ||
-            $release_string =~ /AlmaLinux release (\d+) \((\S+)\)/ ||
-            $release_string =~ /AlmaLinux Linux release (\d+)\.(\d+) \(.+\)/ ||
-            $release_string =~ /AlmaLinux Linux release (\d+)\.(\d+)\.(\d+) \(.+\)/ ||
-            $release_string =~ /AlmaLinux Linux release (\d+) \(\D+\d+\.(\d+)\)/) {
+            $release_string =~ /AlmaLinux release (\d+) \((\S+)\)/ ) {
             $id->{distro_version} = $1;
 
             # AlmaLinux's major number release does not have a minor number (eg. 5 vs 5.0), set $os_update to 0 by default
