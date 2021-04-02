@@ -10,8 +10,12 @@ LABEL version="6.5"
 LABEL vendor="OSCAR Cluster"
 LABEL license="GPLv2"
 
+# Fix OS repositories to point to CentOS Vault as it has reached it's EOL.
+curl https://www.getpagespeed.com/files/centos6-eol.repo --output /etc/yum.repos.d/CentOS-Base.repo
+
 # Install basic build requirements
-RUN yum -y install http://fr2.rpmfind.net/linux/epel/6/x86_64/epel-release-6-8.noarch.rpm
+#RUN yum -y install http://fr2.rpmfind.net/linux/epel/6/x86_64/epel-release-6-8.noarch.rpm
+RUN curl https://www.getpagespeed.com/files/centos6-epel-eol.repo --output /etc/yum.repos.d/epel.repo
 RUN yum -y install git-core
 
 # Update distro
