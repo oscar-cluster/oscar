@@ -4,7 +4,6 @@
 
 
 FROM almalinux/almalinux:8
-#FROM roboxes/centos8
 
 LABEL maintainer="Olivier LAHAYE <olivier.lahaye@cea.fr>"
 LABEL version="1.0"
@@ -88,7 +87,7 @@ RUN cp /root/oscar/share/etc/templates/oscar.conf /etc/oscar/oscar.conf
 
 # Install oscar-config requirements.
 # Configure OSCAR (Creates /tftpboot/distro/<distro>.url and /tftpboot/oscar/<distro>.url)
-RUN oscar-config --setup-distro centos-8-x86_64
+RUN oscar-config --setup-distro almalinux-8-x86_64
 
 # Install packman
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-packman.git
