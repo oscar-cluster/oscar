@@ -39,7 +39,7 @@ sub detect_dir {
     my $os_release = main::OSCAR::OCA::OS_Detect::parse_os_release($root);
 
     if (defined($os_release)) {
-        return undef if ($os_release->{NAME} !~ /^AlmaLinux Linux/); # Not AlmaLinux: quit now
+        return undef if ($os_release->{NAME} !~ /^AlmaLinux/); # Not AlmaLinux: quit now
         $id->{distro_version} = $os_release->{VERSION_ID};
 	$id->{platform_id} = $os_release->{PLATFORM_ID};
 	$id->{pretty_name} = $os_release->{PRETTY_NAME};
@@ -91,27 +91,19 @@ sub add_missing_fields {
     $id->{chroot} = "/" if(!defined($id->{chroot}));
 
     # Set distro code_name
-    $id->{codename} = "Core";
+    $id->{codename} = "Purple Manul";
 
     # Set pretty name
-    $id->{pretty_name} = "AlmaLinux Linux $id->{distro_version} (Core)" if (! defined($id->{pretty_name}));
+    $id->{pretty_name} = "AlmaLinux $id->{distro_version} ($id->{codename})" if (! defined($id->{pretty_name}));
 
     # Set platform id.
     $id->{platform_id} = "platform:el$id->{distro_version}" if (! defined($id->{platform_id}));
 
     # Determine which package manager is in use.
-    if ($id->{distro_version} <= 7) {
-        $id->{pkg_mgr} = "yum";
-    } else {
-        $id->{pkg_mgr} = "dnf";
-    }
+    $id->{pkg_mgr} = "dnf";
 
     # Determine services management subsystem (systemd, initscripts, manual)
-    if ($id->{distro_version} <= 6) {
-       $id->{service_mgt} = "initscripts";
-    } else {
-       $id->{service_mgt} = "systemd";
-    }
+    $id->{service_mgt} = "systemd";
 
     # Set dummy distro_update if missing so ident is correct.
     $id->{distro_update} = 0 if (! defined($id->{distro_update}));
