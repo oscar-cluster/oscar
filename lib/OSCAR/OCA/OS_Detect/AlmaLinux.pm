@@ -40,10 +40,14 @@ sub detect_dir {
 
     if (defined($os_release)) {
         return undef if ($os_release->{NAME} !~ /^AlmaLinux/); # Not AlmaLinux: quit now
-        $id->{distro_version} = $os_release->{VERSION_ID};
+        if ($os_release->{VERSION_ID} =~ /(\d+).(\d+)/) {
+            $id->{distro_version} = $1;
+            $id->{distro_update} = $2;
+        } else {
+            $id->{distro_update} = 0;
+        }
 	$id->{platform_id} = $os_release->{PLATFORM_ID};
 	$id->{pretty_name} = $os_release->{PRETTY_NAME};
-	$id->{distro_update} = 0; # unknown in fact. TODO: is it usefull?
     } elsif (-f "$root/etc/redhat-release") {
         $release_string = `cat $root/etc/redhat-release`;
         if ($release_string =~ /AlmaLinux release (\d+)\.(\d+) \((\S+)\)/ ||
