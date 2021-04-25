@@ -29,7 +29,10 @@ my $distro = "opensuse";
 my $compat_distro = "suse";
 my $pkg = "rpm";
 my $detect_package = "openSUSE-release"; # rpm package name containing /etc/os-release
-my $detect_file = "/bin/bash";
+my $detect_file = "/usr/bin/bash";
+if (! -e "$detect_file") {
+	$detect_file = "/bin/bash";
+}
 
 sub detect_dir {
     my $root = "/";
