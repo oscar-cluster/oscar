@@ -1,9 +1,9 @@
-# Experimental Dockerfile to build OSCAR from scratch on OpenSUSE-15.1
+# Experimental Dockerfile to build OSCAR from scratch on OpenSUSE-15.3
 # Build using the following command:
 #       sudo docker build -t oscar/packager_os15:1.0 -f Dockerfile_OSCAR.opensuse15 .
 
 
-FROM opensuse/leap:15.2
+FROM opensuse/leap:15.3
 
 LABEL maintainer="Olivier LAHAYE <olivier.lahaye@cea.fr>"
 LABEL version="6.5"
@@ -107,7 +107,7 @@ RUN zypper --non-interactive install docbook-utils bc bind-utils cryptsetup deja
 RUN zypper --non-interactive install python3-Twisted
 
 # Add community repository:
-RUN zypper --non-interactive ar -cfp 90 http://ftp.gwdg.de/pub/linux/misc/packman/suse/openSUSE_Leap_15.2/ packman
+RUN zypper --non-interactive ar -cfp 90 http://ftp.gwdg.de/pub/linux/misc/packman/suse/openSUSE_Leap_15.3/ packman
 RUN zypper --gpg-auto-import-keys refresh packman
 RUN zypper --non-interactive install gptfdisk
 

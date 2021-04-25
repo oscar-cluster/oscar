@@ -5,4 +5,4 @@ See file headers for usage instructions.
 - Dockerfile_OSCAR.fc27		A docker file to build oscar core for Fedorea-27
 - Dockerfile_OSCAR.fc28		A docker file to build oscar core for Fedorea-28
 - Dockerfile_RepoManage.fc28    A docker file to create a repository management and upload environment.
-- Dockerfile_OSCAR.openSuSE15.   A docker file to build oscar core for openSuSE Leap 15.2
+- Dockerfile_OSCAR.openSuSE15.   A docker file to build oscar core for openSuSE Leap 15.3
