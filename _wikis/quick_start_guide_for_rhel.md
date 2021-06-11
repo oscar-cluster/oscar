@@ -10,21 +10,30 @@ category: wiki
 <!-- Author: olahaye74 -->
 [Documentations](Document) > [User Documentations](Support) 
     
-### OSCAR_unstable Quick Start Guide for CentOS/RHEL version 6.x and 7.x (quite similar for other distros)
+### OSCAR_unstable Quick Start Guide for CentOS-7/RHEL-7, AlmaLinux-8/RHEL-8, openSUSE-15.3
 
-1. Install CentOS-6.x or CentOS-7.x base server (+ X11 if you are working localy)
+1. Install AlmaLinux-8.x or CentOS-7.x or openSUSE-15.3 base server (+ X11 if you are working localy)
 1. Setup hostname, and network.
+1. Configure and enable the required repositories:
+    * CentOS-7:
+       - `yum -y install http://fr2.rpmfind.net/linux/epel/7/x86_64/e/epel-release-7-5.noarch.rpm`
+       - `yum -y install http://svn.oscar.openclustergroup.org/repos/unstable/rhel-7-x86_64/oscar-release-6.1.3-0.20210426.el8.noarch.rpm`
+    * AlmaLinux-8:
+       - `dnf -y install dnf-plugins-core`
+       - `dnf config-manager --set-enabled PowerTools`
+       - `dnf -y install epel-release`
+       - `dnf -y install http://svn.oscar.openclustergroup.org/repos/unstable/rhel-7-x86_64/oscar-release-6.1.3-0.20210426.el8.noarch.rpm`
+    * openSUSE-15.3:
+       - `zypper install http://www.usablesecurity.net/OSCAR/repos/unstable/suse-15-x86_64/oscar-release-6.1.3-0.20210402.noarch.rpm`
 1. make sure that your mta (mail transfert agent) is postfix if you want mtaconfig to  be of any use.
    if postfix is not your default mta, then do a:
 
-    `yum -y install postfix; yum remove sendmail exim`
-1. Install the required repositories:
-    * CentOS-6:
-       - `yum -y install http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm`
-       - `yum -y install http://svn.oscar.openclustergroup.org/repos/unstable/rhel-6-x86_64/oscar-release-6.1.3-0.20180524.el6.noarch.rpm`
+    * AlmaLinux-8:
+       - `dnf -y install postfix; yum remove sendmail exim`
     * CentOS-7:
-       - `yum -y install http://fr2.rpmfind.net/linux/epel/7/x86_64/e/epel-release-7-5.noarch.rpm`
-       - `yum -y install http://svn.oscar.openclustergroup.org/repos/unstable/rhel-7-x86_64/oscar-release-6.1.3-0.20180524.el7.noarch.rpm`
+       - `yum -y install postfix; yum remove sendmail exim`
+    * OpenSUSE-15:
+       - `zypper install postfix; zypper remove sendmail exim`
 1. Update SELinux config (/etc/selinux/config)
 
     SELINUX=disabled
@@ -33,16 +42,24 @@ category: wiki
     net.ipv6.conf.all.disable_ipv6 = 1
     net.ipv6.conf.default.disable_ipv6 = 1
 1. Install main oscar package:
-    `yum install oscar`
+    * AlmaLinux-8:
+       - `dnf -y install oscar`
+    * CentOS-7:
+       - `yum install oscar`
+    * OpenSUSE-15:
+       - `zypper install oscar`
 1. check /etc/oscar/oscar.conf
 1. check /etc/oscar/supported_distros.txt
 1. Configure oscar for your distro:
 
-    **CentOS-6:**
-    `oscar-config --setup-distro centos-6-x86_64`
-    
     **CentOS-7:**
     `oscar-config --setup-distro centos-7-x86_64`
+    
+    **AlmaLinux-8:**
+    `oscar-config --setup-distro almalinux-8-x86_64`
+    
+    **OpenSUSE-15:**
+    `oscar-config --setup-distro opensuse-15-x86_64`
 1. Bootstrapp oscar (install packages needed for your distro and do some basic configuration)
 
     `oscar-config --bootstrap`
