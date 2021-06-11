@@ -14,13 +14,12 @@ category: wiki
 
 |Distribution\Arch       |x86_64 |
 |---|---|
-| Fedora 27       | ok |
-| Fedora 28       | ok |
+| Fedora 28       | ok (obsolete) |
+| AlmaLinux / RHEL 8       | ok |
 | CentOS / RHEL 7       | ok |
-| CentOS / RHEL 6       | ok |
-| Debian 6 / 7 (Ubuntu 12.04 / 12.10)  | ok |
-| Ubuntu 14.04  | ok |
-| openSuSE 42.3  | in progress |
+| CentOS / RHEL 6       | ok (obsolete) |
+| Debian 9 /  (Ubuntu 18.04 )  | (shoud build, but packaging is broken) |
+| openSuSE 15.3  | ok (almost) |
 
 
 Please refer to the documentation associated to each release to get the updated list of supported Linux distributions.
@@ -38,7 +37,8 @@ The following matrix lists people who intend to test on a particular distro/arch
 |Distribution\Arch    | x86     | x86_64 | ppc64 |
 |---|---|---|---|
 | RHEL 6              | N/A | Olivier (ok), DongInn | N/A      |
-| RHEL 7              | N/A | Olivier (failed), DongInn | N/A      |
+| RHEL 7              | N/A | Olivier (ok), DongInn | N/A      |
+| RHEL 8              | N/A | Olivier (ok), DongInn | N/A      |
 | YellowDogLinux5.0   | N/A        | N/A      | DongInn     |
 
 ## Distribution Support for OSCAR development releases
@@ -55,8 +55,8 @@ This is what I have used on my /tftpboot/distro/fedora-7-x86_64.url
 So, all you have to do is add the mirror site URL of the Linux distro to the .url file which OSCAR created for you or you can manually create.
 
 On RPM based distros, it's even easyer to install the oscar-release rpm which will automatically configure the package manager.
-example for CentOS-7: rpm -ivh http://svn.oscar.openclustergroup.org/repos/unstable/rhel-7-x86_64/oscar-release-6.1.3-0.20180524.el7.noarch.rpm
-(0.20180524 is the build release and is subject to change at each build; check what build is available by looking in the repo directory)
+example for AlmaLinux-8: dnf -y install http://www.usablesecurity.net/OSCAR/repos/unstable/rhel-8-x86_64/oscar-release-6.1.3-0.20210402.el8.noarch.rpm
+(0.20210402 is the build release and is subject to change at each build; check what build is available by looking in the repo directory)
 
 ## Distribution Specific Notes
 
