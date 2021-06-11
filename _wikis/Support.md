@@ -17,7 +17,7 @@ category: wiki
 
  * [Installation Guide](InstallGuideDoc)
  * [Administration Guide](AdminGuideDoc)
- * [Quick start guide for RHEL6](quick_start_guide_for_rhel) (Only for people who already knows OSCAR and knows what they do. NOT FOR BEGINNERS)
+ * [Quick start guide for RHEL alike distros](quick_start_guide_for_rhel) (Only for people who already knows OSCAR and knows what they do. NOT FOR BEGINNERS)
 
 ### [Old Versions](OldManuals)
 
