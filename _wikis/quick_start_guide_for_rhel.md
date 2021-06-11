@@ -10,8 +10,15 @@ category: wiki
 <!-- Author: olahaye74 -->
 [Documentations](Document) > [User Documentations](Support) 
     
-### OSCAR_unstable Quick Start Guide for CentOS-7/RHEL-7, AlmaLinux-8/RHEL-8, openSUSE-15.3
+### OSCAR_unstable Quick Start Guide for CentOS-7, AlmaLinux-8, openSUSE-15.3
 
+1. Notes:
+    * CentOS-6 is not supported anymore due to EOL of product. Though, packages are still availlable in case they are still needed. Installation process is similar to CentOS-7 except that you need to use CentOS vault repositories:
+    `curl https://www.getpagespeed.com/files/centos6-eol.repo --output /etc/yum.repos.d/CentOS-Base.repo`
+    `yum -y install epel-release-6-8.noarch`
+    `curl https://www.getpagespeed.com/files/centos6-epel-eol.repo --output /etc/yum.repos.d/epel.repo`
+    * This Guide can also be used for a RHEL 7 or 8 install, but it is not tested.
+    * OpenSUSE-15 is newly supported and still incomplete.
 1. Install AlmaLinux-8.x or CentOS-7.x or openSUSE-15.3 base server (+ X11 if you are working localy)
 1. Setup hostname, and network.
 1. Configure and enable the required repositories:
@@ -33,7 +40,7 @@ category: wiki
     * CentOS-7:
        - `yum -y install postfix; yum remove sendmail exim`
     * OpenSUSE-15:
-       - `zypper install postfix; zypper remove sendmail exim`
+       - `zypper --non-interactive install --no-recommends --download-in-advance postfix; zypper --non-interactive remove sendmail exim`
 1. Update SELinux config (/etc/selinux/config)
 
     SELINUX=disabled
@@ -45,18 +52,24 @@ category: wiki
     * AlmaLinux-8:
        - `dnf -y install oscar`
     * CentOS-7:
-       - `yum install oscar`
+       - `yum -y install oscar`
     * OpenSUSE-15:
-       - `zypper install oscar`
+       - `zypper --non-interactive install --no-recommends --download-in-advance -f oscar`
 1. check /etc/oscar/oscar.conf
 1. check /etc/oscar/supported_distros.txt
 1. Configure oscar for your distro:
 
     **CentOS-7:**
     `oscar-config --setup-distro centos-7-x86_64`
+
+    **RHEL-7:**
+    `oscar-config --setup-distro rhel-7-x86_64`
     
     **AlmaLinux-8:**
     `oscar-config --setup-distro almalinux-8-x86_64`
+    
+    **RHEL-8:**
+    `oscar-config --setup-distro rhel-8-x86_64`
     
     **OpenSUSE-15:**
     `oscar-config --setup-distro opensuse-15-x86_64`
