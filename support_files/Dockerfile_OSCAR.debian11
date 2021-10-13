@@ -1,14 +1,17 @@
 # Experimental Dockerfile to build OSCAR from scratch on Debian-9 (Stretch)
 # Build using the following command:
-#       sudo docker build -t oscar/unstable_deb:9.0 -f Dockerfile_OSCAR.debian9 .
+#       sudo docker build -t oscar/unstable_deb:11.1 -f Dockerfile_OSCAR.debian11 .
 
 
-FROM debian:9
+FROM debian:11
 
 LABEL maintainer="Olivier LAHAYE <olivier.lahaye@cea.fr>"
 LABEL version="6.5"
 LABEL vendor="OSCAR Cluster"
 LABEL license="GPLv2"
+
+# Update distro repos indexes
+RUN apt-get update
 
 # Set the locale
 RUN apt-get -y install locales
@@ -20,7 +23,6 @@ ENV LC_ALL en_US.UTF-8
 
 # Update distro
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-RUN apt-get -y update
 RUN apt-get -y upgrade
 RUN apt-get -y install dialog apt-utils
 RUN apt-get -y install perl-modules
@@ -39,13 +41,13 @@ RUN apt-get -y install perl-base libappconfig-perl libfile-copy-recursive-perl p
 	libxml-simple-perl libtest-simple-perl libmodule-build-perl
 
 # Install other requirements
-RUN apt-get -y install gcc syslinux sgmltools-lite
+RUN apt-get -y install gcc syslinux linuxdoc-tools
 RUN apt-get -y install libmldbm-perl libappconfig-perl libdbd-csv-perl libsql-statement-perl libtext-csv-perl libmldbm-sync-perl
 
 # Install comfort tools
 RUN apt-get -y install vim openssh-client
-RUN apt-get -y install python-dev python-cheetah python-lxml xmlto autoconf automake rsync #opkgc
-
+RUN apt-get -y install python3-dev python3-cheetah python3-lxml xmlto autoconf automake rsync #opkgc
+RUN apt-get -y install python3-distutils python3-pip python3-setuptools
 # build dependancies:
 RUN apt-get -y install tcsh # oscar depnds on it?
 
@@ -82,7 +84,7 @@ RUN cp /root/oscar/share/etc/templates/oscar.conf /etc/oscar/oscar.conf
 
 # Install oscar-config requirements.
 # Configure OSCAR (Creates /tftpboot/distro/<distro>.url and /tftpboot/oscar/<distro>.url)
-RUN oscar-config --setup-distro debian-9-x86_64
+RUN oscar-config --setup-distro debian-11-x86_64
 
 # Install packman
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-packman.git

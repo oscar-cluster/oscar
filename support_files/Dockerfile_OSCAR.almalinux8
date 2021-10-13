@@ -1,6 +1,6 @@
-# Experimental Dockerfile to build OSCAR from scratch on AlmaLinux-8
+# Experimental Dockerfile to build OSCAR rhel-8-x86_64 packages from scratch on AlmaLinux-8
 # Build using the following command:
-#       sudo docker build -t oscar/packager_rl8:1.2 -f Dockerfile_OSCAR.almalinux8 .
+#       sudo docker build -t oscar/packager_rhel:8.4 -f Dockerfile_OSCAR.almalinux8 .
 
 
 FROM almalinux/almalinux:8
@@ -9,6 +9,13 @@ LABEL maintainer="Olivier LAHAYE <olivier.lahaye@cea.fr>"
 LABEL version="1.0"
 LABEL vendor="OSCAR Cluster"
 LABEL license="GPLv2"
+
+# Set the locale
+RUN dnf -y install glibc-locale-source glibc-langpack-en
+RUN localedef -c -i en_US -f UTF-8 en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 
 # Install basic build requirements
 RUN dnf -y install dnf-plugins-core
@@ -132,8 +139,9 @@ RUN /bin/rm -rf /root/oscar* /root/.cpan /root/rpmbuild/*/* /var/lib/oscar-packa
 # this should not be required
 RUN rpm -q oscar-release > /dev/null || yume -y install /tftpboot/oscar/*/oscar-release*rpm
 RUN yume clean all
-RUN rm -rf /tftpboot/oscar/almalinux-8-x86_64/.repodata
-RUN /bin/rm -rf /tftpboot/oscar/almalinux-8-x86_64/repodata /tftpboot/oscar/almalinux-8-x86_64/repocache && yume --prepare
+RUN rm -rf /tftpboot/oscar/rhel-8-x86_64/.repodata
+RUN /bin/rm -rf /tftpboot/oscar/rhel-8-x86_64/repodata /tftpboot/oscar/rhel-8-x86_64/repocache
+RUN yume --prepare
 RUN yume -y reinstall oscar-release
 
 # Now install as rpm what has been installed by hand before as bootstrap.
@@ -152,6 +160,6 @@ RUN yume -y reinstall systemimager-x86_64initrd_template systemimager-x86_64boot
 RUN yume -y install systemimager-bittorrent systemimager-client systemimager-flamethrower
 
 # Cleanup tftp tree so we can mount host space later.
-RUN /bin/rm -rf /root/rpmbuild/*/* /tftpboot/oscar/almalinux-8-x86_64/*
+RUN /bin/rm -rf /root/rpmbuild/*/* /tftpboot/oscar/rhel-8-x86_64/*
 
 CMD [ "bash" ]

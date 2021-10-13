@@ -1,6 +1,6 @@
 # Experimental Dockerfile to build OSCAR from scratch on CentOS-7
 # Build using the following command:
-#       sudo docker build -t oscar/unstable:1.0 -f Dockerfile_OSCAR.centos7 .
+#       sudo docker build -t oscar/ipackager_rhel:7.9 -f Dockerfile_OSCAR.centos7 .
 
 
 FROM centos:7
@@ -9,6 +9,13 @@ LABEL maintainer="Olivier LAHAYE <olivier.lahaye@cea.fr>"
 LABEL version="6.5"
 LABEL vendor="OSCAR Cluster"
 LABEL license="GPLv2"
+
+# Set the locale
+#RUN yum -y install glibc-locale-source glibc-langpack-en
+#RUN localedef -c -i en_US -f UTF-8 en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 
 # Install basic build requirements
 #RUN yum -y install http://fr2.rpmfind.net/linux/epel/7/x86_64/Packages/e/epel-release-7-12.noarch.rpm

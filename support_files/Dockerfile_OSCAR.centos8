@@ -11,6 +11,13 @@ LABEL version="6.5"
 LABEL vendor="OSCAR Cluster"
 LABEL license="GPLv2"
 
+# Set the locale
+RUN dnf -y install glibc-locale-source glibc-langpack-en
+RUN localedef -c -i en_US -f UTF-8 en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
 # Install basic build requirements
 RUN dnf -y install dnf-plugins-core
 RUN dnf config-manager --set-enabled PowerTools
