@@ -1,3 +1,10 @@
+oscar (6.1.3~git20211015-1) precise; urgency=low
+
+  * Updated debian packagin to avoid warnings on debian 11.
+  * Fixed distro codename detection
+
+ -- Olivier Lahaye <olivier.lahaye@cea.fr>  Fri, 15 Oct 2021 18:14:00 +0100
+
 oscar (6.1.3~git20180416-1) precise; urgency=low
 
   * Port to new SystemImager v4.9.0 disk layout.
