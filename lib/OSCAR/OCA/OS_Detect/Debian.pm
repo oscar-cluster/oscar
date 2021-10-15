@@ -170,9 +170,14 @@ sub add_missing_fields {
     # Make sure chroot is set
     $id->{chroot} = "/" if(!defined($id->{chroot}));
 
-    # Set distro code_name
-    my $full_distro_ver = "$id->{distro_version}.$id->{distro_update}";
-    $id->{codename} = $codenames{$full_distro_ver};
+    # Set distro code_name if undef
+    if (!defined($id->{codename})) {
+      my $full_distro_ver = "$id->{distro_version}.$id->{distro_update}";
+      if ($full_distro_ver !~ /(.*)\.(.*)/) {
+          $full_distro_ver .= ".0";
+      }
+      $id->{codename} = $codenames{$full_distro_ver};
+    }
 
     # Set pretty name
     $id->{pretty_name} = "Debian GNU/Linux $id->{distro_version} ($id->{codename})" if (! defined($id->{pretty_name}));

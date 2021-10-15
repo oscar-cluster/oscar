@@ -197,7 +197,9 @@ sub add_missing_fields {
     $id->{chroot} = "/" if(!defined($id->{chroot}));
 
     # Set distro code_name
-    $id->{codename} = $codenames{$id->{distro_version}};
+    if(!defined($id->{codename})) {
+      $id->{codename} = $codenames{$id->{distro_version}};
+    }
 
     # Set pretty name
     $id->{pretty_name} = "Ubuntu $id->{distro_version}" if (! defined($id->{pretty_name}));
