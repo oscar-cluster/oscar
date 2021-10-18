@@ -1,14 +1,17 @@
-# Experimental Dockerfile to build OSCAR from scratch on Debian-9 (Stretch)
+# Experimental Dockerfile to build OSCAR from scratch on Debian-10 (Buster)
 # Build using the following command:
-#       sudo docker build -t oscar/unstable_deb:9.0 -f Dockerfile_OSCAR.debian9 .
+#       sudo docker build -t oscar/unstable_deb:10.0 -f Dockerfile_OSCAR.debian10 .
 
 
-FROM debian:9
+FROM debian:10
 
 LABEL maintainer="Olivier LAHAYE <olivier.lahaye@cea.fr>"
 LABEL version="6.5"
 LABEL vendor="OSCAR Cluster"
 LABEL license="GPLv2"
+
+# Update distro repos indexes
+RUN apt-get update
 
 # Set the locale
 RUN apt-get -y install locales
@@ -20,7 +23,6 @@ ENV LC_ALL en_US.UTF-8
 
 # Update distro
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-RUN apt-get -y update
 RUN apt-get -y upgrade
 RUN apt-get -y install dialog apt-utils
 RUN apt-get -y install perl-modules
@@ -32,19 +34,20 @@ RUN apt-get -y install git
 
 
 # Prepare deb build environment
-RUN apt-get -y install dpkg-dev build-essential debhelper git make 
+RUN apt-get -y install dpkg-dev build-essential debhelper git make rpm
 
 # Install OSCAR Perl requirements
 RUN apt-get -y install perl-base libappconfig-perl libfile-copy-recursive-perl perl-tk libdbi-perl libdbd-mysql-perl \
 	libxml-simple-perl libtest-simple-perl libmodule-build-perl
 
 # Install other requirements
-RUN apt-get -y install gcc syslinux sgmltools-lite
+RUN apt-get -y install gcc syslinux linuxdoc-tools docbook-utils hostname dracut
 RUN apt-get -y install libmldbm-perl libappconfig-perl libdbd-csv-perl libsql-statement-perl libtext-csv-perl libmldbm-sync-perl
 
 # Install comfort tools
 RUN apt-get -y install vim openssh-client
-RUN apt-get -y install python-dev python-cheetah python-lxml xmlto autoconf automake rsync #opkgc
+RUN apt-get -y install python3-dev python3-cheetah python3-lxml python3-twisted xmlto autoconf automake rsync python3-all-dev #opkgc
+RUN apt-get -y install python3-distutils python3-pip python3-setuptools dh-python
 
 # build dependancies:
 RUN apt-get -y install tcsh # oscar depnds on it?
@@ -56,8 +59,9 @@ RUN cd /root && tar xvfz Tk-TextANSIColor-0.16.tar.gz
 RUN cd /root/Tk-TextANSIColor-0.16 && perl Build.PL --installdirs vendor && perl Build && perl Build install --installdirs vendor
 
 # Add OSCAR repos URL so systemconfigurator is available as a package.
-RUN echo "deb http://svn.oscar.openclustergroup.org/repos/unstable/debian-9-x86_64 dists/stretch/binary-amd64/" > /etc/apt/sources.list.d/oscar.list
-RUN apt-get update
+# Comment line if repo is unavailable
+RUN echo "deb [trusted=yes] http://www.usablesecurity.net/OSCAR/repos/unstable/debian-10-x86_64 dists/stretch/binary-amd64/" > /etc/apt/sources.list.d/oscar.list
+RUN apt-get -y update
 
 # Step 16/47: Get OSCAR source tree
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar.git
@@ -82,7 +86,7 @@ RUN cp /root/oscar/share/etc/templates/oscar.conf /etc/oscar/oscar.conf
 
 # Install oscar-config requirements.
 # Configure OSCAR (Creates /tftpboot/distro/<distro>.url and /tftpboot/oscar/<distro>.url)
-RUN oscar-config --setup-distro debian-9-x86_64
+RUN oscar-config --setup-distro debian-10-x86_64
 
 # Install packman
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-packman.git

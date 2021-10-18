@@ -34,20 +34,21 @@ RUN apt-get -y install git
 
 
 # Prepare deb build environment
-RUN apt-get -y install dpkg-dev build-essential debhelper git make 
+RUN apt-get -y install dpkg-dev build-essential debhelper git make rpm
 
 # Install OSCAR Perl requirements
 RUN apt-get -y install perl-base libappconfig-perl libfile-copy-recursive-perl perl-tk libdbi-perl libdbd-mysql-perl \
 	libxml-simple-perl libtest-simple-perl libmodule-build-perl
 
 # Install other requirements
-RUN apt-get -y install gcc syslinux linuxdoc-tools docbook-utils
+RUN apt-get -y install gcc syslinux linuxdoc-tools docbook-utils hostname dracut
 RUN apt-get -y install libmldbm-perl libappconfig-perl libdbd-csv-perl libsql-statement-perl libtext-csv-perl libmldbm-sync-perl
 
 # Install comfort tools
 RUN apt-get -y install vim openssh-client
-RUN apt-get -y install python3-dev python3-cheetah python3-lxml xmlto autoconf automake rsync python3-all-dev #opkgc
+RUN apt-get -y install python3-dev python3-cheetah python3-lxml python3-twisted xmlto autoconf automake rsync python3-all-dev #opkgc
 RUN apt-get -y install python3-distutils python3-pip python3-setuptools dh-python
+
 # build dependancies:
 RUN apt-get -y install tcsh # oscar depnds on it?
 
@@ -58,7 +59,8 @@ RUN cd /root && tar xvfz Tk-TextANSIColor-0.16.tar.gz
 RUN cd /root/Tk-TextANSIColor-0.16 && perl Build.PL --installdirs vendor && perl Build && perl Build install --installdirs vendor
 
 # Add OSCAR repos URL so systemconfigurator is available as a package.
-RUN echo "deb http://svn.oscar.openclustergroup.org/repos/unstable/debian-11-x86_64 dists/stretch/binary-amd64/" > /etc/apt/sources.list.d/oscar.list
+# Comment line if repo is unavailable
+RUN echo "deb http://www.usablesecurity.net/OSCAR/repos/unstable/debian-11-x86_64 dists/stretch/binary-amd64/" > /etc/apt/sources.list.d/oscar.list
 RUN apt-get update
 
 # Step 16/47: Get OSCAR source tree
@@ -114,7 +116,7 @@ RUN oscar-packager --all oscar
 RUN oscar-packager --all packman
 RUN oscar-packager --all yume
 RUN oscar-packager --all opkgc
-RUN oscar-packager --all oscar-packager
+RUN oscar-packager --debug --all oscar-packager
 RUN oscar-packager --all systemconfigurator
 RUN oscar-packager --all systemimager
 RUN oscar-packager --all oda
