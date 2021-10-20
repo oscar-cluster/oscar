@@ -60,7 +60,8 @@ RUN cd /root/Tk-TextANSIColor-0.16 && perl Build.PL --installdirs vendor && perl
 
 # Add OSCAR repos URL so systemconfigurator is available as a package.
 # Comment line if repo is unavailable
-RUN echo "deb [trusted=yes] http://www.usablesecurity.net/OSCAR/repos/unstable/debian-10-x86_64 dists/stretch/binary-amd64/" > /etc/apt/sources.list.d/oscar.list
+RUN echo "deb [trusted=yes] http://www.usablesecurity.net/OSCAR/repos/unstable/debian-10-x86_64 dists/buster/binary-amd64/" > /etc/apt/sources.list.d/oscar.list
+RUN echo "deb [trusted=yes] file:/tftpboot/oscar/debian-10-x86_64 dists/buster/binary-amd64/" >> /etc/apt/sources.list.d/oscar.list
 RUN apt-get -y update
 
 # Step 16/47: Get OSCAR source tree
