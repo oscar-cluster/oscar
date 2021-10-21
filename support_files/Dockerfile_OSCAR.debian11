@@ -29,6 +29,11 @@ RUN apt-get -y install perl-modules
 RUN apt-get -y install apt-file
 RUN apt-file update
 
+# Install broken drmaid package and fix error
+RUN apt-get -y install dmraid
+RUN sed -i -E 's/udevadm/#udevadm/g' /var/lib/dpkg/info/dmraid.postinst
+RUN apt-get --fix-broken install
+
 # Install basic build requirements
 RUN apt-get -y install git
 
@@ -60,8 +65,8 @@ RUN cd /root/Tk-TextANSIColor-0.16 && perl Build.PL --installdirs vendor && perl
 
 # Add OSCAR repos URL so systemconfigurator is available as a package.
 # Comment line if repo is unavailable
-RUN echo "deb [trusted=yes] http://www.usablesecurity.net/OSCAR/repos/unstable/debian-10-x86_64 dists/bullseye/binary-amd64/" > /etc/apt/sources.list.d/oscar.list
-RUN echo "deb [trusted=yes] file:/tftpboot/oscar/debian-10-x86_64 dists/bullseye/binary-amd64/" >> /etc/apt/sources.list.d/oscar.list
+RUN echo "deb [trusted=yes] http://www.usablesecurity.net/OSCAR/repos/unstable/debian-11-x86_64 dists/bullseye/binary-amd64/" > /etc/apt/sources.list.d/oscar.list
+RUN echo "deb [trusted=yes] file:/tftpboot/oscar/debian-11-x86_64 dists/bullseye/binary-amd64/" >> /etc/apt/sources.list.d/oscar.list
 RUN apt-get update
 
 # Step 16/47: Get OSCAR source tree

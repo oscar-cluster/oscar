@@ -1,6 +1,6 @@
 # Experimental Dockerfile to build OSCAR from scratch on Debian-10 (Buster)
 # Build using the following command:
-#       sudo docker build -t oscar/unstable_deb:10.0 -f Dockerfile_OSCAR.debian10 .
+#       sudo docker build -t oscar/unstable_deb:10.11 -f Dockerfile_OSCAR.debian10 .
 
 
 FROM debian:10
