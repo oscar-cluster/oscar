@@ -18,7 +18,9 @@ category: wiki
 | AlmaLinux / RHEL 8       | ok |
 | CentOS / RHEL 7       | ok |
 | CentOS / RHEL 6       | ok (obsolete) |
-| Debian 9 /  (Ubuntu 18.04 )  | (shoud build, but packaging is broken) |
+| Debian 9 /  (Ubuntu 16.04 - 17.10)  | incomplete (obsolete) |
+| Debian 10 / (Ubuntu 18.04 - 19.10)  | ok |
+| Debian 11 / (Ubuntu 20.04 - 21.04)  | ok |
 | openSuSE 15.3  | ok (almost) |
 
 
