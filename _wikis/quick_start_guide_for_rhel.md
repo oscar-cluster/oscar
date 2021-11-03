@@ -19,7 +19,7 @@ category: wiki
     `curl https://www.getpagespeed.com/files/centos6-epel-eol.repo --output /etc/yum.repos.d/epel.repo`
     * This Guide can also be used for a RHEL 7 or 8 install, but it is not tested.
     * OpenSUSE-15 is newly supported and still incomplete.
-1. Install AlmaLinux-8.x or CentOS-7.x or openSUSE-15.3 base server (+ X11 if you are working localy)
+1. Install AlmaLinux-8.x or CentOS-7.x or openSUSE-15.3 or Debian-10 or Debian-11 (or their Ubuntu equivalent) base server (+ X11 if you are working localy)
 1. Setup hostname, and network.
 1. Configure and enable the required repositories:
     * CentOS-7:
@@ -32,6 +32,15 @@ category: wiki
        - `dnf -y install http://svn.oscar.openclustergroup.org/repos/unstable/rhel-7-x86_64/oscar-release-6.1.3-0.20210426.el8.noarch.rpm`
     * openSUSE-15.3:
        - `zypper install http://www.usablesecurity.net/OSCAR/repos/unstable/suse-15-x86_64/oscar-release-6.1.3-0.20210402.noarch.rpm`
+    * Debian-10:
+       - cat >> /etc/apt/sources.list.d/oscar.list <<EOF
+deb [trusted=yes] http://www.usablesecurity.net/OSCAR/repos/unstable/debian-10-x86_64 dists/buster/binary-amd64/
+EOF
+    * Debian-11:
+       - cat >> /etc/apt/sources.list.d/oscar.list <<EOF
+deb [trusted=yes] http://www.usablesecurity.net/OSCAR/repos/unstable/debian-11-x86_64 dists/bullseye/binary-amd64/
+EOF
+
 1. make sure that your mta (mail transfert agent) is postfix if you want mtaconfig to  be of any use.
    if postfix is not your default mta, then do a:
 
@@ -41,6 +50,8 @@ category: wiki
        - `yum -y install postfix; yum remove sendmail exim`
     * OpenSUSE-15:
        - `zypper --non-interactive install --no-recommends --download-in-advance postfix; zypper --non-interactive remove sendmail exim`
+    * Debian-10, Debian-11:
+       - apt-get install postfix
 1. Update SELinux config (/etc/selinux/config)
 
     SELINUX=disabled
@@ -55,6 +66,7 @@ category: wiki
        - `yum -y install oscar`
     * OpenSUSE-15:
        - `zypper --non-interactive install --no-recommends --download-in-advance -f oscar`
+
 1. check /etc/oscar/oscar.conf
 1. check /etc/oscar/supported_distros.txt
 1. Configure oscar for your distro:
