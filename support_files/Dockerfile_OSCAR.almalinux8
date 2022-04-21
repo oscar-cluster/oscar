@@ -105,7 +105,7 @@ RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-yume.
 RUN cd /root/oscar-yume && make install DESTDIR=/
 
 # Install oscar-packager requirements
-RUN dnf -y install docbook-utils-pdf docbook-utils
+RUN dnf -y install docbook-utils-pdf docbook-utils texlive-ec
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-packager.git
 RUN cd /root/oscar-packager && make rpm
 RUN rpm -Uvh --nodeps /root/rpmbuild/RPMS/noarch/oscar-packager*.rpm
