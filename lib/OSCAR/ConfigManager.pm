@@ -60,6 +60,8 @@ our $opkgs_path;
 our $oda_files_path;
 # Specify where oscar-packager will download files.
 our $packager_download_path;
+# Specify from where oscar-packager will download files.
+our $packager_sources_url_base;
 
 sub new {
     my ($perl_package, $perl_filename, $perl_line) = caller;
@@ -106,6 +108,7 @@ sub load_oscar_config ($) {
         'OPKGS_PATH'                => { ARGCOUNT => 1 },
         'PATH_ODA_CONFIG_FILES'     => { ARGCOUNT => 1 },
         'PACKAGER_DOWNLOAD_PATH'    => { ARGCOUNT => 1 },
+	'PACKAGER_SOURCES_URL_BASE' => { ARGCOUNT => 1 },
         );
     $config->file ($config_file);
 
@@ -122,6 +125,7 @@ sub load_oscar_config ($) {
     $oda_files_path     = $config->get('PATH_ODA_CONFIG_FILES');
     $opkgs_path         = $config->get('OPKGS_PATH');
     $packager_download_path = $config->get('PACKAGER_DOWNLOAD_PATH');
+    $packager_sources_url_base = $config->get('PACKAGER_SOURCES_URL_BASE');
     return 0;
 }
 
@@ -140,6 +144,7 @@ sub get_config () {
                 'oda_files_path'    => $oda_files_path,
                 'opkgs_path'        => $opkgs_path,
                 'packager_download_path' => $packager_download_path,
+		'packager_sources_url_base' => $packager_sources_url_base,
               );
     return \%cfg;
 }
