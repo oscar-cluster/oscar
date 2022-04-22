@@ -143,6 +143,7 @@ RUN yume clean all
 RUN rm -rf /tftpboot/oscar/rhel-8-x86_64/.repodata
 RUN /bin/rm -rf /tftpboot/oscar/rhel-8-x86_64/repodata /tftpboot/oscar/rhel-8-x86_64/repocache
 RUN yume --prepare
+RUN yume -y update
 RUN yume -y reinstall oscar-release
 
 # Now install as rpm what has been installed by hand before as bootstrap.

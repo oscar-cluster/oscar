@@ -5,7 +5,7 @@ include $(TOPDIR)/Config.mk
 SUBDIRS := 
 FILES := macros.oscar oscar.list oscar.repo oscar.channel sources.oscar.txt
 
-OSCAR_ROOT_REPO_URL := http://www.usablesecurity.net/OSCAR
+OSCAR_ROOT_REPO_URL := http://olivier.lahaye1.free.fr/OSCAR
 RELATIVE_REPO_PATH := $(shell $(TOPDIR)/rpm/compute_repo_url repos)
 FULL_REPO_URL := $(shell $(TOPDIR)/rpm/compute_repo_url $(OSCAR_ROOT_REPO_URL)/repos)
 OSCAR_BASE_VERSION ?= $(shell $(TOPDIR)/scripts/get-oscar-version.sh $(TOPDIR)/VERSION --base)

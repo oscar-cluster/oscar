@@ -10,6 +10,7 @@
 # Syntax: $0 <URL base>
 # example: compute_repo_url http://www.usablesecurity.net/OSCAR/repos
 #          compute_repo_url http://svn.oscar.openclustergroup.org/repos
+#          compute_repo_url https://olivier.lahaye1.free.fr/OSCAR/repos
 
 # Make sure OSCAR_VERBOSE won't interfer if set by oscar-packager
 export OSCAR_VERBOSE=0
