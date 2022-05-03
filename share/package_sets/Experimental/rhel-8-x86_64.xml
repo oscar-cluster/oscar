@@ -29,6 +29,7 @@
         <opkg>sis</opkg>
         <opkg>slurm</opkg>
         <opkg>switcher</opkg>
+	<opkg>squid</opkg>
         <opkg>sync-files</opkg>
         <opkg>system-update</opkg>
         <opkg>yume</opkg>
