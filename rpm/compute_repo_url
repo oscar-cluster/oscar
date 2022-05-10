@@ -19,7 +19,7 @@ if test -n "$1"
 then
     URL_BASE="$1"
 else
-    URL_BASE="http://www.usablesecurity.net/OSCAR/repos"
+    URL_BASE="https://olivier.lahaye1.free.fr/OSCAR/repos"
 fi
 
 #if test -z $(echo $URL_BASE |grep -E '(ht|f)tp://[a-zA-Z0-9\-\./]+$')
