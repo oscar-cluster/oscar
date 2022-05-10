@@ -114,7 +114,6 @@ RUN rpm -Uvh --nodeps /root/rpmbuild/RPMS/noarch/oscar-packager*.rpm
 #RUN yum -y --skip-broken install /root/rpmbuild/RPMS/noarch/oscar-release*rpm
 
 # Install some deps for systemimager BUG (need to update build.cfg)
-RUN dnf -y install perl
 RUN dnf -y install bc bind-utils cryptsetup dejavu-serif-fonts dosfstools e2fsprogs gdisk hwdata jq kernel lshw lsscsi lvm2 mdadm net-tools nmap-ncat openssh-server parted pciutils perl-JSON plymouth-plugin-label plymouth-plugin-script psmisc rtorrent socat usbutils xfsprogs xmlstarlet dos2unix httpd-filesystem httpd
 
 # Install some deps for apitest

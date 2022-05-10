@@ -1,12 +1,12 @@
 # Experimental Dockerfile to build OSCAR from scratch on CentOS-1
 # Build using the following command:
-#       sudo docker build -t oscar/packager_rl8:1.2 -f Dockerfile_OSCAR.centos8 .
+#       sudo docker build -t oscar/packager_rhel8:8.5 -f Dockerfile_OSCAR.centos8 .
 
 
 FROM centos:8
 
 LABEL maintainer="Olivier LAHAYE <olivier.lahaye@cea.fr>"
-LABEL version="6.5"
+LABEL version="1.0"
 LABEL vendor="OSCAR Cluster"
 LABEL license="GPLv2"
 
@@ -37,6 +37,7 @@ RUN mkdir -p /root/rpmbuild/{SOURCES,SRPMS,RPMS,SPECS}
 #RUN mkdir /var/run/lock
 
 # Install OSCAR Perl requirements
+RUN dnf -y install perl
 RUN dnf -y install --skip-broken \
                         'perl(AppConfig)' 'perl(Carp)' 'perl(Cwd)' 'perl(Data::Dumper)' 'perl(English)' \
                         'perl(Exporter)' \
@@ -62,7 +63,7 @@ RUN perl -MCPAN -e "CPAN::Shell->notest('install', 'File::Copy::Recursive')"
 
 
 # Build and install Tk-TextANSIColor
-RUN cd /tmp && wget http://www.usablesecurity.net/OSCAR/pkgs/downloads/Tk-TextANSIColor-0.16.tar.gz
+RUN cd /tmp && wget http://olivier.lahaye1.free.fr/OSCAR/downloads/Tk-TextANSIColor-0.16.tar.gz
 RUN cd /tmp && tar xvfz Tk-TextANSIColor-0.16.tar.gz
 RUN cd /tmp/Tk-TextANSIColor-0.16 && perl Build.PL --installdirs vendor && perl Build && perl Build install --installdirs vendor
 RUN cd /tmp && rm -rf Tk-TextANSIColor*
@@ -113,7 +114,6 @@ RUN rpm -Uvh --nodeps /root/rpmbuild/RPMS/noarch/oscar-packager*.rpm
 #RUN yum -y --skip-broken install /root/rpmbuild/RPMS/noarch/oscar-release*rpm
 
 # Install some deps for systemimager BUG (need to update build.cfg)
-RUN dnf -y install perl
 RUN dnf -y install bc bind-utils cryptsetup dejavu-serif-fonts dosfstools e2fsprogs gdisk hwdata jq kernel lshw lsscsi lvm2 mdadm net-tools nmap-ncat openssh-server parted pciutils perl-JSON plymouth-plugin-label plymouth-plugin-script psmisc rtorrent socat usbutils xfsprogs xmlstarlet dos2unix httpd-filesystem httpd
 
 # Install some deps for apitest

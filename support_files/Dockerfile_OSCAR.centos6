@@ -6,7 +6,7 @@
 FROM centos:6
 
 LABEL maintainer="Olivier LAHAYE <olivier.lahaye@cea.fr>"
-LABEL version="6.10"
+LABEL version="1.0"
 LABEL vendor="OSCAR Cluster"
 LABEL license="GPLv2"
 

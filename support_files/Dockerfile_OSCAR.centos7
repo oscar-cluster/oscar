@@ -6,7 +6,7 @@
 FROM centos:7
 
 LABEL maintainer="Olivier LAHAYE <olivier.lahaye@cea.fr>"
-LABEL version="6.5"
+LABEL version="1.0"
 LABEL vendor="OSCAR Cluster"
 LABEL license="GPLv2"
 
@@ -47,7 +47,7 @@ RUN yum -y install gcc syslinux
 RUN yum -y install vim openssh-clients
 
 # Build and install Tk-TextANSIColor
-RUN cd /tmp && wget http://www.usablesecurity.net/OSCAR/pkgs/downloads/Tk-TextANSIColor-0.16.tar.gz
+RUN cd /tmp && wget http://olivier.lahaye1.free.fr/OSCAR/downloads/Tk-TextANSIColor-0.16.tar.gz
 RUN cd /tmp && tar xvfz Tk-TextANSIColor-0.16.tar.gz
 RUN cd /tmp/Tk-TextANSIColor-0.16 && perl Build.PL --installdirs vendor && perl Build && perl Build install --installdirs vendor
 RUN cd /tmp && rm -rf Tk-TextANSIColor*
