@@ -91,6 +91,7 @@ RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-yume.
 RUN cd /root/oscar-yume && make install DESTDIR=/
 
 # Install oscar-packager requirements
+RUN zypper --non-interactive install docbook-utils texlive-ec texlive-txfonts texlive-dvips texlive-context
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-packager.git
 RUN cd /root/oscar-packager && make rpm
 RUN rpm -Uvh --nodeps `rpm --eval '%{_rpmdir}'`/noarch/oscar-packager*.rpm
@@ -101,7 +102,7 @@ RUN rpm -Uvh --nodeps `rpm --eval '%{_rpmdir}'`/noarch/oscar-packager*.rpm
 # Install some deps for systemimager BUG (need to update build.cfg)
 RUN zypper --non-interactive install perl
 RUN zypper --non-interactive install wicked wicked-service iproute2
-RUN zypper --non-interactive install docbook-utils bc bind-utils cryptsetup dejavu-fonts dosfstools e2fsprogs hwdata jq kernel-default lshw lsscsi lvm2 mdadm net-tools ncat openssh parted pciutils perl-JSON plymouth plymouth-dracut plymouth-plugin-label plymouth-plugin-script psmisc rtorrent socat usbutils xfsprogs xmlstarlet dos2unix cdrtools
+RUN zypper --non-interactive install bc bind-utils cryptsetup dejavu-fonts dosfstools e2fsprogs hwdata jq kernel-default lshw lsscsi lvm2 mdadm net-tools ncat openssh parted pciutils perl-JSON plymouth plymouth-dracut plymouth-plugin-label plymouth-plugin-script psmisc rtorrent socat usbutils xfsprogs xmlstarlet dos2unix cdrtools dmidecode apache2
 
 # Install some deps for apitest
 RUN zypper --non-interactive install python3-Twisted
@@ -124,7 +125,7 @@ RUN zypper ar -G -n "OSCAR Cluster local repository" file:/tftpboot/oscar/suse-1
 RUN /usr/bin/rm -rf /tftpboot/oscar/suse-15-x86_64/repo* /tmp/pool*
 RUN /usr/bin/packman --prepare-repo /tftpboot/oscar/suse-15-x86_64 --verbose
 RUN zypper --non-interactive install systemconfigurator*
-RUN zypper --non-interactive install btrfsprogs dracut ethtool ipcalc kexec-tools ntfsprogs strace iputils lsof sysvinit-tools
+RUN zypper --non-interactive install btrfsprogs dracut ethtool ipcalc kexec-tools ntfsprogs strace iputils lsof sysvinit-tools apache2
 RUN oscar-packager --all systemimager
 RUN oscar-packager --all oda
 RUN oscar-packager --all orm
