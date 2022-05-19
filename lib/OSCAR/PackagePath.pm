@@ -75,6 +75,7 @@ use Carp;
          $PGROUP_PATH
          );
 
+# BUG: OL: /tftpboot is no longer standard!
 my $tftpdir = "/tftpboot/";
 
 # The possible places where packages may live.  
