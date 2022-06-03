@@ -1,3 +1,9 @@
+oscar (6.1.3~git20220603-1) precise; urgency=low
+
+  * Full packaging rewrite (new package names, make use of Makefile)
+
+ -- Olivier Lahaye <olivier.lahaye@cea.fr>  Fri, 15 Oct 2021 18:14:00 +0100
+
 oscar (6.1.3~git20211015-1) precise; urgency=low
 
   * Updated debian packagin to avoid warnings on debian 11.

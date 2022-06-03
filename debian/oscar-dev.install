@@ -1,0 +1,3 @@
+etc/rpm/macros.oscar
+usr/lib/oscar/build/Config.mk
+usr/share/man/man3/*

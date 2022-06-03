@@ -10,7 +10,10 @@
 #export DH_VERBOSE=1
 
 BUILD_DIR = $(CURDIR)
-PATCHES=$(sort $(shell find $(CURDIR)/debian/patches -name "*.patch"))
+PATCHES=$(sort $(shell find $(CURDIR)/debian/oscar-core.patches -name "*.patch"))
+OSCAR_VERSION ?= $(shell $(CURDIR)/scripts/get-oscar-version.sh VERSION --full | cut -d- -f1)
+#OSCAR_BASE_VERSION ?= $(shell $(CURDIR)/scripts/get-oscar-version.sh VERSION --base)
+#OSCAR_BUILD ?= $(shell $(TOPDIR)/scripts/get-oscar-version.sh VERSION --build-r | sed -e 's/[^0-9]//g')
 
 CFLAGS = -Wall -g
 
@@ -20,165 +23,57 @@ else
         CFLAGS += -O2
 endif
 
-configure: configure-stamp
-configure-stamp:
-	dh_testdir
+%:
+	dh $@
+
+override_dh_auto_configure:
 	# Add here commands to configure the package.
 	@echo -n "Applying patches..."
 	@cd $(BUILD_DIR) && \
 		$(foreach patch, $(PATCHES), \
 				echo -n Applying `basename $(patch)`... && cat $(patch) | \
 		patch -s -p1 && echo done. &&) /bin/true
-	touch configure-stamp
+	#dh_auto_configure
 
-
-build: build-stamp
-
-build-stamp: configure-stamp
-	dh_testdir
-
-    # Add here commands to compile the package.
-    #docbook-to-man debian/oscar.sgml > oscar.1
-
-	touch build-stamp
-
-clean:
-	dh_testdir
-	dh_testroot
-	rm -f build-stamp configure-stamp
-
-    # Add here commands to clean up after the build process.
+override_dh_clean:
+	# Add here commands to clean up after the build process.
 	# Yes this is pretty ugly but i want to be able to build the packages
 	# for a svn check-out
-	#$(MAKE) clean DESTDIR=$(CURDIR)/debian/oscar-tmp
-	rm -rf $(CURDIR)/debian/oscar $(CURDIR)/debian/oscar-tmp
+	#$(MAKE) clean DESTDIR=$(CURDIR)/debian/tmp
+	rm -rf $(CURDIR)/debian/tmp \
+	       $(CURDIR)/debian/oscar \
+	       $(CURDIR)/debian/oscar-core \
+	       $(CURDIR)/debian/oscar-data \
+	       $(CURDIR)/debian/liboscar-server \
+	       $(CURDIR)/debian/liboscar-client \
+	       $(CURDIR)/debian/oscar-utils \
+	       $(CURDIR)/debian/oscar-webgui \
+	       $(CURDIR)/debian/oscar-dev \
+	       $(CURDIR)/debian/oscar-release \
 	# We delete all the binaries here to be sure they will not be included 
 	# into the tarball generated with the Debian packages (they are not 
 	# needed!).
 	rm -f `find $(CURDIR) -name "*.deb"`
 	rm -f `find $(CURDIR) -name "*.rpm"`
-
 	dh_clean
 
-install: build 
-	dh_testdir
-	dh_testroot
-	dh_prep
-	dh_installdirs
+override_dh_auto_install:
+	$(MAKE) install DESTDIR=debian/tmp DOCDIR=/usr/share/doc
 
-        # Add here commands to install the package into debian/oscar.
+override_dh_install:
+	# Generate liboscar-server.install by excluding liboscar-client files
+	cd debian/tmp ; find usr/share/perl5/OSCAR /usr/share/perl5/Tk -type f | \
+		grep -Ev 'OS_|PM_|RM_|Logger|Utils.pm|Env.pm|Defs.pm' \
+		> ../liboscar-server.install
+	# Generate oscar-core.install by excluding oscar-utils files
+	cd debian/tmp ; find /usr/bin /usr/share/man/man1 -type f | \
+		grep -Ev 'distro-query' \
+		> ../oscar-core.install
+	# Fix $Release$ and $Id$ in installed files if any.
+	@for file in $$(grep -Erl '\$$Revision\$$|\$$Id\$$' $(CURDIR)/debian/tmp); do \
+	    sed -i -e "s/\\\$$Revision\\\$$/$(OSCAR_VERSION)/g" -e "s/\\\$$Id\\\$$/$(OSCAR_VERSION)/g" $$file; \
+	done
+	# Now, we can dispatch files into sub-packages directories from debian/tmp.
+	dh_install --sourcedir=debian/tmp
 
-#	$(MAKE) install DESTDIR=$(CURDIR)/debian/oscar
-	# The oscar installation procedure sucks, it is very monolithic,
-	# we have to do everything manually
-	
-	# Prepare the "oscar" package
-	mkdir -p $(CURDIR)/debian/oscar/etc/oscar/templates
-	mkdir -p $(CURDIR)/debian/oscar/usr/bin
-	mkdir -p $(CURDIR)/debian/oscar/usr/share/doc/oscar
-	mkdir -p $(CURDIR)/debian/oscar/usr/share/oscar/images
-#	mkdir -p $(CURDIR)/debian/oscar/opt/oscar
-	rm -f `find $(CURDIR) -name "*.deb"`
-	rm -f `find $(CURDIR) -name "*.rpm"`
-	rm -f $(CURDIR)/lib/OSCAR/oda.pm
-    # We remove the crappy top-level Makefile (it can only screw up he install
-	rm -f $(CURDIR)/debian/oscar/Makefile
-	mv $(CURDIR)/COPYING \
-		$(CURDIR)/debian/oscar/usr/share/doc/oscar
-	mv $(CURDIR)/README \
-		$(CURDIR)/debian/oscar/usr/share/doc/oscar
-	mv $(CURDIR)/VERSION \
-		$(CURDIR)/debian/oscar/etc/oscar/
-	# It seems that dist is not needed in a binary package
-	# mv $(CURDIR)/dist \
-	#	$(CURDIR)/debian/oscar/opt/oscar
-	mv $(CURDIR)/images/oscar.gif \
-		$(CURDIR)/debian/oscar/usr/share/oscar/images
-
-	cd share; $(MAKE) install DESTDIR=$(CURDIR)/debian/oscar/
-	cd oscarsamples; $(MAKE) install DESTDIR=$(CURDIR)/debian/oscar/
-	cd testing; $(MAKE) install DESTDIR=$(CURDIR)/debian/oscar/
-	# To address bootstraping issue, we treat rapt and yume as prereqs
-	mv packages/yume/   $(CURDIR)/debian/oscar/usr/share/oscar/prereqs/
-	mv packages/rapt/   $(CURDIR)/debian/oscar/usr/share/oscar/prereqs/
-	cp -rf packages/oda $(CURDIR)/debian/oscar/usr/share/oscar/prereqs/
-	# We remove stuff we do not yet know how to deal with
-	rm -rf $(CURDIR)/debian/oscar/usr/share/oscar/Makefile.am
-	rm -rf $(CURDIR)/debian/oscar/usr/share/oscar/Makefile.in
-	rm -rf $(CURDIR)/packages
-	# Then we remove stuff we do not want in /usr/share/oscar
-	rm -rf $(CURDIR)/debian/oscar/usr/share/oscar/etc
-	# Know we deal with configuration files
-	# We currently do not include what is in 'src'. This directory
-	# needs its proper installation mechanism (e.g. some parts need
-	# to be compiled).
-	# mv $(CURDIR)/src \
-	#	$(CURDIR)/debian/oscar/opt/oscar
-
-	# Prepare the liboscar package
-	mkdir -p $(CURDIR)/debian/liboscar/usr/lib/perl5
-	cd $(CURDIR)/lib; make install DESTDIR=$(CURDIR)/debian/liboscar/
-
-	# Prepare the oscar-bin package
-	# We make sure to clean everything up, it order to not deal with old stuff
-	cd  $(CURDIR)/scripts; make clean;
-	# Then we install the binaries
-	cd  $(CURDIR)/scripts; make install DESTDIR=$(CURDIR)/debian/oscar-bin
-	# Then we install the binaries
-	cd  $(CURDIR)/bin; make install DESTDIR=$(CURDIR)/debian/oscar-bin
-	# mv $(CURDIR)/install_cluster \
-	#	$(CURDIR)/debian/oscar-bin/usr/bin
-
-	# Prepare the oscar-utils package
-	# We make sure to clean everything up, it order to not deal with old stuff
-	cd  $(CURDIR)/utils; make clean;
-	# Then we install the binaries
-	cd  $(CURDIR)/utils; make install DESTDIR=$(CURDIR)/debian/oscar-utils
-
-	# Prepare the "oscar-base" package
-	mkdir -p $(CURDIR)/debian/oscar-base
-
-	# Prepare the "oscar-base-server" package
-	mkdir -p $(CURDIR)/debian/oscar-base-server
-
-	# Prepare the "oscar-base-client" package
-	mkdir -p $(CURDIR)/debian/oscar-base-client
-	
-# Build architecture-independent files here.
-binary-indep: build install
-# We have nothing to do by default.
-
-# Build architecture-dependent files here.
-binary-arch: build install
-	dh_testdir
-	dh_testroot
-	dh_installchangelogs
-	dh_installdocs
-	dh_installexamples
-#       dh_install
-#       dh_installmenu
-#       dh_installdebconf
-#       dh_installlogrotate
-#       dh_installemacsen
-#       dh_installpam
-#       dh_installmime
-#       dh_installinit
-#       dh_installcron
-#       dh_installinfo
-	dh_installman
-	dh_link
-	dh_strip
-	dh_compress
-	dh_fixperms
-#       dh_perl
-#       dh_python
-#       dh_makeshlibs
-	dh_installdeb
-	dh_shlibdeps
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb
-
-binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install configure
-
+# END
