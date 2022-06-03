@@ -8,52 +8,69 @@ Homepage: https://oscar-cluster.github.io/oscar/
 
 Package: oscar
 Architecture: all
-Depends: c-shell | tcsh, liboscar, oscar-bin, libappconfig-perl 
+Depends: c-shell | tcsh, oscar-core, oscar-data, liboscar-server
 Description: Open Source Cluster Application Resources
- OSCAR (Open Source Cluster Application Resources) is a snapshot of the best 
- known methods for building, programming, and using High Performance Computing
- (HPC) clusters. It consists of a fully integrated and easy to install software
- bundle designed for high performance cluster computing. Everything needed to
- install, build, maintain, program, and use a Linux cluster is included in the
- suite, making it unnecessary to download or even install any individual 
- software packages on your cluster.
+ OSCAR allows users, regardless of their experience level with a *nix
+ environment, to install a Beowulf type high performance computing cluster. It
+ also contains everything needed to administer and program this type of HPC
+ cluster. OSCAR's flexible package management system has a rich set of
+ pre-packaged applications and utilities which means you can get up and running
+ without laboriously installing and configuring complex cluster administration
+ and communication packages. It also lets administrators create customized
+ packages for any kind of distributed application or utility, and to distribute
+ those packages from an online package repository, either on or off site.
+ This is the "Virtual" package that installs the basic dependencies to have
+ everything ready for OSCAR Cluster configuration.
 
-Package: oscar-bin
+
+Package: oscar-core
 Architecture: all
 Description: Binaries for OSCAR
  Set of binaries for OSCAR
-Depends: liboscar, systeminstaller-oscar (>= 2.4.12)
+Depends: ${perl:Depends}, tftpd-hpa | tftpd, liboscar-server, oscar-data, systeminstaller-oscar (>= 2.4.12), rapt, oda, systemimager-server
+Replaces: oscar-bin
+
+Package: oscar-data
+Architecture: all
+Description: Datafiles for OSCAR clustering package.
+ Datafiles and configuration files for OSCAR Clustering package.
+
+Package: liboscar-server
+Architecture: all
+Description: Libraries for OSCAR clustering package (server side).
+ Libraries for OSCAR clustering base package (server side).
+Depends: ${perl:Depends}, libxmlsimple-perl, libappconfig-perl, libtk-textansicolor-perl, wget, apitest
+Replaces: liboscar
+
+Package: liboscar-client
+Architecture: all
+Description: Libraries for OSCAR clustering package (server side).
+ Libraries for OSCAR clustering base package (server side).
+Depends: ${perl:Depends}, libxml2-utils, tar
+Breaks: liboscar
 
 Package: oscar-utils
 Architecture: all
-Description: Utils for OSCAR (head and clients)
- Set of utilities for OSCAR (head and clients nodes)
-Depends: liboscar
+Description: Utils for OSCAR
+ Set of utilities for OSCAR (head node)
+Depends: ${perl:Depends}, liboscar-server, oscar-core
 
-Package: liboscar
+Package: oscar-webgui
 Architecture: all
-Description: Libraries for OSCAR 
- Set of libraries for OSCAR
-Depends: apitest
-
-Package: oscar-base-server
-Architecture: all
-Description: Transitional package for OSCAR (server side)
- This is a transitional package for OSCAR (server side).
-
-Package: oscar-base
-Architecture: all
-Depends: libappconfig-perl, oscar-bin, liboscar, oscar, perl
-Description: Transitional package for OSCAR (API side)
- This is a transitional package for OSCAR (API side).
-
-Package: oscar-base-client
-Architecture: all
-Description: Transitional package for OSCAR (client side)
- This is a transitional package for OSCAR (client side).
+Description: Web GUI for managing OSCAR Cluster.
+ Web GUI for managing OSCAR Cluster.
+Depends: oscar-core, apache2, php
 
 Package: oscar-dev
 Architecture: all
-Depends: oscar-base, opkgc (>= 0.6.0), packman (>= 3.2.2)
+Depends: oscar-core, opkgc (>= 0.6.0), packman (>= 3.2.2)
 Description: Everything needed for OSCAR related developments
  Everything needed for OSCAR related developments.
+
+Package: oscar-release
+Architecture: all
+Description: OSCAR release file and DEB repository configuration
+ OSCAR release file. This package contains apt, yum and smart
+ configuration for the OSCAR DEB Repository, as well as the public
+ GPG keys used to sign them.
+
