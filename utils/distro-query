@@ -42,6 +42,7 @@ GetOptions( \%options,
 	    'pool|p=s',
 	    'distro_id|d',
 	    'compat_distro_id|c',
+	    'codename',
 	    'help|h',
 	    'verbose|v',
             ) || usage();
@@ -113,6 +114,17 @@ if ($options{pool}) {
             "Is your system supported by OSCAR?\n";
     }
     print "$os->{compat_distro}-$os->{distro_version}-$os->{arch}";
+} elsif ($options{codname}) {
+    my $os = OSCAR::OCA::OS_Detect::open ("/");
+    if (!defined $os) {
+        die "ERROR: Impossible to detect the local distro.\n".
+            "Is your system supported by OSCAR?\n";
+    }
+    if (not defined($os->{codename})) {
+	    print "none";
+    } else {
+	    print "$os->{codename}";
+    }
 } else {
     # we want to know the distro ID of the local system
     my $os = OSCAR::OCA::OS_Detect::open ("/");

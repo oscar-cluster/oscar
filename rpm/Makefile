@@ -8,6 +8,7 @@ FILES := macros.oscar oscar.list oscar.repo oscar.channel sources.oscar.txt
 OSCAR_ROOT_REPO_URL := http://olivier.lahaye1.free.fr/OSCAR
 RELATIVE_REPO_PATH := $(shell $(TOPDIR)/rpm/compute_repo_url repos)
 FULL_REPO_URL := $(shell $(TOPDIR)/rpm/compute_repo_url $(OSCAR_ROOT_REPO_URL)/repos)
+DISTRO_CODENAME := $(shell perl -I$(TOPDIR)/lib $(TOPDIR)/scripts/distro-query --codename)
 OSCAR_BASE_VERSION ?= $(shell $(TOPDIR)/scripts/get-oscar-version.sh $(TOPDIR)/VERSION --base)
 
 all:	$(FILES)
@@ -59,7 +60,8 @@ macros.oscar:
 oscar.list:
 	@echo Creating oscar.list
 	cat oscar.list.in | sed -e 's|##SERVER_URL##|$(OSCAR_ROOT_REPO_URL)|g' \
-				-e 's|##REPO_PATH##|$(RELATIVE_REPO_PATH)|g' > oscar.list
+				-e 's|##REPO_PATH##|$(RELATIVE_REPO_PATH)|g' \
+				-e 's|##DISTRO_CODENAME##|$(DISTRO_CODENAME)|g' > oscar.list
 
 oscar.repo:
 	@echo Creating oscar.repo

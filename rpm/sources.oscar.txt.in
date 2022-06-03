@@ -1,5 +1,5 @@
 ### Name: OSCAR RPM Repository for RHEL 6 - x86_64 - oscar
-### URL: http://svn.oscar.openclustergroup.org/trac/oscar
+### URL: https://oscar-cluster.github.io/oscar/
 #
 # Add the following line to /etc/sysconfig/rhn/sources
 #
