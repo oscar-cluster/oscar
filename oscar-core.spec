@@ -115,6 +115,7 @@ OSCAR Cluster Core executables (and manuals).
 %exclude %{_bindir}/distro-query
 %{_mandir}/man1/*
 %exclude %{_mandir}/man1/distro-query.*
+%{_defaultdocdir}/oscar
 
 %package -n oscar-data
 Group: Applications/System
@@ -127,10 +128,12 @@ Datafiles and configuration files for OSCAR Clustering package.
 %files -n oscar-data
 %defattr(-,root,root)
 %{_sysconfdir}/oscar
-%{_defaultdocdir}/oscar
-%{_prefix}/lib/oscar
-%{_datarootdir}/oscar
-%exclude %{_datarootdir}/oscar/webgui
+%{_prefix}/lib/oscar/packages
+%{_prefix}/lib/oscar/testing
+%{_datarootdir}/oscar/images
+%{_datarootdir}/oscar/oscarsamples
+%{_datarootdir}/oscar/packages_sets
+%{_datarootdir}/oscar/prereqs
 
 %package -n liboscar-server
 Group: Applications/System
@@ -164,6 +167,9 @@ Libraries for OSCAR clustering base package (server side).
 %package -n liboscar-client
 Group: Applications/System
 Summary: Libraries for OSCAR clustering package (client side).
+Requires: wget
+Requires: tar
+Requires: libxml2
 
 %description -n liboscar-client
 Libraries for OSCAR clustering base package (server side).
@@ -171,10 +177,12 @@ Libraries for OSCAR clustering base package (server side).
 %files -n liboscar-client
 %defattr(-,root,root)
 %{perl_vendorlib}/OSCAR/Env.pm
-%{perl_vendorlib}/OSCAR/OCA
+%{perl_vendorlib}/OSCAR/OCA*
 %exclude %{perl_vendorlib}/OSCAR/OCA/Sanity*
 %{perl_vendorlib}/OSCAR/Logger*
 %{perl_vendorlib}/OSCAR/Utils.pm
+%{perl_vendorlib}/OSCAR/Defs.pm
+%{perl_vendorlib}/OSCAR/FileUtils.pm
 
 %package -n oscar-utils
 Group: Applications/System
