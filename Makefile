@@ -138,8 +138,7 @@ localbase: install-perlQt
 # Warning: the smart installer and perl-Qt won't be removed!
 # 
 clean:
-	(cd src; make clean)
-	(cd doc; make clean)
+	for dir in $(SUBDIRS) ; do ( cd $$dir ; $(MAKE) clean ) ; done
 	#rm -rf tmp
 	#rm -f oscar-base.spec
 	rm -f *.rpm
