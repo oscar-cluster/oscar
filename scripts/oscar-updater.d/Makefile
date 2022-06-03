@@ -1,7 +1,8 @@
 DESTDIR=
 
 SCRIPTS := 	01_update_ubuntu_repo \
-			02_update_repo_conffile
+		02_update_repo_conffile \
+		03_add_dbtype_to_conffile
 SUBDIRS := 
 
 #doc:
@@ -12,8 +13,8 @@ all:
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} all ) ; done
 
 install: 
-	install -d -m 0755 $(DESTDIR)/usr/bin/oscar-updater.d
-	install    -m 0755 $(SCRIPTS) $(DESTDIR)/usr/bin/oscar-updater.d
+	install -d -m 0755 $(DESTDIR)/usr/lib/oscar/updater.d
+	install    -m 0755 $(SCRIPTS) $(DESTDIR)/usr/lib/oscar/updater.d
 	for dir in ${SUBDIRS} ; do ( cd $$dir ; ${MAKE} install ) ; done
 
 uninstall:

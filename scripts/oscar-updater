@@ -33,7 +33,7 @@ my $system_check_dir;
 if (defined $ENV{OSCAR_HOME}) {
     $system_check_dir = $ENV{OSCAR_HOME} . "/scripts/oscar-updater.d";
 } else {
-    $system_check_dir = "/usr/bin/oscar-updater.d";
+    $system_check_dir = "/usr/lib/oscar/updater.d";
 }
 
 print "Updating OSCAR on your system...\n";
