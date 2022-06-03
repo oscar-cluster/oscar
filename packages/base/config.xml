@@ -29,11 +29,6 @@ node base requirements are covered by the base prereqs.
     <requires>
       <filters>
         <dist>debian</dist>
-      </filters>
-      <pkg>liboscar</pkg>
-    </requires>
-    <requires>
-      <filters>
         <dist>suse</dist>
         <dist>sles</dist>
         <dist>mdv</dist>
@@ -41,12 +36,17 @@ node base requirements are covered by the base prereqs.
         <dist>fc</dist>
         <dist>ydl</dist>
       </filters>
-      <pkg>oscar-base-lib</pkg>
+      <pkg>liboscar-client</pkg>
     </requires>
   </clientDeps>
   <apiDeps/>
   <changelog>
-    <versionEntry version="1.0.1-2.1">
+    <versionEntry version="1.1-1">
+      <changelogEntry authorName="Olivier Lahaye" date="2022-06-03T20:08:32+02:00">
+        <item>Update deps to new liboscar-client.</item>
+      </changelogEntry>
+    </versionEntry>
+     <versionEntry version="1.0.1-2.1">
       <changelogEntry authorName="Olivier Lahaye" date="2014-07-11T15:25:17+02:00">
         <item>Rebuild to avoid conflicts with new disttag in rpm distros</item>
       </changelogEntry>
