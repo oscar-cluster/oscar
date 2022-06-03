@@ -6,22 +6,23 @@
 %define packman_version 3.2.0
 #define is_suse %(test -f /etc/SuSE-release && echo 1 || echo 0)
 %define is_suse %(grep -E "(suse)" /etc/os-release > /dev/null 2>&1 && echo 1 || echo 0)
+%define oscar_version %(scripts/get-oscar-version.sh VERSION --base)
+%define oscar_release 0.%(scripts/get-oscar-version.sh VERSION --build-r | sed -e 's/[^0-9]//g')
 
 Summary: 	OSCAR package
 Name: 		oscar
-Version: 	OSCARVERSION
-Release: 	OSCARRELEASE%{?dist}
+Version: 	%oscar_version
+Release: 	%oscar_release%{?dist}
 License: 	GPL
 URL: 		http://oscar.openclustergroup.org
 Group: 		Applications/System
 Source: 	%{name}-%{version}.tar.gz
-Requires: 	%{name}-base-lib == %{version}-%{release}
-Requires: 	%{name}-base-scripts == %{version}-%{release}
-Requires:	%{name}-base == %{version}-%{release}
-Requires: 	yum, createrepo, yume
+Requires: 	lib%{name}-server == %{version}-%{release}
+Requires: 	%{name}-core == %{version}-%{release}
+Requires:	%{name}-data == %{version}-%{release}
 Vendor: 	OSCAR
 Distribution: 	OSCAR
-Packager: 	Geoffroy Vallee
+Packager: 	Olivier LAHAYE
 BuildRequires:	make
 %if 0%{?fedora} >= 16 || 0%{?rhel} >= 6
 BuildRequires:  perl-generators, perl-interpreter
@@ -33,6 +34,7 @@ BuildRequires:  perl(Pod::Man)
 
 Buildroot: 	%{_tmppath}/%{name}-%{version}-root
 BuildArch: 	noarch
+Obsoletes: oscar-base
 
 %description
 OSCAR package.
@@ -49,12 +51,7 @@ bootstrap using RPMs.
 %__rm -rf %{buildroot}
 %__make install DESTDIR=%{buildroot} DOCDIR=%{_defaultdocdir}
 %__mkdir_p %{buildroot}%{_sysconfdir}/oscar
-%__mkdir_p %{buildroot}%{_datadir}/oscar/images
 %__mkdir_p %{buildroot}%{_defaultdocdir}/oscar
-%__cp -f images/oscar.gif %{buildroot}%{_datadir}/oscar/images
-%__cp -rf packages/yume/ %{buildroot}%{_datadir}/oscar/prereqs
-%__cp -rf packages/rapt/ %{buildroot}%{_datadir}/oscar/prereqs
-%__cp -rf packages/oda/  %{buildroot}%{_datadir}/oscar/prereqs
 %__cp -rf CREDITS ChangeLog COPYING README VERSION %{buildroot}%{_defaultdocdir}/oscar/
 
 %clean
@@ -63,18 +60,21 @@ bootstrap using RPMs.
 %files
 %defattr(-,root,root)
 
-%package -n oscar-base
+%package -n oscar-core
 Group: Applications/System
 Summary: Base OSCAR package
-Requires(post): %{name}-base-scripts == %{version}-%{release}
+Requires(post): %{name}-data == %{version}-%{release}
 # Requiring oscar virtual package let uninstal the whole oscar by removing oscar package.
 # all other oscar-base-* packages depends on oscar-base.
-Requires: %{name} == %{version}-%{release}
+Requires: lib%{name}-server == %{version}-%{release}
 # systeminstaller-oscar is handeled by prereqs, but this needs to be here
 # for rpm compliance (shouldn't be possible to install a package with missing deps)
 Requires: systeminstaller-oscar
+Requires: iproute, syslinux, tftp-server, syslinux-tftpboot
+Requires: yume, oda, systemimager-server
+Obsoletes: oscar-base-scripts
 
-%description -n oscar-base
+%description -n oscar-core
 Base OSCAR package.
 OSCAR allows users, regardless of their experience level with a *nix
 environment, to install a Beowulf type high performance computing cluster. It
@@ -86,77 +86,74 @@ and communication packages. It also lets administrators create customized
 packages for any kind of distributed application or utility, and to distribute
 those packages from an online package repository, either on or off site.
 
-%post -n oscar-base
+%post -n oscar-core
 %{_bindir}/oscar-config --generate-config-file
 %{_bindir}/oscar-updater
 
-%files -n oscar-base
+%files -n oscar-core
+%{_bindir}/*
+%exclude %{_bindir}/distro-query
+%{_mandir}/man1/*
+%exclude %{_mandir}/man1/distro-query.*
+
+%package -n oscar-data
+Group: Applications/System
+Summary: Datafiles for OSCAR clustering package.
+Obsoletes: oscar-base
+
+%description -n oscar-data
+Datafiles and configuration files for OSCAR Clustering package.
+
+%files -n oscar-data
 %defattr(-,root,root)
 %{_sysconfdir}/oscar
 %{_defaultdocdir}/oscar
 %{_prefix}/lib/oscar
 %{_datarootdir}/oscar
 
-%package -n oscar-base-client
+%package -n liboscar-server
 Group: Applications/System
-Summary: Libraries for OSCAR clustering package.
-#Requires: %{name}-base == %{version}-%{release}
-
-%description -n oscar-base-client
-Requires: %{name}-base-scripts == %{version}-%{release}
-Dummy package for oscar-base-client install.
-
-%files -n oscar-base-client
-%defattr(-,root,root)
-
-%package -n oscar-base-server
-Group: Applications/System
-Summary: Libraries for OSCAR clustering package.
-Requires: %{name}-base == %{version}-%{release}
-
-%description -n oscar-base-server
-Requires: %{name}-base == %{version}-%{release}
-Dummy package for oscar-base-server install.
-
-%files -n oscar-base-server
-%defattr(-,root,root)
-
-%package -n oscar-base-lib
-Group: Applications/System
-Summary: Libraries for OSCAR clustering package.
+Summary: Libraries for OSCAR clustering package (server side).
 Requires: perl-XML-Simple
 Requires: perl-AppConfig
 Requires: perl-Tk-TextANSIColor
-Requires: iproute
 Requires: wget
 Requires: apitest
-Requires: %{name}-base == %{version}-%{release}
+#Requires: shadow-utils, passwd
+#Requires: iproute
+Requires: lib%{name}-client == %{version}-%{release}
+Requires: %{name}-data == %{version}-%{release}
+Obsoletes: oscar-base-lib
 
-%description -n oscar-base-lib
-Libraries for OSCAR clustering base package.
-%files -n oscar-base-lib
+%description -n liboscar-server
+Libraries for OSCAR clustering base package (server side).
+
+%files -n liboscar-server
 %defattr(-,root,root)
 %{perl_vendorlib}/*
-%exclude %{perl_vendorlib}/OSCAR/osm.pm
-%exclude %{perl_vendorlib}/OSCAR/psm.pm
+%exclude %{perl_vendorlib}/OSCAR/Env.pm
+%exclude %{perl_vendorlib}/OSCAR/OCA/OS_*
+%exclude %{perl_vendorlib}/OSCAR/OCA/PM_*
+%exclude %{perl_vendorlib}/OSCAR/OCA/RM_*
+%exclude %{perl_vendorlib}/OSCAR/Logger*
+%exclude %{perl_vendorlib}/OSCAR/Utils.pm
+#exclude %{perl_vendorlib}/OSCAR/osm.pm
+#exclude %{perl_vendorlib}/OSCAR/psm.pm
 
-%package -n oscar-base-scripts
+%package -n liboscar-client
 Group: Applications/System
-Summary: Libraries for OSCAR clustering package.
-Requires: %{name}-base-lib == %{version}-%{release}
-Requires: %{name}-base == %{version}-%{release}
-Requires: iproute
-Requires: syslinux
+Summary: Libraries for OSCAR clustering package (client side).
 
-%description -n oscar-base-scripts
-Scripts for OSCAR clustering base package.
+%description -n liboscar-client
+Libraries for OSCAR clustering base package (server side).
 
-%files -n oscar-base-scripts
+%files -n liboscar-client
 %defattr(-,root,root)
-%{_bindir}/*
-%exclude %{_bindir}/distro-query
-%{_mandir}/man1/*
-%exclude %{_mandir}/man1/distro-query.*
+%{perl_vendorlib}/OSCAR/Env.pm
+%{perl_vendorlib}/OSCAR/OCA
+%exclude %{perl_vendorlib}/OSCAR/OCA/Sanity*
+%{perl_vendorlib}/OSCAR/Logger*
+%{perl_vendorlib}/OSCAR/Utils.pm
 
 %package -n oscar-utils
 Group: Applications/System
@@ -213,6 +210,8 @@ GPG keys used to sign them.
 #{_sysconfdir}/pki/rpm-gpg/*
 
 %changelog
+* Fri Jun  3 2022 Olivier Lahaye <olivier.lahaye@cea.fr>
+- Major packagin rewrite.
 * Fri May 22 2020 Olivier Lahaye <olivier.lahaye@cea.fr>
 - Add support for zypper and openSuSE yum. (openSuSE/leap packaging)
 * Tue May 19 2020 Olivier Lahaye <olivier.lahaye@cea.fr>

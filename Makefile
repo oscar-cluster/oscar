@@ -81,7 +81,7 @@ dist:
 # first attempt to include oscar-base rpms into common-rpms repo
 nightly: nightly_version baserpms
 	mkdir -p packages/base/distro/common-rpms
-	mv oscar-base-*.rpm packages/base/distro/common-rpms
+	mv oscar-*.rpm packages/base/distro/common-rpms
 	cd dist; ./newmake.sh --base --srpms --all-repos
 	rm -rf packages/base/distro/common-rpms ../oscar-base-*.tar.gz ../oscar-srpms-*.tar.gz
 
@@ -144,7 +144,7 @@ clean:
 	(cd src; make clean)
 	(cd doc; make clean)
 	#rm -rf tmp
-	rm -f oscar-base.spec
+	#rm -f oscar-base.spec
 	rm -f *.rpm
 
 bootstrap-smart:
@@ -192,7 +192,7 @@ source_tarball:
 		--exclude=dist --exclude=\*.spec.in \
 		.) | (cd $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION) && tar -xvf -); \
 	fi
-	@sed -e "s/OSCARVERSION/$(OSCAR_BASE_VERSION)/" \
+	#@sed -e "s/OSCARVERSION/$(OSCAR_BASE_VERSION)/" \
 	     -e "s/OSCARRELEASE/0.$(OSCAR_BUILD)/" \
 	     < $(TOPDIR)/oscar-base.spec.in \
 	     > $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/oscar-base.spec
