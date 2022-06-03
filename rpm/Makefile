@@ -8,7 +8,7 @@ FILES := macros.oscar oscar.list oscar.repo oscar.channel sources.oscar.txt
 OSCAR_ROOT_REPO_URL := http://olivier.lahaye1.free.fr/OSCAR
 RELATIVE_REPO_PATH := $(shell $(TOPDIR)/rpm/compute_repo_url repos)
 FULL_REPO_URL := $(shell $(TOPDIR)/rpm/compute_repo_url $(OSCAR_ROOT_REPO_URL)/repos)
-DISTRO_CODENAME := $(shell perl -I$(TOPDIR)/lib $(TOPDIR)/scripts/distro-query --codename)
+DISTRO_CODENAME := $(shell perl -I$(TOPDIR)/lib $(TOPDIR)/utils/distro-query --codename)
 OSCAR_BASE_VERSION ?= $(shell $(TOPDIR)/scripts/get-oscar-version.sh $(TOPDIR)/VERSION --base)
 
 all:	$(FILES)
