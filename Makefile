@@ -192,10 +192,6 @@ source_tarball:
 		--exclude=dist --exclude=\*.spec.in \
 		.) | (cd $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION) && tar -xvf -); \
 	fi
-	#@sed -e "s/OSCARVERSION/$(OSCAR_BASE_VERSION)/" \
-	     -e "s/OSCARRELEASE/0.$(OSCAR_BUILD)/" \
-	     < $(TOPDIR)/oscar-base.spec.in \
-	     > $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/oscar-base.spec
 	@sed -e "s/^build_r=-1/build_r=r$(OSCAR_BUILD)/" \
 	    < $(TOPDIR)/VERSION \
 	    > $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/VERSION

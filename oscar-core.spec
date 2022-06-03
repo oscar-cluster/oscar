@@ -9,6 +9,26 @@
 %define oscar_version %(scripts/get-oscar-version.sh VERSION --base)
 %define oscar_release 0.%(scripts/get-oscar-version.sh VERSION --build-r | sed -e 's/[^0-9]//g')
 
+%define pkg_mkisofs mkisofs
+%define pkg_ncat nmap
+%define pkg_pidof sysvinit-tools
+
+%if 0%{?rhel} == 6
+%define web_vhosts_dir %{_sysconfdir}/httpd/conf.d
+%endif
+%if 0%{?rhel} == 7
+%define web_vhosts_dir %{_sysconfdir}/httpd/conf.d
+%endif
+%%if 0%{?rhel} == 8
+%define web_vhosts_dir %{_sysconfdir}/httpd/conf.d
+%endif
+%if 0%{?fedora} > 26
+%define web_vhosts_dir %{_sysconfdir}/httpd/conf.d
+%endif
+%if %is_suse%{?is_opensuse}
+%define web_vhosts_dir %{_sysconfdir}/apache2/vhosts.d
+%endif
+
 Summary: 	OSCAR package
 Name: 		oscar
 Version: 	%oscar_version
@@ -110,6 +130,7 @@ Datafiles and configuration files for OSCAR Clustering package.
 %{_defaultdocdir}/oscar
 %{_prefix}/lib/oscar
 %{_datarootdir}/oscar
+%exclude %{_datarootdir}/oscar/webgui
 
 %package -n liboscar-server
 Group: Applications/System
@@ -158,9 +179,9 @@ Libraries for OSCAR clustering base package (server side).
 %package -n oscar-utils
 Group: Applications/System
 Summary: Utilities for OSCAR clustering package.
-Requires: %{name}-base == %{version}-%{release}
-Requires: %{name}-base-lib == %{version}-%{release}
-Requires: syslinux
+Requires: %{name}-core == %{version}-%{release}
+Requires: lib%{name}-server == %{version}-%{release}
+Requires: syslinux-tftpboot
 
 %description -n oscar-utils
 Scripts for OSCAR clustering base package.
@@ -169,6 +190,20 @@ Scripts for OSCAR clustering base package.
 %defattr(-,root,root)
 %{_bindir}/distro-query
 %{_mandir}/man1/distro-query.*
+
+%package -n oscar-webgui
+Group: Applications/System
+Summary: Web GUI for managing OSCAR Cluster.
+Requires: %{name}-core == %{version}-%{release}
+Requires: httpd, php
+
+%description -n oscar-webgui
+Web GUI for managing OSCAR Cluster.
+
+%files -n oscar-webgui
+%defattr(0644, root, root, 0755)
+#config(noreplace) %{web_vhosts_dir}/oscar.conf
+#dir %{_datarootdir}/oscar/webgui
 
 %package -n oscar-devel
 Group: Applications/System
