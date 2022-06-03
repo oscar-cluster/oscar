@@ -1,5 +1,5 @@
 Source: oscar
-Section: oscar
+Section: science
 Priority: optional
 Maintainer: Olivier Lahaye <olivier.lahaye@cea.fr>
 Build-Depends: debhelper (>= 4.0.0)
