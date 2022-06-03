@@ -28,7 +28,7 @@
 PKGDEST=.
 DESTDIR=
 TOPDIR  := $(CURDIR)
-SUBDIRS := bin lib oscarsamples scripts utils share testing rpm
+SUBDIRS := bin lib oscarsamples scripts utils share testing rpm images
 SHELL := /bin/bash
 
 include ./Config.mk
@@ -117,6 +117,8 @@ install: doc-install
 	# Install the OSCAR common devel file(s)
 	install -d -m 0755 $(DESTDIR)/usr/lib/oscar/build
 	install    -m 0755 Config.mk $(DESTDIR)/usr/lib/oscar/build
+	# Install the OSCAR opkg path (so it can belog to oscar-core package)
+	install -d -m 0755 $(DESTDIR)/usr/lib/oscar/packages
 	# Then, we call the different Makefiles.
 	for dir in $(SUBDIRS) ; do ( cd $$dir ; $(MAKE) install ) ; done
 
