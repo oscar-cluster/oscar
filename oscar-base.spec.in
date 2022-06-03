@@ -50,7 +50,7 @@ bootstrap using RPMs.
 %__make install DESTDIR=%{buildroot} DOCDIR=%{_defaultdocdir}
 %__mkdir_p %{buildroot}%{_sysconfdir}/oscar
 %__mkdir_p %{buildroot}%{_datadir}/oscar/images
-%__mkdir_p %{buildroot}%{_defaultdordir}/oscar
+%__mkdir_p %{buildroot}%{_defaultdocdir}/oscar
 %__cp -f images/oscar.gif %{buildroot}%{_datadir}/oscar/images
 %__cp -rf packages/yume/ %{buildroot}%{_datadir}/oscar/prereqs
 %__cp -rf packages/rapt/ %{buildroot}%{_datadir}/oscar/prereqs
