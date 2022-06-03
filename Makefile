@@ -53,8 +53,12 @@ DIST_VER   = $(shell env OSCAR_HOME=`pwd` OSCAR_VERBOSE=0 utils/distro-query | \
 	            /compat distrover/{VER=$$NF} \
 		    END{print DIST"-"VER}')
 
-# Use "make test" to install OSCAR to your system via SVN checkout
-test: checkenv bootstrap-smart install-perlQt localrepos
+test:
+	@echo "Checking if distro is supported"
+	perl -I$(TOPDIR)/lib $(TOPDIR)/scripts/distro-query
+
+# Use "make try_from_git" to install OSCAR to your system via GIT checkout
+try_from_git: checkenv bootstrap-smart install-perlQt localrepos
 	@echo "========================================================="
 	@echo "!!! This is the tesing mode for the SVN repository    !!!"
 	@echo "!!! Use it only if you know exactly what you are doing!!!"
