@@ -58,15 +58,15 @@ override_dh_clean:
 	dh_clean
 
 override_dh_auto_install:
-	$(MAKE) install DESTDIR=debian/tmp DOCDIR=/usr/share/doc
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp DOCDIR=/usr/share/doc
 
 override_dh_install:
 	# Generate liboscar-server.install by excluding liboscar-client files
-	cd debian/tmp ; find usr/share/perl5/OSCAR /usr/share/perl5/Tk -type f | \
+	cd debian/tmp ; find usr/share/perl5/OSCAR usr/share/perl5/Tk -type f | \
 		grep -Ev 'OS_|PM_|RM_|Logger|Utils.pm|Env.pm|Defs.pm' \
 		> ../liboscar-server.install
 	# Generate oscar-core.install by excluding oscar-utils files
-	cd debian/tmp ; find /usr/bin /usr/share/man/man1 -type f | \
+	cd debian/tmp ; find usr/bin usr/share/man/man1 -type f | \
 		grep -Ev 'distro-query' \
 		> ../oscar-core.install
 	# Fix $Release$ and $Id$ in installed files if any.
