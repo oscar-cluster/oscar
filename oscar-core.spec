@@ -33,6 +33,7 @@ Summary: 	OSCAR package
 Name: 		oscar
 Version: 	%oscar_version
 Release: 	%oscar_release%{?dist}
+Summary:	Open Source Cluster Application Resources
 License: 	GPL
 URL: 		https://oscar-cluster.github.io/oscar/
 Group: 		Applications/System
@@ -57,9 +58,17 @@ BuildArch: 	noarch
 Obsoletes: oscar-base
 
 %description
-OSCAR package.
-"Virtual" package that installs the basic dependencies to have OSCAR able to
-bootstrap using RPMs.
+OSCAR allows users, regardless of their experience level with a *nix
+environment, to install a Beowulf type high performance computing cluster. It
+also contains everything needed to administer and program this type of HPC
+cluster. OSCAR's flexible package management system has a rich set of
+pre-packaged applications and utilities which means you can get up and running
+without laboriously installing and configuring complex cluster administration
+and communication packages. It also lets administrators create customized
+packages for any kind of distributed application or utility, and to distribute
+those packages from an online package repository, either on or off site.
+This is the "Virtual" package that installs the basic dependencies to have
+everything ready for OSCAR Cluster configuration.
 
 %prep
 %setup -n %{name}-%{version}
@@ -82,7 +91,7 @@ bootstrap using RPMs.
 
 %package -n oscar-core
 Group: Applications/System
-Summary: Base OSCAR package
+Summary: OSCAR Cluster core executables.
 Requires(post): %{name}-data == %{version}-%{release}
 # Requiring oscar virtual package let uninstal the whole oscar by removing oscar package.
 # all other oscar-base-* packages depends on oscar-base.
@@ -95,16 +104,7 @@ Requires: yume, oda, systemimager-server
 Obsoletes: oscar-base-scripts
 
 %description -n oscar-core
-Base OSCAR package.
-OSCAR allows users, regardless of their experience level with a *nix
-environment, to install a Beowulf type high performance computing cluster. It
-also contains everything needed to administer and program this type of HPC
-cluster. OSCAR's flexible package management system has a rich set of
-pre-packaged applications and utilities which means you can get up and running
-without laboriously installing and configuring complex cluster administration
-and communication packages. It also lets administrators create customized
-packages for any kind of distributed application or utility, and to distribute
-those packages from an online package repository, either on or off site.
+OSCAR Cluster Core executables (and manuals).
 
 %post -n oscar-core
 %{_bindir}/oscar-config --generate-config-file
@@ -181,7 +181,6 @@ Group: Applications/System
 Summary: Utilities for OSCAR clustering package.
 Requires: %{name}-core == %{version}-%{release}
 Requires: lib%{name}-server == %{version}-%{release}
-Requires: syslinux-tftpboot
 
 %description -n oscar-utils
 Scripts for OSCAR clustering base package.
