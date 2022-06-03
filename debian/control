@@ -1,9 +1,10 @@
 Source: oscar
 Section: oscar
 Priority: optional
-Maintainer: Geoffroy Vallee <valleegr@ornl.gov>
+Maintainer: Olivier Lahaye <olivier.lahaye@cea.fr>
 Build-Depends: debhelper (>= 4.0.0)
 Standards-Version: 3.7.2.2
+Homepage: https://oscar-cluster.github.io/oscar/
 
 Package: oscar
 Architecture: all

@@ -34,7 +34,7 @@ Name: 		oscar
 Version: 	%oscar_version
 Release: 	%oscar_release%{?dist}
 License: 	GPL
-URL: 		http://oscar.openclustergroup.org
+URL: 		https://oscar-cluster.github.io/oscar/
 Group: 		Applications/System
 Source: 	%{name}-%{version}.tar.gz
 Requires: 	lib%{name}-server == %{version}-%{release}
