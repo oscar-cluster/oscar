@@ -55,7 +55,7 @@ DIST_VER   = $(shell env OSCAR_HOME=`pwd` OSCAR_VERBOSE=0 utils/distro-query | \
 
 test:
 	@echo "Checking if distro is supported"
-	perl -I$(TOPDIR)/lib $(TOPDIR)/scripts/distro-query
+	perl -I$(TOPDIR)/lib $(TOPDIR)/utils/distro-query
 
 # Use "make try_from_git" to install OSCAR to your system via GIT checkout
 try_from_git: checkenv bootstrap-smart install-perlQt localrepos
