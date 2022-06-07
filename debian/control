@@ -39,7 +39,7 @@ Package: liboscar-server
 Architecture: all
 Description: Libraries for OSCAR clustering package (server side).
  Libraries for OSCAR clustering base package (server side).
-Depends: ${perl:Depends}, libxmlsimple-perl, libappconfig-perl, libtk-textansicolor-perl, wget, apitest
+Depends: ${perl:Depends}, libxml-simple-perl, libappconfig-perl, libtk-textansicolor-perl, wget, apitest
 Replaces: liboscar
 
 Package: liboscar-client
