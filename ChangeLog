@@ -1,4 +1,10 @@
-6.1.3 (not yet released):
+6.3.0 (not yet released):
+- Full repackaging.
+
+6.2.0 (never released):
+- Note stable => not released
+
+6.1.3:
 - Support for new SystemImager v4.9.0 path layout.
 - Add support for Fedora 27
 - Fix support for Centos-6

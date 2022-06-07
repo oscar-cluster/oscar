@@ -58,7 +58,7 @@ RUN cd /tmp/Tk-TextANSIColor-0.16 && perl Build.PL --installdirs vendor && perl 
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar.git
 
 # Build oscar base and install it
-RUN cd /root/oscar && make source_tarball && rpmbuild -tb /root/oscar/tmp/oscar-6.1.3.tar.gz
+RUN cd /root/oscar && make source_tarball && rpmbuild -tb /root/oscar/tmp/oscar-6.3.0.tar.gz
 
 # Install oscar repository so python3 backports are available
 RUN rpm -ivh /root/rpmbuild/RPMS/noarch/oscar-release-*rpm
