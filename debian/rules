@@ -63,7 +63,7 @@ override_dh_auto_install:
 override_dh_install:
 	# Generate liboscar-server.install by excluding liboscar-client files
 	cd debian/tmp ; find usr/share/perl5/OSCAR usr/share/perl5/Tk -type f | \
-		grep -Ev 'OS_|PM_|RM_|Logger|Utils.pm|Env.pm|Defs.pm' \
+		grep -Ev 'OS_|PM_|RM_|Logger|Utils.pm|Env.pm|Defs.pm|OCA.pm|ConfigFile.pm' \
 		> ../liboscar-server.install
 	# Generate oscar-core.install by excluding oscar-utils files
 	cd debian/tmp ; find usr/bin usr/share/man/man1 -type f | \

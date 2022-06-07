@@ -6,4 +6,5 @@ usr/share/perl5/OSCAR/OCA/RM_*
 usr/share/perl5/OSCAR/Logger*
 usr/share/perl5/OSCAR/Utils.pm
 usr/share/perl5/OSCAR/FileUtils.pm
+usr/share/perl5/OSCAR/ConfigFile.pm
 usr/share/perl5/OSCAR/Defs.pm
