@@ -3,7 +3,8 @@ usr/share/perl5/OSCAR/OCA.pm
 usr/share/perl5/OSCAR/OCA/OS_*
 usr/share/perl5/OSCAR/OCA/PM_*
 usr/share/perl5/OSCAR/OCA/RM_*
-usr/share/perl5/OSCAR/Logger*
+usr/share/perl5/OSCAR/Logger.pm
+usr/share/perl5/OSCAR/LoggerDefs.pm
 usr/share/perl5/OSCAR/Utils.pm
 usr/share/perl5/OSCAR/FileUtils.pm
 usr/share/perl5/OSCAR/ConfigFile.pm
