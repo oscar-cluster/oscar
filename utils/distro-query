@@ -114,7 +114,7 @@ if ($options{pool}) {
             "Is your system supported by OSCAR?\n";
     }
     print "$os->{compat_distro}-$os->{distro_version}-$os->{arch}";
-} elsif ($options{codname}) {
+} elsif ($options{codename}) {
     my $os = OSCAR::OCA::OS_Detect::open ("/");
     if (!defined $os) {
         die "ERROR: Impossible to detect the local distro.\n".
