@@ -72,7 +72,7 @@ everything ready for OSCAR Cluster configuration.
 
 %prep
 %setup -n %{name}-%{version}
-%__patch -s -p1 share/prereqs/base/prereq.cfg debian/patches/01_base_prereq.patch
+%__patch -s -p1 share/prereqs/base/prereq.cfg debian/oscar-core.patches/01_base_prereq.patch
 
 %build
 

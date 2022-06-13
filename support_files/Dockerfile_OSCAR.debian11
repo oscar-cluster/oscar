@@ -196,7 +196,7 @@ RUN /bin/rm -rf /root/* /var/lib/oscar-packager/downloads/*
 # Remove oscar config files created by manual install that will prevent package install
 RUN rm -f /etc/oscar/VERSION
 RUN rm -f /etc/oscar/supported_distros.txt
-RUN packman install -y --distro debian-11-x86_64 -y apitest oscar oscar-base liboscar packman orm oda rapt opkgc
+RUN packman install -y --distro debian-11-x86_64 -y apitest oscar oscar-base liboscar-server liboscar-client packman orm oda rapt opkgc
 
 # Now we add the repo so failed build are available anyway. In a normal situation,
 # this should not be required

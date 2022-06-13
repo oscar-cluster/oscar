@@ -56,7 +56,7 @@ RUN cd /tmp && rm -rf Tk-TextANSIColor*
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar.git
 
 # Build oscar base and install it
-RUN cd /root/oscar && make source_tarball && rpmbuild -tb /root/oscar/tmp/oscar-6.3.0.tar.gz
+RUN cd /root/oscar && make source_tarball && rpmbuild -tb /root/oscar/tmp/oscar-6.3.tar.gz
 
 # Install opkgc build requirements and build it
 RUN yum -y install python3-devel python3-cheetah python3-lxml xmlto autoconf automake rsync
