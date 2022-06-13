@@ -1,6 +1,6 @@
 # Experimental Dockerfile to build OSCAR from scratch on CentOS-7
 # Build using the following command:
-#       sudo docker build -t oscar/ipackager_rhel:7.9 -f Dockerfile_OSCAR.centos7 .
+#       sudo docker build -t oscar/packager_rhel:7.9 -f Dockerfile_OSCAR.centos7 .
 
 
 FROM centos:7
