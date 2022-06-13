@@ -6,7 +6,6 @@
 %define packman_version 3.2.0
 #define is_suse %(test -f /etc/SuSE-release && echo 1 || echo 0)
 %define is_suse %(grep -E "(suse)" /etc/os-release > /dev/null 2>&1 && echo 1 || echo 0)
-%define oscar_release 0.$Build$
 
 %define pkg_mkisofs mkisofs
 %define pkg_ncat nmap
@@ -30,8 +29,8 @@
 
 Summary: 	OSCAR package
 Name: 		oscar
-Version: 	$Revision$
-Release: 	%oscar_release%{?dist}
+Version: 	__VERSION__
+Release: 	__RELEASE__%{?dist}
 Summary:	Open Source Cluster Application Resources
 License: 	GPL
 URL: 		https://oscar-cluster.github.io/oscar/

@@ -200,7 +200,8 @@ source_tarball:
 	@for file in $$(grep -Erl '\$$Revision\$$|\$$Id\$$' $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/); do \
 	    sed -i -e "s/\\\$$Revision\\\$$/$(OSCAR_VERSION)/g" -e "s/\\\$$Id\\\$$/$(OSCAR_VERSION)/g" $$file; \
 	done
-	@sed -i -e "s/\\\$$Build\\\$$/$(OSCAR_BUILD)/g" $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/oscar-core.spec
+	@sed -i -e "s/__VERSION__/$(OSCAR_BASE_VERSION)/g" $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/oscar-core.spec
+	@sed -i -e "s/__RELEASE__/0.$(OSCAR_BUILD)/g" $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/oscar-core.spec
 	@cd $(TOPDIR)/tmp && tar -ch oscar-$(OSCAR_BASE_VERSION) | gzip -9 > oscar-$(OSCAR_BASE_VERSION).tar.gz
 	@echo
 	@echo "source tarball has been created in $(TOPDIR)/tmp"
