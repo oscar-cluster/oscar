@@ -30,7 +30,7 @@
 
 Summary: 	OSCAR package
 Name: 		oscar
-Version: 	$Release$
+Version: 	$Revision$
 Release: 	%oscar_release%{?dist}
 Summary:	Open Source Cluster Application Resources
 License: 	GPL

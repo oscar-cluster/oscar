@@ -69,7 +69,7 @@ override_dh_install:
 	cd debian/tmp ; find usr/bin usr/share/man/man1 -type f | \
 		grep -Ev 'distro-query' \
 		> ../oscar-core.install
-	# Fix $Release$ and $Id$ in installed files if any.
+	# Fix $Revision$ and $Id$ in installed files if any.
 	@for file in $$(grep -Erl '\$$Revision\$$|\$$Id\$$' $(CURDIR)/debian/tmp); do \
 	    sed -i -e "s/\\\$$Revision\\\$$/$(OSCAR_VERSION)/g" -e "s/\\\$$Id\\\$$/$(OSCAR_VERSION)/g" $$file; \
 	done
