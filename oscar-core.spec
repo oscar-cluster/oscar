@@ -6,8 +6,7 @@
 %define packman_version 3.2.0
 #define is_suse %(test -f /etc/SuSE-release && echo 1 || echo 0)
 %define is_suse %(grep -E "(suse)" /etc/os-release > /dev/null 2>&1 && echo 1 || echo 0)
-%define oscar_version %(scripts/get-oscar-version.sh VERSION --base)
-%define oscar_release 0.%(scripts/get-oscar-version.sh VERSION --build-r | sed -e 's/[^0-9]//g')
+%define oscar_release 0.$Build$
 
 %define pkg_mkisofs mkisofs
 %define pkg_ncat nmap
@@ -31,7 +30,7 @@
 
 Summary: 	OSCAR package
 Name: 		oscar
-Version: 	%oscar_version
+Version: 	$Release$
 Release: 	%oscar_release%{?dist}
 Summary:	Open Source Cluster Application Resources
 License: 	GPL
@@ -132,7 +131,7 @@ Datafiles and configuration files for OSCAR Clustering package.
 %{_prefix}/lib/oscar/testing
 %{_datarootdir}/oscar/images
 %{_datarootdir}/oscar/oscarsamples
-%{_datarootdir}/oscar/packages_sets
+%{_datarootdir}/oscar/package_sets
 %{_datarootdir}/oscar/prereqs
 
 %package -n liboscar-server
