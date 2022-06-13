@@ -111,6 +111,7 @@ OSCAR Cluster Core executables (and manuals).
 %files -n oscar-core
 %{_bindir}/*
 %exclude %{_bindir}/distro-query
+%{_prefix}/lib/oscar/updater.d
 %{_mandir}/man1/*
 %exclude %{_mandir}/man1/distro-query.*
 %{_defaultdocdir}/oscar
