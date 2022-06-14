@@ -27,11 +27,10 @@
 %define web_vhosts_dir %{_sysconfdir}/apache2/vhosts.d
 %endif
 
-Summary: 	OSCAR package
 Name: 		oscar
 Version: 	__VERSION__
 Release: 	__RELEASE__%{?dist}
-Summary:	Open Source Cluster Application Resources
+Summary:	OSCAR: Open Source Cluster Application Resources
 License: 	GPL
 URL: 		https://oscar-cluster.github.io/oscar/
 Group: 		Applications/System
@@ -160,8 +159,6 @@ Libraries for OSCAR clustering base package (server side).
 %exclude %{perl_vendorlib}/OSCAR/OCA/RM_*
 %exclude %{perl_vendorlib}/OSCAR/Logger*
 %exclude %{perl_vendorlib}/OSCAR/Utils.pm
-#exclude %{perl_vendorlib}/OSCAR/osm.pm
-#exclude %{perl_vendorlib}/OSCAR/psm.pm
 
 %package -n liboscar-client
 Group: Applications/System
