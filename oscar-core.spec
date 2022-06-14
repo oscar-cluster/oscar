@@ -214,7 +214,7 @@ Web GUI for managing OSCAR Cluster.
 %package -n oscar-devel
 Group: Applications/System
 Summary: Everything needed for OSCAR related developments
-Requires: %{name}-base == %{version}-%{release}
+Requires: %{name}-core == %{version}-%{release}
 Requires: opkgc >= %{opkgc_version}
 Requires: packman >= %{packman_version}
 Requires: createrepo
