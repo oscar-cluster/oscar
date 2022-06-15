@@ -43,6 +43,8 @@ all:
 OSCAR_VERSION ?= $(shell $(TOPDIR)/scripts/get-oscar-version.sh VERSION --full | cut -d- -f1)
 OSCAR_BASE_VERSION ?= $(shell $(TOPDIR)/scripts/get-oscar-version.sh VERSION --base)
 OSCAR_BUILD ?= $(shell $(TOPDIR)/scripts/get-oscar-version.sh VERSION --build-r | sed -e 's/[^0-9]//g')
+OSCAR_RPM_VERSION ?= $(shell $(TOPDIR)/scripts/get-oscar-version.sh VERSION --rpm-v |cut -d- -f1)
+OSCAR_RPM_RELEASE ?= $(shell $(TOPDIR)/scripts/get-oscar-version.sh VERSION --rpm-v |cut -d- -f2)
 
 PKG        = $(shell env OSCAR_HOME=`pwd` OSCAR_VERBOSE=0 utils/distro-query | \
 	       awk '/packaging method/{print $$NF}')
@@ -180,8 +182,7 @@ opt-uninstall: clean
 	rm -rf $(DESTDIR)/tftpboot/oscar
 	rm -rf ~/tmp
 
-source_tarball:
-	@echo "Creating OSCAR source tarball: $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION).tar.gz"
+tmp_source_tree:
 	@rm -fr $(TOPDIR)/tmp
 	@if [ -d $(TOPDIR)/.git ]; then \
 		mkdir -p $(TOPDIR)/tmp/; \
@@ -194,14 +195,21 @@ source_tarball:
 		--exclude=dist --exclude=\*.spec.in \
 		.) | (cd $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION) && tar -xvf -); \
 	fi
-	@sed -e "s/^build_r=-1/build_r=r$(OSCAR_BUILD)/" \
-	    < $(TOPDIR)/VERSION \
-	    > $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/VERSION
+
+fixrev_tmp_tree: tmp_source_tree
 	@for file in $$(grep -Erl '\$$Revision\$$|\$$Id\$$' $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/); do \
 	    sed -i -e "s/\\\$$Revision\\\$$/$(OSCAR_VERSION)/g" -e "s/\\\$$Id\\\$$/$(OSCAR_VERSION)/g" $$file; \
 	done
-	@sed -i -e "s/__VERSION__/$(OSCAR_BASE_VERSION)/g" $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/oscar-core.spec
-	@sed -i -e "s/__RELEASE__/0.$(OSCAR_BUILD)/g" $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/oscar-core.spec
+	@sed -i -e "s/__VERSION__/$(OSCAR_RPM_VERSION)/g" $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/oscar-core.spec
+	@sed -i -e "s/__RELEASE__/$(OSCAR_RPM_RELEASE)/g" $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/oscar-core.spec
+
+fixver_tmp_tree: tmp_source_tree
+	@sed -e "s/^build_r=-1/build_r=r$(OSCAR_BUILD)/" \
+	    < $(TOPDIR)/VERSION \
+	    > $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION)/VERSION
+
+source_tarball: fixrev_tmp_tree fixver_tmp_tree
+	@echo "Creating OSCAR source tarball: $(TOPDIR)/tmp/oscar-$(OSCAR_BASE_VERSION).tar.gz"
 	@cd $(TOPDIR)/tmp && tar -ch oscar-$(OSCAR_BASE_VERSION) | gzip -9 > oscar-$(OSCAR_BASE_VERSION).tar.gz
 	@echo
 	@echo "source tarball has been created in $(TOPDIR)/tmp"
