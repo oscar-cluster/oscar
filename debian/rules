@@ -12,6 +12,7 @@
 BUILD_DIR = $(CURDIR)
 PATCHES=$(sort $(shell find $(CURDIR)/debian/oscar-core.patches -name "*.patch"))
 OSCAR_VERSION ?= $(shell $(CURDIR)/scripts/get-oscar-version.sh VERSION --full | cut -d- -f1)
+DEB_PKG_VERSION ?= $(shell $(CURDIR)/scripts/get-oscar-version.sh VERSION --deb-v)
 #OSCAR_BASE_VERSION ?= $(shell $(CURDIR)/scripts/get-oscar-version.sh VERSION --base)
 #OSCAR_BUILD ?= $(shell $(TOPDIR)/scripts/get-oscar-version.sh VERSION --build-r | sed -e 's/[^0-9]//g')
 
@@ -24,7 +25,10 @@ else
 endif
 
 %:
-	dh $@
+	dh $@ --with-systemd
+
+override_dh_gencontrol:
+	dh_gencontrol -- -v$(DEB_PKG_VERSION)
 
 override_dh_auto_configure:
 	# Add here commands to configure the package.
