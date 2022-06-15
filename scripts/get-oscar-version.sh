@@ -54,18 +54,26 @@ else
 
         OSCAR_DATE=`date '+%Y%m%d'`
 
+	RPM_BUILD_R="-1"
+	DEB_BUILD_R="-1"
+
         if test "$OSCAR_WANT_BUILD_R" = "1" -a "$OSCAR_NEED_SVN" = "1" ; then
             if test "$OSCAR_BUILD_R" = "-1"; then
                 if test -d .git; then
-                    ver="r`git rev-list --all HEAD|wc -l`" # --count not available in git 1.7.1
+                    build_count="`git rev-list --all HEAD|wc -l`" # --count not available in git 1.7.1
+		    git_last_ref="`git rev-parse --short HEAD`"
+		    git_last_date="`git log -1 --format=%cd --date=iso8601|sed -E 's/[[:space:]].*//g;s/-//g'`"
+                    ver="r$build_count"
 		    # If partial clone (--depth=1), then we use date of latest commit as build release.
-		    test ${ver/r/} -le 2018 && ver="`git log -1 --format=%cd --date=iso8601|sed -e 's/\s.*//g;s/-//g'`git"
+		    test ${ver/r/} -le 2018 && ver="`git log -1 --format=%cd --date=iso8601|sed -e 's/[[:space:]].*//g;s/-//g'`git"
                 else
                     ver="svn`date '+%Y%d%m'`"
                 fi
                 OSCAR_BUILD_R="$ver"
+		RPM_BUILD_R="-0.${git_last_date}git${git_last_ref}"
+		DEB_BUILD_R="+git${git_last_date}.${git_last_ref}-1"
             fi
-	        OSCAR_VERSION="${OSCAR_VERSION}$OSCAR_BUILD_R"
+        OSCAR_VERSION="${OSCAR_VERSION}$OSCAR_BUILD_R"
         fi
 
         if test "$option" = ""; then
@@ -103,6 +111,12 @@ case "$option" in
     --nightly)
 	echo ${OSCAR_VERSION}nightly-${OSCAR_DATE}
 	;;
+    --rpm-v)
+        echo ${OSCAR_BASE_VERSION}${RPM_BUILD_R}
+	;;
+    --deb-v)
+        echo ${OSCAR_BASE_VERSION}${DEB_BUILD_R}
+	;;
     -h|--help)
 	cat <<EOF
 $0 <srcfile> [<option>]
@@ -118,6 +132,8 @@ $0 <srcfile> [<option>]
     --all     - Show all version numbers, separated by :
     --base    - Show base version number (no git number)
     --nightly - Return the version number for nightly tarballs
+    --rpm-v   - Return the rpm package version includin release
+    --deb-v   - Return the debian package version includin release
     --help    - This message
 EOF
         ;;
