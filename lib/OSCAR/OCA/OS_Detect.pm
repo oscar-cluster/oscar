@@ -384,7 +384,9 @@ sub parse_os_release {
 
     if( CORE::open(OS,"cat $root/etc/os-release|") ) {
         while (<OS>){
-            my @os_param = split /=/, $_;
+            my @os_param = split(/=/, $_);
+	    next if (! defined($os_param[1] )); # Skip empty lines
+	    next if $os_param[1] =~ /^\s*$/; # Skip blank lines
 	    $os_param[1] =~ s/^"(.*)"$/$1/; # Remove surrounding strings
 	    chomp($os_param[1]);
 	    $os_param[1] = int($os_param[1]) if ($os_param[1] =~ /^[1-9][0-9]*$/);
