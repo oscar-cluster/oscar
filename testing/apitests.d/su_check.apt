@@ -59,13 +59,13 @@ use OSCAR::SystemSanity;
 
 my $rc = FAILURE;
 
-if ( ($UID == 0) and ($ENV{USER} eq "root") ) {
+my $user_id = $> ;
+if ( $user_id == 0 ) {
 	$rc = SUCCESS;
 
 } else {
 	print "  ERROR: We are not running as root.\n";
-	print "   UID=(" . $UID       . ") \t should be \'0\'\n";
-	print "  USER=(" . $ENV{USER} . ") \t should be \'root\'\n";
+	print "   UID=(" . $user_id   . ") \t should be \'0\'\n";
 
 	$rc = FAILURE;  
 }
