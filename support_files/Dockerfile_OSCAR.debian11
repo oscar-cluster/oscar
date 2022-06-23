@@ -33,8 +33,8 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 # Update distro
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-RUN apt-get -y install perl-modules libterm-readline-gnu-perl
+RUN apt-get -y install perl-modules
+# libterm-readline-gnu-perl
 RUN apt-get -y install apt-file
 RUN apt-file update
 
@@ -54,8 +54,7 @@ RUN apt-get -y install git
 
 
 # Prepare deb build environment
-RUN apt-get -y install m4 dpkg-dev build-essential debhelper git make rpm
-RUN apt-get -y install gcc
+RUN apt-get -y install m4 dpkg-dev build-essential debhelper git make rpm gcc
 
 # Install OSCAR Perl requirements
 RUN apt-get -y install perl perl-base libappconfig-perl libfile-copy-recursive-perl perl-tk libdbi-perl libdbd-mysql-perl \
@@ -91,14 +90,14 @@ RUN cd /root/oscar && make source_tarball && cd tmp/oscar*/ && make install DEST
 #RUN echo "deb [trusted=yes] http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/debian-11-x86_64 dists/bullseye/binary-amd64/" > /etc/apt/sources.list.d/oscar.list
 RUN wget -O- http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/oscar-repo-key.gpg | gpg --dearmor > /usr/share/keyrings/oscar-archive-keyring.gpg
 RUN echo "deb [signed-by=/usr/share/keyrings/oscar-archive-keyring.gpg] http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/debian-11-x86_64 bullseye main" > /etc/apt/sources.list.d/oscar.list
-RUN echo "deb file:/tftpboot/oscar/debian-11-x86_64 bullseye main" >> /etc/apt/sources.list.d/oscar.list
+RUN echo "deb [trusted=yes] file:/tftpboot/oscar/debian-11-x86_64 bullseye main" >> /etc/apt/sources.list.d/oscar.list
 RUN mkdir -p /tftpboot/oscar/debian-11-x86_64/dists/bullseye/main/binary-amd64
 RUN mkdir -p /tftpboot/oscar/debian-11-x86_64/pool
 RUN touch /tftpboot/oscar/debian-11-x86_64/dists/bullseye/main/binary-amd64/Packages
 RUN apt-ftparchive release /tftpboot/oscar/debian-11-x86_64/dists/bullseye/main/binary-amd64 > /tftpboot/oscar/debian-11-x86_64/dists/bullseye/main/binary-amd64/Release
 RUN echo 'APT { Get { AllowUnauthenticated "1"; }; };' > /etc/apt/apt.conf.d/99allow_unauth
 #RUN apt-get -y update
-RUN apt-get -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true update
+RUN apt-get -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true update ; echo Ignoring faiure
 
 # Install opkgc build requirements and build it
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-opkgc.git
@@ -158,7 +157,7 @@ RUN cd /root/oscar-rapt && make install DESTDIR=/
 
 # Install oscar-packager requirements
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-packager.git
-RUN cd /root/oscar-packager && make deb
+RUN cd /root/oscar-packager && make deb && make install DESTDIR=/
 RUN mv -f /root/oscar-packager*.deb /tftpboot/oscar/debian-11-x86_64/pool/
 
 # Install oscar-systeminstaller
@@ -170,6 +169,8 @@ RUN mv -f /root/systeminstaller*.deb /tftpboot/oscar/debian-11-x86_64/pool/
 #RUN cd /tftpboot/oscar/debian-11-x86_64 && packman --prepare-repo /tftpboot/oscar/debian-11-x86_64 --verbose
 RUN cd /tftpboot/oscar/debian-11-x86_64 && rapt --prepare --distro file:/tftpboot/oscar/debian-11-x86_64
 RUN rapt update --repo file:/tftpboot/oscar/debian-11-x86_64+bullseye+main
+RUN apt-get update
+RUN oscar-packager --all systemimager
 RUN packman install 'oscar-packager' 'systeminstaller-oscar' 'systeminstaller-oscar-x11' --distro debian-11-x86_64 --verbose
 
 #RUN dpkg -i --force-depends /root/systeminstaller*deb
@@ -178,19 +179,17 @@ RUN oscar-packager --all Tk-TextANSIColor
 RUN oscar-packager --all oscar
 RUN oscar-packager --all packman
 RUN oscar-packager --all yume
-RUN oscar-packager --all orm
-RUN oscar-packager --all oda
-RUN oscar-packager --all opkgc
+RUN oscar-packager --debug --all opkgc
 RUN oscar-packager --all oscar-packager
 RUN oscar-packager --all systemconfigurator
-RUN packman install -y 'systemconfigurator' --distro debian-11-x86_64
-RUN oscar-packager --all systemimager
+RUN oscar-packager --all orm
+RUN oscar-packager --all oda
 RUN oscar-packager --all apitest
 RUN oscar-packager --all systeminstaller-oscar
 RUN oscar-packager --all rapt
 
 # Cleanup build stuffs to make room in the image
-RUN /bin/rm -rf /root/* /var/lib/oscar-packager/downloads/*
+RUN /bin/rm -rf /root/* /var/lib/oscar-packager/downloads/* /tmp/*
 
 
 # Remove oscar config files created by manual install that will prevent package install
@@ -204,15 +203,18 @@ RUN packman install -y --distro debian-11-x86_64 -y apitest oscar oscar-base lib
 #RUN /bin/rm -rf /tftpboot/oscar/rhel-7-x86_64/repodata /tftpboot/oscar/rhel-7-x86_64/repocache && yume --prepare
 #RUN apt-get install --reinstall oscar-release
 
+# Avoid question from debconf
+RUN rm /etc/oscar/VERSION
+
 # Now install as rpm what has been installed by hand before as bootstrap.
 RUN packman install --distro debian-11-x86_64 --reinstall -y rapt yume packman opkgc yume
 
 
 # now we reinstall core packages and oscar-packager (already installed from build dep requirements. Make sure we use latest version)
-RUN packman install --distro debian-11-x86_64 --reinstall -y oscar oscar-base oscar-base-client oscar-base-lib oscar-base-scripts oscar-base-server oscar-devel oscar-utils oscar-packager
+RUN packman install --distro debian-11-x86_64 --reinstall -y oscar oscar-core liboscar-client liboscar-server oscar-data oscar-dev oscar-utils  oscar-packager
 
 # Renstall systemimager server parts that have already been installed from oscar deps.
-RUN packman install --distro debian-11-x86_64 --reinstall -y systemimager-initrd_template systemimager-x86_64boot-standard systemimager-server systemimager-common
+RUN packman install --distro debian-11-x86_64 --reinstall -y systemimager-server-bittorrent systemimager-client systemimager-server-flamethrower
 
 # Install bittorrent that is needed for systemimager-bittorrent
 #RUN apt-get -y install bittorrent bittorrent-gui
@@ -221,5 +223,9 @@ RUN packman install --distro debian-11-x86_64 -y systemimager-bittorrent systemi
 
 # Cleanup image
 # RUN /bin/rm -rf /root/*
+
+ENV DEBIAN_FRONTEND dialog
+#RUN echo 'debconf debconf/frontend select Dialog' | debconf-set-selections
+RUN dpkg-reconfigure --frontend=dialog debconf
 
 CMD [ "bash" ]

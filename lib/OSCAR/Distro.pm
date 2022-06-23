@@ -77,6 +77,7 @@ my $DISTROFILES = {
 		   'sl-release'            => 'sl',      # Scientific Linux
 		   'centos-release'        => 'centos',
 		   'almalinux-release'     => 'almalinux',
+		   'rocly-release'         => 'rocky',
                   };
 
 ############################################################
@@ -114,7 +115,7 @@ sub which_distro {
 	}
     }
     # RHEL clones look like RHEL
-    if ($name eq "sl" || $name eq "centos" || $name eq "almalinux") {
+    if ($name eq "sl" || $name eq "centos" || $name eq "almalinux" || $name eq "rocky") {
 	$name = "redhat";
 	if ($version =~ /^3/) {
 	    $version = "3as";
@@ -162,7 +163,7 @@ sub which_distro_server {
 	}
     }
     # RHEL clones look like RHEL
-    if ($name eq "sl" || $name eq "centos" || $name eq "almalinux") {
+    if ($name eq "sl" || $name eq "centos" || $name eq "almalinux" || $name eq "rocky") {
 	$name = "redhat";
 	if ($version =~ /^3/) {
 	    $version = "3as";

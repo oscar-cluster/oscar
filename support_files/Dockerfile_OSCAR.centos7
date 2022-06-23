@@ -69,7 +69,7 @@ RUN cd /root/oscar-oda && make install DESTDIR=/
 RUN cd /usr/share/perl5/vendor_perl/OSCAR && ln -sf ODA/mysql.pm oda.pm
 
 # Reinstall oscar rpm packages.
-RUN rpm -Uvh --nodeps /root/rpmbuild/RPMS/noarch/oscar-*rpm
+RUN rpm -Uvh --nodeps /root/rpmbuild/RPMS/noarch/*oscar-*rpm
 
 # Install default config file for OSCAR so oscar-packager will be happy..
 RUN cp /root/oscar/share/etc/templates/oscar.conf /etc/oscar/oscar.conf
@@ -96,11 +96,11 @@ RUN rpm -Uvh --nodeps /root/rpmbuild/RPMS/noarch/oscar-packager*.rpm
 #RUN yum -y --skip-broken install /root/rpmbuild/RPMS/noarch/oscar-release*rpm
 
 # Install some deps for systemimager BUG (need to update build.cfg)
-RUN dnf -y install perl
-RUN dnf -y install bc bind-utils cryptsetup dejavu-serif-fonts dosfstools e2fsprogs gdisk hwdata jq kernel lshw lsscsi lvm2 mdadm net-tools nmap-ncat openssh-server parted pciutils perl-JSON plymouth-plugin-label plymouth-plugin-script psmisc rtorrent socat usbutils xfsprogs xmlstarlet dos2unix
+RUN yum -y install perl
+RUN yum -y install bc bind-utils cryptsetup dejavu-serif-fonts dosfstools e2fsprogs gdisk hwdata jq kernel lshw lsscsi lvm2 mdadm net-tools nmap-ncat openssh-server parted pciutils perl-JSON plymouth-plugin-label plymouth-plugin-script psmisc rtorrent socat usbutils xfsprogs xmlstarlet dos2unix
 
 # Install some deps for apitest
-RUN dnf -y install python3-twisted
+RUN yum -y install python3-twisted
 
 # REBUILD oscar essential rpms.
 RUN oscar-packager --all Tk-TextANSIColor
@@ -131,7 +131,7 @@ RUN yume -y install yume packman opkgc
 
 
 # now we reinstall core packages and oscar-packager (already installed from build dep requirements. Make sure we use latest version)
-RUN yume -y reinstall oscar oscar-base oscar-base-client oscar-base-lib oscar-base-scripts oscar-base-server oscar-devel oscar-utils oscar-packager
+RUN yume -y reinstall oscar oscar-core oscar-core-client liboscar-client liboscar-server oscar-core-scripts oscar-core-server oscar-devel oscar-utils oscar-packager
 
 # Renstall systemimager server parts that have already been installed from oscar deps.
 RUN yume -y reinstall systemimager-x86_64initrd_template systemimager-x86_64boot-standard systemimager-server systemimager-common systemimager-webgui

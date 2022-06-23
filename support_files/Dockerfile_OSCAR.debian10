@@ -10,8 +10,19 @@ LABEL version="6.5"
 LABEL vendor="OSCAR Cluster"
 LABEL license="GPLv2"
 
+# Set some variables to avoir debconf errors and warning.
+ENV HOME /root
+ENV DEBIAN_FRONTEND noninteractive
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+
 # Update distro repos indexes
 RUN apt-get update
+
+# Install apt-utils to avoid delayed configuration in package installation.
+RUN apt-get -y install dialog apt-utils
+
+# Make sure we are up to date.
+RUN apt-get -y upgrade
 
 # Set the locale
 RUN apt-get -y install locales
@@ -22,19 +33,27 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 # Update distro
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-RUN apt-get -y upgrade
-RUN apt-get -y install dialog apt-utils
 RUN apt-get -y install perl-modules
 RUN apt-get -y install apt-file
 RUN apt-file update
+
+# Install gpg signing tools
+RUN apt-get -y install gpg
+# Create docker mountpoint for later use
+RUN mkdir -p /root/.gnupg
+RUN chmod 700 /root/.gnupg
+
+# Install broken drmaid package and fix error
+RUN apt-get -y install dmraid;echo
+RUN sed -i -E 's/udevadm/#udevadm/g' /var/lib/dpkg/info/dmraid.postinst
+RUN apt-get --fix-broken install
 
 # Install basic build requirements
 RUN apt-get -y install git
 
 
 # Prepare deb build environment
-RUN apt-get -y install dpkg-dev build-essential debhelper git make rpm
+RUN apt-get -y install dpkg-dev build-essential debhelper git make rpm gcc
 
 # Install OSCAR Perl requirements
 RUN apt-get -y install perl-base libappconfig-perl libfile-copy-recursive-perl perl-tk libdbi-perl libdbd-mysql-perl \
@@ -54,25 +73,36 @@ RUN apt-get -y install tcsh # oscar depnds on it?
 
 # Build and install Tk-TextANSIColor
 RUN apt-get -y install wget
-RUN cd /root && wget http://www.usablesecurity.net/OSCAR/pkgs/downloads/Tk-TextANSIColor-0.16.tar.gz
+RUN cd /root && wget http://olivier.lahaye1.free.fr/OSCAR/downloads/Tk-TextANSIColor-0.16.tar.gz
 RUN cd /root && tar xvfz Tk-TextANSIColor-0.16.tar.gz
 RUN cd /root/Tk-TextANSIColor-0.16 && perl Build.PL --installdirs vendor && perl Build && perl Build install --installdirs vendor
-
-# Add OSCAR repos URL so systemconfigurator is available as a package.
-# Comment line if repo is unavailable
-RUN echo "deb [trusted=yes] http://www.usablesecurity.net/OSCAR/repos/unstable/debian-10-x86_64 dists/buster/binary-amd64/" > /etc/apt/sources.list.d/oscar.list
-RUN echo "deb [trusted=yes] file:/tftpboot/oscar/debian-10-x86_64 dists/buster/binary-amd64/" >> /etc/apt/sources.list.d/oscar.list
-RUN apt-get -y update
 
 # Step 16/47: Get OSCAR source tree
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar.git
 
 # Build oscar base and install it
-RUN cd /root/oscar && make deb && dpkg -i --force-depends /root/oscar/tmp/*oscar*deb
+#RUN cd /root/oscar && make deb && dpkg -i --force-depends /root/oscar/tmp/*oscar*deb
+RUN cd /root/oscar && make source_tarball && cd tmp/oscar*/ && make install DESTDIR=/
+
+# Add or fix OSCAR repos URL so systemconfigurator is available as a package.
+# Comment line if repo is unavailable
+#RUN echo "deb [trusted=yes] http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/debian-10-x86_64 dists/buster/binary-amd64/" > /etc/apt/sources.list.d/oscar.list
+RUN wget -O- http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/oscar-repo-key.gpg | gpg --dearmor > /usr/share/keyrings/oscar-archive-keyring.gpg
+RUN echo "deb [signed-by=/usr/share/keyrings/oscar-archive-keyring.gpg] http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/debian-10-x86_64 buster main" > /etc/apt/sources.list.d/oscar.list
+RUN echo "deb [trusted=yes] file:/tftpboot/oscar/debian-10-x86_64 buster main" >> /etc/apt/sources.list.d/oscar.list
+RUN mkdir -p /tftpboot/oscar/debian-10-x86_64/dists/buster/main/binary-amd64
+RUN mkdir -p /tftpboot/oscar/debian-10-x86_64/pool
+RUN touch /tftpboot/oscar/debian-10-x86_64/dists/buster/main/binary-amd64/Packages
+RUN apt-ftparchive release /tftpboot/oscar/debian-10-x86_64/dists/buster/main/binary-amd64 > /tftpboot/oscar/debian-10-x86_64/dists/buster/main/binary-amd64/Release
+RUN echo 'APT { Get { AllowUnauthenticated "1"; }; };' > /etc/apt/apt.conf.d/99allow_unauth
+#RUN apt-get -y update
+RUN apt-get -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true update ; echo Ignoring failure
 
 # Install opkgc build requirements and build it
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-opkgc.git
 RUN cd /root/oscar-opkgc && ./autogen.sh && ./configure --prefix=/usr && make install
+# Fix debian lacking of a distro dist-package PATH
+RUN mv /usr/lib/python3.7/site-packages/OpkgcLib /usr/lib/python3/dist-packages/ && rm -rf /usr/lib/python3.7/site-packages
 
 # Install oda and configure it to use mysql (needed by oscar-config)
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-oda.git
@@ -89,6 +119,29 @@ RUN cp /root/oscar/share/etc/templates/oscar.conf /etc/oscar/oscar.conf
 # Configure OSCAR (Creates /tftpboot/distro/<distro>.url and /tftpboot/oscar/<distro>.url)
 RUN oscar-config --setup-distro debian-10-x86_64
 
+# pre install future requirements (apt-get will be temporarily broken during oscar-packager
+
+# Requirements for opkgc
+RUN apt-get -y --allow-unauthenticated install debhelper dpkg-dev autotools-dev automake autoconf python3-all-dev xmlto dblatex rsync m4 dh-python
+# Requirements for oscar-packager
+RUN apt-get -y --allow-unauthenticated install subversion hostname docbook-utils
+
+# Requirements for systemimager:
+RUN apt-get -y --allow-unauthenticated install dracut dracut-network xmlstarlet jq plymouth plymouth-themes systemd-bootchart
+RUN apt-get -y --allow-unauthenticated install parted gdisk uuid-runtime lvm2 lsscsi pciutils usbutils lshw hwdata kexec-tools net-tools iputils-ping ethtool ncat socat nmap lsof ipcalc bind9-host
+RUN apt-get -y --allow-unauthenticated install xfsprogs btrfs-progs dosfstools cifs-utils e2fsprogs
+RUN apt-get -y --allow-unauthenticated install openssh-client openssh-server rtorrent
+RUN apt-get -y --allow-unauthenticated install bc dc keyutils ncurses-base gawk fonts-dejavu kbd gettext coreutils cryptsetup dmidecode
+RUN apt-get -y --allow-unauthenticated install util-linux fdisk
+RUN apt-get -y --allow-unauthenticated install libappconfig-perl libxml-simple-perl
+RUN apt-get -y --allow-unauthenticated install dos2unix docbook-to-man docbook-utils
+RUN apt-get -y --allow-unauthenticated install strace lsof
+RUN apt-get -y --allow-unauthenticated install linux-image-amd64 apache2
+# Systeminstaller build deps
+RUN apt-get -y --allow-unauthenticated install libmldbm-perl
+# yume deps
+RUN apt-get -y --allow-unauthenticated install createrepo
+
 # Install packman
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-packman.git
 RUN cd /root/oscar-packman && make install DESTDIR=/
@@ -103,14 +156,24 @@ RUN cd /root/oscar-rapt && make install DESTDIR=/
 
 # Install oscar-packager requirements
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-packager.git
-RUN cd /root/oscar-packager && make deb
-RUN dpkg -i --force-depends /root/oscar-packager*.deb
+RUN cd /root/oscar-packager && make deb && make install DESTDIR=/
+RUN mv -f /root/oscar-packager*.deb /tftpboot/oscar/debian-10-x86_64/pool/
+#RUN dpkg -i --force-depends /root/oscar-packager*.deb
 
 # Install oscar-systeminstaller
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-systeminstaller.git
 RUN cd /root/oscar-systeminstaller && dpkg-buildpackage -uc -us
-RUN dpkg -i --force-depends /root/systeminstaller*deb
+RUN mv -f /root/systeminstaller*.deb /tftpboot/oscar/debian-10-x86_64/pool/
 
+# Update local repo indexes
+#RUN cd /tftpboot/oscar/debian-10-x86_64 && packman --prepare-repo /tftpboot/oscar/debian-10-x86_64 --verbose
+RUN cd /tftpboot/oscar/debian-10-x86_64 && rapt --prepare --distro file:/tftpboot/oscar/debian-10-x86_64
+RUN rapt update --repo file:/tftpboot/oscar/debian-10-x86_64+buster+main
+RUN apt-get update
+RUN oscar-packager --all systemimager
+RUN packman install 'oscar-packager' 'systeminstaller-oscar' 'systeminstaller-oscar-x11' --distro debian-10-x86_64 --verbose
+
+#RUN dpkg -i --force-depends /root/systeminstaller*deb
 # REBUILD oscar essential rpms.
 RUN oscar-packager --all Tk-TextANSIColor
 RUN oscar-packager --all oscar
@@ -119,38 +182,45 @@ RUN oscar-packager --all yume
 RUN oscar-packager --all opkgc
 RUN oscar-packager --all oscar-packager
 RUN oscar-packager --all systemconfigurator
-RUN oscar-packager --all systemimager
 RUN oscar-packager --all oda
 RUN oscar-packager --all orm
 RUN oscar-packager --all apitest
 RUN oscar-packager --all systeminstaller-oscar
+RUN oscar-packager --all rapt
 
 # Cleanup build stuffs to make room in the image
-RUN /bin/rm -rf /root/*
+RUN /bin/rm -rf /root/* /var/lib/oscar-packager/downloads/* /tmp/*
 
 # Now we add the repo so failed build are available anyway. In a normal situation,
 # this should not be required
 #RUN rpm -q oscar-release > /dev/null || yume -y install /tftpboot/oscar/*/oscar-release*rpm
-RUN apt-get -y update
+#RUN apt-get -y --allow-unauthenticated update
 #RUN /bin/rm -rf /tftpboot/oscar/rhel-7-x86_64/repodata /tftpboot/oscar/rhel-7-x86_64/repocache && yume --prepare
 #RUN apt-get install --reinstall oscar-release
 
+# Avoid question from debconf
+RUN rm /etc/oscar/VERSION
+
 # Now install as rpm what has been installed by hand before as bootstrap.
-RUN apt-get -y install rapt yume packman opkgc
+RUN apt-get -y --allow-unauthenticated install rapt yume packman opkgc
 
 
 # now we reinstall core packages and oscar-packager (already installed from build dep requirements. Make sure we use latest version)
-RUN apt-get -y install --reinstall oscar oscar-base oscar-base-client oscar-base-lib oscar-base-scripts oscar-base-server oscar-devel oscar-utils oscar-packager
+RUN apt-get -y --allow-unauthenticated install --reinstall oscar oscar-core liboscar-client liboscar-server oscar-data oscar-dev oscar-utils  oscar-packager
 
 # Renstall systemimager server parts that have already been installed from oscar deps.
-RUN apt-get -y install --reinstall systemimager-initrd_template systemimager-x86_64boot-standard systemimager-server systemimager-common
+RUN apt-get -y --allow-unauthenticated install --reinstall systemimager-initrd-template systemimager-boot-amd64-standard systemimager-server systemimager-common systemimager-webgui
 
 # Install bittorrent that is needed for systemimager-bittorrent
 #RUN apt-get -y install bittorrent bittorrent-gui
 # Install systemimager missing bits.
-RUN apt-get -y install systemimager-bittorrent systemimager-client systemimager-flamethrower
+RUN apt-get -y --allow-unauthenticated install systemimager-server-bittorrent systemimager-client systemimager-server-flamethrower
 
 # Cleanup image
 # RUN /bin/rm -rf /root/*
+
+ENV DEBIAN_FRONTEND dialog
+#RUN echo 'debconf debconf/frontend select Dialog' | debconf-set-selections
+RUN dpkg-reconfigure --frontend=dialog debconf
 
 CMD [ "bash" ]
