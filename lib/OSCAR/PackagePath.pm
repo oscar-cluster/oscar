@@ -580,7 +580,7 @@ sub get_repo_type ($) {
     # about the output, we only care about the return code.
     my $rapt_cmd = 
         "/usr/bin/rapt --repo $repo_url update 2>/dev/null 1>/dev/null";
-    my $yume_cmd = "wget -nd --delete-after $repo_url/repodata/filelists.xml.gz";
+    my $yume_cmd = "wget -nd --delete-after $repo_url/repodata/repomd.xml";
     if (!oscar_system($yume_cmd)) {
         oscar_log(6, INFO, "Repo type: yum");
         return ("yum");
