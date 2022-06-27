@@ -45,7 +45,6 @@ use OSCAR::SystemServicesDefs;
 use OSCAR::Utils;
 
 @EXPORT = qw (
-                bootstrap_stage0
                 oscar_bootstrap
                 install_prereq
              );
@@ -78,21 +77,21 @@ my $configfile_path = "/etc/oscar/oscar.conf";
 #                                                                              #
 # Return 0 if success, -1 else.                                                #
 ################################################################################
-sub oscar_bootstrap ($) {
-    my $configurator = shift;
+sub oscar_bootstrap () {
 
-    if (!defined ($configurator)) {
-        oscar_log(5, ERROR, "Invalid configurator object");
+    my $configurator = bootstrap_stage0();
+    if (!defined $configurator) {
+        oscar_log(1, ERROR, "Failed to complete stage 0 of the bootstrap.");
         return -1;
     }
 
     if (bootstrap_stage1($configurator)) {
-        oscar_log(5, ERROR, "Impossible to complete stage 1 of the bootstrap.");
+        oscar_log(5, ERROR, "Failed to complete stage 1 of the bootstrap.");
         return -1;
     }
 
     if (bootstrap_stage2($configurator)) {
-        oscar_log(5, ERROR, "Impossible to complete stage 2 of the bootstrap.");
+        oscar_log(5, ERROR, "Failed to complete stage 2 of the bootstrap.");
         return -1;
     }
     return 0;

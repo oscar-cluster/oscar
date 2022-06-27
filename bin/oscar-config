@@ -119,7 +119,12 @@ sub bootstrap () {
         return -1;
     }
 
-    if (OSCAR::Bootstrap::oscar_bootstrap ($configurator)) {
+    if (OSCAR::Bootstrap::bootstrap_stage1($configurator)) {
+        oscar_log(1, ERROR, "Failed to complete stage 1 of the bootstrap.");
+        return -1;
+    }
+
+    if (OSCAR::Bootstrap::bootstrap_stage2($configurator)) {
         oscar_log(1, ERROR, "Failed to bootstrap OSCAR");
         return -1;
     }
@@ -410,6 +415,8 @@ if ($bootstrap) {
     my $sys_sanity_output="";
     my $sys_sanity_rc=0;
 
+    init_log_file ("/var/log/oscar/bootstrap.log");
+    oscar_log(2, INFO, "Bootstrapping OSCAR");
     oscar_log(5, INFO, "Checking bootstrap-sanity...");
     ($sys_sanity_output,$sys_sanity_rc) = run_apitest("bootstrap-sanity.apb");
     if($sys_sanity_rc > 0) {
@@ -419,7 +426,7 @@ if ($bootstrap) {
         oscar_log(2, INFO, "bootstrap-sanity OK.");
     }
 
-    if (bootstrap()) {
+    if (OSCAR::Bootstrap::oscar_bootstrap()) {
         oscar_log(1, ERROR, "Unable to bootstrap OSCAR");
         exit 1;
     }
