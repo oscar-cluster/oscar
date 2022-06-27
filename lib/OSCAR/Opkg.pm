@@ -93,11 +93,9 @@ sub get_list_opkg_dirs {
     opendir (DIRHANDLER, "$opkg_dir")
         or (oscar_log(5, ERROR, "Impossible to open $opkg_dir"), return(@opkgs));
 
+    my @unwanted_dir_entries = ( '.', '..', '.svn', 'package.dtd');
     foreach my $dir (sort readdir(DIRHANDLER)) {
-        if ($dir ne "." && $dir ne ".." && $dir ne ".svn" 
-            && $dir ne "package.dtd") {
-            push (@opkgs, $dir);
-        }
+        push (@opkgs, $dir) if (! grep /^$dir$/, @unwanted_dir_entries);
     }
     return @opkgs;
 }
