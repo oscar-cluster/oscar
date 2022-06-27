@@ -576,6 +576,15 @@ sub bootstrap_stage1 ($) {
         return -1;
     }
 
+    # Now we try to install apitest
+    oscar_log(5, INFO, "Installing apitest");
+    my $apitest_prereqs_path = $config->{'prereqs_path'} . "/apitest";
+    my $prereq_mode = $config->{'prereq_mode'};
+    if (install_prereq ($ipcmd, $apitest_prereqs_path, $prereq_mode)) {
+        oscar_log(5, ERROR, "Impossible to install apitest prereqs ($apitest_prereqs_path)");
+        return -1;
+    }
+
     # Now we try to bootstrap ODA
     oscar_log(5, INFO, "bootstrapping ODA.");
     # First we install the basic prereqs
