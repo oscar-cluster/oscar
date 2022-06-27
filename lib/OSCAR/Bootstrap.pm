@@ -593,12 +593,12 @@ sub bootstrap_stage1 ($) {
         return -1;
     }
 
-    # Now we try to install perl-Qt
-    oscar_log(5, INFO, "Installing perl-Qt.");
-    my $selector_prereqs_path = $config->{'prereqs_path'} . "/perl-Qt";
+    # Now we try to install perl-GUIDeFATE
+    oscar_log(5, INFO, "Installing perl-GUIDeFATE.");
+    my $selector_prereqs_path = $config->{'prereqs_path'} . "/perl-GUIDeFATE";
     my $prereq_mode = $config->{'prereq_mode'};
     if (install_prereq ($ipcmd, $selector_prereqs_path, $prereq_mode)) {
-        oscar_log(5, ERROR, "Impossible to install perl-Qt prereqs ".
+        oscar_log(5, ERROR, "Impossible to install perl-GUIDeFATE prereqs ".
              "($selector_prereqs_path)");
         return -1;
     }
