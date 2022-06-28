@@ -293,9 +293,49 @@ sub init_server ($) {
         return -1;
     }
 
-   oscar_log(2, SUBSECTION, "Installing server core packages");
+    #### NEW OPKG BOOTSTRAP: install all api pkgs so all config.xml files are available
+    oscar_log(2, SUBSECTION, "Installing all available api packages");
+    require OSCAR::OpkgDB;
+    my @all_opkgs = OSCAR::OpkgDB::opkg_list_available(class => "all");
+    oscar_log(4, INFO, "Available api opkgs: " . join(' ', @all_opkgs));
+
+    # We install one OPKG at a time so if the installation of one OPKG fails,
+    # we can track it in details.
+    my @failed_api_opkgs;
+    foreach my $o (@all_opkgs) {
+      oscar_log(6, INFO, "Installing opkg-$o");
+      if (OSCAR::Opkg::opkgs_install ("api", $o)) {
+            push (@failed_api_opkgs, $o);
+        }
+    }
+    if (scalar (@failed_api_opkgs) > 0) {
+        oscar_log(5, ERROR, "Impossible to install the following OPKGs (API side): " .
+		join (" ", @failed_api_opkgs));
+        return -1;
+    }
+
+    # Run the setup phase to allow opkg to self disable (set itself uninstallable)
+    foreach my $o (@all_opkgs) {
+        if(!OSCAR::Package::run_pkg_script($o, "setup", 1, "")) {
+            oscar_log(5, ERROR, "Couldn't run 'setup' script for $o");
+            push (@failed_api_opkgs, $o);
+            $errors++;
+        } else {
+            oscar_log(6, INFO, "Setup for opkg-$o completed successfully.");
+        }
+    }
+
+    if (scalar (@failed_api_opkgs) > 0) {
+        oscar_log(5, ERROR, "Setup script failed for the following OPKGs (API side): " .
+		join (" ", @failed_api_opkgs));
+        return -1;
+    }
+
+
+    #### END NEW OPKG BOOTSTRAP
+
     require OSCAR::Opkg;
-    require OSCAR::Utils;
+#    require OSCAR::Utils;
 
     # Get the list of just core packages
     my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs();
@@ -314,32 +354,31 @@ sub init_server ($) {
 
     # We install one OPKG at a time so if the installation of one OPKG fails,
     # we can track it in details.
-    my @failed_opkgs;
+#    my @failed_opkgs;
     # We start with the server side of all core OPKGs
-    foreach my $o (@core_opkgs) {
-        if (OSCAR::Opkg::opkgs_install ("server", $o)) {
-            push (@failed_opkgs, $o);
-        }
-    }
-    if (scalar (@failed_opkgs) > 0) {
-        oscar_log(5, ERROR, "Impossible to install the following core OPKGs (server ".
-             " side): ".join (" ", @failed_opkgs));
-        return -1;
-    }
+#    foreach my $o (@core_opkgs) {
+#        if (OSCAR::Opkg::opkgs_install ("server", $o)) {
+#            push (@failed_opkgs, $o);
+#        }
+#    }
+#    if (scalar (@failed_opkgs) > 0) {
+#        oscar_log(5, ERROR, "Impossible to install the following core OPKGs (server ".
+#             " side): ".join (" ", @failed_opkgs));
+#        return -1;
+#    }
     # Then we install the API side of all core OPKGs
-    foreach my $o (@core_opkgs) {
-        if (OSCAR::Opkg::opkgs_install ("api", $o)) {
-            push (@failed_opkgs, $o);
-        }
-    }
-    if (scalar (@failed_opkgs) > 0) {
-        oscar_log(5, ERROR, "Impossible to install the following core OPKGs (API ".
-             " side): ".join (" ", @failed_opkgs));
-        return -1;
-    }
+#    foreach my $o (@core_opkgs) {
+#        if (OSCAR::Opkg::opkgs_install ("api", $o)) {
+#            push (@failed_opkgs, $o);
+#        }
+#    }
+#    if (scalar (@failed_opkgs) > 0) {
+#        oscar_log(5, ERROR, "Impossible to install the following core OPKGs (API ".
+#             " side): ".join (" ", @failed_opkgs));
+#        return -1;
+#    }
 
-    oscar_log(5, INFO, "Marking core packages as always ".
-        "selected...");
+    oscar_log(5, INFO, "Marking core packages as always selected...");
     my %selection_data = ();
     # We call ODA_Defs only here to avoid bootstrapping issues.
     # We get the list of OPKGs in the package set
@@ -363,8 +402,10 @@ sub init_server ($) {
     }
 
     OSCAR::Database::set_opkgs_selection_data (%selection_data);
+    # BUG: Check return of above function.
+    oscar_log(2, INFO, "Successfully set core opkgs as always selected.");
 
-    oscar_log(2, INFO, "Successfully installed server core binary packages");
+    oscar_log(2, SUBSECTION, "API opkgs install and setupi phase complete.");
 
     return 0;
 }
