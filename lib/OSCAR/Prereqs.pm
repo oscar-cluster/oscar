@@ -244,13 +244,13 @@ sub is_package_installed ($) {
     }
     if ($suffix eq "rpm") {
         if (!is_rpm_pkg_installed ($p)) {
-            return OSCAR::PrereqsDefs::PREREQ_MISSING);
+            return OSCAR::PrereqsDefs::PREREQ_MISSING();
         } else {
             return OSCAR::PrereqsDefs::PREREQ_INSTALLED();
         }
     } elsif ($suffix eq "deb") {
         if (!is_deb_pkg_installed ($p)) {
-            return OSCAR::PrereqsDefs::PREREQ_MISSING);
+            return OSCAR::PrereqsDefs::PREREQ_MISSING();
         } else {
             return OSCAR::PrereqsDefs::PREREQ_INSTALLED();
         }
