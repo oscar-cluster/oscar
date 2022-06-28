@@ -1,6 +1,6 @@
 SHAREDIR=usr/share/oscar/prereqs
 
-SUBDIRS := AppConfig packman perl-Qt perl-XML-Parser base \
+SUBDIRS := AppConfig packman perl-GUIDeFATE perl-XML-Parser base \
 			OSCAR-Database perl-HTML-Tree perl-Tk perl-XML-Simple ORM \
 			Selector Configurator yume rapt
 
