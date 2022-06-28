@@ -233,6 +233,8 @@ sub init_server ($) {
     #
 
     my $db_type = $oscar_cfg->{'db_type'};
+    oscar_log(6, INFO, "Bootstrapping ODA using: " . $db_type);
+
     my $cmd = $oscar_cfg->{'binaries_path'} . "/oda --init ";
     if (defined ($db_type)) {
         $cmd .= "$db_type";
@@ -245,22 +247,7 @@ sub init_server ($) {
         return -1;
     }
 
-    # TODO: Should be abstract by oda initialization capability.
-    require OSCAR::ODA::Bootstrap;
-    my $oda_type = $oscar_cfg->{'oda_type'};
-    if ($oda_type eq "db") {
-        # We initialize the database if needed
-        if (OSCAR::ODA::Bootstrap::init_db ($configurator)) {
-            oscar_log(1, ERROR, "Failed to initialize the database");
-            return -1;
-        }
-    } elsif ($oda_type eq "file") {
-        # We initialize the database if needed
-        if (OSCAR::ODA::Bootstrap::init_file_db ()) {
-            oscar_log(1, ERROR, "Failed to initialize the file based database");
-            return -1;
-        }
-    }
+    oscar_log(2, INFO, "Successfully Bootstrapped ODA.");
 
     #
     # Now that ODA is initialized, we can initialize its content.
@@ -584,24 +571,7 @@ sub bootstrap_stage1 ($) {
         return -1;
     }
 
-    # Now we try to bootstrap ODA
-    oscar_log(5, INFO, "bootstrapping ODA.");
-    # First we install the basic prereqs
-    oscar_log(6, INFO, "Installing ODA prereqs.");
-    my $odaprereqs_path = $config->{'prereqs_path'} . "/OSCAR-Database";
-    my $prereq_mode = $config->{'prereq_mode'};
-    if (install_prereq ($ipcmd, $odaprereqs_path, $prereq_mode)) {
-        carp "ERROR: impossible to install ODA prereqs ($odaprereqs_path)\n";
-        return -1;
-    }
-    oscar_log(6, INFO, "Bootstrapping ODA using: " . MYSQL);
-    require OSCAR::ODA::Bootstrap;
-    if(OSCAR::ODA::Bootstrap::bootstrap_oda(MYSQL)){
-        oscar_log(5, ERROR, "Impossible to setup the ODA bootstrap with " . MYSQL);
-        return -1;
-    }
-
-    # Now we try to install perl-GUIDeFATE
+   # Now we try to install perl-GUIDeFATE
     oscar_log(5, INFO, "Installing perl-GUIDeFATE.");
     my $selector_prereqs_path = $config->{'prereqs_path'} . "/perl-GUIDeFATE";
     my $prereq_mode = $config->{'prereq_mode'};
@@ -664,7 +634,17 @@ sub bootstrap_stage2 ($) {
         oscar_log(5, ERROR, "Impossible to install base prereqs ($baseprereqs_path)");
         return -1;
     }
+    #oscar_log(5, INFO, "bootstrapping ODA.");
+    oscar_log(6, INFO, "Installing ODA prereqs.");
+    my $odaprereqs_path = $config->{'prereqs_path'} . "/OSCAR-Database";
+    my $prereq_mode = $config->{'prereq_mode'};
+    if (install_prereq ($ipcmd, $odaprereqs_path, $prereq_mode)) {
+        carp "ERROR: impossible to install ODA prereqs ($odaprereqs_path)\n";
+        return -1;
+    }
+    #oscar_log(6, INFO, "Bootstrapping ODA using: " . MYSQL);
 
+ 
     # Then we install other prereqs, based on the ordering file.
     # For that, read in the share/prereqs/prereqs.order file
     # It should contain prerequisite paths relative to $OSCAR_HOME, one per 
