@@ -146,7 +146,8 @@ sub oscar_system($) {
         OSCAR::Logger::oscar_log(5, ERROR, "Failed to execute: $cmd (error=$!)");
     } elsif ( $rc & 127 ) {
         OSCAR::Logger::oscar_log(5, ERROR, "The command died with signal %d, %s a coredump\n",
-    ( $rc & 127 ), ( $rc & 128 ) ? 'with' : 'without');
+        ( $rc & 127 ), ( $rc & 128 ) ? 'with' : 'without');
+    }
     return $realrc;
 }
 
