@@ -319,7 +319,6 @@ sub init_server ($) {
         if(!OSCAR::Package::run_pkg_script($o, "setup", 1, "")) {
             oscar_log(5, ERROR, "Couldn't run 'setup' script for $o");
             push (@failed_api_opkgs, $o);
-            $errors++;
         } else {
             oscar_log(6, INFO, "Setup for opkg-$o completed successfully.");
         }
@@ -395,6 +394,7 @@ sub init_server ($) {
 
     require OSCAR::OCA::OS_Detect;
     my $os = OSCAR::OCA::OS_Detect::open();
+    # TODO: Do that in setup script in opkg-rapt and opkg-yume
     foreach my $opkg (@available_opkgs) {
         next if ($os->{pkg} eq "rpm" and $opkg eq 'rapt'); 
         next if ($os->{pkg} eq "deb" and $opkg eq 'yume'); 

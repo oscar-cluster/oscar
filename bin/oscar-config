@@ -386,6 +386,7 @@ if ($bootstrap) {
         oscar_log(2, INFO, "bootstrap-sanity OK.");
     }
 
+    require OSCAR::Bootstrap;
     if (OSCAR::Bootstrap::oscar_bootstrap()) {
         oscar_log(1, ERROR, "Unable to bootstrap OSCAR");
         exit 1;
