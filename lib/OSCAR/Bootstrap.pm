@@ -117,8 +117,7 @@ sub install_prereq ($$$) {
     my $prereq_name = basename ($cmd);
     oscar_log(2, SUBSECTION, "Dealing with Prereq $prereq_name");
     require OSCAR::PrereqsDefs;
-    oscar_log(5, ACTION, "About to run: $cmd");
-    my $rc = system ($cmd); # Cannot use oscar_system as rc=1 is OK (not an error)
+    my $rc = oscar_system ($cmd);
     if ($rc == OSCAR::PrereqsDefs::PREREQ_MISSING()) {
         OSCAR::Logger::oscar_log_subsection "$prereq_name is not installed.";
 
