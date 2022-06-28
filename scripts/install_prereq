@@ -22,6 +22,7 @@ use OSCAR::OCA::OS_Detect;
 use OSCAR::PackagePath;
 use OSCAR::CmpVersions;
 use OSCAR::Prereqs;
+use OSCAR::PrereqsDefs;
 use OSCAR::Logger;
 use OSCAR::LoggerDefs;
 use OSCAR::Utils;
@@ -40,7 +41,7 @@ GetOptions(
     "verbose"   => \$verbose,
     "debug"     => \$debug,
     "quiet"     => \$quiet,
-) || &usage(1);
+) || &usage(OSCAR::PrereqsDefs::PREREQ_BADUSE());
 
 #
 # Own distro detection
@@ -437,7 +438,7 @@ sub install_prereq($$$$$) {
 
 
 # check paths
-&usage(1) if (!scalar(@ARGV));
+&usage(OSCAR::PrereqsDefs::PREREQ_BADUSE()) if (!scalar(@ARGV));
 
 $ohome = $ENV{OSCAR_HOME};
 
@@ -463,7 +464,7 @@ for my $p (@ARGV) {
     if (! -d "$p" || ! -f "$p/prereq.cfg") {
         oscar_log(1, ERROR, "$p is not a directory or ".
             "doesn't contain a prereq.cfg file!");
-        usage(1);
+        usage(OSCAR::PrereqsDefs::PREREQ_INVALID());
     } else {
         push @prereqs, "$p";
     }

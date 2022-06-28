@@ -30,12 +30,16 @@ package OSCAR::PrereqsDefs;
 use strict;
 use base qw(Exporter);
 
+use constant PREREQ_BADUSE      => 3;
+use constant PREREQ_INVALID     => 2;
 use constant PREREQ_INSTALLED   => 1;
 use constant PREREQ_MISSING     => 0;
 
 my @ISA = qw(Exporter);
 
 our @EXPORT = qw (
+                PREREQ_BADUSE
+                PREREQ_INVALID
                 PREREQ_INSTALLED
                 PREREQ_MISSING
                  );

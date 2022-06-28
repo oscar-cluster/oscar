@@ -128,6 +128,7 @@ sub install_prereq ($$$) {
             return 0;
         }
         # We try to install the prereq
+        oscar_log(5, INFO, "Trying to install Prereq $prereq_name.");
         $cmd = $prereq_cmd . " --smart " . $prereq_path;
         if (oscar_system ($cmd)) {
             oscar_log(5, ERROR, "Impossible to install $prereq_name ($cmd).");
@@ -141,6 +142,20 @@ sub install_prereq ($$$) {
             oscar_log(5, ERROR, "$prereq_name is still not installed ($rc)");
             return -1;
         }
+    } elsif ($rc == OSCAR::PrereqsDefs::PREREQ_INVALID()) {
+        oscar_log(5, ERROR, "Prereq $prereq_name not found.");
+        oscar_log(5, ERROR, "Impossible to install $prereq_name ($cmd).");
+	return -1;
+    } elsif ($rc == OSCAR::PrereqsDefs::PREREQ_BADUSE()) {
+        oscar_log(5, ERROR, "Failed to run ($cmd). Bad syntax: Please report bug!");
+        oscar_log(5, ERROR, "Impossible to install $prereq_name ($cmd).");
+	return -1;
+    } elsif ($rc == OSCAR::PrereqsDefs::PREREQ_INSTALLED()) {
+        oscar_log(2, INFO, "Prereq $prereq_name already installed. Nothing to do.");
+        return 0;
+    } else {
+	oscar_log(5, ERROR, "Unknown return code from ($cmd): $rc");
+	oscar_log(5, ERROR, "Please report bug!");
     }
 
     oscar_log(2, INFO, "Successfully installed Prereq $prereq_name");
