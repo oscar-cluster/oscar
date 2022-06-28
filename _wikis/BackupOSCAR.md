@@ -25,7 +25,7 @@ The following files/directories need to be backed up:
        * Run `scripts/oda dump <filename>`
        * Dump will be saved in `tmp/oda_dump`
     * Password
-       * `/etc/odapw`
+       * `/etc/oscar/odapw`
  * Hosts file
     * `/etc/hosts`
  * SSH-related files
@@ -53,7 +53,7 @@ The following files/directories need to be backed up:
     * Run `scripts/oda restore <filename>`
  * Restore backed up files/directories:
     * `/etc/c3.conf`
-    * `/etc/odapw` (restore password by running `scripts/oda reset_password`)
+    * `/etc/oscar/odapw` (restore password by running `scripts/oda reset_password`)
     * `/etc/hosts`
     * `/etc/ssh/ssh_host*`
     * `/root/.ssh/`
