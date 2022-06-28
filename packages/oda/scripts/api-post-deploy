@@ -19,7 +19,7 @@
 
 #$Id: post_install 5840 2007-05-02 17:13:51Z dikim $
 
-#client make the /etc/odaserver file on all oscar s
+#client make the /etc/oscar/odaserver file on all oscar s
 
 BEGIN {
     if (defined $ENV{OSCAR_HOME}) {
@@ -107,7 +107,7 @@ if ( $db_type eq "pgsql" ) {
 }
 
 
-my $file = "/etc/odaserver";
+my $file = "/etc/oscar/odaserver";
 OSCAR::Opkg::opkg_print "Generating the $file file on all oscar clients...\n";
 $cmd = "/usr/bin/cexec \'echo oscar-server > $file\'";
 OSCAR::Opkg::opkg_print "Executing: $cmd\n";
@@ -119,9 +119,9 @@ if (system( $cmd )) {
 #   OPIUM CONFIGURATION FOR ODA
 #####################################################################
 
-# Execute the confmgr of OPIUM to synchronize the /etc/odapw with
+# Execute the confmgr of OPIUM to synchronize the /etc/oscar/odapw with
 # client nodes.
-$cmd = "/opt/sync_files/bin/confmgr --syncnow --add /etc/odapw";
+$cmd = "/opt/sync_files/bin/confmgr --syncnow --add /etc/oscar/odapw";
 
 if (system( $cmd )) {
     die ("ERROR: Impossible to execute $cmd.");
