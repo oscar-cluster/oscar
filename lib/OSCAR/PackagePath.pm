@@ -581,6 +581,7 @@ sub get_repo_type ($) {
     my $rapt_cmd = 
         "/usr/bin/rapt --repo $repo_url update 2>/dev/null 1>/dev/null";
     my $yume_cmd = "wget -nd --delete-after $repo_url/repodata/repomd.xml";
+    $yume_cmd .= " 2> /dev/null" if($OSCAR::Env::oscar_verbose <= 5);
     if (!oscar_system($yume_cmd)) {
         oscar_log(6, INFO, "Repo type: yum");
         return ("yum");
@@ -599,7 +600,7 @@ sub mirror_yum_repo ($$$) {
     oscar_log(5, INFO, "Source: $url");
     oscar_log(5, INFO, "Destination: $dest");
 
-    my $metafile = "primary.xml";
+    my $metafile = "primary.xml"; # TODO: Broken, need to get fileiname from repomd.xml
     my $path = "$dest/$distro";
     # We get the metadata file
     mkpath("$path/tmp") or (oscar_log(5, ERROR, "Impossible to create $dest/tmp"), 
