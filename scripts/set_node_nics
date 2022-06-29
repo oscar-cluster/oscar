@@ -25,7 +25,7 @@
 #   This script initializes or re-initializes the values in the database
 #   table "oscar" which is for global values.
 
-# $Id$
+# 6.320220629git
 
 BEGIN {
     if (defined $ENV{OSCAR_HOME}) {
@@ -36,6 +36,7 @@ BEGIN {
 use strict;
 use Getopt::Long;
 #use Net::IPv4Addr;
+use JSON;
 use OSCAR::Network;
 use OSCAR::oda;
 use Data::Dumper;
@@ -714,7 +715,7 @@ sub find_gateways {
 #                          print out error messages on STDERR
 #
 # outputs:  nics hash ref  reference to nics hash, or undefined
-#                          if a severe error (no ifconfig command)
+#                          if a severe error (no ip command)
 
 sub find_nics {
 
@@ -723,8 +724,9 @@ sub find_nics {
                               ref($print_errors) eq "ARRAY" ) ?
                               $print_errors : \@error_strings;
 
-    my @ip_addr_output = `LC_ALL=C /sbin/ip addr 2>/dev/null`;
-    if ( ! @ip_addr_output ) {
+    #my @ip_addr_output = `LC_ALL=C /sbin/ip addr 2>/dev/null`;
+    my $ip_addr_output = `LC_ALL=C /sbin/ip -j addr 2>/dev/null`;
+    if ( ! $ip_addr_output ) {
         push @$error_strings_ref,
         "$0: cannot find nics with ip addr command";
         if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
@@ -732,42 +734,41 @@ sub find_nics {
         }
         return undef;
     }
+    my $json_nics_infos = decode_json($ip_addr_output);
+    # TODO: Check result
 
     my $ip;
     my $mac = "";
     my $broadcast = "";
     my $netmask;
-    my $name = "";
+    my $name = "";  # hardware interface name
+    my $label = ""; # software interface name
     my %nics = ();
     my $ptp;
 
     # for each line of ip addr output, ...
 
-    foreach (@ip_addr_output) {
+    foreach my $nic (@$json_nics_infos) {
 
-        # if it's the first line of an interface section, save the name
-
-        if (/^\d+:\s(\S+):\s<.*>.*state.*$/) {
-            $name = $1;
-#            $mac = trimwhitespace($2);
+        next   if ($nic->{link_type} eq "loopback"); # ignore loopback
+	next   if ($nic->{operstate} eq "DOWN"); # Ignore unconfigured interfaces
+	next   if ($nic->{address} eq "00:00:00:00:00:00");
+	$name    = $nic->{ifname};
+	$mac     = $nic->{address};
+	if (scalar( @{$nic->{addr_info}} ) gt 1) {
+            warn "$0: only one IP addr supported per nic.";
+        }
+        if (scalar( @{$nic->{addr_info}} ) eq 0) {
+	    push @$error_strings_ref, 
+            "$0: ip information missing while interface is not DOWN.\n";
+	    next;
         }
 
-        # skip to next line if name is invalid (old and new naming scheem. exclude lo)
-        next unless $name =~ /^[a-z]+(\d+|\d+:\d+|\d+p\d+)$/;
-
-        # skip to next line if name is for the loopback interface
-        # next if $name eq "lo";
-
-        # skip to next line if no MAC
-        if ( $mac eq "" ) {
-            next unless ( ($mac) = /^\s+link\/ether\s+(([[:xdigit:]]{2}:){5}[[:xdigit:]]{2})\sbrd\s.*$/ );
-        }
-
-        # skip to next line if we can't parse and save ip and netmask
-        next unless ( ($ip, $netmask, $broadcast) =
-            /^\s+inet (\S+)\/([0-9]{2}) brd (\S+) scope.*$/ );
-        #$netmask=Net::IPv4Addr::ipv4_cidr2msk($netmask);
-        $netmask=cidr2netmask($netmask);
+        $netmask = $nic->{addr_info}[0]->{prefixlen};
+        $netmask = cidr2netmask($netmask);
+        $ip      = $nic->{addr_info}[0]->{local};
+	$broadcast = $nic->{addr_info}[0]->{broadcast};
+	$label   = $nic->{addr_info}[0]->{label}; # same as name in most of cases.
 
         if ( ! valid_ip( $ip ) ) {
             push @$error_strings_ref, 
@@ -781,7 +782,7 @@ sub find_nics {
         }
 
         # if the network is of form 0 - 31, convert it to N.N.N.N
-
+        # OL: IMHO, this is useless as cidr2netmask has be called above
         if ( $netmask !~ /\./ ) {
             my @octets = ();
             my $netmask_bits_left = $netmask;
