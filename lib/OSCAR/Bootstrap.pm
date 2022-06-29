@@ -308,7 +308,7 @@ sub init_server ($) {
     }
 
     #### NEW OPKG BOOTSTRAP: install all api pkgs so all config.xml files are available
-    oscar_log(2, SUBSECTION, "Installing all available api packages");
+    oscar_log(2, INFO, "Installing all available api packages");
     require OSCAR::OpkgDB;
     my @all_opkgs = OSCAR::OpkgDB::opkg_list_available(class => "all");
     oscar_log(4, INFO, "Available api opkgs: " . join(' ', @all_opkgs));
@@ -328,28 +328,13 @@ sub init_server ($) {
         return -1;
     }
 
-    # Run the setup phase to allow opkg to self disable (set itself uninstallable)
-    foreach my $o (@all_opkgs) {
-        if(!OSCAR::Package::run_pkg_script($o, "setup", 1, "")) {
-            oscar_log(5, ERROR, "Couldn't run 'setup' script for $o");
-            push (@failed_api_opkgs, $o);
-        } else {
-            oscar_log(6, INFO, "Setup for opkg-$o completed successfully.");
-        }
-    }
-
-    if (scalar (@failed_api_opkgs) > 0) {
-        oscar_log(5, ERROR, "Setup script failed for the following OPKGs (API side): " .
-		join (" ", @failed_api_opkgs));
-        return -1;
-    }
-
-
+    oscar_log(2, INFO, "API opkgs installed.");
     #### END NEW OPKG BOOTSTRAP
 
     require OSCAR::Opkg;
 #    require OSCAR::Utils;
 
+    oscar_log(2, INFO, "Working on core opkgs.");
     # Get the list of just core packages
     my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs();
     if (scalar (@core_opkgs) == 0) {
@@ -391,7 +376,7 @@ sub init_server ($) {
 #        return -1;
 #    }
 
-    oscar_log(5, INFO, "Marking core packages as always selected...");
+    oscar_log(2, INFO, "Marking core packages as always selected...");
     my %selection_data = ();
     # We call ODA_Defs only here to avoid bootstrapping issues.
     # We get the list of OPKGs in the package set
@@ -410,8 +395,8 @@ sub init_server ($) {
     my $os = OSCAR::OCA::OS_Detect::open();
     # TODO: Do that in setup script in opkg-rapt and opkg-yume
     foreach my $opkg (@available_opkgs) {
-        next if ($os->{pkg} eq "rpm" and $opkg eq 'rapt'); 
-        next if ($os->{pkg} eq "deb" and $opkg eq 'yume'); 
+        next if ($os->{pkg} eq "rpm" and $opkg eq 'rapt');  # Done in setup phase of the opkg
+        next if ($os->{pkg} eq "deb" and $opkg eq 'yume');  # Done in setup phase of the opkg
         $selection_data{$opkg} = (grep(/$opkg/,@core_opkgs)?$selected:$unselected);
     }
 
@@ -419,7 +404,24 @@ sub init_server ($) {
     # BUG: Check return of above function.
     oscar_log(2, INFO, "Successfully set core opkgs as always selected.");
 
-    oscar_log(2, SUBSECTION, "API opkgs install and setupi phase complete.");
+    oscar_log(2, INFO, "Running opkg setup script.");
+    # Run the setup phase to allow opkg to self disable (set itself uninstallable)
+    foreach my $o (@all_opkgs) {
+        if(!OSCAR::Package::run_pkg_script($o, "setup", 1, "")) {
+            oscar_log(5, ERROR, "Couldn't run setup script 'api-pre-install' for $o");
+            push (@failed_api_opkgs, $o);
+        } else {
+            oscar_log(6, INFO, "Setup for opkg-$o completed successfully.");
+        }
+    }
+
+    if (scalar (@failed_api_opkgs) > 0) {
+        oscar_log(5, ERROR, "Setup script failed for the following OPKGs (API side): " .
+		join (" ", @failed_api_opkgs));
+        return -1;
+    }
+
+    oscar_log(2, SUBSECTION, "API opkgs install and setup phase complete.");
 
     return 0;
 }
