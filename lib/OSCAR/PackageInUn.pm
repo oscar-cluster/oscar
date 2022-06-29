@@ -359,7 +359,7 @@ sub install_uninstall_packages
     print_errors() if($OSCAR::Env::oscar_verbose >= 5);
 
     #now run every packages post_install phase if it is installed
-    @all_packages = OSCAR::Package::list_selected_packages(); 
+    @all_packages = OSCAR::Database::list_selected_packages(); 
     foreach my $package_ref (@all_packages)
     {
         my $package = $$package_ref{package};
