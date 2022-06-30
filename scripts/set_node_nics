@@ -724,119 +724,150 @@ sub find_nics {
                               ref($print_errors) eq "ARRAY" ) ?
                               $print_errors : \@error_strings;
 
+    my %nics = ();
+
     #my @ip_addr_output = `LC_ALL=C /sbin/ip addr 2>/dev/null`;
     my $ip_addr_output = `LC_ALL=C /sbin/ip -j addr 2>/dev/null`;
+
     if ( ! $ip_addr_output ) {
-        push @$error_strings_ref,
-        "$0: cannot find nics with ip addr command";
-        if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
-            warn shift @$error_strings_ref while @$error_strings_ref;
-        }
-        return undef;
-    }
-    my $json_nics_infos = decode_json($ip_addr_output);
-    # TODO: Check result
-
-    my $ip;
-    my $mac = "";
-    my $broadcast = "";
-    my $netmask;
-    my $name = "";  # hardware interface name
-    my $label = ""; # software interface name
-    my %nics = ();
-    my $ptp;
-
-    # for each line of ip addr output, ...
-
-    foreach my $nic (@$json_nics_infos) {
-
-        next   if ($nic->{link_type} eq "loopback"); # ignore loopback
-	next   if ($nic->{operstate} eq "DOWN"); # Ignore unconfigured interfaces
-	next   if ($nic->{address} eq "00:00:00:00:00:00");
-	$name    = $nic->{ifname};
-	$mac     = $nic->{address};
-	if (scalar( @{$nic->{addr_info}} ) gt 1) {
-            warn "$0: only one IP addr supported per nic.";
-        }
-        if (scalar( @{$nic->{addr_info}} ) eq 0) {
-	    push @$error_strings_ref, 
-            "$0: ip information missing while interface is not DOWN.\n";
-	    next;
-        }
-
-        $netmask = $nic->{addr_info}[0]->{prefixlen};
-        $netmask = cidr2netmask($netmask);
-        $ip      = $nic->{addr_info}[0]->{local};
-	$broadcast = $nic->{addr_info}[0]->{broadcast};
-	$label   = $nic->{addr_info}[0]->{label}; # same as name in most of cases.
-
-        if ( ! valid_ip( $ip ) ) {
-            push @$error_strings_ref, 
-            "$0: invalid ip address $ip found for nic $name\n";
-            next;
-        }
-        if ( ! valid_netmask( $netmask ) ) {
-            push @$error_strings_ref, 
-            "$0: invalid ip netmask $netmask found for nic $name\n";
-            next;
-        }
-
-        # if the network is of form 0 - 31, convert it to N.N.N.N
-        # OL: IMHO, this is useless as cidr2netmask has be called above
-        if ( $netmask !~ /\./ ) {
-            my @octets = ();
-            my $netmask_bits_left = $netmask;
-            while ( $netmask_bits_left >= 8 && scalar @octets < 6 ) {
-                push @octets, "255";
-                $netmask_bits_left -= 8;
-            }
-            push @octets, ( 255 << ( 7 - ( $netmask_bits_left % 8 ) ) ) & 255
-                if $netmask_bits_left > 0;
-            push @octets, "0"
-                while scalar @octets < 4;
-            $netmask = octets_to_ip( @octets );
-        }
-
-        # if we got the ip/netmask before the name, mistake
-
-        if ( $name eq "" ) {
+        # old /sbin/ip without -j flag support? Trying manual parsing
+        my $ip;
+        my $mac = "";
+        my $broadcast = "";
+        my $netmask;
+        my $name = "";  # hardware interface name
+        my $label = ""; # software interface name
+	my @old_ip_addr_output = `LC_ALL=C /sbin/ip addr 2>/dev/null`;
+        if ( ! @old_ip_addr_output ) { # Definitely, there is a problem.
             push @$error_strings_ref,
-            "$0: ifconfig output has valid address/netmask before any interface names";
-            next;
+            "$0: cannot find nics with ip addr command";
+            if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+                warn shift @$error_strings_ref while @$error_strings_ref;
+            }
+            return undef;
+        }
+	# for each line of ip addr output, ...
+	foreach (@old_ip_addr_output) {
+            # if it's the first line of an interface section, save the name
+	    if (/^\d+:\s(\S+):\s<.*>.*state.*$/) {
+                $name = $1;
+            }
+	    # skip to next line if name is invalid (old and new naming scheem. exclude lo)
+	    next unless $name =~ /^[a-z]+(\d+|\d+:\d+|\d+p\d+)$/;
+
+	    # skip to next line if no MAC
+            if ( $mac eq "" ) {
+                next unless ( ($mac) = /^\s+link\/ether\s+(([[:xdigit:]]{2}:){5}[[:xdigit:]]{2})\sbrd\s.*$/ );
+            }
+
+            # skip to next line if we can't parse and save ip and netmask
+            next unless ( ($ip, $netmask, $broadcast) =
+                /^\s+inet (\S+)\/([0-9]{2}) brd (\S+) scope.*$/ );
+
+            # if we got the ip/netmask before the name, mistake
+            if ( $name eq "" ) {
+                push @$error_strings_ref,
+                "$0: ifconfig output has valid address/netmask before any interface names";
+                next;
+            }
+
+            my %nic_found = process_nic(defined $print_errors,
+		    $ip,
+		    $mac,
+		    $broadcast,
+		    $netmask, # cidr format
+		    $name,
+		    undef);   # label (can't parse it in old school mode).
+
+            # save this nic's information in our nics hash if it is valid
+            if(%nic_found) {
+                $nics{$name} = \%nic_found;
+            }
+
+	    # reset values for next loop.
+            $name = "";
+            $ip ="";
+            $mac = "";
+            $broadcast = "";
+	    $netmask = "";
+        }
+    } else { # Decode using JSON
+        my $json_nics_infos = decode_json($ip_addr_output);
+	if (! defined ($json_nics_infos)) {
+            push @$error_strings_ref,
+            "$0: failed to decode 'ip -j addr' output";
+            if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
+                warn shift @$error_strings_ref while @$error_strings_ref;
+            }
+            return undef;
         }
 
-        # find the base and highest ip addresses for the attached network
+        # for each hash of json ip addr output, ...
+        foreach my $nic (@$json_nics_infos) {
+            next   if ($nic->{link_type} eq "loopback"); # ignore loopback
+            next   if ($nic->{operstate} eq "DOWN"); # Ignore unconfigured interfaces
+            next   if ($nic->{address} eq "00:00:00:00:00:00");
+            if (scalar( @{$nic->{addr_info}} ) gt 1) {
+                warn "$0: only one IP addr supported per nic.";
+            }
+            if (scalar( @{$nic->{addr_info}} ) eq 0) {
+                push @$error_strings_ref, 
+                "$0: ip information missing while interface is not DOWN.\n";
+	        next;
+            }
 
-        my ( $base_ip, $high_ip ) = ip_netmask_to_base_high( $ip,
-                                     $netmask );
-        # build up the nic information hash
+	    my %nic_found = process_nic(defined $print_errors,
+                $nic->{addr_info}[0]->{local},     # ip
+                $nic->{address},                   # mac
+                $nic->{addr_info}[0]->{broadcast}, # broadcast
+                $nic->{addr_info}[0]->{prefixlen}, # cidr netmask
+                $nic->{ifname},                    # name
+	        $nic->{addr_info}[0]->{label});    # label: same as name in most of cases.
 
-        my %nic = ( base_ip => $base_ip,
-                    high_ip => $high_ip,
-                    ip      => $ip,
-                    mac     => $mac,
-                    netmask => $netmask );
-        $nic{broadcast} = $broadcast if $broadcast ne "";
-        $nic{rfc1918} =
-            valid_rfc1918_ip( $base_ip ) &&
-            valid_rfc1918_ip( $ip ) &&
-            valid_rfc1918_ip( $high_ip );
-
-        # save this nic's information in our nics hash
-
-        $nics{$name} = \%nic;
-
-        # setup for parsing next nic out of remaining ifconfig lines
-
-        $broadcast = "";
-        $name = "";
-        $mac = "";
-
+	# save this nic's information in our nics hash if it is valid
+	    if(%nic_found) {
+                $nics{$nic->{ifname}} = \%nic_found;
+	    }
+        }
     }
+
     if ( defined $print_errors && ! ref($print_errors) && $print_errors ) {
         warn shift @$error_strings_ref while @$error_strings_ref;
     }
     return \%nics;
+}
+
+sub process_nic($$$$$$) {
+    my ($print_errors, $ip, $mac, $broadcast, $netmask, $name, $label) = @_;
+
+    # /sbin/ip addr returns a cird mask.
+    $netmask = cidr2netmask($netmask);
+
+    # Check that IP is valid
+    if ( ! valid_ip( $ip ) ) {
+        warn "$0: invalid ip address $ip found for nic $name\n" if($print_errors);
+    }
+    if ( ! valid_netmask( $netmask ) ) {
+        warn "$0: invalid ip netmask $netmask found for nic $name\n" if($print_errors);
+    }
+
+    # find the base and highest ip addresses for the attached network
+    my ( $base_ip, $high_ip ) = ip_netmask_to_base_high( $ip,
+                                     $netmask );
+    # build up the nic information hash
+    my %nic = ( base_ip => $base_ip,
+                high_ip => $high_ip,
+                ip      => $ip,
+                mac     => $mac,
+                netmask => $netmask);
+    $nic{broadcast} = $broadcast if $broadcast ne "";
+    $nic{label}     = $label     if $label     ne "";
+    $nic{rfc1918} =
+        valid_rfc1918_ip( $base_ip ) &&
+        valid_rfc1918_ip( $ip ) &&
+        valid_rfc1918_ip( $high_ip );
+
+    return %nic;
 }
 
 #=======================================================================
