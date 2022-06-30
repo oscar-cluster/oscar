@@ -111,7 +111,8 @@ sub opkgs_remove ($@) {
 
     my $distro_id = OSCAR::PackagePath::get_distro();
     require OSCAR::RepositoryManager;
-    my $rm = OSCAR::RepositoryManager->new(distro=>$distro_id); 
+    my $rm = OSCAR::RepositoryManager->new(distro=>$distro_id,
+                                           verbosity=>$OSCAR::Env::oscar_verbose); 
 
     my @olist;
     if ($type eq "api") {
@@ -150,7 +151,8 @@ sub opkgs_install ($@) {
 
     my $distro_id = OSCAR::PackagePath::get_distro();
     require OSCAR::RepositoryManager;
-    my $rm = OSCAR::RepositoryManager->new(distro=>$distro_id);
+    my $rm = OSCAR::RepositoryManager->new(distro=>$distro_id,
+                                           verbosity=>$OSCAR::Env::oscar_verbose);
     
     my @olist;
     if ($type eq "api") {
