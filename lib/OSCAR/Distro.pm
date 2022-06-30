@@ -57,7 +57,6 @@ use warnings "all";
             which_mysql_name
             );
 
-my $tftpdir = "/tftpboot/";
 my $supported_distro_file;
 if (defined ($ENV{OSCAR_HOME})) {
     $supported_distro_file = "$ENV{OSCAR_HOME}/share/etc/supported_distros.txt";

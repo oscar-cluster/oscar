@@ -109,6 +109,7 @@ sub load_oscar_config ($) {
         'PATH_ODA_CONFIG_FILES'     => { ARGCOUNT => 1 },
         'PACKAGER_DOWNLOAD_PATH'    => { ARGCOUNT => 1 },
 	'PACKAGER_SOURCES_URL_BASE' => { ARGCOUNT => 1 },
+	'TFTP_DIR'                  => { ARGCOUNT => 1 },
         );
     $config->file ($config_file);
 
@@ -126,6 +127,7 @@ sub load_oscar_config ($) {
     $opkgs_path         = $config->get('OPKGS_PATH');
     $packager_download_path = $config->get('PACKAGER_DOWNLOAD_PATH');
     $packager_sources_url_base = $config->get('PACKAGER_SOURCES_URL_BASE');
+    $tftp_dir           = $config->get('TFTP_DIR');
     return 0;
 }
 
@@ -145,6 +147,7 @@ sub get_config () {
                 'opkgs_path'        => $opkgs_path,
                 'packager_download_path' => $packager_download_path,
 		'packager_sources_url_base' => $packager_sources_url_base,
+		'tftp_dir'          => $tftp_dir,
               );
     return \%cfg;
 }

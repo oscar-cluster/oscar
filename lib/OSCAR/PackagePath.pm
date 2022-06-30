@@ -76,6 +76,7 @@ use Carp;
          );
 
 # BUG: OL: /tftpboot is no longer standard!
+# Need to use OSCAR::ConfigManager
 my $tftpdir = "/tftpboot/";
 
 # The possible places where packages may live.  
