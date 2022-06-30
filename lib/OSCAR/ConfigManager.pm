@@ -62,6 +62,8 @@ our $oda_files_path;
 our $packager_download_path;
 # Specify from where oscar-packager will download files.
 our $packager_sources_url_base;
+# Specify where tftpboot is.
+our $tftp_dir;
 
 sub new {
     my ($perl_package, $perl_filename, $perl_line) = caller;
