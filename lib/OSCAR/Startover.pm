@@ -233,13 +233,15 @@ sub startover_stage1 ($) {
     remove_prereq ($ipcmd, $packman_path);
 
     # Remove config file in /tftpboot
-    my $file = "/tftpboot/distro/$compat_distro.url";
+    my $tftp_dir = $config->{'tftp_dir'};
+    $tftp_dir = '/var/lib/tftpboot' if ( ! defined $tftp_dir );
+    my $file = "$tftp_dir/distro/$compat_distro.url";
     if (-f $file) {
         OSCAR::Logger::oscar_log_subsection ("Removing $file...");
         unlink ($file) or (oscar_log(5, ERROR, "Failed to remove $file"),
                            return -1);
     }
-    $file = "/tftpboot/oscar/$distro.url";
+    $file = "$tftp_dir/oscar/$distro.url";
     if (-f $file) {
         OSCAR::Logger::oscar_log_subsection ("Removing $file...");
         unlink ($file) or (oscar_log(5, ERROR, "Failed to remove $file"),
