@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 #
 
 #
@@ -12,7 +12,7 @@
 #
 
 #
-# $Id$
+# 6.320220630git
 #
 
 use strict;
@@ -23,7 +23,7 @@ use Getopt::Long;
 use OSCAR::Utils;
 use OSCAR::Logger;
 use OSCAR::LoggerDefs;
-use OSCAR::Testing;
+use File::Path qw( make_path );
 use warnings "all";
 
 BEGIN {
@@ -45,7 +45,8 @@ my ($distro_to_setup,
     $network,
     $bootstrap,
     $verbose,
-    $debug);
+    $debug,
+    $quiet);
 
 GetOptions(
         "bootstrap|b"                     => \$bootstrap,
@@ -54,6 +55,7 @@ GetOptions(
         "display-default-oscar-repo|o=s"  => \$oscar_repo,
         "generate-config-file|g"          => \&generate_config_file,
         "list-setup-distros|l"            => \&display_list_setup_distros,
+	"quiet|q"                         => \&quiet,
         "sanity-check|s"                  => \$sanity_check,
         "setup-distro|e=s"                => \$distro_to_setup,
         "startover|t"                     => \$startover,
@@ -72,6 +74,12 @@ if ($debug) {
 } elsif ($verbose) {
     $ENV{OSCAR_VERBOSE} = 5;
     $OSCAR::Env::oscar_verbose=5;
+} elsif ($quiet) {
+    $ENV{OSCAR_VERBOSE} = 0;
+    $OSCAR::Env::oscar_verbose=0;
+} else {
+    $ENV{OSCAR_VERBOSE} = 1; # Defaults to 1
+    $OSCAR::Env::oscar_verbose=1;
 }
 
 
@@ -186,16 +194,6 @@ sub help_and_exit {
     exit 1;
 }
 
-
-my $initial_verbose_value = 0;
-$initial_verbose_value = $ENV{OSCAR_VERBOSE} if (defined $ENV{OSCAR_VERBOSE});
-if ($debug) {
-    $ENV{OSCAR_VERBOSE} = 10;
-}
-if ($verbose) {
-    $ENV{OSCAR_VERBOSE} = 5;
-}
-
 if ($startover) {
     exit 1 if (force_run_as_root());
     require OSCAR::Startover;
@@ -248,7 +246,7 @@ if ($distro_to_setup) {
 
     return 1 if (force_run_as_root());
 
-    oscar_log(2, SUBSECTION, "Setting $distro_to_setup...");
+    oscar_log(1, SUBSECTION, "Setting $distro_to_setup...");
 
     # We check first if the distro is supported
     my @distros = OSCAR::Distro::get_list_of_supported_distros ();
@@ -257,12 +255,77 @@ if ($distro_to_setup) {
         exit 1;
     }
 
+    # Now make sure we have an oscar.conf file
+    oscar_log(5, INFO, "Making sure we have /etc/oscar/oscar.conf");
+    if (generate_config_file()) {
+        oscar_log(1, ERROR, "No way to have an oscar configuration file.");
+	exit 1;
+    }
+
+    oscar_log(5, INFO, "Loading /etc/oscar/oscar.conf");
+    require OSCAR::ConfigManager;
+    my $oscar_configurator = OSCAR::ConfigManager->new();
+    if ( ! defined ($oscar_configurator) ) {
+        oscar_log(1, ERROR, "Impossible to get the OSCAR configuration");
+        exit 1;
+    }
+    my $config = $oscar_configurator->get_config();
+
+    # Now make sure we have a tftp_dir (to setup distros URLs
+    my $tftp_dir = $config->{'tftp_dir'};
+    $tftp_dir = "/var/lib/tftpboot" if (! defined $tftp_dir);
+
+    oscar_log(5, INFO, "Making sure TFTP_DIR=$tftp_dir exists.");
+    if ( !-d "$tftp_dir" ) {
+	oscar_log(1, INFO, "Creating TFTP_DIR=$tftp_dir path.");
+        if (! make_path($tftp_dir, {
+			       chmod => 0755,
+		       })) {
+	       oscar_log(1, ERROR, "Failed to create oscar.conf:TFTP_DIR=$tftp_dir");
+               exit 1;
+        }
+    }
+
+    # Now make sure we have oda.pm linked to an available backend. (prereqs is dealt in Bootstrap)
+    # Where are the perl modules located?
+    my @data = Config::config_re("vendorlib");
+    if (scalar (@data) > 1 || scalar (@data) == 0) {
+        oscar_log(1, ERROR, "Impossible to know where are the Perl modules.");
+        exit 1;
+    }
+    my ($key, $path) = split ("=", $data[0]);
+    $path =~ m/\'(.*)\'/;
+    $path = $1;
+
+    my $dest = "$path/OSCAR/oda.pm"; # We need to find this or create it
+    unlink ($dest) if (-f $dest); # Remove old link as it may not match oscar.conf DB_TYPE.
+
+    oscar_log(1, INFO, "Setting up database backend: $path/OSCAR/oda.pm");
+    my $source = "$path/OSCAR/ODA/";
+    my $db_type = $config->{'db_type'};
+    if (defined ($db_type)) {
+        if ("$db_type" eq "mysql") {
+            $source = $source . "mysql.pm";
+        } elsif ("$db_type" eq "postgresql") {
+            $source = $source . "pgsql.pm";
+        } else {
+            oscar_log(1, ERROR, "Unknown database type (DB_TYPE=$db_type) in oscar.conf");
+	    exit 1;
+        }
+    }
+    oscar_log(5, INFO, "Using $source backend.");
+    if (symlink($source, $dest) == 0) {
+        oscar_log(1, ERROR, "Impossible to create symlink $source -> $dest");
+        exit 1;
+    }
+
     # Before setting up repositories; we remove existing repo files
     # in /tftpboot/distro and /tftpboot/oscar as we do not require previous
     # entries in those files. 
+    oscar_log(1, INFO, "Setting up $distro_to_setup urls in $tftp_dir.");
     my $compat_distro = OSCAR::PackagePath::get_compat_distro ($distro_to_setup);
-    my @conf_files = ("/tftpboot/distro/$distro_to_setup.url",
-                      "/tftpboot/oscar/$compat_distro.url");
+    my @conf_files = ("$tftp_dir/distro/$distro_to_setup.url",
+                      "$tftp_dir/oscar/$compat_distro.url");
     foreach my $f (@conf_files) {
         if (-f $f) {
             oscar_log(5, ACTION, "Removing file: $f");
@@ -341,7 +404,8 @@ if ($sanity_check) {
     my $sys_sanity_rc=0;
 
     oscar_log(5, INFO, "Checking system-sanity...");
-    ($sys_sanity_output,$sys_sanity_rc) = run_apitest("system-sanity.apb");
+    require OSCAR::Testing;
+    ($sys_sanity_output,$sys_sanity_rc) = OSCAR::Testing::run_apitest("system-sanity.apb");
     if($sys_sanity_rc > 0) {
         oscar_log(1, SUBSECTION, "Please fix error(s) before retrying.");
         exit 1;
@@ -378,7 +442,8 @@ if ($bootstrap) {
     init_log_file ("/var/log/oscar/bootstrap.log");
     oscar_log(2, INFO, "Bootstrapping OSCAR");
     oscar_log(5, INFO, "Checking bootstrap-sanity...");
-    ($sys_sanity_output,$sys_sanity_rc) = run_apitest("bootstrap-sanity.apb");
+    require OSCAR::Testing;
+    ($sys_sanity_output,$sys_sanity_rc) = OSCAR::Testing::run_apitest("bootstrap-sanity.apb");
     if($sys_sanity_rc > 0) {
         oscar_log(1, SUBSECTION, "Please fix error(s) before retrying.");
         exit 1;
@@ -397,7 +462,6 @@ if ($bootstrap) {
 }
 
 #EXIT_SUCCESS:
-#$ENV{OSCAR_VERBOSE} = $initial_verbose_value;
 exit 0;
 
 __END__
