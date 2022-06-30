@@ -1,0 +1,1 @@
+Removed this opkg from OSCAR. service disabling will be do in post install scripts.
