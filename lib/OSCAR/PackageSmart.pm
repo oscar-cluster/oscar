@@ -155,7 +155,7 @@ sub detect_pool_format ($) {
             $url = $pool . "/repodata/repomd.xml";
         }
         my $cmd = "wget --tries 10 --timeout=9 -S --delete-after -q $url";
-	$cmd = $cmd . "2> /dev/null" if($OSCAR::Env::oscar_verbose lt 5);
+	$cmd = $cmd . " 2> /dev/null" if($OSCAR::Env::oscar_verbose lt 5);
 #        oscar_log_subsection "Testing remote repository type by using ".
 #                             "command: $cmd... ";
         my @tokens = split (/\+/, $pool);
