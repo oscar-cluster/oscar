@@ -9,7 +9,6 @@
         <opkg>ganglia</opkg>
         <opkg>jobmonarch</opkg>
         <opkg>maui</opkg>
-        <opkg>mpich-oscar</opkg>
         <opkg>mtaconfig</opkg>
         <opkg>munge</opkg>
         <opkg>naemon</opkg>
