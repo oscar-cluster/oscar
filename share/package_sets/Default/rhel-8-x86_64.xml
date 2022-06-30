@@ -20,6 +20,7 @@
         <opkg>sc3</opkg>
         <opkg>selinux</opkg>
         <opkg>sis</opkg>
+	<opkg>slurm</opkg>
         <opkg>squid</opkg>
         <opkg>switcher</opkg>
         <opkg>sync-files</opkg>
