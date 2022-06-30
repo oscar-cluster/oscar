@@ -39,6 +39,7 @@ use File::Basename;
 use OSCAR::Env;
 use Carp;
 
+use OSCAR::Opkg;
 use OSCAR::Logger;
 use OSCAR::LoggerDefs;
 use OSCAR::SystemServicesDefs;
