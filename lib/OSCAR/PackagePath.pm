@@ -940,7 +940,7 @@ sub use_distro_repo ($$) {
 
     # FIXME: need to loop on @repos testing they are valid strings.
     my $tftpdir = get_tftpdir();
-    my $path = $tftpdir . "distro";
+    my $path = "$tftpdir/distro";
     if (! -d $path) {
         oscar_log(7, ACTION, "Creating $path");
         File::Path::mkpath ($path, 1, 0755) 
@@ -1018,7 +1018,7 @@ sub check_repo_configuration ($) {
 sub distro_repo_exists ($) {
     my $d = shift;
     my $tftpdir = get_tftpdir();
-    my $path = $tftpdir . "distro/" . $d;
+    my $path = "$tftpdir/distro/" . $d;
     return check_repo_configuration ($path);
 }
 
@@ -1031,7 +1031,7 @@ sub distro_repo_exists ($) {
 sub oscar_repo_exists {
     my $d = shift;
     my $tftpdir = get_tftpdir();
-    my $path = $tftpdir . "oscar/" . $d;
+    my $path = "$tftpdir/oscar/" . $d;
     return check_repo_configuration ($path);
 }
 
