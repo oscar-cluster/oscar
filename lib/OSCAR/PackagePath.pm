@@ -75,9 +75,6 @@ use Carp;
          $PGROUP_PATH
          );
 
-# BUG: OL: /tftpboot is no longer standard!
-# Need to use OSCAR::ConfigManager
-my $tftpdir = "/tftpboot/";
 
 # The possible places where packages may live.  
 @PKG_SOURCE_LOCATIONS = ("/usr/lib/oscar/packages");
@@ -285,7 +282,8 @@ sub get_urlfile ($%) {
     }
     my $distrover = $os->{distro_version};
     my $arch      = $os->{arch};
-    return "/tftpboot/$url_type/$distro-$distrover-$arch.url";
+    my $tftpdir = get_tftpdir();
+    return "$tftpdir/$url_type/$distro-$distrover-$arch.url";
 }
 
 #
@@ -301,7 +299,8 @@ sub distro_urlfile (%) {
     my $distro    = $os->{distro};
     my $distrover = $os->{distro_version};
     my $arch      = $os->{arch};
-    return "/tftpboot/distro/$distro-$distrover-$arch.url";
+    my $tftpdir = get_tftpdir();
+    return "$tftpdir/distro/$distro-$distrover-$arch.url";
 }
 
 #
@@ -318,7 +317,8 @@ sub oscar_urlfile (%) {
     my $cdistro   = $os->{compat_distro};
     my $cdistrover= $os->{compat_distrover};
     my $arch      = $os->{arch};
-    my $path = "/tftpboot/oscar/$cdistro-$cdistrover-$arch.url";
+    my $tftpdir = get_tftpdir();
+    my $path = "$tftpdir/oscar/$cdistro-$cdistrover-$arch.url";
     return ($path, $os->{pkg});
 }
 
@@ -401,7 +401,8 @@ sub oscar_repo_url (%) {
         return undef;
     }
     my $path = dirname($url)."/".basename($url, ".url");
-    my $comm = "/tftpboot/oscar/common-" . $pkg . "s";
+    my $tftpdir = get_tftpdir();
+    my $comm = "$tftpdir/oscar/common-" . $pkg . "s";
 
     #
     # Add local paths to .url file, if not already there
@@ -474,7 +475,8 @@ sub repo_local ($) {
 # this function will create by defaults directories/files to have local 
 # repositories.
 sub list_distro_pools () {
-    my $ddir = "/tftpboot/distro";
+    my $tftpdir = get_tftpdir();
+    my $ddir = "$tftpdir/distro";
     # recognised architectures
     my $arches = "i386|x86_64|ia64|ppc64";
     my %pools;
@@ -916,7 +918,8 @@ sub get_common_pool_id ($) {
     my $distro_id = shift;
     my ($distro, $ver, $arch) = decompose_distro_id ($distro_id);
     my $os = OSCAR::OCA::OS_Detect::open (fake=>{ distro=>$distro, distro_version=>$ver, arch=>$arch});
-    return ("/tftpboot/oscar/common-$os->{pkg}s");
+    my $tftpdir = get_tftpdir();
+    return ("$tftpdir/oscar/common-$os->{pkg}s");
 }
 
 ################################################################################
@@ -936,11 +939,11 @@ sub use_distro_repo ($$) {
     }
 
     # FIXME: need to loop on @repos testing they are valid strings.
-
+    my $tftpdir = get_tftpdir();
     my $path = $tftpdir . "distro";
     if (! -d $path) {
         oscar_log(7, ACTION, "Creating $path");
-        File::Path::mkpath ($path, 1, 0777) 
+        File::Path::mkpath ($path, 1, 0755) 
             or (oscar_log(5, ERROR, "Failed to create the directory $path"), 
                 return -1);
     }
@@ -968,9 +971,10 @@ sub use_oscar_repo ($$) {
         return -1;
     }
 
+    my $tftpdir = get_tftpdir();
     my $compat = get_compat_distro ($distro);
-    my $path = "/tftpboot/oscar/$compat";
-    my $repo_file = "/tftpboot/oscar/".$compat.".url";
+    my $path = "$tftpdir/oscar/$compat";
+    my $repo_file = "$tftpdir/oscar/".$compat.".url";
     push (@repos, $path) if (repo_empty ($path) == 0);
     $path = get_common_pool_id ($distro);
     push (@repos, $path) if (repo_empty ($path) == 0);
@@ -1013,6 +1017,7 @@ sub check_repo_configuration ($) {
 ################################################################################
 sub distro_repo_exists ($) {
     my $d = shift;
+    my $tftpdir = get_tftpdir();
     my $path = $tftpdir . "distro/" . $d;
     return check_repo_configuration ($path);
 }
@@ -1025,8 +1030,30 @@ sub distro_repo_exists ($) {
 ################################################################################
 sub oscar_repo_exists {
     my $d = shift;
+    my $tftpdir = get_tftpdir();
     my $path = $tftpdir . "oscar/" . $d;
     return check_repo_configuration ($path);
+}
+
+################################################################################
+# Return the TFTP_DIR value from /etc/oscar/oscar.conf                         #
+# Returns default value (/var/lib/tftpboot) if missing or bad value            #
+#                                                                              #
+# Input:                                                                       #
+# Return: tftpdir path.                                                        #
+################################################################################
+sub get_tftpdir {
+    require OSCAR::ConfigManager;
+    my $config = OSCAR::ConfigManager->new();
+    if ( ! defined $config || ! defined $config->{'tftp_dir'}) {
+	oscar_log(1, WARNING, "tftp_dir missing in OSCAR config file! Using /var/lib/tftpboot.");
+        return "/var/lib/tftpboot";
+    }
+    return $config->{'tftp_dir'} if ( -d "$config->{'tftp_dir'}" ); # We're ok.
+
+    oscar_log(1, ERROR, "Invalit tftp_dir in OSCAR config file [$config->{'tftp_dir'}]! Pleas fix!");
+    oscar_log(1, WARNING, "Using default stadard value: /var/lib/tftpboot as tftp_dir.");
+    return "/var/lib/tftpboot";
 }
 
 ################################################################################
@@ -1216,14 +1243,14 @@ sub generate_default_urlfiles ($) {
 
      if (use_default_distro_repo ($distro) == -1 ) {
 #    if (generate_default_oscar_urlfile ($distro) == -1) {
-        oscar_log(5, ERROR, "Failed to generate the default OSCAR url file ".
+        oscar_log(5, ERROR, "Failed to generate the default distro url file ".
              "($distro)");
         return -1;
     }
 
      if (use_default_oscar_repo ($distro) == -1 ) {
 #    if (generate_default_distro_urlfile ($distro) == -1) {
-        oscar_log(5, ERROR, "Failed to generate the default distro url file ".
+        oscar_log(5, ERROR, "Failed to generate the default OSCAR url file ".
              "($distro)");
         return -1;
     }
