@@ -198,7 +198,7 @@ Return:  1 if success, 0 else.
 sub run_pkg_script ($$$$) {
     my ($pkg, $phase, $verbose, $args) = @_;
     my $scripts = $PHASES{$phase};
-    oscar_log(5, SUBSECTION, "run_pkg_script for $pkg ($phase)");
+    oscar_log(5, INFO, "run_pkg_script for $pkg ($phase)");
     if (!$scripts) {
         oscar_log(5, ERROR, "No such phase '$phase' in OSCAR package API");
         return 0;
@@ -214,12 +214,16 @@ sub run_pkg_script ($$$$) {
         my $script = "$pkgdir/$scriptname";
         oscar_log(6, INFO, "Looking for $script...");
         if (-e $script) {
+            oscar_log(1, SUBSECTION, "Running $script.");
             chmod 0755, $script; # Should be useless.
             $ENV{OSCAR_PACKAGE_HOME} = $pkgdir;
             my $rc = oscar_system("$script $args");
             delete $ENV{OSCAR_PACKAGE_HOME};
             if ($rc) {
+                oscar_log(1, ERROR, "====> Failed to run $script");
                 return 0;
+            } else {
+                oscar_log(1, INFO, "====> Successfully ran $script");
             }
         }
     }

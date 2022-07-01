@@ -14,6 +14,19 @@
 #
 # 6.320220630git
 #
+BEGIN {
+    if (defined $ENV{OSCAR_HOME}) {
+        unshift @INC, "$ENV{OSCAR_HOME}/lib";
+    }
+    if (! eval qq{require AppConfig; }) {
+        print "ERROR: oscar-config needs perl AppConfig module.\n";
+        print "       Install perl(AppConfig) and retry.\n";
+        print "       dnf install perl-Appconfig        # (on rmd distro)\n";
+        print "       apt-get install libappconfig-perl # (on deb distro)\n";
+        exit 1;
+    }
+}
+
 
 use strict;
 #use Carp;
@@ -25,12 +38,6 @@ use OSCAR::Logger;
 use OSCAR::LoggerDefs;
 use File::Path qw( make_path );
 use warnings "all";
-
-BEGIN {
-    if (defined $ENV{OSCAR_HOME}) {
-        unshift @INC, "$ENV{OSCAR_HOME}/lib";
-    }
-}
 
 my ($distro_to_setup,
     $distro_repo,
@@ -446,12 +453,12 @@ if ($bootstrap) {
     my $sys_sanity_rc=0;
 
     init_log_file ("/var/log/oscar/bootstrap.log");
-    oscar_log(2, INFO, "Bootstrapping OSCAR");
+    oscar_log(1, SECTION, "Bootstrapping OSCAR");
     oscar_log(5, INFO, "Checking bootstrap-sanity...");
     require OSCAR::Testing;
     ($sys_sanity_output,$sys_sanity_rc) = OSCAR::Testing::run_apitest("bootstrap-sanity.apb");
     if($sys_sanity_rc > 0) {
-        oscar_log(1, SUBSECTION, "Please fix error(s) before retrying.");
+        oscar_log(1, ERROR, "Please fix error(s) before retrying.");
         exit 1;
     } else {
         oscar_log(2, INFO, "bootstrap-sanity OK.");

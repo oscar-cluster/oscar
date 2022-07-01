@@ -166,8 +166,8 @@ sub opkgs_install ($@) {
     oscar_log(3, INFO, "Need to install the following packages: " . join (", ", @olist));
     my ($err, @out) = $rm->install_pkg("/", @olist);
     if ($err) {
-        oscar_log(5, ERROR, "Problem occured during smart_install ($err):");
-        print join("\n",@out)."\n" if($OSCAR::Env::oscar_verbose >= 6);
+        oscar_log(1, ERROR, "Problem occured during smart_install ($err):");
+        print join("\n",@out)."\n" if($OSCAR::Env::oscar_verbose >= 5);
         return -1;
     }
     return 0;

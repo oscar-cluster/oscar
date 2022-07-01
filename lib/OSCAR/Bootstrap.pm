@@ -182,7 +182,7 @@ sub bootstrap_prereqs ($$) {
     # We get the current status of the prereq first
     $cmd = $ipcmd . " --status " . $prereq_path;
     my $prereq_name = basename ($prereq_path);
-    oscar_log(2, SUBSECTION, "Dealing with Prereq $prereq_name" .
+    oscar_log(1, INFO, "Dealing with Prereq $prereq_name" .
         "($prereq_path, $prereq_mode)");
     require OSCAR::PrereqsDefs;
     oscar_log(5, ACTION, "About to run: $cmd");
@@ -204,15 +204,17 @@ sub bootstrap_prereqs ($$) {
             oscar_log(5, ACTION, "About to run: $cmd");
             my $rc = system ($cmd);
             if ($rc == OSCAR::PrereqsDefs::PREREQ_MISSING()) {
-                oscar_log(5, ERROR, "$prereq_name is still not installed");
+                oscar_log(1, ERROR, "$prereq_name installation failed.");
                 return -1;
-            }
+            } else {
+                oscar_log(1, INFO, "$prereq_name installed.")
+	    }
         } elsif ($prereq_mode eq "check_only") {
             oscar_log(3, INFO, "$prereq_name needs to be installed.");
             return -1;
         }
     } else {
-        oscar_log(3, INFO, "$prereq_name is already installed, nothing to do.");
+        oscar_log(1, INFO, "$prereq_name is already installed, nothing to do.");
     }
 
     return 0;
@@ -234,7 +236,7 @@ sub bootstrap_prereqs ($$) {
 ################################################################################
 sub init_server ($) {
     my $configurator = shift;
-    oscar_log(2, SECTION, "Initializing server...");
+    oscar_log(1, SUBSECTION, "Initializing server...");
     if (!defined ($configurator)) {
         oscar_log(5, ERROR, "Invalid configurator object.");
         return -1;
@@ -248,7 +250,7 @@ sub init_server ($) {
     #
 
     my $db_type = $oscar_cfg->{'db_type'};
-    oscar_log(6, INFO, "Bootstrapping ODA using: " . $db_type);
+    oscar_log(1, INFO, "Bootstrapping ODA using: " . $db_type);
 
     my $cmd = $oscar_cfg->{'binaries_path'} . "/oda --init ";
     if (defined ($db_type)) {
@@ -262,7 +264,7 @@ sub init_server ($) {
         return -1;
     }
 
-    oscar_log(2, INFO, "Successfully Bootstrapped ODA.");
+    oscar_log(1, INFO, "Successfully Bootstrapped ODA.");
 
     #
     # Now that ODA is initialized, we can initialize its content.
@@ -274,8 +276,9 @@ sub init_server ($) {
 
     # The "set_global_oscar_values" scripts populates the following
     # tables: Clusters, Groups, and Status
-    oscar_log(2, SUBSECTION, "Setting all the OSCAR global values");
+    oscar_log(1, SUBSECTION, "Setting all the OSCAR global values");
     my $exit_status;
+    oscar_log(1, INFO, " - set_global_oscar_values...");
     my $interface = $oscar_cfg->{'nioscar'};
     if (defined $ENV{OSCAR_HOME}) {
         $cmd = "$ENV{OSCAR_HOME}/scripts/set_global_oscar_values ".
@@ -287,19 +290,21 @@ sub init_server ($) {
     if ($OSCAR::Env::oscar_verbose >= 10) {
         $cmd .= "  --debug";
     }
-    $exit_status = oscar_system($cmd)/256;
+    $exit_status = oscar_system($cmd);
     if ($exit_status) {
         oscar_log(5, ERROR, "Couldn't initialize the global database values table ".
               "($cmd, $exit_status)");
         return -1;
     }
 
+    oscar_log(1, INFO, " - create_and_populate_basic_node_info...");
     $cmd = $oscar_cfg->{'binaries_path'}."/create_and_populate_basic_node_info";
     if (oscar_system ($cmd)) {
         return -1;
     }
 
     # Storing data about package sets.
+    oscar_log(1, INFO, " - populate_default_package_set...");
     $cmd = $oscar_cfg->{'binaries_path'}."/populate_default_package_set";
     oscar_log(7, ACTION, "About to run: $cmd");
     my $exit_status = oscar_system($cmd);
@@ -309,31 +314,17 @@ sub init_server ($) {
     }
 
     #### NEW OPKG BOOTSTRAP: install all api pkgs so all config.xml files are available
-    oscar_log(2, INFO, "Installing all available api packages");
+    oscar_log(1, INFO, "Installing all available api packages..");
     require OSCAR::OpkgDB;
     my @all_opkgs = OSCAR::OpkgDB::opkg_list_available(class => "all");
-    oscar_log(4, INFO, "Available api opkgs: " . join(' ', @all_opkgs));
+    oscar_log(1, INFO, "Available api opkgs: " . join(' ', @all_opkgs));
 
-    # We install one OPKG at a time so if the installation of one OPKG fails,
-    # we can track it in details.
-    my @failed_api_opkgs;
-    foreach my $o (@all_opkgs) {
-      oscar_log(6, INFO, "Installing opkg-$o");
-      if (OSCAR::Opkg::opkgs_install ("api", $o)) {
-            push (@failed_api_opkgs, $o);
-        }
-    }
-    if (scalar (@failed_api_opkgs) > 0) {
-        oscar_log(5, ERROR, "Impossible to install the following OPKGs (API side): " .
-		join (" ", @failed_api_opkgs));
-        return -1;
-    }
-
-    oscar_log(2, INFO, "API opkgs installed.");
+    # We install all OPKGs in a raw. In case of failure, opkgs_install is smart enough
+    # to collect the error. (Anyway, api opkgs have no deps, so there is no reason for failure.
+    return -1 if (OSCAR::Opkg::opkgs_install ("api", @all_opkgs));
+ 
+    oscar_log(1, INFO, "API opkgs installed.");
     #### END NEW OPKG BOOTSTRAP
-
-    require OSCAR::Opkg;
-#    require OSCAR::Utils;
 
     oscar_log(2, INFO, "Working on core opkgs.");
     # Get the list of just core packages
@@ -377,7 +368,7 @@ sub init_server ($) {
 #        return -1;
 #    }
 
-    oscar_log(2, INFO, "Marking core packages as always selected...");
+    oscar_log(1, INFO, "Marking core packages as always selected...");
     my %selection_data = ();
     # We call ODA_Defs only here to avoid bootstrapping issues.
     # We get the list of OPKGs in the package set
@@ -403,9 +394,9 @@ sub init_server ($) {
 
     OSCAR::Database::set_opkgs_selection_data (%selection_data);
     # BUG: Check return of above function.
-    oscar_log(2, INFO, "Successfully set core opkgs as always selected.");
+    oscar_log(1, INFO, "Successfully set core opkgs as always selected.");
 
-    oscar_log(2, INFO, "Running opkg setup script.");
+    oscar_log(1, INFO, "Running opkg setup phase (api-pre-install script).");
     # Run the setup phase to allow opkg to self disable (set itself uninstallable)
     foreach my $o (@all_opkgs) {
         if(!OSCAR::Package::run_pkg_script($o, "setup", 1, "")) {
@@ -441,7 +432,7 @@ sub init_server ($) {
 # Return: a ConfigManager object if success, undef else.                       #
 ################################################################################
 sub bootstrap_stage0 () {
-    oscar_log(2, SUBSECTION, "Bootstrap stage 0");
+    oscar_log(1, SUBSECTION, "Running bootstrap stage 0");
     # Tricky situation: the software to parse the configuration file may not be
     # installed and the location of the information to install it is in the 
     # config file. Hopefully we know that the configuration file is 
@@ -500,6 +491,7 @@ sub bootstrap_stage0 () {
     my $version = $os->{distro_version};
     my $arch = $os->{arch};
     my $distro_id = "$distro-$version-$arch";
+    # BUG: OL: Already done in setup-distro?
     if (OSCAR::PackagePath::generate_default_urlfiles ($distro_id) == -1) {
         oscar_log(5, ERROR, "Unable to generate default url files in /tftpboot");
         return undef;
@@ -536,7 +528,7 @@ sub bootstrap_stage0 () {
 ################################################################################
 sub bootstrap_stage1 ($) {
     my $configurator = shift;
-    oscar_log(2, SUBSECTION, "Bootstrap stage 1");
+    oscar_log(1, SUBSECTION, "Running bootstrap stage 1");
     if (!defined $configurator) {
         oscar_log (5, ERROR, "Invalid configurator object.");
         return -1;
@@ -551,7 +543,7 @@ sub bootstrap_stage1 ($) {
     }
 
     my $prereq_mode = $config->{'prereq_mode'};
-    oscar_log(5, INFO, "Installing packman");
+    oscar_log(1, INFO, "Installing packman");
     if (bootstrap_prereqs ($packman_path, $prereq_mode)) {
         oscar_log(5, ERROR, "Impossible to install Packman.");
         return -1;
@@ -574,7 +566,7 @@ sub bootstrap_stage1 ($) {
     # TODO the location of the file we save is hardcoded, this is bad, We should
     # be able to specify that path via the OSCAR configuration file
     # DEPRECATED when using the new startover mechanism
-    oscar_log(5, INFO, "Keep track of currently installed packages. (obsolete)");
+    oscar_log(1, INFO, "Keep track of currently installed packages. (obsolete)");
     my $path = "/etc/oscar";
     mkdir $path if (! -d $path);
     if (save_preoscar_binary_list ($os, $path)) {
@@ -584,7 +576,7 @@ sub bootstrap_stage1 ($) {
     }
 
     # Then we install YUME (supported on both rpm and deb systems).
-    oscar_log(5, INFO, "Installing yume");
+    oscar_log(1, INFO, "Installing yume");
     my $yume_path = $config->{'yume_path'};
     if (bootstrap_prereqs ($yume_path, $prereq_mode)) {
         oscar_log(5, ERROR, "Impossible to install Yume");
@@ -593,7 +585,7 @@ sub bootstrap_stage1 ($) {
 
     # Then if the system is a Debian based system, we try to install RAPT
     if ($os->{pkg} eq "deb") {
-        oscar_log(5, INFO, "Also installing rapt");
+        oscar_log(1, INFO, "Also installing rapt");
         my $rapt_path = $config->{'rapt_path'};
         if (bootstrap_prereqs ($rapt_path, $prereq_mode)) {
             oscar_log(5, ERROR, "Impossible to install RAPT");
@@ -603,7 +595,7 @@ sub bootstrap_stage1 ($) {
 
     # Finally, since everything is installed to manage packages in the "smart
     # mode", we prepare all the pools for the local distro.
-    oscar_log(5, INFO, "Preparing local distro pools");
+    oscar_log(1, INFO, "Preparing local distro pools");
     require OSCAR::PackageSmart;
     my $pm = OSCAR::PackageSmart::prepare_distro_pools($os);
     if (!defined ($pm)) {
@@ -612,7 +604,7 @@ sub bootstrap_stage1 ($) {
     }
 
     # Now we try to install ORM
-    oscar_log(5, INFO, "Installing ORM");
+    oscar_log(1, INFO, "Installing ORM");
     my $orm_prereqs_path = $config->{'prereqs_path'} . "/ORM";
     my $prereq_mode = $config->{'prereq_mode'};
     if (install_prereq ($ipcmd, $orm_prereqs_path, $prereq_mode)) {
@@ -621,7 +613,7 @@ sub bootstrap_stage1 ($) {
     }
 
     # Now we try to install apitest
-    oscar_log(5, INFO, "Installing apitest");
+    oscar_log(1, INFO, "Installing apitest");
     my $apitest_prereqs_path = $config->{'prereqs_path'} . "/apitest";
     my $prereq_mode = $config->{'prereq_mode'};
     if (install_prereq ($ipcmd, $apitest_prereqs_path, $prereq_mode)) {
@@ -630,7 +622,7 @@ sub bootstrap_stage1 ($) {
     }
 
    # Now we try to install perl-GUIDeFATE
-    oscar_log(5, INFO, "Installing perl-GUIDeFATE.");
+    oscar_log(1, INFO, "Installing perl-GUIDeFATE.");
     my $selector_prereqs_path = $config->{'prereqs_path'} . "/perl-GUIDeFATE";
     my $prereq_mode = $config->{'prereq_mode'};
     if (install_prereq ($ipcmd, $selector_prereqs_path, $prereq_mode)) {
@@ -640,7 +632,7 @@ sub bootstrap_stage1 ($) {
     }
 
     # Now we try to install Selector
-    oscar_log(5, INFO, "Installing selector.");
+    oscar_log(1, INFO, "Installing selector.");
     my $selector_prereqs_path = $config->{'prereqs_path'} . "/Selector";
     my $prereq_mode = $config->{'prereq_mode'};
     if (install_prereq ($ipcmd, $selector_prereqs_path, $prereq_mode)) {
@@ -650,7 +642,7 @@ sub bootstrap_stage1 ($) {
     }
 
     # Now we try to install Configurator
-    oscar_log(5, INFO, "Installing configurator.");
+    oscar_log(1, INFO, "Installing configurator.");
     my $configurator_prereqs_path = $config->{'prereqs_path'} . "/Configurator";
     my $prereq_mode = $config->{'prereq_mode'};
     if (install_prereq ($ipcmd, $configurator_prereqs_path, $prereq_mode)) {
@@ -659,7 +651,7 @@ sub bootstrap_stage1 ($) {
         return -1;
     }
 
-    oscar_log(2, INFO, "Bootstrap stage 1 successfull");
+    oscar_log(1, INFO, "Bootstrap stage 1 successfull");
     return 0;
 }
 
@@ -677,7 +669,7 @@ sub bootstrap_stage1 ($) {
 ################################################################################
 sub bootstrap_stage2 ($) {
     my $configurator = shift;
-    oscar_log(2, SUBSECTION, "Bootstrap stage 2");
+    oscar_log(2, SUBSECTION, "Running bootstrap stage 2");
     if (!defined $configurator) {
         oscar_log(5, ERROR, "Invalid configurator object.");
         return -1;
@@ -685,15 +677,15 @@ sub bootstrap_stage2 ($) {
     my $config = $configurator->get_config();
 
     # First we install the basic prereqs
-    oscar_log(5, INFO, "Installing basic prereqs");
+    oscar_log(1, INFO, "Installing base (core) prereqs");
     my $baseprereqs_path = $config->{'prereqs_path'} . "/base";
     my $prereq_mode = $config->{'prereq_mode'};
     if (install_prereq ($ipcmd, $baseprereqs_path, $prereq_mode)) {
         oscar_log(5, ERROR, "Impossible to install base prereqs ($baseprereqs_path)");
         return -1;
     }
-    #oscar_log(5, INFO, "bootstrapping ODA.");
-    oscar_log(6, INFO, "Installing ODA prereqs.");
+
+    oscar_log(1, INFO, "Installing ODA prereqs.");
     my $odaprereqs_path = $config->{'prereqs_path'} . "/OSCAR-Database";
     my $prereq_mode = $config->{'prereq_mode'};
     if (install_prereq ($ipcmd, $odaprereqs_path, $prereq_mode)) {
@@ -707,13 +699,13 @@ sub bootstrap_stage2 ($) {
     # For that, read in the share/prereqs/prereqs.order file
     # It should contain prerequisite paths relative to $OSCAR_HOME, one per 
     # line.
-    oscar_log(5, INFO, "Installing other prereqs");
     my $prereqs_path = $config->{'prereqs_path'};
+    oscar_log(1, INFO, "Installing other prereqs from $prereqs_path/prereqs.order");
     my $prereq_mode = $config->{'prereq_mode'};
     my $orderfile = "$prereqs_path/prereqs.order";
     my @ordered_prereqs;
     if (! -f "$orderfile") {
-        oscar_log(5, ERROR, "Impossible to find the prereq ordering file".
+        oscar_log(1, ERROR, "Impossible to find the prereq ordering file".
               " ($orderfile)");
         return -1;
     }
@@ -728,10 +720,10 @@ sub bootstrap_stage2 ($) {
     }
     close (MYFILE);
     foreach my $prereq (@ordered_prereqs) {
-        oscar_log(6, INFO, "Installing prereq: $prereq");
+        oscar_log(1, INFO, "Installing prereq: $prereq");
         my $path = $prereq_path . "/" . basename ($prereq);
         if (install_prereq ($ipcmd, $path, $prereq_mode)) {
-            oscar_log(5, ERROR, "Impossible to install a prereq ($path).");
+            oscar_log(1, ERROR, "Impossible to install a prereq ($path).");
             return -1;
         }
     }
@@ -742,7 +734,7 @@ sub bootstrap_stage2 ($) {
         oscar_log(5, ERROR, "Impossible to install the server side of OSCAR");
         return -1;
     }
-    oscar_log(2, INFO, "Bootstrap stage 2 successfull");
+    oscar_log(1, INFO, "Bootstrap stage 2 successfull");
     return 0;
 }
 
