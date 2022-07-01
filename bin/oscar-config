@@ -106,10 +106,10 @@ sub display_list_supported_distros () {
     my @distros = OSCAR::Distro::get_list_of_supported_distros ();
     # The command line output is used by other tools so we are careful about
     # displaying only usefull information.
+    print "Supported distros:\n"
     foreach my $d (@distros) {
-        print $d . " ";
+        print " - $d\n";
     }
-    print "\n";
 }
 
 ################################################################################
@@ -246,12 +246,18 @@ if ($distro_to_setup) {
 
     return 1 if (force_run_as_root());
 
+    if ("$distro_to_setup" eq "--help") {
+        print "Usage: oscar-config --setup-distro <distro-to-setup>\n" .
+              "where <distro-to-setup> is one of the\n";
+	      display_list_supported_distros();
+    }
     oscar_log(1, SUBSECTION, "Setting $distro_to_setup...");
 
     # We check first if the distro is supported
     my @distros = OSCAR::Distro::get_list_of_supported_distros ();
     if (OSCAR::Utils::is_element_in_array ($distro_to_setup, @distros) == 0) {
         oscar_log(1, ERROR, "Unsupported distro ($distro_to_setup)");
+	display_list_supported_distros();
         exit 1;
     }
 
