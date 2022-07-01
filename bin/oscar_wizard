@@ -369,18 +369,18 @@ if ( $mode eq "install" ) {
    oscar_button($window, "Step $step_number:", 
                 "Select OSCAR Packages To Install...", 
                 [sub { return if (step_test($window,"packages_select"));
-                my $olddir = Cwd::cwd();
-                my $path;
-                if (defined ($ENV{OSCAR_HOME})) {
-                    $path = $ENV{OSCAR_HOME} . "/lib";
-                } else {
-                    $path = OSCAR::Utils::get_path_perl_modules();
-                }
-                $path .= "/Qt";
-                oscar_log_section ("$log_prefix Change directory: $path");
-                chdir ($path);
-                oscar_system('/usr/bin/perl Selector.pl');
-                chdir($olddir);
+#                my $olddir = Cwd::cwd();
+#                my $path;
+#                if (defined ($ENV{OSCAR_HOME})) {
+#			$path = $ENV{OSCAR_HOME} . "/lib";
+#                } else {
+#                    $path = OSCAR::Utils::get_path_perl_modules();
+#                }
+#                $path .= "/Qt";
+#                oscar_log_section ("$log_prefix Change directory: $path");
+#                chdir ($path);
+                oscar_system('/usr/bin/oscar-selector-gui');
+#                chdir($olddir);
                 }], 
                 'select_packages');
 
