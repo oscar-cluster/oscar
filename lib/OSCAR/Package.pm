@@ -214,7 +214,7 @@ sub run_pkg_script ($$$$) {
         my $script = "$pkgdir/$scriptname";
         oscar_log(6, INFO, "Looking for $script...");
         if (-e $script) {
-            oscar_log(1, SUBSECTION, "Running $script.");
+            oscar_log(1, INFO, "Running $script.");
             chmod 0755, $script; # Should be useless.
             $ENV{OSCAR_PACKAGE_HOME} = $pkgdir;
             my $rc = oscar_system("$script $args");

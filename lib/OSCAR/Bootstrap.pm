@@ -386,11 +386,11 @@ sub init_server ($) {
     require OSCAR::OCA::OS_Detect;
     my $os = OSCAR::OCA::OS_Detect::open();
     # TODO: Do that in setup script in opkg-rapt and opkg-yume
-    foreach my $opkg (@available_opkgs) {
-        next if ($os->{pkg} eq "rpm" and $opkg eq 'rapt');  # Done in setup phase of the opkg
-        next if ($os->{pkg} eq "deb" and $opkg eq 'yume');  # Done in setup phase of the opkg
-        $selection_data{$opkg} = (grep(/$opkg/,@core_opkgs)?$selected:$unselected);
-    }
+    #foreach my $opkg (@available_opkgs) {
+    #    next if ($os->{pkg} eq "rpm" and $opkg eq 'rapt');  # Done in setup phase of the opkg
+    #    next if ($os->{pkg} eq "deb" and $opkg eq 'yume');  # Done in setup phase of the opkg
+    #    $selection_data{$opkg} = (grep(/$opkg/,@core_opkgs)?$selected:$unselected);
+    #}
 
     OSCAR::Database::set_opkgs_selection_data (%selection_data);
     # BUG: Check return of above function.
@@ -414,7 +414,7 @@ sub init_server ($) {
         return -1;
     }
 
-    oscar_log(2, SUBSECTION, "API opkgs install and setup phase complete.");
+    oscar_log(1, INFO, "API opkgs install and setup phase complete.");
 
     return 0;
 }
