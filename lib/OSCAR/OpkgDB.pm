@@ -81,7 +81,7 @@ sub opkg_list_available {
     my $pkg = $os->{pkg};
     if ($pkg eq "rpm") {
 	my $verbose_switch="";
-	$verbose_switch="--verbose" if $OSCAR::Env::oscar_verbose;
+	$verbose_switch="--verbose" if $OSCAR::Env::oscar_verbose >= 5;
     	my $cmd="/usr/bin/yume $repo $verbose_switch --repoquery --nevra opkg-*-server";
         oscar_log(7, ACTION, "About to run: $cmd");
     	open CMD, "$cmd |" or die "Error: $!";
