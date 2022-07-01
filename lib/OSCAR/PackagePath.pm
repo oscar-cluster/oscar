@@ -1044,8 +1044,14 @@ sub oscar_repo_exists {
 ################################################################################
 sub get_tftpdir {
     require OSCAR::ConfigManager;
-    my $config = OSCAR::ConfigManager->new();
-    if ( ! defined $config || ! defined $config->{'tftp_dir'}) {
+    my $cm = OSCAR::ConfigManager->new();
+    if ( ! defined $cm ) {
+        oscar_log(1, ERROR, "Failed to read OSCAR configuration file!");
+        oscar_log(1, WARNING, "Using default stadard value: /var/lib/tftpboot as tftp_dir.");
+        return "/var/lib/tftpboot";
+    }
+    my $config = $cm->get_config();
+    if ((! defined $config ) || (! defined $config->{'tftp_dir'})) {
 	oscar_log(1, WARNING, "tftp_dir missing in OSCAR config file! Using /var/lib/tftpboot.");
         return "/var/lib/tftpboot";
     }
