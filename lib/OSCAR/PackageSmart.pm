@@ -155,7 +155,7 @@ sub detect_pool_format ($) {
             $url = $pool . "/repodata/repomd.xml";
         }
         my $cmd = "wget --tries 10 --timeout=9 -S --delete-after -q $url";
-	$cmd = $cmd . " 2> /dev/null" if($OSCAR::Env::oscar_verbose lt 5);
+	$cmd = $cmd . " 2> /dev/null" if($OSCAR::Env::oscar_verbose < 5);
 #        oscar_log_subsection "Testing remote repository type by using ".
 #                             "command: $cmd... ";
         my @tokens = split (/\+/, $pool);
@@ -393,7 +393,7 @@ sub prepare_distro_pools ($) {
         push (@pools, $repo);
     }
     oscar_log(5, INFO, "Pools to prepare for distro $distro_id:");
-    OSCAR::Utils::print_array (@pools);
+    OSCAR::Utils::print_array (@pools) if($OSCAR::Env::oscar_verbose >= 5);
 
     my $pm = OSCAR::PackageSmart::prepare_pools (@pools);
 

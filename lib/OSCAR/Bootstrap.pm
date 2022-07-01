@@ -116,7 +116,7 @@ sub install_prereq ($$$) {
     # We get the current status of the prereq first
     $cmd = $prereq_cmd . " --status " . $prereq_path;
     my $prereq_name = basename ($cmd);
-    oscar_log(2, SUBSECTION, "Dealing with Prereq $prereq_name");
+    oscar_log(5, INFO, "Dealing with Prereq $prereq_name");
     require OSCAR::PrereqsDefs;
     my $rc = oscar_system ($cmd);
     if ($rc == OSCAR::PrereqsDefs::PREREQ_MISSING()) {
@@ -131,7 +131,7 @@ sub install_prereq ($$$) {
         oscar_log(5, INFO, "Trying to install Prereq $prereq_name.");
         $cmd = $prereq_cmd . " --smart " . $prereq_path;
         if (oscar_system ($cmd)) {
-            oscar_log(5, ERROR, "Impossible to install $prereq_name ($cmd).");
+            oscar_log(1, ERROR, "Impossible to install $prereq_name ($cmd).");
             return -1;
         }
 
@@ -139,26 +139,26 @@ sub install_prereq ($$$) {
         $cmd = $prereq_cmd . " --status " . $prereq_path;
         $rc = oscar_system ($cmd);
         if ($rc == OSCAR::PrereqsDefs::PREREQ_MISSING()) {
-            oscar_log(5, ERROR, "$prereq_name is still not installed ($rc)");
+            oscar_log(1, ERROR, "$prereq_name is still not installed ($rc)");
             return -1;
         }
     } elsif ($rc == OSCAR::PrereqsDefs::PREREQ_INVALID()) {
-        oscar_log(5, ERROR, "Prereq $prereq_name not found.");
+        oscar_log(1, ERROR, "Prereq $prereq_name not found.");
         oscar_log(5, ERROR, "Impossible to install $prereq_name ($cmd).");
 	return -1;
     } elsif ($rc == OSCAR::PrereqsDefs::PREREQ_BADUSE()) {
-        oscar_log(5, ERROR, "Failed to run ($cmd). Bad syntax: Please report bug!");
+        oscar_log(1, ERROR, "Failed to run ($cmd). Bad syntax: Please report bug!");
         oscar_log(5, ERROR, "Impossible to install $prereq_name ($cmd).");
 	return -1;
     } elsif ($rc == OSCAR::PrereqsDefs::PREREQ_INSTALLED()) {
         oscar_log(2, INFO, "Prereq $prereq_name already installed. Nothing to do.");
         return 0;
     } else {
-	oscar_log(5, ERROR, "Unknown return code from ($cmd): $rc");
-	oscar_log(5, ERROR, "Please report bug!");
+	oscar_log(1, ERROR, "Unknown return code from ($cmd): $rc");
+	oscar_log(1, ERROR, "Please report bug!");
     }
 
-    oscar_log(2, INFO, "Successfully installed Prereq $prereq_name");
+    oscar_log(1, INFO, "Successfully installed Prereq $prereq_name");
 
     return 0;
 }
@@ -182,7 +182,7 @@ sub bootstrap_prereqs ($$) {
     # We get the current status of the prereq first
     $cmd = $ipcmd . " --status " . $prereq_path;
     my $prereq_name = basename ($prereq_path);
-    oscar_log(1, INFO, "Dealing with Prereq $prereq_name" .
+    oscar_log(5, INFO, "Dealing with Prereq $prereq_name" .
         "($prereq_path, $prereq_mode)");
     require OSCAR::PrereqsDefs;
     oscar_log(5, ACTION, "About to run: $cmd");
@@ -398,18 +398,19 @@ sub init_server ($) {
 
     oscar_log(1, INFO, "Running opkg setup phase (api-pre-install script).");
     # Run the setup phase to allow opkg to self disable (set itself uninstallable)
+    my @failed_opkgs_setup = ();
     foreach my $o (@all_opkgs) {
         if(!OSCAR::Package::run_pkg_script($o, "setup", 1, "")) {
-            oscar_log(5, ERROR, "Couldn't run setup script 'api-pre-install' for $o");
-            push (@failed_api_opkgs, $o);
+            oscar_log(1, ERROR, "Couldn't run setup script 'api-pre-install' for $o");
+            push (@failed_opkgs_setup, $o);
         } else {
             oscar_log(6, INFO, "Setup for opkg-$o completed successfully.");
         }
     }
 
-    if (scalar (@failed_api_opkgs) > 0) {
+    if (scalar (@failed_opkgs_setup) > 0) {
         oscar_log(5, ERROR, "Setup script failed for the following OPKGs (API side): " .
-		join (" ", @failed_api_opkgs));
+		join (" ", @failed_opkgs_setup));
         return -1;
     }
 
@@ -508,7 +509,7 @@ sub bootstrap_stage0 () {
         exit 1;
     }
 
-    oscar_log(2, INFO, "Bootstrap stage 0 successfull");
+    oscar_log(1, INFO, "Bootstrap stage 0 successfull");
     return $oscar_configurator;
 }
 

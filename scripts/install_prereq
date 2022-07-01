@@ -471,7 +471,7 @@ for my $p (@ARGV) {
 }
 
 if ($status) {
-    oscar_log(1, INFO, "Prereq status for $distro, ".
+    oscar_log(5, INFO, "Prereq status for $distro, ".
         "$distrover, $arch");
     my $ret = OSCAR::Prereqs::get_prereqs_status ($distro,
         $distrover,

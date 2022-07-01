@@ -209,6 +209,7 @@ if ($startover) {
             "to try to recover");
         exit 1;
         }
+    oscar_log(1, INFO, "Start over completed successfully.");
 #    goto EXIT_SUCCESS;
     exit 0;
 }
