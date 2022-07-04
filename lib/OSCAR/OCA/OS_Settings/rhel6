@@ -3,25 +3,20 @@ available_filesystems=ext2,ext3
 boot_filesystem=ext2
 root_filesystem=ext3
 
-# Init directory specific to this distribution
-init=/etc/rc.d/init.d 
-
 # Overwrite the name of few packages
-nfs_package=nfs-utils
-ssh_package=openssh-server
-portmap_package=rpcbind
+ntp_package=ntp
+mysql_package=mysql-server
 
 # Overwrite the name of few deamons
 
 # Overwrite the name of few services
-munge_service=munge
-nfs_service=nfs
-slurmd_service=slurm
-slurmctld_service=slurm
-slurmdbd_service=slurm
+ntp_service=ntpd
 
 # Overwrite the name of few configuration files
-dhcp_leases=/var/lib/dhcpd/dhcpd.leases
+ntp_configfile=/etc/ntp.conf
 
 # Overwrite the name of few directories
-pxe_dir=/usr/share/syslinux/
+ntp_dir=/etc/ntp
+
+# Package manager
+package_manager=yum
