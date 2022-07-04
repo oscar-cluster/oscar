@@ -42,8 +42,10 @@ use Carp;
 	     opkg_hash_available
 	     opkg_list_installed
 	     opkg_hash_installed
-         opkg_api_path
-         oscar_repostring
+	     opkg_api_path
+	     opkg_get_config_xml_file
+	     opkg_get_configurator_file
+	     oscar_repostring
 	     );
 
 #$verbose = 1;
@@ -421,17 +423,17 @@ sub opkg_hash_installed ($%) {
 }
 
 ####
-# opkg_api_path
+# opkg_get_config_xml_file.
 #
-# Returns the path where the opkg API stuff for a given OPKG is installed, by
+# Returns the path where the opkg config.xml stuff for a given OPKG is installed, by
 # querying the local RPM/DEB database for the location of the config.xml file
 # (the config.xml file is allways there).
 # The opkg-API package must be installed locally!
 #
 # Input: name of the OPKG we are looking for.
-# Return: path name (where the config.xml file is), undef if error.
+# Return: absolute path for config.xml file, undef if error.
 ####
-sub opkg_api_path ($) {
+sub opkg_get_config_xml_file ($) {
     my ($name) = @_;
     my $p = "opkg-$name";
 
@@ -446,7 +448,39 @@ sub opkg_api_path ($) {
         oscar_log(5, ERROR, "ERROR: Unsupported packaging type: $os->{pkg}");
         return undef;
     }
-    return dirname($path) if $path;
+    return $path if $path;
+    # else return undef
+}
+
+####
+# opkg_api_path
+#
+# Returns the opkg API path where all opkg stuffs are located.
+#
+# Input: name of the OPKG we are looking for.
+# Return: absolute path where opkg API stuffs are.
+####
+sub opkg_api_path ($) {
+	my ($name) = @_;
+	oscar_log(5, ERROR, "ERROR: Undefined name") if(! defined ($name));
+	my $opkg_config_xml_file = opkg_get_config_xml_file($name);
+        return dirname($opkg_config_xml_file) if (-e "$opkg_config_xml_file");
+	# else return undef
+}
+
+####
+# opkg_get_configurator_file
+#
+# Returns the opkg configurator file if it exists.
+#
+# Input: name of the OPKG we are looking for.
+# Return: absolute path of configurator.html file or undef.
+####
+sub opkg_get_configurator_file ($) {
+	my ($name) = @_;
+	my $opkg_root = opkg_api_path($name);
+        return "$opkg_root/configurator.html" if (-e "$opkg_root/configurator.html");
+	# else return undef
 }
 
 ####
