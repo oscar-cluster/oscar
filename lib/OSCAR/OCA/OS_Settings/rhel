@@ -15,13 +15,20 @@ portmap_package=rpcbind
 
 # Overwrite the name of few services
 munge_service=munge
-yum_configfile=/etc/yum.conf
+mysql_service=mariadb
+ntp_service=chrony
+tftp_service=tftpd
 
 # Overwrite the name of few configuration files
 dhcp_leases=/var/lib/dhcpd/dhcpd.leases
+mysql_configfile=/etc/my.cnf.d/server.cnf
+ntp_configfile=/etc/chrony.conf
+yum_configfile=/etc/yum.conf
 
 # Overwrite the name of few directories
+mysql_configdir=/etc/my.cnf.d/
 pxe_dir=/usr/share/syslinux/
+ntp_dir=/etc
 
 # Package manager
-package_manager=yum
+package_manager=dnf

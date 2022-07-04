@@ -1,14 +1,18 @@
 # rhel specific settings (valid for rhel, centos)
 
 # Overwrite the name of few packages
+ntp_package=ntp
 
 # Overwrite the name of few deamons
 
 # Overwrite the name of few services
+ntp_service=ntpd
 
 # Overwrite the name of few configuration files
+ntp_configfile=/etc/ntp.conf
 
 # Overwrite the name of few directories
+ntp_configdir=/etc/ntp
 
 # Package manager
 package_manager=yum
