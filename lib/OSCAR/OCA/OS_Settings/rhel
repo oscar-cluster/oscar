@@ -8,6 +8,7 @@ init=/etc/rc.d/init.d
 
 # Overwrite the name of few packages
 nfs_package=nfs-utils
+ntp_package=chrony
 ssh_package=openssh-server
 portmap_package=rpcbind
 
@@ -16,7 +17,7 @@ portmap_package=rpcbind
 # Overwrite the name of few services
 munge_service=munge
 mysql_service=mariadb
-ntp_service=chrony
+ntp_service=chronyd
 tftp_service=tftpd
 
 # Overwrite the name of few configuration files
