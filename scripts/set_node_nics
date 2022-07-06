@@ -807,27 +807,28 @@ sub find_nics {
             next   if ($nic->{link_type} eq "loopback"); # ignore loopback
             next   if ($nic->{operstate} eq "DOWN"); # Ignore unconfigured interfaces
             next   if ($nic->{address} eq "00:00:00:00:00:00");
-            if (scalar( @{$nic->{addr_info}} ) gt 1) {
-                warn "$0: only one IP addr supported per nic.";
+            my @ipv4_infos = grep { $_->{family} eq 'inet' } @{ $nic->{addr_info} };
+            if (scalar( @ipv4_infos ) gt 1) {
+                warn "$0: only one IP iv4 addr supported per nic.";
             }
-            if (scalar( @{$nic->{addr_info}} ) eq 0) {
+            if (scalar( @ipv4_infos ) eq 0) {
                 push @$error_strings_ref, 
                 "$0: ip information missing while interface is not DOWN.\n";
-	        next;
+            next;
             }
 
-	    my %nic_found = process_nic(defined $print_errors,
-                $nic->{addr_info}[0]->{local},     # ip
-                $nic->{address},                   # mac
-                $nic->{addr_info}[0]->{broadcast}, # broadcast
-                $nic->{addr_info}[0]->{prefixlen}, # cidr netmask
-                $nic->{ifname},                    # name
-	        $nic->{addr_info}[0]->{label});    # label: same as name in most of cases.
+            my %nic_found = process_nic(defined $print_errors,
+                $ipv4_infos[0]->{local},     # ip
+                $nic->{address},             # mac
+                $ipv4_infos[0]->{broadcast}, # broadcast
+                $ipv4_infos[0]->{prefixlen}, # cidr netmask
+                $nic->{ifname},              # name
+                $ipv4_infos[0]->{label});    # label: same as name in most of cases.
 
-	# save this nic's information in our nics hash if it is valid
-	    if(%nic_found) {
+            # save this nic's information in our nics hash if it is valid
+            if(%nic_found) {
                 $nics{$nic->{ifname}} = \%nic_found;
-	    }
+           }
         }
     }
 
