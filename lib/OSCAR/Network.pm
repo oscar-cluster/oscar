@@ -415,7 +415,7 @@ sub update_hosts ($) {
 
     # We now check whether the new aliases are unique or not (they should!).
     foreach my $alias (@aliases) {
-        my $cmd = "grep -E '\s+$alias"."[\s+,\$]*' /etc/hosts";
+        my $cmd = "grep -E '\\s+$alias"."[\\s+,\$]*' /etc/hosts";
         my @res = `$cmd`;
         if (scalar @res > 1) {
             oscar_log(1, ERROR, "Several entries in /etc/hosts include $alias,".
