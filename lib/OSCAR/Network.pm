@@ -469,6 +469,73 @@ sub get_host_ip ($) {
     return $my_ip;
 }
 
+
+################################################################################
+# This function loads /etc/exports informations
+# input: export path.
+# Output: export hash
+#         undef if error
+################################################################################
+sub load_exports ($) {
+    my $exports_path = shift;
+    my %exports;
+    my $fsid = 1;
+    if (! -f "$exports_path") {
+        oscar_log(1, ERROR, "exports config file [$exports_path] not found!");
+	return 0;
+    }
+    open(IN,"<$exports_path") or return undef;
+    while(<IN>) {
+        next if (! /\S/); # Ignore blank lines
+        next if ( /^i\s*#/ ); # Ignore comments
+        my @line = split (/\s+/);
+        my $exported_path = shift @line;
+        if(! -d "$exported_path") {
+            print "exported parh [$exported_path] does not exists!";
+        }
+        my @permissions = ();
+        foreach(@line) {
+            my ($scope, @params) = split /[\(,\,\)]+/;
+            # Add mandatory fsid if missing.
+            if ( ! grep /^fsid=/, @params ) { # if fsid missing: add it.
+                push @params, "fsid=$fsid";
+                $fsid +=1
+            }
+            push @permissions, { scope => $scope , params => \@params };
+        }
+        $exports{$exported_path} = \@permissions;
+    }
+    close(IN);
+    return %exports;
+}
+
+################################################################################
+# This function writs /etc/export from hash infos
+# input: $export_path
+#        exports hash infos
+# Output: 1 if success
+#         0 if failure
+################################################################################
+sub write_exports ($%) {
+    my $exports_path = shift;
+    my %exports = @_;
+    if (! -f "$exports_path") {
+        oscar_log(1, ERROR, "exports config file [$exports_path] not found!");
+	return 0;
+    }
+    open(OUT, ">$exports_path") or return 0;
+    foreach $key (keys %exports) {
+        my $line = "$key\t";
+        foreach my $permission_ref (@{$exports{$key}}) {
+            $line .= $permission_ref->{scope}."(".join(",",@{$permission_ref->{params}}).") ";
+        }
+        $line =~ s/\s+$//;
+        print OUT "$line\n";
+    }
+    close(OUT);
+    return 1;
+}
+
 ################################################################################
 # This function test if headnode iface is on a private network.
 # input: none
