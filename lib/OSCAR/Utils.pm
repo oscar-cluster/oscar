@@ -268,7 +268,7 @@ sub print_hash ($$$); # Prototype to avoid warnings when recursive calls of
                       # print_hash are made.
 sub print_hash ($$$) {
     my ($leading_spaces, $name, $hashref) = @_;
-    OSCAR::Logger::oscar_log(5, INFO, "Hash content: -- $leading_spaces$name:");
+    OSCAR::Logger::oscar_log(5, INFO, "Hash content:\n -- $leading_spaces$name:");
     foreach my $key (sort keys %$hashref) {
         my $value = $$hashref{$key};
         if (ref($value) eq "HASH") {
