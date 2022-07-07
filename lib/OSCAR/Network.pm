@@ -390,7 +390,7 @@ sub update_hosts ($) {
             }
             # print the modified line.
             print OUT join( " ", @items ), " $comment\n";
-        } elsif( $line =~ /$hostname/ ) {  # mjc - 12/13/01
+        } elsif( $line =~ /\s+$hostname(?=\s+|$)/ ) {  # ol - smarter match mjc - 12/13/01
             # Not the same ip, but same hostname, save this line for now
             $hostlines[$#hostlines + 1] = $line;
         } else {
