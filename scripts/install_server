@@ -288,14 +288,14 @@ sub update_exports ($$) {
                                  ];
     } else {
         oscar_log(5, INFO, "Checking export flags in '/home' exports [$exports]");
-        # update existing entry (add missing params from @std_params
+        # update existing entry (add missing params from @std_params)
 	foreach my $perm_ref ( @{$exports_hash{"/home"}} ) {
             my %saved_results_hash = map { $_=>1 } @ { $perm_ref->{params} } ;
             # Check parameters
             my @result = grep { !exists $saved_results_hash{$_} } @std_params;
             if (scalar @result) { # If we found some missing parameters:
                 oscar_log(1, INFO, "Adding the folloging flag(s) to /home export (".
-		    join(',',@result);
+		    join(',',@result));
                 push @{$perm_ref->{params}}, @result; # Add them
 	    }
         }
