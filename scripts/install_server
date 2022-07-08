@@ -279,6 +279,7 @@ sub update_exports ($$) {
     my %exports_hash = load_exports($exports);
     my @std_params = ('async','rw','no_root_squash');
     if (! defined($exports_hash{"/home"})) { # Need to add the export (TODO: find unused fsid)
+        oscar_log(1, INFO, "Adding '/home' to exports [$exports]");
 	$exports_hash{"/home"} = [
                                      {
                                          'scope' => "$ip/$netmask",
@@ -286,16 +287,21 @@ sub update_exports ($$) {
                                      }
                                  ];
     } else {
-            # update existing entry (add missing params from @std_params
-	    foreach my $perm_ref ( @{$exports_hash{"/home"}} ) {
-		    my %saved_results_hash = map { $_=>1 } @ { $perm_ref->{params} } ;
-		    # Check parameters
-                    my @result = grep { !exists $saved_results_hash{$_} } @std_params;
-                    push @{$perm_ref->{params}}, @result; # Add missing parameters
-            }
+        oscar_log(5, INFO, "Checking export flags in '/home' exports [$exports]");
+        # update existing entry (add missing params from @std_params
+	foreach my $perm_ref ( @{$exports_hash{"/home"}} ) {
+            my %saved_results_hash = map { $_=>1 } @ { $perm_ref->{params} } ;
+            # Check parameters
+            my @result = grep { !exists $saved_results_hash{$_} } @std_params;
+            if (scalar @result) { # If we found some missing parameters:
+                oscar_log(1, INFO, "Adding the folloging flag(s) to /home export (".
+		    join(',',@result);
+                push @{$perm_ref->{params}}, @result; # Add them
+	    }
+        }
     }
     write_exports ($exports, %exports_hash) or return -1;
-    oscar_log(5, INFO, "exports file [$exports] updated with /home entry.");
+    oscar_log(5, INFO, "exports file [$exports] updated.");
 
     return 0;
 }
