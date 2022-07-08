@@ -277,12 +277,12 @@ sub update_exports ($$) {
         or (oscar_log(5, ERROR, "Couldn't backup exports config file ($exports)"), return -1);
 
     my %exports_hash = load_exports($exports);
-    my @std_params = ('async','rw','no_root_squash','fsid=1');
+    my @std_params = ('async','rw','no_root_squash');
     if (! defined($exports_hash{"/home"})) { # Need to add the export (TODO: find unused fsid)
 	$exports_hash{"/home"} = [
                                      {
                                          'scope' => "$ip/$netmask",
-                                         'params' => ['async','rw','no_root_squash','fsid=1']
+                                         'params' => \@std_params
                                      }
                                  ];
     } else {
