@@ -9,7 +9,7 @@
 #                    All rights reserved.
 # Copyright (c) 2008 Paul Greidanus <paul@majestik.org>
 #                    All rights reserved
-# $Id$
+# 6.320220707git
 # 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 #   This is a script which does everything that needs to be done for
 #   the server to work for oscar.  It is long, but hopefully well structured.
 
-# $Id$
+# 6.320220707git
 
 BEGIN {
     if (defined $ENV{OSCAR_HOME}) {
@@ -276,31 +276,26 @@ sub update_exports ($$) {
     backup_file_if_not_exist($exports)
         or (oscar_log(5, ERROR, "Couldn't backup exports config file ($exports)"), return -1);
 
-    open(IN,"<$exports.oscarbak") or return -1;
-    open(OUT,">$exports") or (close(IN), return -1);
-    oscar_log(6, INFO, "Checking for /home export");
-    while (<IN>) {
-        if (/^\/home/) {
-            oscar_log(6, INFO, "Found /home entry");
-            $done=1;
-            if (/$ip\/$netmask\(async,rw,no_root_squash\)/) {
-                oscar_log(6, INFO, "Existing /home entry ok, preserved");
-                print OUT $_;
-            } else {
-                oscar_log(6, INFO, "Existing /home modified");
-                chomp;
-                print OUT $_." $ip/$netmask(async,rw,no_root_squash)\n";
+    my %exports_hash = load_exports($exports);
+    my @std_params = ('async','rw','no_root_squash','fsid=1');
+    if (! defined($exports_hash{"/home"})) { # Need to add the export (TODO: find unused fsid)
+	$exports_hash{"/home"} = [
+                                     {
+                                         'scope' => "$ip/$netmask",
+                                         'params' => ['async','rw','no_root_squash','fsid=1']
+                                     }
+                                 ];
+    } else {
+            # update existing entry (add missing params from @std_params
+	    foreach my $perm_ref ( @{$exports_hash{"/home"}} ) {
+		    my %saved_results_hash = map { $_=>1 } @ { $perm_ref->{params} } ;
+		    # Check parameters
+                    my @result = grep { !exists $saved_results_hash{$_} } @std_params;
+                    push @{$perm_ref->{params}}, @result; # Add missing parameters
             }
-        } else {
-            print OUT $_;
-        }
     }
-    unless ($done) {
-        oscar_log(6, INFO, "Adding /home export");
-        print OUT "/home $ip/$netmask(async,rw,no_root_squash)\n";
-    }
-    close(OUT);
-    close(IN);
+    write_exports ($exports, %exports_hash) or return -1;
+    oscar_log(5, INFO, "exports file [$exports] updated with /home entry.");
 
     return 0;
 }
