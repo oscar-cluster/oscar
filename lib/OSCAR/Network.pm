@@ -481,7 +481,7 @@ sub get_host_ip ($) {
 sub load_exports ($) {
     my $exports_path = shift;
     my %exports;
-    my $fsid = 1;
+    #    my $fsid = 1;
     if (! -f "$exports_path") {
         oscar_log(1, ERROR, "exports config file [$exports_path] not found!");
 	return 0;
@@ -499,10 +499,10 @@ sub load_exports ($) {
         foreach(@line) {
             my ($scope, @params) = split /[\(,\,\)]+/;
             # Add mandatory fsid if missing.
-            if ( ! grep /^fsid=/, @params ) { # if fsid missing: add it.
-                push @params, "fsid=$fsid";
-                $fsid +=1
-            }
+	    #            if ( ! grep /^fsid=/, @params ) { # if fsid missing: add it.
+	    #                push @params, "fsid=$fsid";
+	    #                $fsid +=1
+	    #            }
             push @permissions, { scope => $scope , params => \@params };
         }
         $exports{$exported_path} = \@permissions;
@@ -512,7 +512,7 @@ sub load_exports ($) {
 }
 
 ################################################################################
-# This function writs /etc/export from hash infos
+# This function writes /etc/export from hash infos
 # input: $export_path
 #        exports hash infos
 # Output: 1 if success
@@ -528,7 +528,7 @@ sub write_exports ($%) {
     open(OUT, ">$exports_path") or return 0;
     foreach my $key (keys %exports) {
         my $line = "$key\t";
-        foreach my $permission_ref (@{$exports{$key}}) {
+        foreach my $permission_ref ( @{$exports{$key}} ) {
             $line .= $permission_ref->{scope}."(".join(",",@{$permission_ref->{params}}).") ";
         }
         $line =~ s/\s+$//;
