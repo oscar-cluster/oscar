@@ -50,6 +50,8 @@ use base qw(Exporter);
             is_head_nic_private
             set_network_adapter
             get_host_ip
+            load_exports
+            write_exports
             update_hosts
             update_head_nic
             );
@@ -524,7 +526,7 @@ sub write_exports ($%) {
 	return 0;
     }
     open(OUT, ">$exports_path") or return 0;
-    foreach $key (keys %exports) {
+    foreach my $key (keys %exports) {
         my $line = "$key\t";
         foreach my $permission_ref (@{$exports{$key}}) {
             $line .= $permission_ref->{scope}."(".join(",",@{$permission_ref->{params}}).") ";
