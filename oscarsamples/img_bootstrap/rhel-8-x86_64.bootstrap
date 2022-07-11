@@ -1,4 +1,4 @@
-# File centos-8-x86_64.bootstrap
+# File rhel-8-x86_64.bootstrap
 
 # The following files need to be copied from head before installing anything.
 copy /etc/passwd
@@ -21,7 +21,7 @@ bind /tmp
 path /var/lib/dnf
 
 # Core OS packages
-pkgs system-release setup filesystem
+pkgs system-release setup filesystem basesystem coreutils-single
 pkgs ldconfig dnf passwd vim-minimal dhclient authselect
 
 # End

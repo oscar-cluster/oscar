@@ -1,4 +1,4 @@
-# File centos-7-x86_64.cleanup
+# File rhel-9-x86_64.cleanup
 unbind /dev
 unbind /proc
 unbind /sys

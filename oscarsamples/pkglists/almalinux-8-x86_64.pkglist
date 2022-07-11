@@ -4,7 +4,6 @@ atk
 authselect
 authselect-compat
 autofs
-basesystem
 bash
 bc
 beecrypt
@@ -17,7 +16,6 @@ almalinux-logos
 almalinux-release
 chkconfig
 chrony
-coreutils-single
 cpio
 cpp
 cracklib
