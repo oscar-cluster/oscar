@@ -481,9 +481,9 @@ sub list_distro_pools () {
     my $arches = "i386|x86_64|ia64|ppc64";
     my %pools;
     local *DIR;
-    opendir DIR, $ddir 
-        or (oscar_log(5, ERROR, "Could not read directory $ddir!"), return undef);
-    for my $e (readdir DIR) {
+    opendir ( DIR, $ddir )
+        || (oscar_log(5, ERROR, "Could not read directory $ddir!"), return undef);
+    for my $e (readdir(DIR)) {
         if ( ($e =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) ||
             ($e =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
             my $distro = "$1-$2-$3";
