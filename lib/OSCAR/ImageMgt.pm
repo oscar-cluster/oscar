@@ -233,8 +233,8 @@ sub do_post_image_creation ($) {
     # 3rd: We create the SystemImager auto_install scripts for the image.
     #
     my $config_dir = "/etc/systemimager";
-    my $auto_install_script_conf = "${images_path}/${imagename}${config_dir}/disks-layout.xml";
-    SystemImager::Server->validate_auto_install_script_conf( $auto_install_script_conf );
+    my $disks_layout_file = "${images_path}/${imagename}${config_dir}/disks-layout.xml";
+    SystemImager::Server->validate_disks_layout( $disks_layout_file );
 
     my $ip_assignment_method = "static";
     $ip_assignment_method = $$vars{ipmeth} if defined($$vars{ipmeth});
@@ -259,7 +259,7 @@ sub do_post_image_creation ($) {
         $ip_assignment_method,
         $post_install,
         $no_listing,
-        $auto_install_script_conf,
+        $disks_layout_file,
         $autodetect_disks);
 
     oscar_log(5, INFO, "New autoinstall script has been created for this image: $autoinstall_script_dir/$script_name.master");

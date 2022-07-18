@@ -181,9 +181,9 @@ print "!!!!!!\n";
 
 # create autoinstallscript
 print ":> Creating autoinstall script for image.\n";
-my $auto_install_script_conf = "${imagedir}/etc/systemimager/disks-layout.xml";
+my $disks_layout_file = "${imagedir}/etc/systemimager/disks-layout.xml";
 
-SystemImager::Server->validate_auto_install_script_conf( $auto_install_script_conf );
+SystemImager::Server->validate_disks_layout( $disks_layout_file );
 
 my $ip_assignment_method = "static";
 $post_install = "reboot" if !($post_install);
@@ -200,7 +200,7 @@ SystemImager::Server->create_autoinstall_script(
         $ip_assignment_method,
         $post_install,
         $no_listing,
-	$auto_install_script_conf,
+	$disks_layout_file,
 	$autodetect_disks
 );
 
