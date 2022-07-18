@@ -233,7 +233,7 @@ sub do_post_image_creation ($) {
     # 3rd: We create the SystemImager auto_install scripts for the image.
     #
     my $config_dir = "/etc/systemimager";
-    my $auto_install_script_conf = "${images_path}/${imagename}${config_dir}/autoinstallscript.conf";
+    my $auto_install_script_conf = "${images_path}/${imagename}${config_dir}/disks-layout.xml";
     SystemImager::Server->validate_auto_install_script_conf( $auto_install_script_conf );
 
     my $ip_assignment_method = "static";

@@ -131,7 +131,7 @@ $nimage->arch($arch) if ($arch);
 set_image($nimage);
 
 
-# add autoinstallscript.conf to image if disktable was passed
+# add disks-layout.xml to image if disktable was passed
 # this step also generates the systemconfig.conf file
 if ($disktab) {
     print ":> Adding disk table $disktab to image $image.\n";
@@ -181,7 +181,7 @@ print "!!!!!!\n";
 
 # create autoinstallscript
 print ":> Creating autoinstall script for image.\n";
-my $auto_install_script_conf = "${imagedir}/etc/systemimager/autoinstallscript.conf";
+my $auto_install_script_conf = "${imagedir}/etc/systemimager/disks-layout.xml";
 
 SystemImager::Server->validate_auto_install_script_conf( $auto_install_script_conf );
 
