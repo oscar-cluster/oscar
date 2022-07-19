@@ -124,7 +124,7 @@ if ( -f "$flamethrower_conf" ) {
         die "ERROR: Cannot add entry to $flamethrower_conf";
 } else {
     print ":> flamethrower.conf not present; skipping flamethrower configuration for image $image .\n";
-}    
+}
 
 # integrate into database
 print ":> Integrating image into SIS database.\n";
