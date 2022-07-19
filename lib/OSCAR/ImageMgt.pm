@@ -883,17 +883,20 @@ sub cleanup_sis_configfile ($) {
         return -1;
     }
 
-    oscar_log(4, ACTION, "Cleaning up $image from flamethrower config.");
     my $flamethrower_conf = "/etc/systemimager/flamethrower.conf";
-    require SystemImager::Common;
-    SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, 
+    if ( -f $flamethrower_conf ) {
+        oscar_log(4, ACTION, "Cleaning up $image from flamethrower config.");
+        require SystemImager::Common;
+        SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, 
                                                         $image) or
-        (oscar_log(5, ERROR, "Impossible to update the flamethrower config file."));
+            (oscar_log(5, ERROR, "Impossible to update the flamethrower config file."));
 
-    SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, 
+        SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, 
                                                         "override_$image") or
-        (oscar_log(5, ERROR, "Impossible to update the flamethrower config file"));
-
+            (oscar_log(5, ERROR, "Impossible to update the flamethrower config file"));
+    } else {
+        oscar_log(5, INFO, "No flathrower.conf, nothing to clean here.");
+    }
     return 0;
 }
 

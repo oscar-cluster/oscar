@@ -111,17 +111,20 @@ my $script_name=$image;
 print ":> Adding image entry to flamethrower config file\n";
 
 my $flamethrower_conf = "/etc/systemimager/flamethrower.conf";
-my $entry_name = $image;
-my $new_entry_data = "[$image]\nDIR = $imagedir\n";
-SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, $entry_name, $new_entry_data) or
-    die "ERROR: Cannot add entry to $flamethrower_conf";
+if ( -f "$flamethrower_conf" ) {
+    my $entry_name = $image;
+    my $new_entry_data = "[$image]\nDIR = $imagedir\n";
+    SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, $entry_name, $new_entry_data) or
+        die "ERROR: Cannot add entry to $flamethrower_conf";
 
-# Add override entry to flamethrower.conf file
-$entry_name = "override_" . $image;
-$new_entry_data = "[override_$image]\nDIR = /var/lib/systemimager/overrides/$image\n";
-SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, $entry_name, $new_entry_data) or
-    die "ERROR: Cannot add entry to $flamethrower_conf";
-
+    # Add override entry to flamethrower.conf file
+    $entry_name = "override_" . $image;
+    $new_entry_data = "[override_$image]\nDIR = /var/lib/systemimager/overrides/$image\n";
+    SystemImager::Common->add_or_delete_conf_file_entry($flamethrower_conf, $entry_name, $new_entry_data) or
+        die "ERROR: Cannot add entry to $flamethrower_conf";
+} else {
+    print ":> flamethrower.conf not present; skipping flamethrower configuration for image $image .\n";
+}    
 
 # integrate into database
 print ":> Integrating image into SIS database.\n";
