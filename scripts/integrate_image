@@ -181,16 +181,26 @@ print "!!!!!!\n";
 
 # create autoinstallscript
 print ":> Creating autoinstall script for image.\n";
-my $disks_layout_file = "${imagedir}/etc/systemimager/disks-layout.xml";
+my $disks_layout_file;
+if ( -f  "${autoinstall_script_dir}/disks-layouts/${imagename}.xml" ) {
+    $disks_layout_file = "${autoinstall_script_dir}/disks-layouts/${imagename}.xml";
+} elsif ( -f "${imagedir}/etc/systemimager/disks-layout.xml" ) {
+    $disks_layout_file = "${imagedir}/etc/systemimager/disks-layout.xml";
+} else {
+    print "WARN: No image dedicated disks-layout file. Optional main-install script not generated.\n";
+}
 
-SystemImager::Server->validate_disks_layout( $disks_layout_file );
+if (defined $disks_layout_file) {
+    my $disks_layout_file = "${imagedir}/etc/systemimager/disks-layout.xml";
 
-my $ip_assignment_method = "static";
-$post_install = "reboot" if !($post_install);
-my $no_listing = 0;
-my $autodetect_disks = 1;
-my $overrides = "$image,";
-SystemImager::Server->create_autoinstall_script(
+    SystemImager::Server->validate_disks_layout( $disks_layout_file );
+
+    my $ip_assignment_method = "static";
+    $post_install = "reboot" if !($post_install);
+    my $no_listing = 0;
+    my $autodetect_disks = 1;
+    my $overrides = "$image,";
+    SystemImager::Server->create_autoinstall_script(
         $script_name,
         $autoinstall_script_dir,
         $config_dir,
@@ -200,9 +210,10 @@ SystemImager::Server->create_autoinstall_script(
         $ip_assignment_method,
         $post_install,
         $no_listing,
-	$disks_layout_file,
-	$autodetect_disks
-);
+        $disks_layout_file,
+        $autodetect_disks
+    );
+}
 
 print ":> Setting postinstall action to: $post_install\n";
 

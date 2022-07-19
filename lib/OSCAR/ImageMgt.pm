@@ -233,7 +233,19 @@ sub do_post_image_creation ($) {
     # 3rd: We create the SystemImager auto_install scripts for the image.
     #
     my $config_dir = "/etc/systemimager";
-    my $disks_layout_file = "${images_path}/${imagename}${config_dir}/disks-layout.xml";
+    my $autoinstall_script_dir = $si_config->autoinstall_script_dir();
+    my $disks_layout_file;
+    if ( -f  "${autoinstall_script_dir}/disks-layouts/${imagename}.xml" ) {
+        $disks_layout_file = "${autoinstall_script_dir}/disks-layouts/${imagename}.xml";
+    } elsif ( -f "${images_path}/${imagename}${config_dir}/disks-layout.xml" ) {
+        $disks_layout_file = "${images_path}/${imagename}${config_dir}/disks-layout.xml";
+    } else {
+        oscar_log(1, WARNING, "No image dedicated disks-layout file. main-install script not generated.");
+	return 1;
+    }
+
+    # Creating a main-install script is now useless since SystemImager is smart about disks initialisation.
+    # TODO: Need to remove that soon.
     SystemImager::Server->validate_disks_layout( $disks_layout_file );
 
     my $ip_assignment_method = "static";
@@ -244,11 +256,11 @@ sub do_post_image_creation ($) {
     my $autodetect_disks = 1;
     my $overrides = "$imagename,";
     my $script_name = $imagename;
-    my $autoinstall_script_dir = $si_config->autoinstall_script_dir();
     oscar_log(5, INFO, "Generating autoinstall script for image $imagename.");
     oscar_log(5, INFO, "Using postinstall action: $post_install");
     oscar_log(5, INFO, "Using ip assigment method: $ip_assignment_method");
 
+    # Need to change a lot of thing. For instance, no disk layout should be required.
     SystemImager::Server->create_autoinstall_script(
         $script_name,
         $autoinstall_script_dir,
