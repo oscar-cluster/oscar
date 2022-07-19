@@ -64,7 +64,6 @@ use warnings "all";
             image_exists
             install_opkgs_into_image
             update_grub_config
-            update_image_initrd
             update_kernel_append
             update_modprobe_config
             update_systemconfigurator_configfile
@@ -1136,98 +1135,98 @@ sub update_modprobe_config ($) {
 }
 
 # Return: 0 if success, -1 else.
-sub update_image_initrd ($) {
-    my $imgpath = shift;
-    my $cmd;
-
-    oscar_log(4, INFO, "Updating initrd for image($imgpath).");
-    # First we create a "fake" fstab. The problem is the following: nowadays,
-    # binary packages for kernels try to create the initrd on the fly, based
-    # on configuration data. This is not compliant with the old systemimager
-    # idea where the initrd is created at the end of the image deployment. So
-    # we trick the configuration to allow the kernel package to generate the
-    # initrd.
-
-    # Currently the problem has been reported only for RPM based distros
-    my $os = OSCAR::OCA::OS_Detect::open ($imgpath);
-    if (!defined $os) {
-        oscar_log(6, ERROR, "Impossible to detect image distro ($imgpath).");
-        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
-        return -1;
-    }
-    return 0 if ($os->{pkg} ne "rpm");
-
-    if (! -d $imgpath) {
-        oscar_log(6, ERROR, "Impossible to find the image ($imgpath).");
-        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
-        return -1;
-    }
-
-    # The /etc/systemconfig/systemconfig.conf should exist in the image.    
-    my $systemconfig_file = "$imgpath/etc/systemconfig/systemconfig.conf";
-    if (! -f $systemconfig_file) {
-        oscar_log(6, ERROR, "$systemconfig_file does not exist.");
-        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
-        return -1;
-    }
-    use OSCAR::ConfigFile;
-    my $root_device = OSCAR::ConfigFile::get_value ($systemconfig_file,
-        "BOOT", "ROOTDEV");
-    if (!OSCAR::Utils::is_a_valid_string ($root_device)) {
-        oscar_log(6, ERROR, "Impossible to get the default root device");
-        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
-        return -1;
-    }
-    my $fake_fstab = "$imgpath/etc/fstab.fake";
-    $cmd = "echo \"$root_device  /  ext3  defaults  1 1\" >> $fake_fstab";
-    if (oscar_system ($cmd)) {
-        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
-        return -1;
-    }
-    if (! -f $fake_fstab) {
-        oscar_log(6, ERROR, "$fake_fstab does not exist");
-        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
-        return -1;
-    }
-
-    # TODO: We currently assume the kernel0 is the one we boot up, this is
-    # not necessarily the case right now.
-    my $initrd = OSCAR::ConfigFile::get_value ($systemconfig_file,
-        "KERNEL0", "INITRD");
-    my $version = OSCAR::ConfigFile::get_value ($systemconfig_file,
-        "KERNEL0", "PATH");
-    if (!OSCAR::Utils::is_a_valid_string ($version)) {
-        oscar_log(6, ERROR, "Impossible to detect the image kernel version ($imgpath).");
-        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
-        return -1;
-    }
-    if ($version =~ /\/boot\/vmlinuz-(.*)/) {
-        $version = $1;
-    } else {
-        oscar_log(6, ERROR, "Impossible to get the version ($version)");
-        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
-        return -1;
-    }
-    my $chroot_bin = "/usr/sbin/chroot";
-    if (! -f $chroot_bin) {
-        oscar_log(6, ERROR, "The chroot binary ($chroot_bin) is not available");
-        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
-        return -1;
-    }
-    # OL: Temporary fix to support dracut using mkinitrd alias. the alias is in /usr/bin, no /sbin, thus the fix.
-    my $mkinitrd_cmd="/sbin/mkinitrd";
-    $mkinitrd_cmd="/usr/bin/mkinitrd" if ( -f "/usr/bin/mkinitrd" );
-    # OL: End of tmp fix. (should be replaced with OS_Settings::getitem).
-    $cmd = "$chroot_bin $imgpath $mkinitrd_cmd -v -f --fstab=/etc/fstab.fake ".
-           "--allow-missing $initrd $version";
-    if (oscar_system ($cmd)) {
-        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
-        return -1;
-    }
-
-    oscar_log(4, INFO, "Successuflly updated initrd for image($imgpath).");
-    return 0;
-}
+#sub update_image_initrd ($) {
+#    my $imgpath = shift;
+#    my $cmd;
+#
+#    oscar_log(4, INFO, "Updating initrd for image($imgpath).");
+#    # First we create a "fake" fstab. The problem is the following: nowadays,
+#    # binary packages for kernels try to create the initrd on the fly, based
+#    # on configuration data. This is not compliant with the old systemimager
+#    # idea where the initrd is created at the end of the image deployment. So
+#    # we trick the configuration to allow the kernel package to generate the
+#    # initrd.
+#
+#    # Currently the problem has been reported only for RPM based distros
+#    my $os = OSCAR::OCA::OS_Detect::open ($imgpath);
+#    if (!defined $os) {
+#        oscar_log(6, ERROR, "Impossible to detect image distro ($imgpath).");
+#        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
+#        return -1;
+#    }
+#    return 0 if ($os->{pkg} ne "rpm");
+#
+#    if (! -d $imgpath) {
+#        oscar_log(6, ERROR, "Impossible to find the image ($imgpath).");
+#        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
+#        return -1;
+#    }
+#
+#    # The /etc/systemconfig/systemconfig.conf should exist in the image.    
+#    my $systemconfig_file = "$imgpath/etc/systemconfig/systemconfig.conf";
+#    if (! -f $systemconfig_file) {
+#        oscar_log(6, ERROR, "$systemconfig_file does not exist.");
+#        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
+#        return -1;
+#    }
+#    use OSCAR::ConfigFile;
+#    my $root_device = OSCAR::ConfigFile::get_value ($systemconfig_file,
+#        "BOOT", "ROOTDEV");
+#    if (!OSCAR::Utils::is_a_valid_string ($root_device)) {
+#        oscar_log(6, ERROR, "Impossible to get the default root device");
+#        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
+#        return -1;
+#    }
+#    my $fake_fstab = "$imgpath/etc/fstab.fake";
+#    $cmd = "echo \"$root_device  /  ext3  defaults  1 1\" >> $fake_fstab";
+#    if (oscar_system ($cmd)) {
+#        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
+#        return -1;
+#    }
+#    if (! -f $fake_fstab) {
+#        oscar_log(6, ERROR, "$fake_fstab does not exist");
+#        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
+#        return -1;
+#    }
+#
+#    # TODO: We currently assume the kernel0 is the one we boot up, this is
+#    # not necessarily the case right now.
+#    my $initrd = OSCAR::ConfigFile::get_value ($systemconfig_file,
+#        "KERNEL0", "INITRD");
+#    my $version = OSCAR::ConfigFile::get_value ($systemconfig_file,
+#        "KERNEL0", "PATH");
+#    if (!OSCAR::Utils::is_a_valid_string ($version)) {
+#        oscar_log(6, ERROR, "Impossible to detect the image kernel version ($imgpath).");
+#        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
+#        return -1;
+#    }
+#    if ($version =~ /\/boot\/vmlinuz-(.*)/) {
+#        $version = $1;
+#    } else {
+#        oscar_log(6, ERROR, "Impossible to get the version ($version)");
+#        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
+#        return -1;
+#    }
+#    my $chroot_bin = "/usr/sbin/chroot";
+#    if (! -f $chroot_bin) {
+#        oscar_log(6, ERROR, "The chroot binary ($chroot_bin) is not available");
+#        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
+#        return -1;
+#    }
+#    # OL: Temporary fix to support dracut using mkinitrd alias. the alias is in /usr/bin, no /sbin, thus the fix.
+#    my $mkinitrd_cmd="/sbin/mkinitrd";
+#    $mkinitrd_cmd="/usr/bin/mkinitrd" if ( -f "/usr/bin/mkinitrd" );
+#    # OL: End of tmp fix. (should be replaced with OS_Settings::getitem).
+#    $cmd = "$chroot_bin $imgpath $mkinitrd_cmd -v -f --fstab=/etc/fstab.fake ".
+#           "--allow-missing $initrd $version";
+#    if (oscar_system ($cmd)) {
+#        oscar_log(4, ERROR, "Failed to update initrd for image($imgpath).");
+#        return -1;
+#    }
+#
+#    oscar_log(4, INFO, "Successuflly updated initrd for image($imgpath).");
+#    return 0;
+#}
 
 # Return: 0 if success, -1 else.
 sub postimagebuild {
