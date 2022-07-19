@@ -237,8 +237,10 @@ sub do_post_image_creation ($) {
     my $disks_layout_file;
     if ( -f  "${autoinstall_script_dir}/disks-layouts/${imagename}.xml" ) {
         $disks_layout_file = "${autoinstall_script_dir}/disks-layouts/${imagename}.xml";
+	oscar_log(5, INFO, "Using ${autoinstall_script_dir}/disks-layouts/${imagename}.xml for disks layout.");
     } elsif ( -f "${images_path}/${imagename}${config_dir}/disks-layout.xml" ) {
         $disks_layout_file = "${images_path}/${imagename}${config_dir}/disks-layout.xml";
+	oscar_log(5, INFO, "Using ${images_path}/${imagename}${config_dir}/disks-layout.xml for disks layout.");
     } else {
         oscar_log(1, WARNING, "No image dedicated disks-layout file. main-install script not generated.");
 	return 1;
@@ -246,6 +248,7 @@ sub do_post_image_creation ($) {
 
     # Creating a main-install script is now useless since SystemImager is smart about disks initialisation.
     # TODO: Need to remove that soon.
+    oscar_log(5, INFO, "Validating diskd-layout [$disks_layout_file]");
     SystemImager::Server->validate_disks_layout( $disks_layout_file );
 
     my $ip_assignment_method = "static";

@@ -191,8 +191,6 @@ if ( -f  "${autoinstall_script_dir}/disks-layouts/${imagename}.xml" ) {
 }
 
 if (defined $disks_layout_file) {
-    my $disks_layout_file = "${imagedir}/etc/systemimager/disks-layout.xml";
-
     SystemImager::Server->validate_disks_layout( $disks_layout_file );
 
     my $ip_assignment_method = "static";
