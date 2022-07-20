@@ -416,15 +416,18 @@ sub update_hosts ($) {
     close(IN);
 
     # We now check whether the new aliases are unique or not (they should!).
+    my $error_count=0;
     foreach my $alias (@aliases) {
         my $cmd = "grep -E '\\s+$alias"."[\\s+,\$]*' /etc/hosts";
         my @res = `$cmd`;
         if (scalar @res > 1) {
             oscar_log(1, ERROR, "Several entries in /etc/hosts include $alias,".
                   " please update your /etc/hosts file.");
+        $error_count += 1;
         }
     }
-
+    return -1 if ($error_count > 0);
+    # else it's fine.
     return 0;
 }
 
