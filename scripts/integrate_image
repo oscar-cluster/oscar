@@ -194,7 +194,9 @@ if ( -f  "${autoinstall_script_dir}/disks-layouts/${imagename}.xml" ) {
 }
 
 if (defined $disks_layout_file) {
-    SystemImager::Server->validate_disks_layout( $disks_layout_file );
+
+    die "ERROR: $disks_layout_file is not valid.\nSee systemimager.disks-layout(7) for details."
+        if (SystemImager::Server->validate_disks_layout( $disks_layout_file ) != 0);
 
     my $ip_assignment_method = "static";
     $post_install = "reboot" if !($post_install);

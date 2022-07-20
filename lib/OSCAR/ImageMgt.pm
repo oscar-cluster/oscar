@@ -229,7 +229,7 @@ sub do_post_image_creation ($) {
     }
 
     #
-    # 3rd: We create the SystemImager auto_install scripts for the image.
+    # 3rd: We check for mandatory disks-layout file.(TODO: alow to select one (filesystem or auto) from GUI)
     #
     my $config_dir = "/etc/systemimager";
     my $autoinstall_script_dir = $si_config->autoinstall_script_dir();
@@ -241,15 +241,23 @@ sub do_post_image_creation ($) {
         $disks_layout_file = "${images_path}/${imagename}${config_dir}/disks-layout.xml";
 	oscar_log(5, INFO, "Using ${images_path}/${imagename}${config_dir}/disks-layout.xml for disks layout.");
     } else {
-        oscar_log(1, WARNING, "No image dedicated disks-layout file. main-install script not generated.");
-	return 1;
+        oscar_log(1, ERROR, "No image dedicated disks-layout file. This file is mandatory..");
+	return 0; # Failure, we need this file.
     }
 
     # Creating a main-install script is now useless since SystemImager is smart about disks initialisation.
     # TODO: Need to remove that soon.
-    oscar_log(5, INFO, "Validating diskd-layout [$disks_layout_file]");
-    SystemImager::Server->validate_disks_layout( $disks_layout_file );
+    oscar_log(5, INFO, "Validating disks-layout [$disks_layout_file]");
+    if (SystemImager::Server->validate_disks_layout( $disks_layout_file ) != 0) {
+	oscar_log(1, ERROR, "$disks_layout_file is invalid.");
+	oscar_log(1, ERROR, "See systemimager.disks-layout(7) for details.");
+	return 0; # Stop here in case of failure
+    }
 
+    #
+    # 4th We create the SystemImager auto_install scripts for the image.
+    # TODO: make this optional from GUI
+    #
     my $ip_assignment_method = "static";
     $ip_assignment_method = $$vars{ipmeth} if defined($$vars{ipmeth});
     my $post_install = "reboot";
