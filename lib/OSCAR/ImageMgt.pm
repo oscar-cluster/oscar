@@ -1073,7 +1073,8 @@ sub update_kernel_append ($$) {
     }
     # Create the file from scratch.
     my $file = "$imgdir/etc/kernel/cmdline";
-    if(! open ( my $fh, '>', $file )) {
+    my $fh;
+    if(! open ( $fh, '>', $file )) {
         oscar_log(5, ERROR, "Failed to create $file");
 	oscar_log(1, ERROR, "Can't save cmdline parameters.");
         return -1;
