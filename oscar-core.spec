@@ -98,6 +98,7 @@ Requires: lib%{name}-server == %{version}-%{release}
 Requires: systeminstaller-oscar
 Requires: iproute, syslinux, tftp-server, syslinux-tftpboot
 Requires: yume, oda, systemimager-server
+Requires: sync-files
 Obsoletes: oscar-base-scripts
 
 %description -n oscar-core

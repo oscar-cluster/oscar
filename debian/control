@@ -27,7 +27,7 @@ Package: oscar-core
 Architecture: all
 Description: Binaries for OSCAR
  Set of binaries for OSCAR
-Depends: ${perl:Depends}, tftpd-hpa | tftpd, liboscar-server, oscar-data, systeminstaller-oscar (>= 2.4.12), rapt, oda, systemimager-server
+Depends: ${perl:Depends}, tftpd-hpa | tftpd, liboscar-server, oscar-data, systeminstaller-oscar (>= 2.4.12), rapt, oda, systemimager-server, sync-files
 Replaces: oscar-bin
 
 Package: oscar-data
