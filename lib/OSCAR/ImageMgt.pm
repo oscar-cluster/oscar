@@ -1052,26 +1052,60 @@ sub update_systemconfigurator_configfile ($) {
 }
 
 ################################################################################
+# Create the etc/systemimager/cmdline.conf file of a given image to            #
+# include some kernel parameters (the APPEND option).                          #
+#                                                                              #
+# Return: 0 if success, -1 else.                                               #
+################################################################################
+sub create_cmdline_conf($$) {
+    my ($imgdir, $append_str) = @_;
+    oscar_log(5, INFO, "Creating /etc/systemimager/cmdline.conf in image $imgdir");
+    my $file = "$imgdir/etc/systemimager/cmdline.conf";
+    if ( ! -d "$imgdir/etc/systemimager" ) {
+        my @created = make_path("$imgdir/etc/systemimager", { verbose => 0, mode => 0755 } );
+        if (!@created) {
+            oscar_log(5, ERROR, "Failed to create $imgdir/etc/systemimager");
+	    return -1
+        }
+    # Create the file from scratch.
+    if(open ( my $fh, '>', $file )) {
+        oscar_log(5, ERROR, "Failed to create $file");
+        return -1;
+    }
+    print $fh "EXTRA_CMDLINE=\"$append_str\"\n";
+    close($fh)
+    oscar_log(1, INFO, "Set EXTRA_CMDLINE=\"$append_str\" in cmdline.conf");
+    return 0; # Success
+}
+
+################################################################################
 # Update the etc/systemconfig/systemconfig.conf file of a given image to       #
 # include some kernel parameters (the APPEND option).                          #
 #                                                                              #
 # Return: 0 if success, -1 else.                                               #
-# TODO: we currently assume only one kernel is setup. Yes this is lazy and     #
-# this needs to be updated                                                     #
 ################################################################################
 sub update_kernel_append ($$) {
     my ($imgdir, $append_str) = @_;
-
-    oscar_log(3, SUBSECTION, "Adding boot parameter ($append_str) for image ".
+    oscar_log(5, SUBSECTION, "Adding boot parameter ($append_str) for image ".
                           "$imgdir");
-    my $file = "$imgdir/etc/systemconfig/systemconfig.conf";
-    require OSCAR::ConfigFile;
-    if (OSCAR::ConfigFile::set_value ($file, "KERNEL0", "\tAPPEND",
-                                      "\"$append_str\"")) {
-        oscar_log(5, ERROR, "Impossible to add $append_str as boot parameter in $file");
-        return -1;
+    my $file = "$imgdir/etc/systemimager/cmdline.conf";
+    if ( ! -f $file ) {
+        # Create the file from scratch.
+	return create_cmdline_conf($imgdir, $append_str);
+    } else { # File exists, try to update.
+        require OSCAR::ConfigFile;
+        my $extra_cmdline = OSCAR::ConfigFile::get_value ($file, "", "EXTRA_CMDLINE");
+	if (! defined ($extra_cmdline)) { # No value: create from scratch
+            return create_cmdline_conf($imgdir, $append_str);
+	} else {
+            # We don't try to update missing values as there is no way to remove
+	    # a parameter. Instead we just replace the value with new one.
+        if (OSCAR::ConfigFile::set_value ($file, "", "EXTRA_CMDLINE",
+                                          "\"$append_str\"")) {
+            oscar_log(5, ERROR, "Can't add $append_str as EXTRA_CMDLINE parameter in $file");
+            return -1;
+        }
     }
-
     return 0;
 }
 
@@ -1081,6 +1115,7 @@ sub update_kernel_append ($$) {
 #                                                                              #
 # Input: Path, path to the image.                                              #
 # Return: 0 if success, -1 else.                                               #
+# OL: Obsolete (kepp it as it is harmless)
 ################################################################################
 sub update_grub_config ($) {
     my $path = shift;
