@@ -153,7 +153,7 @@ oscar_log(6, INFO, "Marking installed bit in ODA for server non-core ".
 my $requested = 8; # "Installed" flag for the Node_Package_Status"
 if(!OSCAR::Database::update_node_package_status(\%options,
                                    $OSCAR_SERVER_NODE,
-                                   \@opkgs,
+                                   \@selected_opkgs,
                                    $requested,
                                    \@errors,
                                    undef)) {
@@ -172,7 +172,7 @@ oscar_log(6, INFO, "Done marking installed bits in ODA");
 
 oscar_log(5, INFO, "Running post_server_install scripts " .
              "for server non-core packages");
-foreach my $opkg (@opkgs) {
+foreach my $opkg (@selected_opkgs) {
     OSCAR::Package::run_pkg_script($opkg, "post_server_install", 0, undef) 
         or (oscar_log(1, ERROR, "Failed running post_server_install for $opkg"), exit 1);
 }
