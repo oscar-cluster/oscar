@@ -94,33 +94,32 @@ if (OSCAR::Network::update_hosts($ip)) {
 
 
 # Get a list of all non-core OSCAR packages
-my $sel_group = OSCAR::Database::get_selected_group(undef, undef);
+#my $sel_group = OSCAR::Database::get_selected_group(undef, undef);
 my @selected_opkgs = list_selected_packages();
-my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs();
-my @opkgs;
-foreach my $opkg (@selected_opkgs) {
-    if (!OSCAR::Utils::is_element_in_array ($opkg, @core_opkgs)) {
-        push (@opkgs, $opkg);
-    }
-}
-oscar_log(5, INFO, "Identified non-core packages: " . join(" ", @opkgs));
-
+#my @core_opkgs = OSCAR::Opkg::get_list_core_opkgs();
+#my @opkgs;
+#foreach my $opkg (@selected_opkgs) {
+#    if (!OSCAR::Utils::is_element_in_array ($opkg, @core_opkgs)) {
+#        push (@opkgs, $opkg);
+#    }
+#}
+#oscar_log(5, INFO, "Identified non-core packages: " . join(" ", @opkgs));
+#
 
 # Now install the pkgs that we found
 # Note that we install only the server side, the API side is necessary for
 # configuration of the OPKGs and therefore is installed at the beginning of
 # the configuration phase.
-oscar_log(3, INFO, "Installing server non-core packages " .
-                     "(core packages already installed)");
-if (scalar (@opkgs) == 0) {
+oscar_log(3, INFO, "Installing server opkgs for selected components...");
+if (scalar (@selected_opkgs) == 0) {
     oscar_log(3, WARNING, "No OPKG(s) to install");
 } else {
-    if (OSCAR::Opkg::opkgs_install("server", @opkgs)) {
-        oscar_log(1, ERROR, "Failed to install " . join (", ", @opkgs));
+    if (OSCAR::Opkg::opkgs_install("server", @selected_opkgs)) {
+        oscar_log(1, ERROR, "Failed to install " . join (", ", @selected_opkgs));
         exit 1;
     }
 }
-oscar_log(3, INFO, "Successfully installed server non-core binary packages");
+oscar_log(3, INFO, "Successfully installed server opkgs.");
 
 #
 # NEST
