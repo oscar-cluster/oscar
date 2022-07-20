@@ -1052,61 +1052,42 @@ sub update_systemconfigurator_configfile ($) {
 }
 
 ################################################################################
-# Create the etc/systemimager/cmdline.conf file of a given image to            #
+# Update the etc/kernel/cmdline config file of a given image to                #
 # include some kernel parameters (the APPEND option).                          #
-#                                                                              #
-# Return: 0 if success, -1 else.                                               #
-################################################################################
-sub create_cmdline_conf($$) {
-    my ($imgdir, $append_str) = @_;
-    oscar_log(5, INFO, "Creating /etc/systemimager/cmdline.conf in image $imgdir");
-    my $file = "$imgdir/etc/systemimager/cmdline.conf";
-    if ( ! -d "$imgdir/etc/systemimager" ) {
-        my @created = make_path("$imgdir/etc/systemimager", { verbose => 0, mode => 0755 } );
-        if (!@created) {
-            oscar_log(5, ERROR, "Failed to create $imgdir/etc/systemimager");
-	    return -1
-        }
-    # Create the file from scratch.
-    if(open ( my $fh, '>', $file )) {
-        oscar_log(5, ERROR, "Failed to create $file");
-        return -1;
-    }
-    print $fh "EXTRA_CMDLINE=\"$append_str\"\n";
-    close($fh)
-    oscar_log(1, INFO, "Set EXTRA_CMDLINE=\"$append_str\" in cmdline.conf");
-    return 0; # Success
-}
-
-################################################################################
-# Update the etc/systemconfig/systemconfig.conf file of a given image to       #
-# include some kernel parameters (the APPEND option).                          #
+# The APPEND option is stored in /etc/kernel/cmdline                           #
+# It is used by install-kernel(8) and persistent to all kernel update/reconf   #
 #                                                                              #
 # Return: 0 if success, -1 else.                                               #
 ################################################################################
 sub update_kernel_append ($$) {
     my ($imgdir, $append_str) = @_;
-    oscar_log(5, SUBSECTION, "Adding boot parameter ($append_str) for image ".
-                          "$imgdir");
-    my $file = "$imgdir/etc/systemimager/cmdline.conf";
-    if ( ! -f $file ) {
-        # Create the file from scratch.
-	return create_cmdline_conf($imgdir, $append_str);
-    } else { # File exists, try to update.
-        require OSCAR::ConfigFile;
-        my $extra_cmdline = OSCAR::ConfigFile::get_value ($file, "", "EXTRA_CMDLINE");
-	if (! defined ($extra_cmdline)) { # No value: create from scratch
-            return create_cmdline_conf($imgdir, $append_str);
-	} else {
-            # We don't try to update missing values as there is no way to remove
-	    # a parameter. Instead we just replace the value with new one.
-        if (OSCAR::ConfigFile::set_value ($file, "", "EXTRA_CMDLINE",
-                                          "\"$append_str\"")) {
-            oscar_log(5, ERROR, "Can't add $append_str as EXTRA_CMDLINE parameter in $file");
-            return -1;
+    my $image_name = ( split '/', $imgdir )[ -1 ];
+    oscar_log(1, SUBSECTION, "Adding boot parameter for image $image_name");
+    if ( ! -d "$imgdir/etc/kernel" ) {
+        my @created = make_path("$imgdir/etc/kernel", { verbose => 0, mode => 0755 } );
+        if (!@created) {
+            oscar_log(5, ERROR, "Failed to create $imgdir/etc/kernel");
+	    oscar_log(1, ERROR, "Can't save cmdline parameters.");
+	    return -1
         }
     }
-    return 0;
+    # Create the file from scratch.
+    my $file = "$imgdir/etc/kernel/cmdline";
+    if(! open ( my $fh, '>', $file )) {
+        oscar_log(5, ERROR, "Failed to create $file");
+	oscar_log(1, ERROR, "Can't save cmdline parameters.");
+        return -1;
+    }
+    if (! print $fh "$append_str") {
+        oscar_log(5, ERROR, "Failed to write to $file");
+	oscar_log(1, ERROR, "Can't save cmdline parameters.");
+	close ($fh);
+	return -1;
+    }; # 
+    close($fh);
+    oscar_log(1, INFO, "Saved kernel options \"$append_str\" in");
+    oscar_log(1, INFO, " => image($image_name):/etc/kernel/cmdline");
+    return 0; # Success
 }
 
 ################################################################################
