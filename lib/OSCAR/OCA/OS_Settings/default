@@ -11,7 +11,7 @@ rapt_path=/usr/share/oscar/prereqs/rapt
 yume_path=/usr/share/oscar/prereqs/yume
 opkgs_path=packages
 oda_config_files_path=/etc/oscar/clusters
-available_filesystems=ext2,ext3,ext4,xfs
+available_filesystems=ext2,ext3,ext4,xfs,btrfs
 boot_filesystem=ext4
 root_filesystem=ext4
 

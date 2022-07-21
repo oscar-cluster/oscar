@@ -1,4 +1,7 @@
 # Fedora specific settings (valid for all Fedora)
+# OSCAR Specific stuffs
+root_filesystem=btrfs
+
 # Init directory specific to this distribution
 init=/etc/rc.d/init.d 
 
@@ -12,13 +15,16 @@ portmap_package=rpcbind
 # Overwrite the name of few services
 munge_service=munge
 tftp_service=atftpd
+mysql_service=mariadb
 
 # Overwrite the name of few configuration files
 dhcp_leases=/var/lib/dhcpd/dhcpd.leases
 yum_configfile=/etc/yum.conf
+mysql_configfile=/etc/my.cnf.d/server.cnf
 
 # verwrite the name of few directories
 pxe_dir=/usr/share/syslinux/
+mysql_configdir=/etc/my.cnf.d/
 
 # Package manager
 package_manager=yum
