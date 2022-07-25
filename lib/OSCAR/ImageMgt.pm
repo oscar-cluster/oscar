@@ -41,11 +41,12 @@ use OSCAR::Database;
 use OSCAR::Utils;
 use OSCAR::Env;
 use OSCAR::ConfigManager;
-# use SystemImager::Server;
 use OSCAR::Opkg;
 use OSCAR::PackMan;
 use SystemInstaller::Utils;
-use vars qw(@EXPORT);
+use SystemImager::Server;
+our $jconfig;
+use vars qw(@EXPORT $jconfig);
 use base qw(Exporter);
 use Carp;
 use warnings "all";
@@ -69,10 +70,7 @@ use warnings "all";
             update_systemconfigurator_configfile
             );
 
-our $si_config = SystemInstaller::Utils::init_si_config();
-
-our $images_path = "/var/lib/systemimager/images";
-$images_path = $si_config->default_image_dir if defined($si_config->default_image_dir);
+our $images_path = $jconfig->get('imager','images_dir');
 
 our $imagename;
 
@@ -100,9 +98,7 @@ sub do_setimage ($%) {
 
         # Get the image path (typically
         # /var/lib/systemimager/images/<imagename>)
-        #my $config = SystemInstaller::Utils::init_si_config();
-        # FIXME: is $config always defined?
-        my $imaged = $si_config->default_image_dir;
+        my $imaged = $jconfig->get('imager','images_dir');
         (oscar_log(5, ERROR, "default_image_dir not defined."), return -1)
             unless $imaged;
         (oscar_log(5, ERROR, "$imaged: not a directory."), return -1)
@@ -232,7 +228,7 @@ sub do_post_image_creation ($) {
     # 3rd: We check for mandatory disks-layout file.(TODO: alow to select one (filesystem or auto) from GUI)
     #
     my $config_dir = "/etc/systemimager";
-    my $autoinstall_script_dir = $si_config->autoinstall_script_dir();
+    my $autoinstall_script_dir = $jconfig->get('imager','scripts_dir');
     my $disks_layout_file;
     if ( -f  "${autoinstall_script_dir}/disks-layouts/${imagename}.xml" ) {
         $disks_layout_file = "${autoinstall_script_dir}/disks-layouts/${imagename}.xml";
@@ -271,7 +267,7 @@ sub do_post_image_creation ($) {
     oscar_log(5, INFO, "Using ip assigment method: $ip_assignment_method");
 
     # Need to change a lot of thing. For instance, no disk layout should be required.
-    SystemImager::Server->create_autoinstall_script(
+    SystemImager::Server::create_autoinstall_script(
         $script_name,
         $autoinstall_script_dir,
         $config_dir,
@@ -282,7 +278,8 @@ sub do_post_image_creation ($) {
         $post_install,
         $no_listing,
         $disks_layout_file,
-        $autodetect_disks);
+        $autodetect_disks,
+	"Create an SIS Image from oscar_wizard install step 4 Tk interface");
 
     oscar_log(5, INFO, "New autoinstall script has been created for this image: $autoinstall_script_dir/$script_name.master");
 
@@ -357,8 +354,7 @@ sub do_oda_post_install ($$) {
     my $lastlog = "/var/log/lastlog";
     oscar_log(6, ACTION, "Truncating ".$img.":".$lastlog);
 
-    my $sis_config = SystemInstaller::Utils::init_si_config();
-    my $imaged = $sis_config->default_image_dir;
+    my $imaged = $jconfig->get('imager','images_dir');
     my $imagepath = $imaged."/".$img;
     my $imagelog = $imagepath.$lastlog;
     truncate $imagelog, 0 if -s $imagelog;
@@ -518,7 +514,7 @@ sub get_image_default_settings () {
     # Default settings
     my %vars = (
            # imgpath: location where the image is created
-           imgpath => $si_config->default_image_dir,
+           imgpath => $jconfig->get('imager','images_dir'),
            # imgname: image name
            imgname => "oscarimage",
            # arch: target hardware architecture
@@ -608,16 +604,14 @@ sub delete_image ($) {
     # If the image exists at the SystemImager level, we delete it
     my @si_images = get_systemimager_images ();
     if (OSCAR::Utils::is_element_in_array ($imgname, @si_images) == 1) {
-#        my $config = SystemInstaller::Utils::init_si_config();
-        my $rsyncd_conf = $si_config->rsyncd_conf();
-        my $rsync_stub_dir = $si_config->rsync_stub_dir();
+        my $rsyncd_conf = $jconfig->get('xmit_rsync','config_file');
+        my $rsync_stub_dir = $jconfig->get('xmit_rsync','rsync_stubs');
 
         oscar_log(6, ACTION, "Removing image $imgname from disk.");
         my $cmd = "/usr/bin/mksiimage -D --name $imgname --force";
         if (oscar_system($cmd)) {
             return -1;
         }
-        require SystemImager::Server;
         oscar_log(6, ACTION, "Removing image stub.");
         SystemImager::Server::remove_image_stub($rsync_stub_dir, $imgname);
         oscar_log(6, ACTION, "Updating rsyncd config: $rsyncd_conf.");
@@ -890,7 +884,7 @@ sub cleanup_sis_configfile ($) {
         return -1;
     }
 
-    my $flamethrower_conf = "/etc/systemimager/flamethrower.conf";
+    my $flamethrower_conf = $jconfig->get('xmit_flamethrower','config_file');
     if ( -f $flamethrower_conf ) {
         oscar_log(4, ACTION, "Cleaning up $image from flamethrower config.");
         require SystemImager::Common;
