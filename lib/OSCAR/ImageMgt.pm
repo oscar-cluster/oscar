@@ -45,6 +45,7 @@ use OSCAR::Opkg;
 use OSCAR::PackMan;
 use SystemInstaller::Utils;
 use SystemImager::Server;
+use SystemImager::JConfig;
 our $jconfig;
 use vars qw(@EXPORT $jconfig);
 use base qw(Exporter);
@@ -69,8 +70,6 @@ use warnings "all";
             update_modprobe_config
             update_systemconfigurator_configfile
             );
-
-our $images_path = $jconfig->get('imager','images_dir');
 
 our $imagename;
 
@@ -142,6 +141,7 @@ sub do_setimage ($%) {
 sub do_post_image_creation ($) {
     my $vars = shift;
     my $cmd = "";
+    my $images_path = $jconfig->get('imager','images_dir');
     $imagename = $$vars{imgname};
 
     if (! -d "${images_path}/${imagename}") {
@@ -267,7 +267,7 @@ sub do_post_image_creation ($) {
     oscar_log(5, INFO, "Using ip assigment method: $ip_assignment_method");
 
     # Need to change a lot of thing. For instance, no disk layout should be required.
-    SystemImager::Server::create_autoinstall_script(
+    SystemImager::Server->create_autoinstall_script(
         $script_name,
         $autoinstall_script_dir,
         $config_dir,
@@ -297,6 +297,7 @@ sub UmountSigHandler {
 }
 
 sub UmountSpecialFS {
+    my $images_path = $jconfig->get('imager','images_dir');
     if(defined($imagename) && ($imagename ne "") && (-d "${images_path}/${imagename}")) {
         for my $mount ('/dev', '/proc', '/sys', '/run', '/tmp') {
             if (-d $mount) {
@@ -467,7 +468,7 @@ sub get_image_default_settings () {
     # certain output such as raid partitions, but the following check should
     # work for grepping /dev/sd, further the check should also work when LVM
     # partitions. Replacing the previous "df" check.
-    
+    $jconfig = SystemImager::JConfig->new() if(! defined($jconfig));
     my @df_lines = `LC_ALL=C fdisk -l 2> /tmp/error |grep Disk`;
     my $disk_type = "ide";
     $disk_type = "scsi" if (grep(/\/dev\/sd/,(@df_lines)));
@@ -605,7 +606,7 @@ sub delete_image ($) {
     my @si_images = get_systemimager_images ();
     if (OSCAR::Utils::is_element_in_array ($imgname, @si_images) == 1) {
         my $rsyncd_conf = $jconfig->get('xmit_rsync','config_file');
-        my $rsync_stub_dir = $jconfig->get('xmit_rsync','rsync_stubs');
+        my $rsync_stub_dir = $jconfig->get('xmit_rsync','stubs_dir');
 
         oscar_log(6, ACTION, "Removing image $imgname from disk.");
         my $cmd = "/usr/bin/mksiimage -D --name $imgname --force";
@@ -613,9 +614,9 @@ sub delete_image ($) {
             return -1;
         }
         oscar_log(6, ACTION, "Removing image stub.");
-        SystemImager::Server::remove_image_stub($rsync_stub_dir, $imgname);
+	SystemImager::Server->remove_image_stub($rsync_stub_dir, $imgname);
         oscar_log(6, ACTION, "Updating rsyncd config: $rsyncd_conf.");
-        SystemImager::Server::gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
+        SystemImager::Server->gen_rsyncd_conf($rsync_stub_dir, $rsyncd_conf);
     }
 
     if (delete_image_from_oda ($imgname)) {
@@ -1300,6 +1301,7 @@ sub postimagebuild {
 ################################################################################
 sub install_opkgs_into_image ($@) {
     my ($image, @opkgs) = @_;
+    my $images_path = $jconfig->get('imager','images_dir');
 
     # We check first if parameters are valid.
     if (!defined($image) || $image eq "" ||
@@ -1360,6 +1362,7 @@ sub install_opkgs_into_image ($@) {
 ################################################################################
 sub export_image ($$) {
     my ($partition, $dest) = @_;
+    my $images_path = $jconfig->get('imager','images_dir');
 
     oscar_log(6, INFO, "Exporting an image.");
     if (!defined ($partition) || !defined ($dest)) {
