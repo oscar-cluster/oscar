@@ -16,9 +16,13 @@ use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
 
-use OSCAR:Logger;
+use OSCAR::Logger;
 use OSCAR::LoggerDefs;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
+use OSCAR::Database;
 use OSCAR::OCA::OS_Settings;
+use OSCAR::OCA::OS_Detect;
 use OSCAR::OCA::XMIT_Deploy;
 #
 # Exports
@@ -31,7 +35,7 @@ use OSCAR::OCA::XMIT_Deploy;
 #
 
 our $xmit_name = __PACKAGE__;
-$xmit_name ~= s/^.*::XMIT_//g;
+$xmit_name =~ s/^.*::XMIT_//g;
 
 # Return the name of the deployment method as user can see in GUI.
 sub name {
@@ -50,6 +54,8 @@ sub available {
 # Disable all other method and enable flamethrowerd and start daemon.
 sub enable {
     OSCAR::OCA::XMIT_Deploy::disable_all_but("$xmit_name");
+    my $os = OSCAR::OCA::OS_Detect::open();
+    my $interface = OSCAR::Database::get_headnode_iface(undef, undef);
 
     # Backup original bittorrent.conf
     my $file = OSCAR::OCA::OS_Settings::getitem(SI_FLAMETHROWER . "_configfile");
@@ -58,7 +64,7 @@ sub enable {
         backup_file_if_not_exist($file) or return 0;
 
         # 2nd, Update config (enable daemon mode, and set the net iface).
-        $cmd = "sed -i -e 's/START_FLAMETHROWER_DAEMON = no/START_FLAMETHROWER_DAEMON = yes/' -e 's/INTERFACE = eth[0-9][0-9]*/INTERFACE = $interface/' $file";
+        my $cmd = "sed -i -e 's/START_FLAMETHROWER_DAEMON = no/START_FLAMETHROWER_DAEMON = yes/' -e 's/INTERFACE = eth[0-9][0-9]*/INTERFACE = $interface/' $file";
         if( oscar_system( $cmd ) ) {
             oscar_log(5, ERROR, "ERROR: Failed to update $file");
             return 0;

@@ -18,13 +18,13 @@ use 5.013; # use /r to do a non destructive substitution:
 use Carp;
 
 use OSCAR::OCA;
-use OSCAR:Logger;
+use OSCAR::Logger;
 use OSCAR::LoggerDefs;
 #
 # Exports
 #
 
-@EXPORT = qw(name enable disable);
+@EXPORT = qw(name get_method_by_name enable disable);
 
 #
 # Globals
@@ -75,11 +75,12 @@ sub open {
 
 ###############################################################################
 # Subroutine to get the name of XMIT deployment method (for GUI)              #
-# Input:  Component name without the leading XMIT_                            #
+# Input:  Component GUI name without the leading                             #
 # Return: Returns a string with SystemImager XMIT deployment name             #
 #         supported by OSCAR (rsync, bittorrent, flamethrower)                #
 ###############################################################################
 sub name {
+    my $comp = shift;
     my $str;
     my $name;
     $str = "\$name = \&OSCAR::OCA::XMIT_Deploy::XMIT_".$comp."::name()";
@@ -90,6 +91,39 @@ sub name {
     return undef;
 }
 
+###############################################################################
+# Subroutine to get the name of XMIT deployment method knowing the gui name   #
+# Input:  Component name without the leading XMIT_                            #
+# Return: Returns a string with SystemImager XMIT deployment name             #
+#         supported by OSCAR (rsync, bittorrent, flamethrower)                #
+###############################################################################
+sub get_method_by_name($) {
+    my $method_name = shift;
+    my $method_component = undef;
+
+    my @xmit_deployment_methods = ();
+    my $comps = OSCAR::OCA::find_components("XMIT_Deploy");
+    if (!defined($comps)) {
+        OSCAR::Logger::oscar_log(5, ERROR, "Cannot continue, find_components returned undef");
+        OSCAR::Logger::oscar_log(1, ERROR, "Failed to enumerate supported XMIT deployment methods.");
+        return undef;
+    } elsif (scalar(@$comps) == 0) {
+        OSCAR::Logger::oscar_log(5, ERROR, "Could not find an XMIT_Deploy component for this system!");
+        OSCAR::Logger::oscar_log(1, ERROR, "Failed to find a XMIT deployment method.");
+        return undef;
+    }
+
+    my $ret = undef;
+    foreach my $comp (@$comps) {
+        if($comp eq $method_name) {
+            # Yes, we found the component.
+            $method_component = $comp;
+            last;
+        }
+    }
+    return $method_component;
+
+}
 
 ###############################################################################
 # Subroutine to configure enable and start the required services for this     #

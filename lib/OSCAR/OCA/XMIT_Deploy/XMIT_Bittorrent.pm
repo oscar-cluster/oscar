@@ -16,8 +16,11 @@ use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
 
-use OSCAR:Logger;
+use OSCAR::Logger;
 use OSCAR::LoggerDefs;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
+use OSCAR::Database;
 use OSCAR::OCA::OS_Settings;
 use OSCAR::OCA::XMIT_Deploy;
 #
@@ -31,7 +34,7 @@ use OSCAR::OCA::XMIT_Deploy;
 #
 
 our $xmit_name = __PACKAGE__;
-$xmit_name ~= s/^.*::XMIT_//g;
+$xmit_name =~ s/^.*::XMIT_//g;
 
 # Return the name of the deployment method as user can see in GUI.
 sub name {
@@ -51,6 +54,8 @@ sub available {
 sub enable {
     OSCAR::OCA::XMIT_Deploy::disable_all_but("$xmit_name");
 
+    my $interface = OSCAR::Database::get_headnode_iface(undef, undef);
+
     # Backup original bittorrent.conf
     my $file = OSCAR::OCA::OS_Settings::getitem(SI_BITTORRENT . "_configfile");
     if (-f $file) {
@@ -63,7 +68,7 @@ sub enable {
         my $images_list = join(",", map { $_->name } @images);
 
         # 2nd, set the net interface to use.
-        $cmd = "sed -i -e 's/BT_INTERFACE=eth[0-9][0-9]*/BT_INTERFACE=$interface/' -e 's/BT_IMAGES=.*/BT_IMAGES=$images_list/' -e 's/BT_OVERRIDES=.*/BT_OVERRIDES=$images_list/' $file";
+        my $cmd = "sed -i -e 's/BT_INTERFACE=eth[0-9][0-9]*/BT_INTERFACE=$interface/' -e 's/BT_IMAGES=.*/BT_IMAGES=$images_list/' -e 's/BT_OVERRIDES=.*/BT_OVERRIDES=$images_list/' $file";
         if( oscar_system( $cmd ) ) {
             oscar_log(5, ERROR, "Failed to update $file");
             return 0;
@@ -84,7 +89,7 @@ sub enable {
         or (oscar_log(5, ERROR, "Couldn't enable systemimager-bittorrent."), return 0);
 
     # Restart systemimager-server-rsyncd (needed by netbootmond and also for calculating image size in si_monitortk)
-    !system_service(SI_RSYNC,RESTART)
+    !system_service(SI_RSYNC ,RESTART)
         or (oscar_log(5, ERROR, "Couldn't restart systemimager-rsync."), return 0);
 
     return 1;

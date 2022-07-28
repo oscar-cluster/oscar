@@ -16,8 +16,11 @@ use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
 
-use OSCAR:Logger;
+use OSCAR::Logger;
 use OSCAR::LoggerDefs;
+use OSCAR::SystemServices;
+use OSCAR::SystemServicesDefs;
+
 #
 # Exports
 #
@@ -29,7 +32,7 @@ use OSCAR::LoggerDefs;
 #
 
 our $xmit_name = __PACKAGE__;
-$xmit_name ~= s/^.*::XMIT_//g;
+$xmit_name =~ s/^.*::XMIT_//g;
 
 # Return the name of the deployment method as user can see in GUI.
 sub name {

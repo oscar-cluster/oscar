@@ -806,130 +806,22 @@ Exported: YES
 sub __enable_install_mode () {
     our $install_mode;
 
-    our $os;
-    my $cmd;
-    my $interface = OSCAR::Database::get_headnode_iface(undef, undef);
+    # 1 Detect which XMIT_Deploy component match this install mode:
+    my $comp = OSCAR::OCA::XMIT_Deploy::get_method_by_name($install_mode);
+    my $str = "\$name = \&OSCAR::OCA::XMIT_Deploy::XMIT_".$comp."::enable()";
+    oscar_log(5, INFO, "Trying to enable installation mode: $install_mode");
+    my $res = eval $str;
+    if($res) {
+        # Store installation mode in ODA
+        OSCAR::Database::set_install_mode($install_mode, undef, undef);
+        # FIXME: Check return code.
 
-    my $os_detect = OSCAR::OCA::OS_Detect::open();
-    my $binary_format = $os_detect->{'pkg'};
-
-    my $script;
-    my $file;
-    if ($install_mode eq "systemimager-rsync") {
-        # Stop systemimager-server-flamethrowerd and systemimager-server-bittorrent
-        !system_service(SI_FLAMETHROWER,STOP)
-            or (oscar_log(5, ERROR, "Couldn't stop systemimager-server-flamethrowerd."), return 0);
-        !system_service(SI_BITTORRENT,STOP)
-            or (oscar_log(5, ERROR, "Couldn't stop systemimager-server-bittorent."), return 0);
-
-        # disable systemimager-server-flamethrowerd and systemimager-server-bittorrent
-        !disable_system_services( (SI_FLAMETHROWER,
-                                  SI_BITTORRENT) )
-            or (oscar_log(5, ERROR, "Couldn't disable si_flametrhower and si_bittorrent."), return 0);
-
-        # Restart systemimager-server-rsyncd
-        !system_service(SI_RSYNC,RESTART)
-            or (oscar_log(5, ERROR, "Couldn't restart systemimager-rsync."), return 0);
-
-        # Enable systemimager-server-rsyncd
-        !enable_system_services( (SI_RSYNC) )
-            or (oscar_log(5, ERROR, "Couldn't enable systemimager-rsync."), return 0);
-
-    } elsif ($install_mode eq "systemimager-multicast") {
-        # Stop systemimager-server-bittorrent
-        !system_service(SI_BITTORRENT,STOP)
-            or (oscar_log(5, ERROR, "Couldn't stop systemimager-server-bittorent."), return 0);
-
-        # Disable systemimager-server-bittorrent (prevent start at boot)
-        !disable_system_services( (SI_BITTORRENT) )
-            or (oscar_log(5, ERROR, "Couldn't disable si_flametrhower and si_bittorrent."), return 0);
-
-        # Restart systemimager-server-rsyncd (needed by netbootmond and also
-        # for calculating image size in si_monitortk)
-        !system_service(SI_RSYNC,RESTART)
-            or (oscar_log(5, ERROR, "Couldn't restart systemimager-rsync."), return 0);
-
-        # Backup original flamethrower.conf
-        $file = OSCAR::OCA::OS_Settings::getitem(SI_FLAMETHROWER . "_configfile");
-        if (-f $file) {
-            # 1st, create a backup of the config file if not already done.
-            backup_file_if_not_exist($file) or return 0;
-
-            # 2nd, Update config (enable daemon mode, and set the net iface).
-            $cmd = "sed -i -e 's/START_FLAMETHROWER_DAEMON = no/START_FLAMETHROWER_DAEMON = yes/' -e 's/INTERFACE = eth[0-9][0-9]*/INTERFACE = $interface/' $file";
-            if( oscar_system( $cmd ) ) {
-                oscar_log(5, ERROR, "ERROR: Failed to update $file");
-                return 0;
-            }
-
-            # add entry for boot-<arch>-standard module
-            my $march = $os->{'arch'};
-            $march =~ s/i.86/i386/;
-            $cmd = "/usr/lib/systemimager/confedit --file $file --entry boot-$march-standard --data \" DIR=/usr/share/systemimager/boot/$march/standard/\"";
-            if( oscar_system( $cmd ) ) {
-                return 0;
-            }
-
-            oscar_log(4, INFO, "Successfully updated $file");
-
-            # Restart systemimager-server-flamethrowerd
-            !system_service(SI_FLAMETHROWER,RESTART)
-                or (oscar_log(5, ERROR, "Couldn't stop systemimager-server-flamethrowerd."), return 0);
-
-            # Add systemimager-server-flamethrowerd to chkconfig
-            !enable_system_services( (SI_FLAMETHROWER) )
-                or (oscar_log(5, ERROR, "Couldn't disable si_flametrhower and si_bittorrent."), return 0);
-        }
-    } elsif ($install_mode eq "systemimager-bt") {
-        # Stop systemimager-server-flamethrowerd
-        !system_service(SI_FLAMETHROWER,STOP)
-            or (oscar_log(5, ERROR, "Couldn't stop systemimager-server-flamethrowerd."), return 0);
-
-        # Remove systemimager-server-flamethrower from chkconfig
-        !disable_system_services( (SI_FLAMETHROWER) )
-            or (oscar_log(5, ERROR, "Couldn't disable si_flametrhower and si_bittorrent."), return 0);
-
-        # Restart systemimager-server-rsyncd (needed by netbootmond and also for calculating image size in si_monitortk)
-        !system_service(SI_RSYNC,RESTART)
-            or (oscar_log(5, ERROR, "Couldn't restart systemimager-rsync."), return 0);
-
-        # Backup original bittorrent.conf
-        $file = OSCAR::OCA::OS_Settings::getitem(SI_BITTORRENT . "_configfile");
-        if (-f $file) {
-            # 1st, create a backup of the config file if not already done.
-            backup_file_if_not_exist($file) or return 0;
-
-            my @images = list_image();
-            # FIXME: Check @images is defined.
-
-            my $images_list = join(",", map { $_->name } @images);
-
-            # 2nd, set the net interface to use.
-            $cmd = "sed -i -e 's/BT_INTERFACE=eth[0-9][0-9]*/BT_INTERFACE=$interface/' -e 's/BT_IMAGES=.*/BT_IMAGES=$images_list/' -e 's/BT_OVERRIDES=.*/BT_OVERRIDES=$images_list/' $file";
-            if( oscar_system( $cmd ) ) {
-                oscar_log(5, ERROR, "Failed to update $file");
-                return 0;
-            }
-
-            oscar_log(4, INFO, "Successfully updated $file");
-
-            # Restart systemimager-server-bittorrent
-            !system_service(SI_BITTORRENT,RESTART)
-                or (oscar_log(5, ERROR, "Couldn't stop systemimager-server-bittorent."), return 0);
-
-            # Add systemimager-server-bittorrent to chkconfig
-            !enable_system_services( (SI_BITTORRENT) )
-                or (oscar_log(5, ERROR, "Couldn't disable si_flametrhower and si_bittorrent."), return 0);
-        }
+        oscar_log(1, INFO, "Successfully enabled installation mode: $install_mode");
+	return 1; # Success
+    } else {
+        oscar_log(1, ERROR, "Failed to enable installation mode: $install_mode");
+        return 0; # Failure
     }
-
-    # Store installation mode in ODA
-    OSCAR::Database::set_install_mode($install_mode, undef, undef);
-    # FIXME: Check return code.
-
-    oscar_log(2, INFO, "Successfully enabled installation mode: $install_mode");
-
-    return 1;
 }
 
 ################################################################################

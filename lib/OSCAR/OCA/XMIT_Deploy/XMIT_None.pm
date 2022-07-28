@@ -16,7 +16,7 @@ use vars qw(@EXPORT);
 use base qw(Exporter);
 use Carp;
 
-use OSCAR:Logger;
+use OSCAR::Logger;
 use OSCAR::LoggerDefs;
 use OSCAR::OCA::OS_Settings;
 use OSCAR::OCA::XMIT_Deploy;
@@ -31,7 +31,7 @@ use OSCAR::OCA::XMIT_Deploy;
 #
 
 our $xmit_name = __PACKAGE__;
-$xmit_name ~= s/^.*::XMIT_//g;
+$xmit_name =~ s/^.*::XMIT_//g;
 
 # Return the name of the deployment method as user can see in GUI.
 sub name {
@@ -48,7 +48,6 @@ sub available {
 # Disable all other method and do nothing None is a stubb xmit deployment method.
 sub enable {
     OSCAR::OCA::XMIT_Deploy::disable_all_but("$xmit_name");
-
     oscar_log(5, ERROR, "$xmit_name can't be enabled.");
 
     return 1;
