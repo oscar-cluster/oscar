@@ -12,7 +12,7 @@ package OSCAR::MAC;
 #                         Olivier Lahaye <olivier.lahaye@cea.fr>
 #                         All rights reserved.
 
-#   $Id$
+#   $Revision$
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -51,6 +51,7 @@ use OSCAR::LoggerDefs;
 use OSCAR::Database;
 use OSCAR::OCA::OS_Detect;
 use OSCAR::OCA::OS_Settings;
+use OSCAR::OCA::XMIT_Deploy;
 use OSCAR::ConfigManager;
 use OSCAR::SystemServices;
 use OSCAR::SystemServicesDefs;
