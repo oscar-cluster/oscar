@@ -141,8 +141,8 @@ sub get_method_by_name($) {
 ###############################################################################
 sub enable {
     my $comp = shift;
-    my $disable_res;
-    $str = "\$res = \&OSCAR::OCA::XMIT_Deploy::".$comp."::enable()";
+    my $enable_res;
+    my $str = "\$enable_res = \&OSCAR::OCA::XMIT_Deploy::".$comp."::enable()";
     my $res = eval $str;
     if(!$res) {
         oscar_log(5, WARNING, "Failed to run: OSCAR::OCA::XMIT_Deploy::".$comp."::enable()");
@@ -163,14 +163,14 @@ sub enable {
 ###############################################################################
 sub disable {
     my $comp = shift;
-    my $enable_res;
-    $str = "\$res = \&OSCAR::OCA::XMIT_Deploy::".$comp."::disable()";
+    my $disable_res;
+    my $str = "\$disable_res = \&OSCAR::OCA::XMIT_Deploy::".$comp."::disable()";
     my $res = eval $str;
     if(!$res) {
         oscar_log(5, WARNING, "Failed to run: OSCAR::OCA::XMIT_Deploy::".$comp."::disable()");
 	return 0;
     }
-    if (!$enable_res) {
+    if (!$disable_res) {
         oscar_log(5, ERROR, "Failed to enable ".$comp.".");
 	return 0;
     }
@@ -183,13 +183,16 @@ sub disable {
 # Return: Returns 1 on success (0 on failure)                                 #
 ###############################################################################
 sub disable_all_but {
-    $comp_to_keep = shift;
+    my $comp_to_keep = shift;
+    my $err_count = 0;
     oscar_log(5, INFO, "Disabling all install modes except $comp_to_keep");
-    foreach my $comp (open()) {
+    foreach my $comp (OSCAR::OCA::XMIT_Deploy::open()) {
         if ($comp != $comp_to_keep ) {
             oscar_log(5, INFO, "Disabling $comp");
-            disable($comp);
+            $err_count += 1 if( !disable($comp));
         }
+    }
+    return $err_count>0?0:1; # 1 = Success (err_count =0
 }
 
 1;
