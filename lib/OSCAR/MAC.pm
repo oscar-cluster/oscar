@@ -82,9 +82,11 @@ our $stopcoll = "Stop Collecting MACs";
 our $kernel;
 our $ramdisk;
 our $uyok = 0; # UYOK not enabled by default
-our @install_mode_options = qw(systemimager-rsync
-                              systemimager-multicast 
-                              systemimager-bt);
+our @install_mode_options = qw(None);
+push (@install_mode_options, OSCAR::OCA::XMIT_Deploy::open());
+#our @install_mode_options = qw(systemimager-rsync
+#                              systemimager-multicast 
+#                              systemimager-bt);
 our $install_mode = $install_mode_options[0];
 
 @EXPORT = qw (  
@@ -808,11 +810,11 @@ sub __enable_install_mode () {
     our $install_mode;
 
     # 1 Detect which XMIT_Deploy component match this install mode:
-    my $comp = OSCAR::OCA::XMIT_Deploy::get_method_by_name($install_mode);
-    my $str = "\$name = \&OSCAR::OCA::XMIT_Deploy::XMIT_".$comp."::enable()";
+    my $enable_res;
+    my $str = "\$enable_res = \&OSCAR::OCA::XMIT_Deploy::XMIT_".$install_mode."::enable()";
     oscar_log(5, INFO, "Trying to enable installation mode: $install_mode");
     my $res = eval $str;
-    if($res) {
+    if($res && $enable_res) {
         # Store installation mode in ODA
         OSCAR::Database::set_install_mode($install_mode, undef, undef);
         # FIXME: Check return code.

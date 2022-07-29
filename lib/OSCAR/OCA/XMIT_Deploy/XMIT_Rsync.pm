@@ -64,10 +64,10 @@ sub enable {
 
 # Disable rsync method.
 sub disable {
-	!disable_system_services( (SI_RSYNC) )
-	    or (oscar_log(5, ERROR, "Couldn't disable systemimager-rsync."), return 0);
-        !system_service(SI_RSYNC,STOP)
-	    or (oscar_log(5, ERROR, "Couldn't stop systemimager-rsync."), return 0);
-        return 1;
+    !disable_system_services( (SI_RSYNC) )
+        or (oscar_log(5, ERROR, "Couldn't disable systemimager-rsync."), return 0);
+    !system_service(SI_RSYNC,STOP)
+        or (oscar_log(5, ERROR, "Couldn't stop systemimager-rsync."), return 0);
+    return 1;
 }
 

@@ -24,7 +24,7 @@ use OSCAR::LoggerDefs;
 # Exports
 #
 
-@EXPORT = qw(name get_method_by_name enable disable);
+@EXPORT = qw(name get_method_by_name enable disable disable_all_but);
 
 #
 # Globals
@@ -114,14 +114,22 @@ sub get_method_by_name($) {
     }
 
     my $ret = undef;
+    my $str;
+    my $name;
     foreach my $comp (@$comps) {
-        if($comp eq $method_name) {
+        $str = "\$name = \&OSCAR::OCA::XMIT_Deploy::".$comp."::name()";
+	my $res = eval $str;
+	if(!$res) {
+	    oscar_log(5, WARNING, "Failed to get Component service name: OSCAR::OCA::XMIT_Deploy::".$comp."::name()");
+	    next;
+        }
+
+        if($name eq $method_name) {
             # Yes, we found the component.
-            $method_component = $comp;
-            last;
+            return $comp;
         }
     }
-    return $method_component;
+    return undef; # not found.
 
 }
 
@@ -132,6 +140,19 @@ sub get_method_by_name($) {
 # Return: Returns 1 on success (0 on failure)
 ###############################################################################
 sub enable {
+    my $comp = shift;
+    my $disable_res;
+    $str = "\$res = \&OSCAR::OCA::XMIT_Deploy::".$comp."::enable()";
+    my $res = eval $str;
+    if(!$res) {
+        oscar_log(5, WARNING, "Failed to run: OSCAR::OCA::XMIT_Deploy::".$comp."::enable()");
+	return 0;
+    }
+    if (!$enable_res) {
+        oscar_log(5, ERROR, "Failed to disable ".$comp.".");
+	return 0;
+    }
+    return 1;
 }
 
 ###############################################################################
@@ -141,7 +162,34 @@ sub enable {
 # Return: Returns 1 on success (0 on failure)
 ###############################################################################
 sub disable {
+    my $comp = shift;
+    my $enable_res;
+    $str = "\$res = \&OSCAR::OCA::XMIT_Deploy::".$comp."::disable()";
+    my $res = eval $str;
+    if(!$res) {
+        oscar_log(5, WARNING, "Failed to run: OSCAR::OCA::XMIT_Deploy::".$comp."::disable()");
+	return 0;
+    }
+    if (!$enable_res) {
+        oscar_log(5, ERROR, "Failed to enable ".$comp.".");
+	return 0;
+    }
+    return 1;
 }
 
+###############################################################################
+# Subroutine to disable and stop all modules but the one given as argument    #
+# Input:  Component name without the leading XMIT_                            #
+# Return: Returns 1 on success (0 on failure)                                 #
+###############################################################################
+sub disable_all_but {
+    $comp_to_keep = shift;
+    oscar_log(5, INFO, "Disabling all install modes except $comp_to_keep");
+    foreach my $comp (open()) {
+        if ($comp != $comp_to_keep ) {
+            oscar_log(5, INFO, "Disabling $comp");
+            disable($comp);
+        }
+}
 
 1;

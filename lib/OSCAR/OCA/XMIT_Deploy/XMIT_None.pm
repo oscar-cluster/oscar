@@ -50,12 +50,12 @@ sub enable {
     OSCAR::OCA::XMIT_Deploy::disable_all_but("$xmit_name");
     oscar_log(5, ERROR, "$xmit_name can't be enabled.");
 
-    return 1;
+    return 0;
 }
 
 # Disable None method.
 sub disable {
 	oscar_log(5, INFO, "$xmit_name is always disabled. Nothing to do");
-        return 0;
+        return 1;
 }
 
