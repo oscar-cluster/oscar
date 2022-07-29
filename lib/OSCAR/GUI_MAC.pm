@@ -890,7 +890,12 @@ sub enable_install_mode {
 
     $window->Busy(-recurse => 1);
     if (OSCAR::MAC::__enable_install_mode() == 0) {
-        oscar_log(1, ERROR, "Impossible to enable install mode.");
+        oscar_log(1, ERROR, "Impossible to enable install mode [$install_mode].");
+	OSCAR::Tk::error_window($window, "Failed to enable [$install_mode] install mode.",$window->Unbusy(),undef);
+	# Set previous valid value or None if nothing was stored in database
+	my $previous_install_mode = OSCAR::Database::get_install_mode(undef, undef);
+        $previous_install_mode = 'None' if(!defined($previous_install_mode));
+	$install_mode = $previous_install_mode;
         return 0;
     }
     our $dhcpbutton->configure(-state => 'normal');

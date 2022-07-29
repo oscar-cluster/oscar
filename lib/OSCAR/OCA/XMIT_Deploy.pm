@@ -187,7 +187,7 @@ sub disable_all_but {
     my $err_count = 0;
     oscar_log(5, INFO, "Disabling all install modes except $comp_to_keep");
     foreach my $comp (OSCAR::OCA::XMIT_Deploy::open()) {
-        if ($comp != $comp_to_keep ) {
+        if ($comp ne $comp_to_keep ) {
             oscar_log(5, INFO, "Disabling $comp");
             $err_count += 1 if( !disable($comp));
         }
