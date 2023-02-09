@@ -175,7 +175,7 @@ sub detect_dir {
     $id->{arch} = $arch;
 
     # Limit support to only x86 and x86_64 machines
-    if ($arch !~ /^x86_64$|^i686$|^i586$|^i386$/ ) {
+    if ($arch !~ /^x86_64$|^aarch64$|^i686$|^i586$|^i386$/ ) {
         print "OCA::OS_Detect::Debian-";
         print "DEBUG: Failed Architecture support - ($arch)\n\n" if( $DEBUG );
         return undef;

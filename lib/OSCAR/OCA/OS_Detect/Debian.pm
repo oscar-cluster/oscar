@@ -146,8 +146,8 @@ sub detect_dir {
     my $arch = main::OSCAR::OCA::OS_Detect::detect_arch_file($root, $detect_file);
     $id->{arch} = $arch;
 
-    # Limit support to only x86 and x86_64 machines
-    if ($arch !~ /^x86_64$|^i686$|^i586$|^i386$/ ) {
+    # Limit support to only x86 and x86_64 and aarch64 machines
+    if ($arch !~ /^x86_64$|^aarch64$|^i686$|^i586$|^i386$/ ) {
         print "OCA::OS_Detect::Debian-";
         print "DEBUG: Failed Architecture support - ($arch)\n\n" if( $DEBUG );
         return 0;
