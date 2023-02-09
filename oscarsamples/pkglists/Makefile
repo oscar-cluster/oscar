@@ -10,9 +10,9 @@ FILES :=                                 debian-8-x86_64.pkglist \
          redhat-el-6-i386.pkglist        redhat-el-6-x86_64.pkglist \
                                          redhat-el-7-x86_64.pkglist \
                                          redhat-el-8-x86_64.pkglist \
-                                         redhat-el-8-aarch64.pkglist \
                                          redhat-el-9-x86_64.pkglist \
 					 almalinux-8-x86_64.pkglist \
+					 almalinux-8-aarch64.pkglist \
 					 almalinux-9-x86_64.pkglist \
          centos-6-i386.pkglist           centos-6-x86_64.pkglist \
                                          centos-7-x86_64.pkglist \
