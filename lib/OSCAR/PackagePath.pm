@@ -478,7 +478,7 @@ sub list_distro_pools () {
     my $tftpdir = get_tftpdir();
     my $ddir = "$tftpdir/distro";
     # recognised architectures
-    my $arches = "i386|x86_64|ia64|ppc64";
+    my $arches = "i386|x86_64|aarch64|ia64|ppc64";
     my %pools;
     local *DIR;
     opendir ( DIR, $ddir )
@@ -872,7 +872,7 @@ sub use_default_oscar_repo ($) {
 ################################################################################
 sub decompose_distro_id ($) {
     my $distro_id = shift;
-    my $arches = "i386|x86_64|ia64|ppc64";
+    my $arches = "i386|x86_64|aarch64|ia64|ppc64";
     my ($distro,$version,$arch);
     if ( ($distro_id =~ /(.*)\-(\d+)\-($arches)(|\.url)$/) ||
         ($distro_id =~ /(.*)\-(\d+.\d+)\-($arches)(|\.url)$/) ) {
