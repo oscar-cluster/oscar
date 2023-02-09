@@ -1,9 +1,9 @@
-# Experimental Dockerfile to build OSCAR rhel-8-x86_64 packages from scratch on AlmaLinux-8
+# Experimental Dockerfile to build OSCAR rhel-8-aarch64 packages from scratch on AlmaLinux-8
 # Build using the following command:
-#       sudo docker build -t oscar/packager_rhel:8.6 -f Dockerfile_OSCAR.almalinux8 .
+#       sudo docker build -t oscar/packager_rhel:8.6 -f Dockerfile_OSCAR.almalinux8-aarch64 .
 
 
-FROM almalinux/almalinux:8
+FROM arm64v8/almalinux:8
 
 LABEL maintainer="Olivier LAHAYE <olivier.lahaye@cea.fr>"
 LABEL version="1.0"
@@ -22,7 +22,7 @@ RUN dnf -y install dnf-plugins-core
 RUN dnf install 'dnf-command(config-manager)'
 RUN dnf config-manager --set-enabled powertools
 
-#RUN dnf -y install http://fr2.rpmfind.net/linux/epel/8/Everything/x86_64/Packages/e/epel-release-8-8.el8.noarch.rpm
+#RUN dnf -y install http://fr2.rpmfind.net/linux/epel/8/Everything/aarch64/Packages/e/epel-release-8-8.el8.noarch.rpm
 RUN dnf -y install epel-release
 RUN dnf -y install git-core
 
@@ -94,7 +94,7 @@ RUN cp /root/oscar/share/etc/templates/oscar.conf /etc/oscar/oscar.conf
 
 # Install oscar-config requirements.
 # Configure OSCAR (Creates /tftpboot/distro/<distro>.url and /tftpboot/oscar/<distro>.url)
-RUN oscar-config --setup-distro almalinux-8-x86_64
+RUN oscar-config --setup-distro almalinux-8-aarch64
 
 # Install packman
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-packman.git
@@ -140,8 +140,8 @@ RUN /bin/rm -rf /root/oscar* /root/.cpan /root/rpmbuild/*/* /var/lib/oscar-packa
 # this should not be required
 RUN rpm -q oscar-release > /dev/null || yume -y install /tftpboot/oscar/*/oscar-release*rpm
 RUN yume clean all
-RUN rm -rf /tftpboot/oscar/rhel-8-x86_64/.repodata
-RUN /bin/rm -rf /tftpboot/oscar/rhel-8-x86_64/repodata /tftpboot/oscar/rhel-8-x86_64/repocache
+RUN rm -rf /tftpboot/oscar/rhel-8-aarch64/.repodata
+RUN /bin/rm -rf /tftpboot/oscar/rhel-8-aarch64/repodata /tftpboot/oscar/rhel-8-aarch64/repocache
 RUN yume --prepare
 RUN yume -y update
 RUN yume -y reinstall oscar-release
@@ -154,7 +154,7 @@ RUN yume -y install yume packman opkgc
 RUN yume -y reinstall oscar oscar-core liboscar-server liboscar-client oscar-data oscar-devel oscar-utils oscar-packager
 
 # Renstall systemimager server parts that have already been installed from oscar deps.
-RUN yume -y reinstall systemimager-initrd_template systemimager-x86_64boot-standard systemimager-server systemimager-common systemimager-webgui
+RUN yume -y reinstall systemimager-initrd_template systemimager-aarch64boot-standard systemimager-server systemimager-common systemimager-webgui
 
 # Install bittorrent that is needed for systemimager-bittorrent
 #RUN yume -y install bittorrent bittorrent-gui
@@ -162,7 +162,7 @@ RUN yume -y reinstall systemimager-initrd_template systemimager-x86_64boot-stand
 RUN yume -y install --skip-broken systemimager-bittorrent systemimager-client systemimager-flamethrower
 
 # Cleanup tftp tree so we can mount host space later.
-RUN /bin/rm -rf /root/rpmbuild/*/* /tftpboot/oscar/rhel-8-x86_64/*
+RUN /bin/rm -rf /root/rpmbuild/*/* /tftpboot/oscar/rhel-8-aarch64/*
 
 # Somme pre-setup for OSCAR
 # 1/ Mandatory try as /etc/hosts seems non editable directly by sed (ressource buszy)

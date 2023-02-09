@@ -8,6 +8,7 @@ FILES :=				debian-10-x86_64.xml \
 		rhel-6-i386.xml		rhel-6-x86_64.xml \
 					rhel-7-x86_64.xml \
 					rhel-8-x86_64.xml \
+					rhel-8-aarch64.xml \
 					rhel-9-x86_64.xml \
 					suse-15-x86_64.xml
 
