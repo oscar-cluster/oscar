@@ -70,6 +70,7 @@ hesiod
 hwdata
 info
 initscripts
+ipa-client
 iproute
 iptables
 iputils
