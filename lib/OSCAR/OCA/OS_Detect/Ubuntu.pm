@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 #
 # Copyright (c) 2008 Oak Ridge National Laboratory.
-#                    All rights reserved.
+#		    All rights reserved.
 #
 # Copyright (c) 2020 Olivier Lahaye <olivier.lahaye@cea.fr>
 #      - Add support for /etc/os-release
@@ -29,8 +29,8 @@ my $DEBUG = 1 if( $ENV{DEBUG_OCA_OS_DETECT} );
 my ($deb_ver);
 
 my $detect_pkg  = "base-files"; # Deb pkg containing '/etc/debian_version'
-                                # therefore should always be available
-                                # and the Version: is always accurate!
+				# therefore should always be available
+				# and the Version: is always accurate!
 
 my $dpkg_bin = "/usr/bin/dpkg-query"; # Tool to query Deb package Database
 
@@ -42,6 +42,11 @@ my $detect_package = "base-files";
 my $detect_file = "/bin/bash";
 
 my %codenames = (
+		'2304'	=> "lunar lobster",
+		'2210'	=> "kinetic",
+		'2204'	=> "jammy",
+		'2110'	=> "impish",
+		'2104'	=> "hirsute",
 		'2010'  => "groovy",
 		'2004'  => "focal",
 		'1910'  => "eoan",
@@ -51,64 +56,69 @@ my %codenames = (
 		'1710'  => "artful",
 		'1704'  => "zesty",
 		'1610'  => "yakkety",
-                '1604'  => "xenial",
-                '1510'  => "wily",
-                '1504'  => "vivid",
-                '1410'  => "utopic",
-                '1404'  => "trusty",
-                '1310'  => "saucy",
-                '1304'  => "raring",
-                '1210'  => "quantal",
-                '1204'  => "precise",
-                '1110'  => "oneiric",
-                '1104'  => "natty",
-                '1010'  => "maverick",
-                '1004'  => "lucid",
-                '910'   => "karmic",
-                '904'   => "jaunty",
-                '810'   => "intrepid",
-                '804'   => "hardy",
-                '710'   => "gutsy",
-                '704'   => "feisty",
-                '610'   => "edgy",
-                '606'   => "dapper",
-                '510'   => "breezy",
-                );
+		'1604'  => "xenial",
+		'1510'  => "wily",
+		'1504'  => "vivid",
+		'1410'  => "utopic",
+		'1404'  => "trusty",
+		'1310'  => "saucy",
+		'1304'  => "raring",
+		'1210'  => "quantal",
+		'1204'  => "precise",
+		'1110'  => "oneiric",
+		'1104'  => "natty",
+		'1010'  => "maverick",
+		'1004'  => "lucid",
+		'910'   => "karmic",
+		'904'   => "jaunty",
+		'810'   => "intrepid",
+		'804'   => "hardy",
+		'710'   => "gutsy",
+		'704'   => "feisty",
+		'610'   => "edgy",
+		'606'   => "dapper",
+		'510'   => "breezy",
+		);
 
 my %compat_version_mapping = (
-                '2010'  => "11",
-                '2004'  => "11",
-                '1910'  => "10",
-                '1904'  => "10",
-                '1810'  => "10",
-                '1804'  => "10",
-                '1804'  => "10",
-                '1710'  => "9",
-                '1704'  => "9",
-                '1610'  => "9",
-                '1604'  => "9",
-                '1510'  => "8",
-                '1504'  => "8",
-                '1410'  => "8",
-                '1404'  => "8",
-                '1310'  => "7",
-                '1304'  => "7",
-                '1210'  => "7",
-                '1204'  => "7",
-                '1110'  => "7",
-                '1104'  => "6",
-                '1010'  => "6",
-                '1004'  => "6",
-                '910'   => "5",
-                '904'   => "5",
-                '810'   => "4",
-                '804'   => "4",
-                '710'   => "4",
-                '704'   => "4",
-                '610'   => "4",
-                '606'   => "4",
-                '510'   => "4",
-                );
+		'2304'	=> "12",
+		'2210'	=> "12",
+		'2204'	=> "12",
+		'2110'	=> "11",
+		'2104'	=> "11",
+		'2010'  => "11",
+		'2004'  => "11",
+		'1910'  => "10",
+		'1904'  => "10",
+		'1810'  => "10",
+		'1804'  => "10",
+		'1804'  => "10",
+		'1710'  => "9",
+		'1704'  => "9",
+		'1610'  => "9",
+		'1604'  => "9",
+		'1510'  => "8",
+		'1504'  => "8",
+		'1410'  => "8",
+		'1404'  => "8",
+		'1310'  => "7",
+		'1304'  => "7",
+		'1210'  => "7",
+		'1204'  => "7",
+		'1110'  => "7",
+		'1104'  => "6",
+		'1010'  => "6",
+		'1004'  => "6",
+		'910'   => "5",
+		'904'   => "5",
+		'810'   => "4",
+		'804'   => "4",
+		'710'   => "4",
+		'704'   => "4",
+		'610'   => "4",
+		'606'   => "4",
+		'510'   => "4",
+		);
 
 #
 #  End of all configuration/global variable setup
@@ -150,11 +160,11 @@ sub detect_dir {
             require OSCAR::PackagePath;
             my ($d, $v, $a) = OSCAR::PackagePath::decompose_distro_id ($distro_id);
             if ($d ne "ubuntu") {
-                return undef; # Quit if not an ubuntu
+		return undef; # Quit if not an ubuntu
             }
             if ($v =~ /(\d+)\.(\d+)/) {
-                $id->{distro_version} = "$1$2"; # Ubuntu 12.04 version is 1204 used to match above tables
-                $id->{distro_update} = 0;
+		$id->{distro_version} = "$1$2"; # Ubuntu 12.04 version is 1204 used to match above tables
+		$id->{distro_update} = 0;
             } else {
 		return undef; # Can't parse version => Unsupported or not an ubuntu
 	    }
@@ -232,9 +242,9 @@ sub detect_pool {
     my ($pool) = @_;
 
     my $id = main::OSCAR::OCA::OS_Detect::detect_pool_rpm($pool,
-                              $detect_package,
-                              $distro,
-                              $compat_distro);
+		              $detect_package,
+		              $distro,
+		              $compat_distro);
 
 
     # Add missing fields
@@ -255,10 +265,10 @@ sub detect_fake {
     $fake->{'codename'} = $codenames{$l_version};
 
     my $id = main::OSCAR::OCA::OS_Detect::detect_fake_common($fake,
-                                 $distro,
-                                 $compat_distro,
-                                 $compat_version_mapping{$l_version},
-                                 $pkg);
+				 $distro,
+				 $compat_distro,
+				 $compat_version_mapping{$l_version},
+				 $pkg);
 
     # Add missing fields
     add_missing_fields($id);
