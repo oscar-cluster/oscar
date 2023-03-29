@@ -202,6 +202,7 @@ oscar_log(5, INFO, "Refreshing services");
 chomp(my $nfs_export = `which exportfs`);
 
 # Start or restart the nfs server service
+# BUG: shoud not do that here!. opkg-nfs shoud be core.
 !system_service(NFS(),RESTART())
     or (oscar_log(1, ERROR, "Couldn't restart nfs service."), exit 1);
 
