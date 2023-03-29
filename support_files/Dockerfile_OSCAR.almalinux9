@@ -108,7 +108,7 @@ RUN cd /root/oscar-yume && make install DESTDIR=/
 
 # Install oscar-packager requirements
 RUN dnf -y install docbook-utils texlive-ec
-RUN dnf -y install 'tex(epstopdf-base.sty)' 'tex(expl3.sty)' 'tex(fancyhdr.sty)' 'tex(pcrr8t.tfm)' 'tex(phvb8t.tfm)' 'tex(pplr8c.tfm)' 'tex(pplr8r.tfm)' 'tex(ptmr8t.tfm)' 'texlive-dvips' 'texlive-gsftopk' 'texlive-jadetex' 'texlive-metafont' 'texlive-modes'
+RUN dnf -y install 'tex(epstopdf-base.sty)' 'tex(expl3.sty)' 'tex(fancyhdr.sty)' 'tex(pcrr8t.tfm)' 'tex(phvb8t.tfm)' 'tex(pplr8c.tfm)' 'tex(pplr8r.tfm)' 'tex(ptmr8t.tfm)' 'texlive-dvips' 'texlive-mathpazo' 'texlive-gsftopk' 'texlive-jadetex' 'texlive-metafont' 'texlive-modes'
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-packager.git
 RUN cd /root/oscar-packager && make rpm
 RUN rpm -Uvh --nodeps /root/rpmbuild/RPMS/noarch/oscar-packager*.rpm
@@ -120,7 +120,8 @@ RUN rpm -Uvh --nodeps /root/rpmbuild/RPMS/noarch/oscar-packager*.rpm
 RUN dnf -y install bc bind-utils cryptsetup dejavu-serif-fonts dosfstools e2fsprogs gdisk hwdata jq kernel lshw lsscsi lvm2 mdadm net-tools nmap-ncat openssh-server parted pciutils perl-JSON plymouth-plugin-label plymouth-plugin-script psmisc rtorrent socat usbutils xfsprogs xmlstarlet dos2unix httpd-filesystem httpd
 
 # Install some deps for apitest
-RUN dnf -y --disablerepo="repo-oscar" install python3-twisted
+RUN dnf -y --disablerepo="repo-oscar" install http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/rhel-9-x86_64/python3-twisted-22.4.0-3.el9.noarch.rpm http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/rhel-9-x86_64/python3-hyperlink-21.0.0-9.el9.noarch.rpm http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/rhel-9-x86_64/python3-incremental-21.3.0-4.el9.noarch.rpm
+#RUN dnf -y --disablerepo="repo-oscar" install python3-twisted
 
 # REBUILD oscar essential rpms.
 RUN oscar-packager --all Tk-TextANSIColor
@@ -162,7 +163,7 @@ RUN yume -y reinstall systemimager-initrd_template systemimager-x86_64boot-stand
 # Install bittorrent that is needed for systemimager-bittorrent
 #RUN yume -y install bittorrent bittorrent-gui
 # Install systemimager missing bits.
-RUN yume -y install systemimager-bittorrent systemimager-client systemimager-flamethrower
+RUN yume -y install --skip-broken systemimager-bittorrent systemimager-client systemimager-flamethrower
 
 # Cleanup tftp tree so we can mount host space later.
 RUN /bin/rm -rf /root/rpmbuild/*/* /tftpboot/oscar/rhel-9-x86_64/*
@@ -170,10 +171,11 @@ RUN /bin/rm -rf /root/rpmbuild/*/* /tftpboot/oscar/rhel-9-x86_64/*
 # Somme pre-setup for OSCAR
 # 1/ Mandatory try as /etc/hosts seems non editable directly by sed (ressource buszy)
 # The /etc/host is OVERWRITTEN at each step, so this line is useless and only here for interactive tip
-RUN cat /etc/hosts | sed -e 's/^\(172.*\)$/\1 oscar-server/g' > /etc/hosts.new ; cat /etc/hosts.new > /etc/hosts
+RUN cat /etc/hosts | sed -e 's/^\(172.*\)$/\1 oscar-server/g' > /etc/hosts.new
+RUN cat /etc/hosts.new > /etc/hosts || true
 # 2/ Disable GSS api on mariadb othewize it won't start
 # To start lmysql then: /usr/libexec/mysqld --basedir=/usr --user=root
 # Then secure it: mysql_secure_installation
-RUN sed -i -e 's/^\(plugin-load-add\)/#\1/g' /etc/my.cnf.d/auth_gssapi.cnf
+RUN sed -i -e 's/^\(plugin-load-add\)/#\1/g' /etc/my.cnf.d/auth_gssapi.cnf || true
 
 CMD [ "bash" ]

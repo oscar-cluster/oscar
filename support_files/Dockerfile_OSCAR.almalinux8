@@ -167,10 +167,11 @@ RUN /bin/rm -rf /root/rpmbuild/*/* /tftpboot/oscar/rhel-8-x86_64/*
 # Somme pre-setup for OSCAR
 # 1/ Mandatory try as /etc/hosts seems non editable directly by sed (ressource buszy)
 # The /etc/host is OVERWRITTEN at each step, so this line is useless and only here for interactive tip
-RUN cat /etc/hosts | sed -e 's/^\(172.*\)$/\1 oscar-server/g' > /etc/hosts.new ; cat /etc/hosts.new > /etc/hosts
+RUN cat /etc/hosts | sed -e 's/^\(172.*\)$/\1 oscar-server/g' > /etc/hosts.new
+RUN cat /etc/hosts.new > /etc/hosts || true
 # 2/ Disable GSS api on mariadb othewize it won't start
 # To start lmysql then: /usr/libexec/mysqld --basedir=/usr --user=root
 # Then secure it: mysql_secure_installation
-RUN sed -i -e 's/^\(plugin-load-add\)/#\1/g /etc/my.cnf.d/auth_gssapi.so
+RUN sed -i -e 's/^\(plugin-load-add\)/#\1/g' /etc/my.cnf.d/auth_gssapi.cnf || true
 
 CMD [ "bash" ]
