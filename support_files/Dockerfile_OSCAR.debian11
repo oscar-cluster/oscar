@@ -1,6 +1,6 @@
 # Experimental Dockerfile to build OSCAR from scratch on Debian-11 (bullseye)
 # Build using the following command:
-#       sudo docker build -t oscar/unstable_deb:11.1 -f Dockerfile_OSCAR.debian11 .
+#       sudo docker build -t oscar/unstable_deb:11.8 -f Dockerfile_OSCAR.debian11 .
 
 
 FROM debian:11

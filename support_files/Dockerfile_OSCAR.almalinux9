@@ -1,6 +1,6 @@
 # Experimental Dockerfile to build OSCAR rhel-9-x86_64 packages from scratch on AlmaLinux-9
 # Build using the following command:
-#       sudo docker build -t oscar/packager_rhel:9.0 -f Dockerfile_OSCAR.almalinux9 .
+#       sudo docker build -t oscar/packager_rhel:9.6 -f Dockerfile_OSCAR.almalinux9 .
 
 
 FROM almalinux:9
@@ -42,11 +42,10 @@ RUN mkdir -p /root/rpmbuild/{SOURCES,SRPMS,RPMS,SPECS}
 RUN dnf -y install perl
 RUN dnf -y install --skip-broken \
                         'perl(AppConfig)' 'perl(Carp)' 'perl(Cwd)' 'perl(Data::Dumper)' 'perl(English)' \
-                        'perl(Exporter)' \
                         'perl(File::Copy::Recursive)' 'perl(File::Copy)' 'perl(File::Basename)' 'perl(File::Path)' \
                         'perl(Getopt::Long)' 'perl(POSIX)' 'perl(Exporter)' 'perl(ExtUtils::MakeMaker)' \
                         'perl(Tk)' 'perl(DBI)' 'perl(DBD::mysql)' 'perl(XML::Simple)' \
-                        perl-Module-Build perl-devel 'perl(Tk)' 'perl(Test::More)'
+                        perl-Module-Build perl-devel 'perl(Test::More)'
 
 # Install requirements and build it
 RUN dnf -y install --skip-broken gcc syslinux
@@ -55,13 +54,13 @@ RUN dnf -y install --skip-broken gcc syslinux
 RUN dnf -y install --skip-broken vim openssh-clients
 
 # Build perl-Tk (missing in RHEL/CentOS-9)
-RUN dnf -y install --skip-broken perl-CPAN perl-open libX11-devel libpng-devel tk-devel kernel-devel kernel-headers
-RUN dnf -y reinstall --skip-broken kernel-headers
+#RUN dnf -y install --skip-broken perl-CPAN perl-open libX11-devel libpng-devel tk-devel kernel-devel kernel-headers
+#RUN dnf -y reinstall --skip-broken kernel-headers
 #RUN perl -MCPAN -e'notest install Tk'
-RUN perl -MCPAN -e "CPAN::Shell->notest('install', 'Tk')"
+#RUN perl -MCPAN -e "CPAN::Shell->notest('install', 'Tk')"
 #RUN perl -MCPAN -e'notest install AppConfig'
-RUN perl -MCPAN -e "CPAN::Shell->notest('install', 'AppConfig')"
-RUN perl -MCPAN -e "CPAN::Shell->notest('install', 'File::Copy::Recursive')"
+#RUN perl -MCPAN -e "CPAN::Shell->notest('install', 'AppConfig')"
+#RUN perl -MCPAN -e "CPAN::Shell->notest('install', 'File::Copy::Recursive')"
 
 
 # Build and install Tk-TextANSIColor
@@ -77,10 +76,10 @@ RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar.git
 RUN cd /root/oscar && make source_tarball && rpmbuild -tb /root/oscar/tmp/oscar-6.3.tar.gz
 
 # Install opkgc build requirements and build it
-RUN dnf -y install --skip-broken python2-devel python2-cheetah python2-lxml
+#RUN dnf -y install --skip-broken python2-devel python2-cheetah python2-lxml
 RUN dnf -y install --skip-broken python3-devel python3-cheetah python3-lxml xmlto autoconf automake rsync
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-opkgc.git
-RUN ln -s /bin/python2 /bin/python
+#RUN ln -s /bin/python2 /bin/python
 RUN cd /root/oscar-opkgc && ./autogen.sh && ./configure --prefix=/usr && make install
 
 # Install oda and configure it to use mysql (needed by oscar-config)
@@ -90,6 +89,7 @@ RUN cd /usr/share/perl5/vendor_perl/OSCAR && ln -s ODA/mysql.pm oda.pm
 
 # Reinstall oscar rpm packages.
 RUN rpm -Uvh --nodeps /root/rpmbuild/RPMS/noarch/*oscar-*rpm
+RUN dnf config-manager --set-disabled repo§oscar
 
 # Install default config file for OSCAR so oscar-packager will be happy..
 RUN cp /root/oscar/share/etc/templates/oscar.conf /etc/oscar/oscar.conf

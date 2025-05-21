@@ -1,6 +1,6 @@
 # Experimental Dockerfile to build OSCAR rhel-9-aarch64 packages from scratch on AlmaLinux-9
 # Build using the following command:
-#       sudo docker build -t oscar/packager_rhel:9.3 -f Dockerfile_OSCAR.almalinux9-aarch64 .
+#       sudo docker build -t oscar/packager_rhel:9.6 -f Dockerfile_OSCAR.almalinux9-aarch64 .
 
 
 FROM almalinux:9
@@ -89,7 +89,7 @@ RUN cd /usr/share/perl5/vendor_perl/OSCAR && ln -s ODA/mysql.pm oda.pm
 
 # Reinstall oscar rpm packages.
 RUN rpm -Uvh --nodeps /root/rpmbuild/RPMS/noarch/*oscar-*rpm
-RUN dnf config-manager --set-disabled repo§oscar
+RUN dnf config-manager --set-disabled repo-oscar
 
 # Install default config file for OSCAR so oscar-packager will be happy..
 RUN cp /root/oscar/share/etc/templates/oscar.conf /etc/oscar/oscar.conf

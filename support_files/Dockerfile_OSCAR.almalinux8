@@ -1,6 +1,6 @@
 # Experimental Dockerfile to build OSCAR rhel-8-x86_64 packages from scratch on AlmaLinux-8
 # Build using the following command:
-#       sudo docker build -t oscar/packager_rhel:8.6 -f Dockerfile_OSCAR.almalinux8 .
+#       sudo docker build -t oscar/packager_rhel:8.9 -f Dockerfile_OSCAR.almalinux8 .
 
 
 FROM almalinux/almalinux:8

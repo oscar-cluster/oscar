@@ -1,12 +1,12 @@
-# Experimental Dockerfile to build OSCAR from scratch on OpenSUSE-15.3
+# Experimental Dockerfile to build OSCAR from scratch on OpenSUSE-15.5
 # Build using the following command:
 #       sudo docker build -t oscar/packager_os15:1.0 -f Dockerfile_OSCAR.opensuse15 .
 
 
-FROM opensuse/leap:15.3
+FROM opensuse/leap:15.5
 
 LABEL maintainer="Olivier LAHAYE <olivier.lahaye@cea.fr>"
-LABEL version="6.5"
+LABEL version="15.5"
 LABEL vendor="OSCAR Cluster"
 LABEL license="GPLv2"
 
