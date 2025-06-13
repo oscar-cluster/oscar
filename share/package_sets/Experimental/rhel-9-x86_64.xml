@@ -7,11 +7,11 @@
         <opkg>c3</opkg>
         <opkg>ganglia</opkg>
         <opkg>jobmonarch</opkg>
-	<opkg>kbdconfig</opkg>
+        <opkg>kbdconfig</opkg>
         <opkg>linux-ha</opkg>
         <opkg>loghost</opkg>
-	<opkg>maui</opkg>
-	<opkg>mpich-oscar</opkg>
+        <opkg>maui</opkg>
+        <opkg>mpich-oscar</opkg>
         <opkg>mtaconfig</opkg>
         <opkg>munge</opkg>
         <opkg>naemon</opkg>
@@ -21,20 +21,20 @@
         <opkg>ntpconfig</opkg>
         <opkg>oda</opkg>
         <opkg>openmpi</opkg>
-	<opkg>opium</opkg>
-	<opkg>oscar-nat</opkg>
-	<opkg>oscar-v</opkg>
-	<opkg>pvm</opkg>
-	<opkg>rapt</opkg>
+        <opkg>opium</opkg>
+        <opkg>oscar-nat</opkg>
+        <opkg>oscar-v</opkg>
+        <opkg>pvm</opkg>
+        <opkg>rapt</opkg>
         <opkg>sc3</opkg>
         <opkg>selinux</opkg>
         <opkg>sis</opkg>
         <opkg>slurm</opkg>
-	<opkg>squid</opkg>
+        <opkg>squid</opkg>
         <opkg>switcher</opkg>
         <opkg>sync-files</opkg>
         <opkg>system-update</opkg>
-	<opkg>torque</opkg>
+        <opkg>torque</opkg>
         <opkg>yume</opkg>
     </packages>
 </package_set>
