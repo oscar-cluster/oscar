@@ -52,7 +52,7 @@ BuildRequires:  perl(Pod::Man)
 
 Buildroot: 	%{_tmppath}/%{name}-%{version}-root
 BuildArch: 	noarch
-Obsoletes: oscar-base
+Obsoletes: oscar-base >= 1.0
 
 %description
 OSCAR allows users, regardless of their experience level with a *nix
@@ -96,10 +96,15 @@ Requires: lib%{name}-server == %{version}-%{release}
 # systeminstaller-oscar is handeled by prereqs, but this needs to be here
 # for rpm compliance (shouldn't be possible to install a package with missing deps)
 Requires: systeminstaller-oscar
-Requires: iproute, syslinux, tftp-server, syslinux-tftpboot
+Requires: iproute, tftp-server
+%ifarch x86_64 i386
+Requires: syslinux, syslinux-tftpboot
+%else
+Suggests: syslinux, syslinux-tftpboot
+%endif
 Requires: yume, oda, systemimager-server
 Requires: sync-files
-Obsoletes: oscar-base-scripts
+Obsoletes: oscar-base-scripts >= 1.0
 
 %description -n oscar-core
 OSCAR Cluster Core executables (and manuals).
@@ -119,7 +124,7 @@ OSCAR Cluster Core executables (and manuals).
 %package -n oscar-data
 Group: Applications/System
 Summary: Datafiles for OSCAR clustering package.
-Obsoletes: oscar-base
+Obsoletes: oscar-base >= 1.0
 
 %description -n oscar-data
 Datafiles and configuration files for OSCAR Clustering package.
@@ -146,7 +151,7 @@ Requires: apitest
 #Requires: iproute
 Requires: lib%{name}-client == %{version}-%{release}
 Requires: %{name}-data == %{version}-%{release}
-Obsoletes: oscar-base-lib
+Obsoletes: oscar-base-lib >= 1.0
 
 %description -n liboscar-server
 Libraries for OSCAR clustering base package (server side).
