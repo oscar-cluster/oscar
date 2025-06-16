@@ -89,7 +89,7 @@ RUN cd /usr/share/perl5/vendor_perl/OSCAR && ln -s ODA/mysql.pm oda.pm
 
 # Reinstall oscar rpm packages.
 RUN rpm -Uvh --nodeps /root/rpmbuild/RPMS/noarch/*oscar-*rpm
-RUN dnf config-manager --set-disabled repo-oscar
+#RUN dnf config-manager --set-disabled repo-oscar
 
 # Install default config file for OSCAR so oscar-packager will be happy..
 RUN cp /root/oscar/share/etc/templates/oscar.conf /etc/oscar/oscar.conf
@@ -122,6 +122,9 @@ RUN dnf -y install bc bind-utils cryptsetup dejavu-serif-fonts dosfstools e2fspr
 # Install some deps for apitest
 #RUN dnf -y --disablerepo="repo-oscar" install http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/rhel-9-aarch64/python3-twisted-22.4.0-3.el9.noarch.rpm http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/rhel-9-x86_64/python3-hyperlink-21.0.0-9.el9.noarch.rpm http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/rhel-9-x86_64/python3-incremental-21.3.0-4.el9.noarch.rpm
 #RUN dnf -y --disablerepo="repo-oscar" install python3-twisted
+
+# Fix missing kernel in Docker images
+RUN dnf -y reinstall kernel-core
 
 # REBUILD oscar essential rpms.
 RUN oscar-packager --all Tk-TextANSIColor
