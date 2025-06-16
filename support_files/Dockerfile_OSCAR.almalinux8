@@ -11,6 +11,7 @@ LABEL vendor="OSCAR Cluster"
 LABEL license="GPLv2"
 
 # Set the locale
+RUN dnf -y update --nogpgcheck almalinux-release
 RUN dnf -y install glibc-locale-source glibc-langpack-en
 RUN localedef -c -i en_US -f UTF-8 en_US.UTF-8
 ENV LANG en_US.UTF-8
