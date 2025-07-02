@@ -61,8 +61,9 @@ RUN cd /tmp && rm -rf Tk-TextANSIColor*
 # Step 16/47: Get OSCAR source tree
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar.git
 
-# Build oscar base and install it
-RUN cd /root/oscar && make source_tarball && rpmbuild -tb /root/oscar/tmp/oscar-6.3.tar.gz
+# Build oscar base and install it (Also remove Suggests tag as it is not yet supported on this OS)
+RUN cd /root/oscar && sed -i '/^%else$/ {N; /^Suggests:.*$/d; d;}' /root/oscar/oscar-core.spec && make source_tarball
+RUN rpmbuild -tb /root/oscar/tmp/oscar-6.3.tar.gz
 
 # Install opkgc build requirements and build it
 RUN yum -y install python3-devel python3-cheetah python3-lxml xmlto autoconf automake rsync
