@@ -3,7 +3,7 @@
 #       sudo docker build -t oscar/packager_rhel:7.9 -f Dockerfile_OSCAR.centos7 .
 
 
-FROM centos:7
+FROM amd64/centos:7
 
 LABEL maintainer="Olivier LAHAYE <olivier.lahaye@cea.fr>"
 LABEL version="1.0"
@@ -16,6 +16,12 @@ LABEL license="GPLv2"
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
+
+# Remove deprecated repos
+RUN sed -i -e '/^mirrorlist/d' /etc/yum.repos.d/*.repo
+RUN sed -i -e 's|^#baseurl|baseurl|g' -e 's|http://mirror|https://vault|g' /etc/yum.repos.d/*.repo
+RUN yum clean all
+RUN yum makecache
 
 # Install basic build requirements
 #RUN yum -y install http://fr2.rpmfind.net/linux/epel/7/x86_64/Packages/e/epel-release-7-12.noarch.rpm
