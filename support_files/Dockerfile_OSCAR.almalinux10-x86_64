@@ -74,6 +74,7 @@ RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar.git
 RUN cd /root/oscar && make source_tarball && rpmbuild -tb /root/oscar/tmp/oscar-6.3.tar.gz
 
 # Install opkgc build requirements and build it
+RUN dnf -y install python3-setuptools
 #RUN dnf -y install --skip-broken python2-devel python2-cheetah python2-lxml
 RUN dnf -y install --skip-broken python3-devel python3-cheetah python3-lxml xmlto autoconf automake rsync
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar-opkgc.git
