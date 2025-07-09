@@ -20,8 +20,6 @@ ENV LC_ALL en_US.UTF-8
 # Install basic build requirements
 RUN dnf -y install dnf-plugins-core
 RUN dnf install 'dnf-command(config-manager)'
-#RUN dnf config-manager --set-enabled powertools
-RUN dnf config-manager --set-enabled plus
 RUN dnf config-manager --set-enabled crb
 
 #RUN dnf -y install http://fr2.rpmfind.net/linux/epel/9/Everything/x86_64/Packages/e/epel-release-9-0.el9.noarch.rpm

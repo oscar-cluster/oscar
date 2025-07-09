@@ -1,9 +1,9 @@
-# Experimental Dockerfile to build OSCAR rhel-9-aarch64 packages from scratch on AlmaLinux-9
+# Experimental Dockerfile to build OSCAR rhel-10-aarch64 packages from scratch on AlmaLinux-10
 # Build using the following command:
-#       sudo docker build -t oscar/packager_rhel:9.6 -f Dockerfile_OSCAR.almalinux9-aarch64 .
+#       sudo docker build -t oscar/packager_rhel:10.0 -f Dockerfile_OSCAR.almalinux10-aarch64 .
 
 
-FROM almalinux:9
+FROM arm64v8/almalinux:10
 
 LABEL maintainer="Olivier LAHAYE <olivier.lahaye@cea.fr>"
 LABEL version="1.0"
@@ -11,8 +11,8 @@ LABEL vendor="OSCAR Cluster"
 LABEL license="GPLv2"
 
 # Set the locale
-RUN dnf -y install glibc-locale-source glibc-langpack-en
-RUN localedef -c -i en_US -f UTF-8 en_US.UTF-8
+RUN dnf -y install glibc-langpack-en glibc-locale-source
+# RUN localedef -c -i en_US -f UTF-8 en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
@@ -118,7 +118,7 @@ RUN rpm -Uvh --nodeps /root/rpmbuild/RPMS/noarch/oscar-packager*.rpm
 RUN dnf -y install bc bind-utils cryptsetup dejavu-serif-fonts dosfstools e2fsprogs gdisk hwdata jq kernel lshw lsscsi lvm2 mdadm net-tools nmap-ncat openssh-server parted pciutils perl-JSON plymouth-plugin-label plymouth-plugin-script psmisc rtorrent socat usbutils xfsprogs xmlstarlet dos2unix httpd-filesystem httpd
 
 # Install some deps for apitest
-#RUN dnf -y --disablerepo="repo-oscar" install http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/rhel-9-aarch64/python3-twisted-22.4.0-3.el9.noarch.rpm http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/rhel-9-x86_64/python3-hyperlink-21.0.0-9.el9.noarch.rpm http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/rhel-9-x86_64/python3-incremental-21.3.0-4.el9.noarch.rpm
+#RUN dnf -y --disablerepo="repo-oscar" install http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/rhel-9-aarch64/python3-twisted-22.4.0-3.el9.noarch.rpm http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/rhel-10-aarch64/python3-hyperlink-21.0.0-9.el9.noarch.rpm http://olivier.lahaye1.free.fr/OSCAR/repos/unstable/rhel-10-aarch64/python3-incremental-21.3.0-4.el9.noarch.rpm
 #RUN dnf -y --disablerepo="repo-oscar" install python3-twisted
 
 # Fix missing kernel in Docker images
@@ -145,8 +145,8 @@ RUN /bin/rm -rf /root/oscar* /root/.cpan /root/rpmbuild/*/* /var/lib/oscar-packa
 # this should not be required
 RUN rpm -q oscar-release > /dev/null || yume -y install /tftpboot/oscar/*/oscar-release*rpm
 RUN yume clean all
-RUN rm -rf /tftpboot/oscar/rhel-9-x86_64/.repodata
-RUN /bin/rm -rf /tftpboot/oscar/rhel-9-x86_64/repodata /tftpboot/oscar/rhel-9-x86_64/repocache
+RUN rm -rf /tftpboot/oscar/rhel-10-aarch64/.repodata
+RUN /bin/rm -rf /tftpboot/oscar/rhel-10-aarch64/repodata /tftpboot/oscar/rhel-10-aarch64/repocache
 RUN yume --prepare
 RUN yume -y update
 RUN yume -y reinstall oscar-release
@@ -159,7 +159,7 @@ RUN yume -y install yume packman opkgc
 RUN yume -y reinstall oscar oscar-core liboscar-server liboscar-client oscar-data oscar-devel oscar-utils oscar-packager
 
 # Renstall systemimager server parts that have already been installed from oscar deps.
-RUN yume -y reinstall systemimager-initrd_template systemimager-x86_64boot-standard systemimager-server systemimager-common systemimager-webgui
+RUN yume -y reinstall systemimager-initrd_template systemimager-aarch64boot-standard systemimager-server systemimager-common systemimager-webgui
 
 # Install bittorrent that is needed for systemimager-bittorrent
 #RUN yume -y install bittorrent bittorrent-gui
@@ -167,7 +167,7 @@ RUN yume -y reinstall systemimager-initrd_template systemimager-x86_64boot-stand
 RUN yume -y install --skip-broken systemimager-bittorrent systemimager-client systemimager-flamethrower
 
 # Cleanup tftp tree so we can mount host space later.
-RUN /bin/rm -rf /root/rpmbuild/*/* /tftpboot/oscar/rhel-9-x86_64/*
+RUN /bin/rm -rf /root/rpmbuild/*/* /tftpboot/oscar/rhel-10-aarch64/*
 
 # Somme pre-setup for OSCAR
 # 1/ Mandatory try as /etc/hosts seems non editable directly by sed (ressource buszy)
