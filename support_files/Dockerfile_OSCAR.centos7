@@ -58,7 +58,7 @@ RUN cd /tmp && tar xvfz Tk-TextANSIColor-0.16.tar.gz
 RUN cd /tmp/Tk-TextANSIColor-0.16 && perl Build.PL --installdirs vendor && perl Build && perl Build install --installdirs vendor
 RUN cd /tmp && rm -rf Tk-TextANSIColor*
 
-# Step 16/47: Get OSCAR source tree
+# Step 25/70: Get OSCAR source tree
 RUN cd /root && git clone --depth=1 https://github.com/oscar-cluster/oscar.git
 
 # Build oscar base and install it (Also remove Suggests tag as it is not yet supported on this OS)
