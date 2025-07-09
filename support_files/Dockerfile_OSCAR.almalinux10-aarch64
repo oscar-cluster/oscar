@@ -11,7 +11,7 @@ LABEL vendor="OSCAR Cluster"
 LABEL license="GPLv2"
 
 # Set the locale
-RUN dnf -y install glibc-langpack-en glibc-locale-source
+RUN dnf -y install gzip glibc-langpack-en glibc-locale-source
 # RUN localedef -c -i en_US -f UTF-8 en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
@@ -88,7 +88,7 @@ RUN cd /usr/share/perl5/vendor_perl/OSCAR && ln -s ODA/mysql.pm oda.pm
 
 # Reinstall oscar rpm packages.
 RUN rpm -Uvh --nodeps /root/rpmbuild/RPMS/noarch/*oscar-*rpm
-#RUN dnf config-manager --set-disabled repo-oscar
+RUN dnf config-manager --set-disabled repo-oscar
 
 # Install default config file for OSCAR so oscar-packager will be happy..
 RUN cp /root/oscar/share/etc/templates/oscar.conf /etc/oscar/oscar.conf
