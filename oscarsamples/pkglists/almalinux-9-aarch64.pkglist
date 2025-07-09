@@ -63,6 +63,9 @@ gpm
 grep
 groff
 grub2
+grub2-pc-modules
+grub2-tools
+grub2-tools-minimal
 gtk2
 gzip
 hdparm
@@ -118,6 +121,7 @@ newt
 nfs-utils
 nscd
 ntsysv
+nvme-cli
 openldap
 openssh
 openssh-clients
