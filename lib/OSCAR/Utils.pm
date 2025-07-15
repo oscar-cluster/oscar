@@ -40,9 +40,6 @@ use OSCAR::LoggerDefs;
 use File::Basename;
 use POSIX;
 use Carp;
-use v5.10.1;
-# Avoid smartmatch warnings when using given
-no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 
 @EXPORT = qw(
             kill_processes_locking_path
@@ -104,10 +101,21 @@ sub kill_processes_locking_path($) {
     open LSOF, "LC_ALL=C lsof |"
         or (oscar_log(6, ERROR, "Could not run: $!"), return undef);
 
-    while (<LSOF>) {
-        if (/^(\S)+\s+(\d{1,5}).*\Q$path\E.*$/) {
-            push (@to_kill, $2) if(! ($1 ~~ @to_kill));
-            oscar_log(5, INFO, "Need to kill process $2 ($1)");
+#    while (<LSOF>) {
+#        if (/^(\S)+\s+(\d{1,5}).*\Q$path\E.*$/) {
+#            push (@to_kill, $2) if(! ($1 ~~ @to_kill));
+#            oscar_log(5, INFO, "Need to kill process $2 ($1)");
+#        }
+#    }
+#    close LSOF;
+
+	while (<LSOF>) {
+        if (/^(\S+)\s+(\d{1,5}).*\Q$path\E.*$/) {
+            my ($proc_name, $pid) = ($1, $2);
+            if (!grep { $_ eq $proc_name } @to_kill) {
+                push @to_kill, $pid;
+                oscar_log(5, INFO, "Need to kill process $pid ($proc_name)");
+            }
         }
     }
     close LSOF;
