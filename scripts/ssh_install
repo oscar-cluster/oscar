@@ -246,7 +246,7 @@ fix_configfile($file,%sshd_config);
 
 my $user= "root";
 oscar_log(1, INFO, "Setting up user $user on this machine...");
-my $home=`egrep \"^$user\:\" /etc/passwd | awk -F: '{print \$6}' | tail -1`;
+my $home=`grep -E \"^$user\:\" /etc/passwd | awk -F: '{print \$6}' | tail -1`;
 if (!OSCAR::Utils::is_a_valid_string ($home)) {
     oscar_log(1, ERROR, "Impossible to detect the home directory for $user");
     exit 1;

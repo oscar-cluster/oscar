@@ -36,12 +36,12 @@ else
     if [ ! -e $srcfile ]; then
         option="--help"
     else
-        OSCAR_MAJOR_VERSION="`cat $srcfile | egrep '^major=' | cut -d= -f2`"
-        OSCAR_MINOR_VERSION="`cat $srcfile | egrep '^minor=' | cut -d= -f2`"
-        OSCAR_RELEASE_VERSION="`cat $srcfile | egrep '^release=' | cut -d= -f2`"
-        OSCAR_GREEK_VERSION="`cat $srcfile | egrep '^greek=' | cut -d= -f2`"
-        OSCAR_WANT_BUILD_R="`cat $srcfile | egrep '^want_build_r=' | cut -d= -f2`"
-        OSCAR_BUILD_R="`cat $srcfile | egrep '^build_r=' | cut -d= -f2`"
+        OSCAR_MAJOR_VERSION="`cat $srcfile | grep -E '^major=' | cut -d= -f2`"
+        OSCAR_MINOR_VERSION="`cat $srcfile | grep -E '^minor=' | cut -d= -f2`"
+        OSCAR_RELEASE_VERSION="`cat $srcfile | grep -E '^release=' | cut -d= -f2`"
+        OSCAR_GREEK_VERSION="`cat $srcfile | grep -E '^greek=' | cut -d= -f2`"
+        OSCAR_WANT_BUILD_R="`cat $srcfile | grep -E '^want_build_r=' | cut -d= -f2`"
+        OSCAR_BUILD_R="`cat $srcfile | grep -E '^build_r=' | cut -d= -f2`"
         if test "$OSCAR_RELEASE_VERSION" != "0" -a "$OSCAR_RELEASE_VERSION" != ""; then
 	        OSCAR_VERSION="$OSCAR_MAJOR_VERSION.$OSCAR_MINOR_VERSION.$OSCAR_RELEASE_VERSION"
         else
