@@ -32,9 +32,6 @@ BEGIN {
 }
 
 use strict;
-use v5.10.1;
-# Avoid smartmatch warnings when using given
-no if $] >= 5.017011, warnings => 'experimental::smartmatch';
 use OSCAR::Defs;
 use OSCAR::Logger;
 use OSCAR::LoggerDefs;
@@ -258,21 +255,16 @@ sub extract_file ($$) {
 
     oscar_log(5, ACTION, "Extracting $file");
 
-    given (file_type($file)) {
-        when (OSCAR::Defs::TARBALL()) {
-            $verbose_switch="v" if ($OSCAR::Env::oscar_verbose >= 6);
-            given ($file) {
-                when (/\.gz|\.tgz/) { $compression_switch = "z"; }
-                when (/\.bz2|\.tbz/) { $compression_switch = "j"; }
-                when (/\.xz/) { $compression_switch = "J"; }
-                default { $compression_switch = ""; }
-            }
-            $cmd="tar x".$verbose_switch.$compression_switch."Cf ".$destination." ".$file;
-        }
-        default {
-                oscar_log(6, ERROR, "Unhandled archive type: for $file");
-                return -1;
-        }
+    if (file_type($file) eq OSCAR::Defs::TARBALL()) {
+        $verbose_switch="v" if ($OSCAR::Env::oscar_verbose >= 6);
+        if ($file =~ /\.gz|\.tgz/) { $compression_switch = "z"; }
+        elsif ($file =~ /\.bz2|\.tbz/) { $compression_switch = "j"; }
+        elsif ($file =~ /\.xz/) { $compression_switch = "J"; }
+        else { $compression_switch = ""; }
+        $cmd="tar x".$verbose_switch.$compression_switch."Cf ".$destination." ".$file;
+    } else {
+            oscar_log(6, ERROR, "Unhandled archive type: for $file");
+            return -1;
     }
     my $rc = oscar_system ($cmd);
     if ($rc) {

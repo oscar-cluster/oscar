@@ -29,10 +29,7 @@ use File::Basename;
 use OSCAR::Env;
 use OSCAR::LoggerDefs;
 use OSCAR::Utils;
-#use warnings "all";
-use v5.10.1; # Switch
-# Avoid smartmatch warnings when using given
-no if $] >= 5.017011, warnings => 'experimental::smartmatch';
+use warnings "all";
 
 our @EXPORT = qw(
              oscar_log_section
@@ -113,25 +110,20 @@ sub oscar_log ($$$) {
     my($verbose, $type, $message) = @_;
 
     # 1st: Doing formatting given the type of message.
-    given ($type) {
-        when (SECTION) {
-            $message = "\n================================================================================\n" . 
-                         "== $message\n" .
-                         "================================================================================\n";
-        }
-        when (SUBSECTION) {
-            my $length = length $message;
-            my $prepend_count = int((80-$length)/2) -1;
-            my $append_count = 80-$prepend_count-$length-2;
-            $message = "-" x $prepend_count . " $message " . "-" x $append_count . "\n";
-        }
-        when (NONE) {
-            $message = "$message\n";
-        }
-        default {
-            my $bin_name = basename($0);
-            $message = "[$type - $bin_name] $message\n";
-        }
+    if ( $type eq SECTION) {
+        $message = "\n================================================================================\n" . 
+		             "== $message\n" .
+                     "================================================================================\n";
+    } elsif ( $type eq SUBSECTION) {
+        my $length = length $message;
+        my $prepend_count = int((80-$length)/2) -1;
+        my $append_count = 80-$prepend_count-$length-2;
+        $message = "-" x $prepend_count . " $message " . "-" x $append_count . "\n";
+    } elsif ( $type eq NONE) {
+        $message = "$message\n";
+    } else {
+         my $bin_name = basename($0);
+         $message = "[$type - $bin_name] $message\n";
     }
 
     # Now printing the message if conditions are met.
