@@ -26,6 +26,7 @@ use Carp;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 use File::Basename;
+use List::Util qw(max);
 use OSCAR::Env;
 use OSCAR::LoggerDefs;
 use OSCAR::Utils;
@@ -116,8 +117,8 @@ sub oscar_log ($$$) {
                      "================================================================================\n";
     } elsif ( $type eq SUBSECTION) {
         my $length = length $message;
-        my $prepend_count = int((80-$length)/2) -1;
-        my $append_count = 80-$prepend_count-$length-2;
+        my $prepend_count = max( int((80-$length)/2) - 1, 1 ); # avoit null or negative results.
+        my $append_count  = max( 80 - $prepend_count - $length - 2, 1 );
         $message = "-" x $prepend_count . " $message " . "-" x $append_count . "\n";
     } elsif ( $type eq NONE) {
         $message = "$message\n";
